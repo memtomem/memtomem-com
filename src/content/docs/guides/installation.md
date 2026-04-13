@@ -1,18 +1,18 @@
 ---
-title: 설치
-description: memtomem과 memtomem-stm의 상세 설치 가이드.
+title: Installation
+description: Detailed installation guide for memtomem and memtomem-stm.
 ---
 
-## 요구 사항
+## Requirements
 
 - **Python 3.12+**
-- **pip**, **uv**, 또는 **pipx**
-- 임베딩: ONNX (기본, 추가 설치 불필요) / Ollama (~270MB) / OpenAI API
+- **pip**, **uv**, or **pipx**
+- Embeddings: ONNX (built-in) / Ollama (~270MB) / OpenAI API
 
-## LTM 서버 (memtomem)
+## LTM Server (memtomem)
 
 ```bash
-# uv (권장)
+# uv (recommended)
 uv tool install memtomem
 
 # pipx
@@ -22,65 +22,65 @@ pipx install memtomem
 pip install memtomem
 ```
 
-### 선택적 확장
+### Optional extras
 
 ```bash
-pip install memtomem[korean]       # kiwipiepy 한국어 형태소 분석
+pip install memtomem[korean]       # kiwipiepy Korean morphological analysis
 ```
 
-설치 후 `mm` CLI를 사용할 수 있습니다:
+After installation, the `mm` CLI is available:
 
 ```bash
-mm init          # 초기 설정 마법사
-mm serve         # MCP 서버 시작
-mm web           # 웹 UI 대시보드
+mm init          # interactive setup wizard
+mm serve         # start MCP server
+mm web           # launch Web UI dashboard
 ```
 
-## STM 프록시 (memtomem-stm)
+## STM Proxy (memtomem-stm)
 
 ```bash
-# uv (권장)
+# uv (recommended)
 uv tool install memtomem-stm
 
-# 또는 설치 없이 실행
+# run without installing
 uvx memtomem-stm --help
 
 # pip
 pip install memtomem-stm
 ```
 
-### 선택적 확장
+### Optional extras
 
 ```bash
-pip install memtomem-stm[langfuse]     # Langfuse 관측성 트레이싱
-pip install memtomem-stm[langchain]    # LangChain 에이전트 통합
+pip install memtomem-stm[langfuse]     # Langfuse observability tracing
+pip install memtomem-stm[langchain]    # LangChain agent integration
 ```
 
-설치 후 `mms` CLI를 사용할 수 있습니다:
+After installation, the `mms` CLI is available:
 
 ```bash
-mms add <name> --command <cmd>     # 업스트림 MCP 서버 등록
-mms list                           # 등록된 서버 목록
-mms serve                          # STM 프록시 시작
+mms add <name> --command <cmd>     # register upstream MCP server
+mms list                           # list registered servers
+mms serve                          # start STM proxy
 ```
 
-## 임베딩 프로바이더
+## Embedding Providers
 
-| 프로바이더 | 설치 | GPU | 비용 |
+| Provider | Setup | GPU | Cost |
 |---|---|---|---|
-| **ONNX** (fastembed) | 기본 내장 | 불필요 | 무료 |
-| **Ollama** | `ollama pull nomic-embed-text` | 불필요 | 무료 |
-| **OpenAI** | API 키 필요 | - | 유료 |
+| **ONNX** (fastembed) | Built-in | Not required | Free |
+| **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
+| **OpenAI** | API key required | — | Paid |
 
-`mm init` 마법사에서 프로바이더를 선택하거나, `MEMTOMEM_EMBEDDING_PROVIDER` 환경 변수로 설정합니다.
+Choose a provider during `mm init` or set the `MEMTOMEM_EMBEDDING_PROVIDER` environment variable.
 
-## 기술 스택
+## Tech Stack
 
-| 범주 | 기술 |
-|------|------|
+| Category | Technology |
+|----------|-----------|
 | MCP | FastMCP (stdio, SSE, Streamable HTTP) |
-| 프레임워크 | Pydantic v2, Click (CLI), FastAPI (웹 UI) |
-| 데이터베이스 | SQLite (FTS5 전문 검색), sqlite-vec (벡터 검색) |
-| 코드 파싱 | tree-sitter (Python, JS, TS AST) |
-| 한국어 | kiwipiepy 형태소 분석기 (선택적) |
-| 관측성 | Langfuse (선택적) |
+| Framework | Pydantic v2, Click (CLI), FastAPI (Web UI) |
+| Database | SQLite (FTS5 full-text search), sqlite-vec (vector search) |
+| Code parsing | tree-sitter (Python, JS, TS AST) |
+| Korean | kiwipiepy morphological analyzer (optional) |
+| Observability | Langfuse (optional) |

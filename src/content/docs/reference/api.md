@@ -1,91 +1,91 @@
 ---
-title: API 레퍼런스
-description: memtomem MCP 도구 목록과 CLI 명령어 요약.
+title: API Reference
+description: memtomem MCP tools and CLI commands.
 ---
 
-## LTM MCP 도구 (memtomem — 74 도구)
+## LTM MCP Tools (memtomem — 74 tools)
 
-### 핵심 도구
+### Core Tools
 
-| 도구 | 설명 |
-|------|------|
-| `mem_status` | 서버 연결 상태 및 통계 확인 |
-| `mem_add` | 기억 저장 (content, tags, namespace) |
-| `mem_search` | 하이브리드 검색 (BM25 + 벡터 + RRF) |
-| `mem_recall` | ID 기반 단일 기억 조회 |
-| `mem_list` | 기억 목록 조회 (필터, 페이징) |
-| `mem_read` | 소스 파일 읽기 |
-| `mem_index` | 경로/파일 인덱싱 |
-| `mem_stats` | 인덱스/검색 통계 |
-| `mem_do` | 메타 도구 — core 모드에서 비핵심 작업 라우팅 |
+| Tool | Description |
+|------|-------------|
+| `mem_status` | Check server connection status and stats |
+| `mem_add` | Store a memory (content, tags, namespace) |
+| `mem_search` | Hybrid search (BM25 + vector + RRF) |
+| `mem_recall` | Retrieve a single memory by ID |
+| `mem_list` | List memories (filter, pagination) |
+| `mem_read` | Read a source file |
+| `mem_index` | Index a path or file |
+| `mem_stats` | Index/search statistics |
+| `mem_do` | Meta-tool — routes non-core actions in `core` mode for minimal context usage |
 
-### 멀티 에이전트 도구
+### Multi-Agent Tools
 
-| 도구 | 설명 |
-|------|------|
-| `mem_agent_register` | 에이전트 등록 (id, description) |
-| `mem_agent_search` | 에이전트 네임스페이스 + 공유 검색 |
-| `mem_agent_share` | 특정 기억을 공유 네임스페이스로 내보내기 |
+| Tool | Description |
+|------|-------------|
+| `mem_agent_register` | Register an agent (id, description) |
+| `mem_agent_search` | Search agent namespace + shared |
+| `mem_agent_share` | Export a memory to the shared namespace |
 
-### 유지보수 도구
+### Maintenance Tools
 
-| 도구 | 설명 |
-|------|------|
-| `mem_tag` | 태그 관리 (추가, 제거, 목록) |
-| `mem_namespace` | 네임스페이스 관리 |
-| `mem_health` | 인덱스 건강 진단 |
-| `mem_cleanup` | 만료/중복 기억 정리 |
+| Tool | Description |
+|------|-------------|
+| `mem_tag` | Tag management (add, remove, list) |
+| `mem_namespace` | Namespace management |
+| `mem_health` | Index health diagnostics |
+| `mem_cleanup` | Clean up expired/duplicate memories |
 
-> 전체 74개 도구 목록은 [memtomem 리포지토리 문서](https://github.com/memtomem/memtomem/tree/main/docs)를 참고하세요.
+> See the [memtomem repository docs](https://github.com/memtomem/memtomem/tree/main/docs) for the full list of 74 tools.
 
-## STM MCP 도구 (memtomem-stm — 10 도구)
+## STM MCP Tools (memtomem-stm — 10 tools)
 
-프록시된 업스트림 도구 외에, STM 자체 관리 도구:
+In addition to proxied upstream tools, STM provides its own management tools:
 
-| 도구 | 설명 |
-|------|------|
-| `stm_status` | STM 프록시 상태 확인 |
-| `stm_cache_stats` | 응답 캐시 통계 |
-| `stm_cache_clear` | 캐시 초기화 |
-| `stm_compression_stats` | 압축 전략별 통계 |
-| `stm_surfacing_stats` | 서피싱 통계 (적중률, 피드백) |
-| `stm_feedback` | 서피싱/압축 품질 피드백 전달 |
+| Tool | Description |
+|------|-------------|
+| `stm_status` | STM proxy status |
+| `stm_cache_stats` | Response cache statistics |
+| `stm_cache_clear` | Clear cache |
+| `stm_compression_stats` | Per-strategy compression statistics |
+| `stm_surfacing_stats` | Surfacing statistics (hit rate, feedback) |
+| `stm_feedback` | Submit surfacing/compression quality feedback |
 
-## CLI 명령어
+## CLI Commands
 
 ### `mm` (LTM)
 
 ```bash
-mm init              # 초기 설정 마법사
-mm serve             # MCP 서버 시작
-mm web               # 웹 UI 대시보드 시작
-mm search <query>    # CLI에서 직접 검색
-mm index <path>      # CLI에서 직접 인덱싱
-mm ingest claude-memory   # Claude Code 기억 통합
-mm ingest gemini-memory   # Gemini CLI 기억 통합
-mm ingest codex-memory    # Codex CLI 기억 통합
-mm context sync      # Context Gateway 동기화
-mm context import    # 런타임 파일 → 정규 소스 역추출
+mm init              # interactive setup wizard
+mm serve             # start MCP server
+mm web               # launch Web UI dashboard
+mm search <query>    # search from CLI
+mm index <path>      # index from CLI
+mm ingest claude-memory   # ingest Claude Code memories
+mm ingest gemini-memory   # ingest Gemini CLI memories
+mm ingest codex-memory    # ingest Codex CLI memories
+mm context sync      # Context Gateway sync
+mm context import    # runtime files → canonical source
 ```
 
 ### `mms` (STM)
 
 ```bash
 mms add <name> --command <cmd> --args <args> --prefix <prefix>
-                     # 업스트림 MCP 서버 등록
-mms list             # 등록된 서버 목록
-mms remove <name>    # 서버 제거
-mms serve            # STM 프록시 시작
-mms stats            # 프록시 통계
+                     # register upstream MCP server
+mms list             # list registered servers
+mms remove <name>    # remove a server
+mms serve            # start STM proxy
+mms stats            # proxy statistics
 ```
 
-## 환경 변수
+## Environment Variables
 
-주요 설정은 환경 변수로 제어합니다. 전체 목록은 각 리포지토리의 Configuration 문서를 참고하세요.
+Key settings are controlled via environment variables. See the Configuration docs in each repository for the full list.
 
-| 변수 | 설명 | 기본값 |
-|------|------|--------|
-| `MEMTOMEM_EMBEDDING_PROVIDER` | 임베딩 프로바이더 (onnx/ollama/openai) | `onnx` |
-| `MEMTOMEM_DB_PATH` | SQLite DB 경로 | `~/.memtomem/memtomem.db` |
-| `MEMTOMEM_STM_COMPRESSION` | 기본 압축 전략 | `auto` |
-| `MEMTOMEM_STM_SURFACING` | 서피싱 활성화 여부 | `true` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MEMTOMEM_EMBEDDING_PROVIDER` | Embedding provider (onnx/ollama/openai) | `onnx` |
+| `MEMTOMEM_DB_PATH` | SQLite DB path | `~/.memtomem/memtomem.db` |
+| `MEMTOMEM_STM_COMPRESSION` | Default compression strategy | `auto` |
+| `MEMTOMEM_STM_SURFACING` | Enable surfacing | `true` |

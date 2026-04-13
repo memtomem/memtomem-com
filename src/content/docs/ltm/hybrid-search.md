@@ -1,54 +1,54 @@
 ---
-title: 하이브리드 검색
-description: BM25 키워드 + 밀집 벡터 + RRF 융합 검색의 원리와 튜닝 방법.
+title: Hybrid Search
+description: How BM25 keyword + dense vector + RRF fusion search works and how to tune it.
 ---
 
-memtomem의 하이브리드 검색은 키워드 검색과 시맨틱 검색을 결합하여, 정확한 용어 매칭과 의미 기반 유사도를 동시에 활용합니다.
+memtomem's hybrid search combines keyword search and semantic search, leveraging both exact term matching and meaning-based similarity in a single query.
 
-## 검색 아키텍처
+## Search Architecture
 
-하이브리드 검색은 세 가지 검색 엔진을 병렬로 실행합니다:
+Hybrid search runs three search engines in parallel:
 
-| 검색 엔진 | 기반 | 강점 |
+| Engine | Based on | Strength |
 |---|---|---|
-| **BM25** | SQLite FTS5 | 정확한 키워드/용어 매칭. "FastAPI", "mem_search" 같은 고유 명칭에 강함 |
-| **벡터 검색** | sqlite-vec + ONNX/Ollama/OpenAI 임베딩 | 의미적 유사도. "배포 방법" → "deployment checklist" 매칭 가능 |
-| **RRF 융합** | Reciprocal Rank Fusion | 두 검색 결과의 순위를 결합하여 최종 랭킹 산출 |
+| **BM25** | SQLite FTS5 | Exact keyword/term matching. Strong for unique identifiers like "FastAPI", "mem_search" |
+| **Vector search** | sqlite-vec + ONNX/Ollama/OpenAI embeddings | Semantic similarity. Can match "how to deploy" → "deployment checklist" |
+| **RRF fusion** | Reciprocal Rank Fusion | Combines rankings from both engines into a final score |
 
-## 시맨틱 청킹
+## Semantic Chunking
 
-인덱싱 시 문서를 의미 단위로 분할합니다. 단순 토큰 수 기반이 아닌, 구조를 인식하는 6종 청킹 전략:
+During indexing, documents are split into meaningful units — not by token count, but by structure. Six chunking strategies:
 
-| 전략 | 대상 | 동작 |
+| Strategy | Target | Behavior |
 |---|---|---|
-| **Markdown** | `.md` 파일 | 헤딩 레벨 기준 분할, 계층 구조 보존 |
-| **Python AST** | `.py` 파일 | 함수/클래스 단위 분할, docstring 포함 |
-| **JS/TS AST** | `.js`, `.ts` 파일 | tree-sitter 기반 함수/모듈 분할 |
-| **JSON** | `.json` 파일 | 구조 인식 분할 |
-| **YAML/TOML** | `.yaml`, `.toml` | 키-값 블록 단위 분할 |
-| **일반 텍스트** | 기타 파일 | 문단/줄바꿈 기반 분할 |
+| **Markdown** | `.md` files | Split by heading level, preserving hierarchy |
+| **Python AST** | `.py` files | Split by function/class, including docstrings |
+| **JS/TS AST** | `.js`, `.ts` files | tree-sitter based function/module splitting |
+| **JSON** | `.json` files | Structure-aware splitting |
+| **YAML/TOML** | `.yaml`, `.toml` | Key-value block splitting |
+| **Plain text** | Other files | Paragraph/newline based splitting |
 
-## 증분 인덱싱
+## Incremental Indexing
 
-전체 재인덱싱 대신, 변경된 부분만 갱신합니다:
+Instead of full re-indexing, only changed chunks are updated:
 
-1. 각 청크의 **SHA-256 해시**를 저장
-2. 재인덱싱 시 해시 비교로 변경분만 탐지
-3. 변경된 청크만 재임베딩하여 인덱스 업데이트
+1. Store **SHA-256 hash** for each chunk
+2. On re-index, compare hashes to detect changes
+3. Only re-embed changed chunks
 
-대규모 문서셋에서도 인덱싱 비용을 최소화합니다.
+This minimizes indexing cost even for large document sets.
 
-## 네임스페이스
+## Namespaces
 
-기억을 스코프별로 구분하여 관리합니다:
+Organize memories into scoped groups:
 
-- 폴더 이름에서 네임스페이스 자동 유도
-- 검색 시 특정 네임스페이스 필터링 가능
-- 멀티 에이전트 환경에서 에이전트별 격리와 공유 지원
+- Namespace auto-derived from folder names
+- Filter by namespace when searching
+- Support agent-level isolation and sharing in multi-agent environments
 
-## 유지보수 기능
+## Maintenance Features
 
-- **유사 중복 탐지** — 내용이 거의 같은 기억 자동 식별
-- **시간 기반 감쇠** — 오래된 기억의 검색 가중치 점진적 감소
-- **TTL 만료** — 설정된 기간이 지난 기억 자동 삭제
-- **자동 태깅** — 콘텐츠 분석을 통한 태그 자동 부여
+- **Near-duplicate detection** — automatically identify memories with nearly identical content
+- **Time-based decay** — gradually decrease search weight for older memories
+- **TTL expiration** — automatically delete memories past their configured lifespan
+- **Auto-tagging** — automatically assign tags based on content analysis

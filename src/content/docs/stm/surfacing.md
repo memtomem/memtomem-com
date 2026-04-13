@@ -1,63 +1,63 @@
 ---
-title: 능동적 서피싱
-description: 도구 호출 단위 실시간 서피싱, 5단계 관련성 게이팅, 피드백 기반 자동 튜닝.
+title: Proactive Surfacing
+description: Real-time surfacing per tool call, 5-level relevance gating, feedback-based auto-tuning.
 ---
 
-기존 RAG 시스템은 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 에이전트의 모든 도구 호출을 관찰하고, 관련 기억을 **자동으로** 검색하여 응답에 주입합니다.
+Traditional RAG systems only provide relevant information when the agent explicitly requests a search. memtomem-stm's proactive surfacing observes every tool call the agent makes and **automatically** searches for and injects relevant memories into responses.
 
-## 동작 원리
+## How It Works
 
-에이전트가 MCP 도구를 호출하면, STM 프록시가 다음 파이프라인을 실행합니다:
+When an agent calls an MCP tool, the STM proxy runs this pipeline:
 
 ```
-도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 판정 → 응답에 주입
+Tool call → Context extraction → LTM search → Relevance gating → Inject into response
 ```
 
-에이전트 코드를 수정할 필요 없이, STM 프록시를 거치는 것만으로 모든 MCP 통신에서 기억이 자동 주입됩니다.
+No agent code changes needed — just routing through the STM proxy enables automatic memory injection for all MCP communication.
 
-## 5단계 컨텍스트 추출
+## 5-Level Context Extraction
 
-도구 호출에서 검색 쿼리를 추출하는 5단계 우선순위:
+How search queries are extracted from tool calls, by priority:
 
-| 우선순위 | 추출 방법 | 설명 |
+| Priority | Method | Description |
 |---|---|---|
-| 1 | 도구별 쿼리 템플릿 | 도구 이름에 매핑된 미리 정의된 쿼리 패턴 |
-| 2 | `_context_query` 인자 | 에이전트가 명시적으로 전달한 검색 쿼리 |
-| 3 | 경로 인자 | 파일 경로, URL 등에서 컨텍스트 추출 |
-| 4 | 시맨틱 키 | 도구 인자의 의미적 키워드 조합 |
-| 5 | 도구명 | 최후 수단 — 도구 이름 자체를 쿼리로 사용 |
+| 1 | Tool-specific query template | Pre-defined query patterns mapped to tool names |
+| 2 | `_context_query` argument | Explicit search query passed by the agent |
+| 3 | Path arguments | Context extracted from file paths, URLs, etc. |
+| 4 | Semantic keys | Semantic keyword combination from tool arguments |
+| 5 | Tool name | Last resort — use the tool name itself as query |
 
-## 관련성 게이팅
+## Relevance Gating
 
-서피싱된 기억이 실제로 유용한지 5단계로 필터링합니다:
+Surfaced memories are filtered through 5 stages to ensure usefulness:
 
-1. **컨텍스트 추출** — 도구 호출에서 의미 있는 쿼리 생성 가능 여부
-2. **관련성 판정** — 추출된 쿼리가 기억 검색에 적합한지 평가
-3. **LTM 검색** — 하이브리드 검색으로 관련 기억 후보 검색
-4. **점수 필터링** — `min_score` 임계값 이하의 결과 제거
-5. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
+1. **Context extraction** — Can a meaningful query be generated from the tool call?
+2. **Relevance assessment** — Is the extracted query suitable for memory search?
+3. **LTM search** — Hybrid search for candidate memories
+4. **Score filtering** — Remove results below the `min_score` threshold
+5. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
 
-## 모델 인식 기본값
+## Model-Aware Defaults
 
-에이전트의 컨텍스트 윈도우 크기를 인식하여 자동 스케일링합니다:
+Automatically scales based on the agent's context window size:
 
-| 컨텍스트 윈도우 | 압축 비율 | 주입 크기 | 검색 결과 수 |
+| Context window | Compression | Injection size | Result count |
 |---|---|---|---|
-| ≤ 32K | 높은 압축 | 소형 | 적음 |
-| 32K ~ 200K | 기본 압축 | 중형 | 기본 |
-| > 200K | 낮은 압축 | 대형 | 많음 |
+| ≤ 32K | High compression | Small | Few |
+| 32K – 200K | Default | Medium | Default |
+| > 200K | Low compression | Large | Many |
 
-## 피드백 루프
+## Feedback Loop
 
-에이전트가 서피싱 품질을 평가하면, 자동 튜너가 도구별 관련성 임계값을 지속적으로 최적화합니다:
+When an agent evaluates surfacing quality, the auto-tuner continuously optimizes per-tool relevance thresholds:
 
-- **helpful** → 해당 도구의 `min_score` 유지 또는 하향
-- **not_relevant** → `min_score` 상향 (더 엄격한 필터링)
-- **already_known** → 중복 제거 윈도우 확대
+- **helpful** → Maintain or lower `min_score` for that tool
+- **not_relevant** → Raise `min_score` (stricter filtering)
+- **already_known** → Expand deduplication window
 
-## 안전 장치
+## Safety Mechanisms
 
-- **회로 차단기** (3-state) — 연속 실패 시 서피싱 일시 중단
-- **쓰기 도구 스킵** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
-- **쿼리 쿨다운** — 동일 쿼리의 빈번한 반복 검색 방지
-- **민감 데이터 감지** — API 키, 비밀번호, PII 자동 탐지 및 필터링
+- **Circuit breaker** (3-state) — Temporarily suspend surfacing after consecutive failures
+- **Write-tool skip** — Disable surfacing for tools with side effects (file writes, deletes)
+- **Query cooldown** — Prevent rapid repeated searches of the same query
+- **Sensitive data detection** — Auto-detect and filter API keys, passwords, PII

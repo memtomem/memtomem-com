@@ -1,63 +1,63 @@
 ---
-title: 압축 전략
-description: 10종 압축 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.
+title: Compression Strategies
+description: 10 compression strategies, auto-selection logic, and query-aware budget allocation.
 ---
 
-memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압축하여 토큰을 절감합니다. 에이전트에게 필요한 정보를 잃지 않으면서 응답 크기를 줄이는 10가지 전략을 제공합니다.
+memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It provides 10 strategies that reduce response size while preserving the information the agent needs.
 
-## 10가지 압축 전략
+## 10 Compression Strategies
 
-| 전략 | 대상 콘텐츠 | 동작 |
+| Strategy | Target content | Behavior |
 |---|---|---|
-| **truncate** | 소형 텍스트 | 길이 제한 절삭 (기본 폴백) |
-| **hybrid** | Markdown | 구조 보존 + 불필요 섹션 축약 |
-| **selective** | 일반 텍스트 | 쿼리와 관련된 부분만 보존 |
-| **progressive** | 대형 콘텐츠 | 커서 기반 순차 전달 (제로 정보손실) |
-| **extract_fields** | JSON 딕셔너리 | 주요 필드만 추출 |
-| **schema_pruning** | JSON 배열 | 스키마 유지 + 샘플 축소 |
-| **skeleton** | API 문서 | 구조 뼈대만 보존 |
-| **llm_summary** | 복잡한 텍스트 | LLM 기반 요약 (Ollama/OpenAI) |
-| **auto** | 모든 유형 | 콘텐츠 분석 후 최적 전략 자동 선택 |
-| **none** | — | 압축 없이 원본 전달 |
+| **truncate** | Small text | Length-limited truncation (default fallback) |
+| **hybrid** | Markdown | Preserve structure + abbreviate non-essential sections |
+| **selective** | General text | Keep only query-relevant portions |
+| **progressive** | Large content | Cursor-based sequential delivery (zero information loss) |
+| **extract_fields** | JSON dictionaries | Extract key fields only |
+| **schema_pruning** | JSON arrays | Preserve schema + reduce samples |
+| **skeleton** | API docs | Preserve structural skeleton only |
+| **llm_summary** | Complex text | LLM-based summarization (Ollama/OpenAI) |
+| **auto** | All types | Analyze content and auto-select optimal strategy |
+| **none** | — | Pass through original without compression |
 
-## 자동 선택 로직
+## Auto-Selection Logic
 
-`auto` 전략(기본값)은 콘텐츠를 분석하여 최적 전략을 선택합니다:
+The `auto` strategy (default) analyzes content to pick the optimal strategy:
 
-| 콘텐츠 유형 | 선택되는 전략 |
+| Content type | Selected strategy |
 |---|---|
-| JSON 딕셔너리 | `extract_fields` |
-| 대형 JSON 배열 | `schema_pruning` |
-| Markdown 문서 | `hybrid` |
-| API 문서 | `skeleton` |
-| 소형 텍스트 (< 임계값) | `truncate` |
-| 기타 대형 텍스트 | `selective` |
+| JSON dictionary | `extract_fields` |
+| Large JSON array | `schema_pruning` |
+| Markdown document | `hybrid` |
+| API documentation | `skeleton` |
+| Small text (< threshold) | `truncate` |
+| Other large text | `selective` |
 
-## 쿼리 인식 예산 배분
+## Query-Aware Budget Allocation
 
-압축 시 에이전트의 현재 쿼리를 인식하여, 관련 섹션에 더 많은 토큰 예산을 할당합니다. 예를 들어, "인증 모듈"에 대해 질문한 상태에서 API 문서를 압축하면, 인증 관련 엔드포인트에 더 많은 공간을 배분합니다.
+During compression, the agent's current query is taken into account — relevant sections receive a larger token budget. For example, when compressing API documentation while the agent is asking about "authentication module," auth-related endpoints get more space.
 
-## 제로 정보손실: Progressive Delivery
+## Zero Information Loss: Progressive Delivery
 
-`progressive` 전략은 대형 콘텐츠를 정보 손실 없이 전달합니다:
+The `progressive` strategy delivers large content without any information loss:
 
-1. 첫 응답에서 목차(TOC)와 첫 번째 청크 전달
-2. 에이전트가 추가 부분을 요청하면 커서 기반으로 다음 청크 전달
-3. 전체 내용을 순차적으로 확인 가능
+1. First response delivers a table of contents (TOC) and the first chunk
+2. Agent requests more → cursor-based delivery of subsequent chunks
+3. Full content can be inspected sequentially
 
-## 폴백 래더
+## Fallback Ladder
 
-압축 비율 가드레일(기본 65% 보존)을 위반하면 3단계 폴백이 자동 동작합니다:
+When the compression ratio guardrail (default 65% preservation) is violated, a 3-tier fallback activates automatically:
 
 ```
 progressive → hybrid → truncate
 ```
 
-각 단계에서 가드레일을 충족하면 해당 전략으로 응답합니다.
+Each tier checks the guardrail — if satisfied, that strategy's output is used.
 
-## 압축 예산 설정
+## Compression Budget Tuning
 
-에이전트의 피드백으로 도구별 압축 예산을 자동 조정합니다:
+Agent feedback automatically adjusts per-tool compression budgets:
 
-- 에이전트가 **정보 손실을 보고**하면 → 해당 도구의 보존 비율 상향
-- 에이전트가 **응답이 너무 길다**고 하면 → 보존 비율 하향
+- Agent reports **information loss** → Increase preservation ratio for that tool
+- Agent reports **response too long** → Decrease preservation ratio

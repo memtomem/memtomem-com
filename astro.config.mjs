@@ -11,8 +11,8 @@ export default defineConfig({
 			description: 'MCP-native memory infrastructure for AI agents — STM + LTM separated architecture',
 			defaultLocale: 'root',
 			locales: {
-				root: { label: '한국어', lang: 'ko' },
-				en: { label: 'English', lang: 'en' },
+				root: { label: 'English', lang: 'en' },
+				ko: { label: '한국어', lang: 'ko' },
 			},
 			head: [
 				{
@@ -34,31 +34,31 @@ export default defineConfig({
 			],
 			sidebar: [
 				{
-					label: '시작하기',
-					translations: { en: 'Getting Started' },
+					label: 'Getting Started',
+					translations: { ko: '시작하기' },
 					items: [
 						{ label: 'Quick Start', slug: 'guides/quickstart' },
-						{ label: '설치', slug: 'guides/installation', translations: { en: 'Installation' } },
+						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
 					],
 				},
 				{
 					label: 'LTM (memtomem)',
 					items: [
-						{ label: '하이브리드 검색', slug: 'ltm/hybrid-search', translations: { en: 'Hybrid Search' } },
-						{ label: '멀티 에이전트 협업', slug: 'ltm/multi-agent', translations: { en: 'Multi-Agent Collaboration' } },
+						{ label: 'Hybrid Search', slug: 'ltm/hybrid-search', translations: { ko: '하이브리드 검색' } },
+						{ label: 'Multi-Agent Collaboration', slug: 'ltm/multi-agent', translations: { ko: '멀티 에이전트 협업' } },
 					],
 				},
 				{
 					label: 'STM (memtomem-stm)',
 					items: [
-						{ label: '능동적 서피싱', slug: 'stm/surfacing', translations: { en: 'Proactive Surfacing' } },
-						{ label: '압축 전략', slug: 'stm/compression', translations: { en: 'Compression Strategies' } },
+						{ label: 'Proactive Surfacing', slug: 'stm/surfacing', translations: { ko: '능동적 서피싱' } },
+						{ label: 'Compression Strategies', slug: 'stm/compression', translations: { ko: '압축 전략' } },
 						{ label: 'Context Gateway', slug: 'stm/context-gateway' },
 					],
 				},
 				{
-					label: 'API 레퍼런스',
-					translations: { en: 'API Reference' },
+					label: 'API Reference',
+					translations: { ko: 'API 레퍼런스' },
 					autogenerate: { directory: 'reference' },
 				},
 			],
