@@ -1,0 +1,411 @@
+
+<h2 class="sr-only">memtomem.com homepage structure mockup showing hero, features, architecture, and documentation sections</h2>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --accent: #534AB7;
+  --accent-light: #EEEDFE;
+  --accent-mid: #7F77DD;
+  --teal: #1D9E75;
+  --teal-light: #E1F5EE;
+  --coral: #D85A30;
+  --coral-light: #FAECE7;
+}
+body { font-family: var(--font-sans); color: var(--color-text-primary); }
+.page { max-width: 100%; }
+
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+}
+.nav-logo { font-size: 17px; font-weight: 500; letter-spacing: -0.5px; }
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 20px; font-size: 13px; color: var(--color-text-secondary); }
+.nav-links a { text-decoration: none; color: inherit; }
+.nav-cta {
+  font-size: 12px; padding: 6px 14px;
+  border-radius: var(--border-radius-md);
+  background: var(--accent); color: #fff;
+  border: none; font-weight: 500;
+}
+
+.hero {
+  padding: 48px 24px 40px;
+  text-align: center;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 11px; padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--accent-light); color: var(--accent);
+  font-weight: 500; margin-bottom: 16px;
+  border: 0.5px solid #CECBF6;
+}
+.hero h1 {
+  font-size: 28px; font-weight: 500; line-height: 1.3;
+  margin-bottom: 12px; letter-spacing: -0.5px;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-sub {
+  font-size: 14px; color: var(--color-text-secondary);
+  line-height: 1.6; max-width: 520px; margin: 0 auto 20px;
+}
+.hero-install {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 8px 16px; font-family: var(--font-mono);
+  font-size: 13px; color: var(--color-text-primary);
+}
+.hero-install .dollar { color: var(--color-text-tertiary); }
+.hero-stats {
+  display: flex; justify-content: center; gap: 32px;
+  margin-top: 20px; font-size: 12px; color: var(--color-text-secondary);
+}
+.hero-stats strong { font-weight: 500; color: var(--color-text-primary); font-size: 16px; display: block; }
+
+.section-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--accent); font-weight: 500; margin-bottom: 8px;
+}
+.section-title {
+  font-size: 20px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.3px;
+}
+.section-desc {
+  font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 20px;
+}
+
+.problems {
+  padding: 32px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.problem-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+}
+.problem-card {
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+}
+.problem-num {
+  font-size: 11px; font-weight: 500; color: #fff;
+  background: var(--coral);
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.problem-card h3 { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.problem-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+
+.features {
+  padding: 32px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.feature-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+}
+.feature-card {
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  background: var(--color-background-secondary);
+}
+.feature-icon {
+  width: 32px; height: 32px; border-radius: var(--border-radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; margin-bottom: 10px; font-weight: 500;
+}
+.feature-card h3 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.feature-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+
+.arch {
+  padding: 32px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.arch-diagram {
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+  font-size: 12px;
+}
+.arch-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.arch-node {
+  padding: 6px 12px; border-radius: var(--border-radius-md);
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  font-size: 11px; font-weight: 500; text-align: center; white-space: nowrap;
+}
+.arch-node.accent { background: var(--accent-light); border-color: #CECBF6; color: var(--accent); }
+.arch-node.teal { background: var(--teal-light); border-color: #9FE1CB; color: #0F6E56; }
+.arch-arrow { color: var(--color-text-tertiary); font-size: 16px; }
+.arch-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; margin-bottom: 6px; }
+
+.runtimes {
+  padding: 32px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.runtime-grid {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+.runtime-chip {
+  padding: 8px 14px;
+  border-radius: var(--border-radius-md);
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  font-size: 12px; font-weight: 500;
+}
+
+.docs {
+  padding: 32px 24px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.docs-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+}
+.doc-card {
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+}
+.doc-card h3 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.doc-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.doc-card .tag {
+  display: inline-block; font-size: 10px; padding: 2px 8px;
+  border-radius: 10px; margin-top: 8px;
+  font-weight: 500;
+}
+.tag-ltm { background: var(--accent-light); color: var(--accent); }
+.tag-stm { background: var(--teal-light); color: #0F6E56; }
+.tag-guide { background: var(--coral-light); color: #993C1D; }
+
+.cta-section {
+  padding: 32px 24px;
+  text-align: center;
+}
+.cta-section h2 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
+.cta-section p { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px; }
+.cta-buttons { display: flex; gap: 10px; justify-content: center; }
+.btn-primary {
+  padding: 8px 20px; border-radius: var(--border-radius-md);
+  background: var(--accent); color: #fff; border: none;
+  font-size: 13px; font-weight: 500;
+}
+.btn-secondary {
+  padding: 8px 20px; border-radius: var(--border-radius-md);
+  background: transparent; color: var(--color-text-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  font-size: 13px; font-weight: 500;
+}
+
+.footer {
+  padding: 20px 24px;
+  border-top: 0.5px solid var(--color-border-tertiary);
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--color-text-tertiary);
+}
+</style>
+
+<div class="page">
+
+<nav class="nav">
+  <div class="nav-logo"><span>mem</span>to<span>mem</span></div>
+  <div class="nav-links">
+    <a>Docs</a>
+    <a>Architecture</a>
+    <a>API</a>
+    <a>Notebooks</a>
+    <a>GitHub</a>
+  </div>
+  <button class="nav-cta">Get started</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">2026 AI Champion — 일반 트랙 출품작</div>
+  <h1>잊지 않는 AI —<br>에이전트를 위한 <em>장단기 기억 인프라</em></h1>
+  <p class="hero-sub">에이전트 하네스의 4번째 핵심 모듈. 6종 AI 에디터와 LangGraph/CrewAI를 단일 기억 계층으로 통합하는 MCP 네이티브 인프라.</p>
+  <div class="hero-install">
+    <span class="dollar">$</span> pip install memtomem memtomem-stm
+  </div>
+  <div class="hero-stats">
+    <div><strong>84</strong>MCP 도구</div>
+    <div><strong>2,400</strong>테스트</div>
+    <div><strong>6+</strong>런타임 지원</div>
+    <div><strong>0</strong>GPU 필요</div>
+  </div>
+</section>
+
+<section class="problems">
+  <div class="section-label">Problem</div>
+  <div class="section-title">에이전트는 왜 잊을까?</div>
+  <div class="section-desc">에이전트 하네스에서 기억 계층만 아직 표준이 없습니다.</div>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-num">1</div>
+      <h3>세션 간 기억 부재</h3>
+      <p>매 세션마다 아키텍처, 패턴, 이력을 처음부터 다시 설명. 기업 규모에서 연간 수만 달러의 토큰 낭비.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">2</div>
+      <h3>에이전트 간 기억 단절</h3>
+      <p>Claude Code의 지식을 Gemini CLI에서, 에이전트 A의 학습을 에이전트 B에서 활용 불가. 기억 사일로.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">3</div>
+      <h3>하네스 기억 계층 부재</h3>
+      <p>기존 솔루션은 명시적 검색만, 특정 런타임 종속, LTM 단일 계층. 표준화된 기억 인프라가 없다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-label">Solution</div>
+  <div class="section-title">memtomem이 해결합니다</div>
+  <div class="section-desc">STM + LTM 분리 아키텍처로 인간 유사 기억 체계를 에이전트에 구현.</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--accent-light); color: var(--accent);">S</div>
+      <h3>능동적 서피싱</h3>
+      <p>에이전트 요청 없이 관련 기억을 자동 주입. 5단계 관련성 게이팅 + 피드백 자동 튜닝.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--teal-light); color: #0F6E56;">G</div>
+      <h3>MCP 프록시 게이트웨이</h3>
+      <p>STM이 에이전트-서버 사이 프록시로 동작. 코드 수정 없이 모든 MCP 통신에 기억 자동 주입.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--coral-light); color: #993C1D;">C</div>
+      <h3>크로스 런타임 동기화</h3>
+      <p>Context Gateway가 에이전트 정의·스킬·커맨드를 6종 런타임에 자동 동기화.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: #FAEEDA; color: #854F0B;">10</div>
+      <h3>10종 압축 전략</h3>
+      <p>콘텐츠 유형별 자동 선택. progressive delivery로 제로 정보손실 옵션 제공.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: #E6F1FB; color: #185FA5;">A</div>
+      <h3>멀티 에이전트 지식 공유</h3>
+      <p>네임스페이스 격리 + 공유. Agent→Agent, Human→Agent 전방향 지식 흐름.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: #EAF3DE; color: #3B6D11;">L</div>
+      <h3>완전 로컬 구동</h3>
+      <p>SQLite + ONNX. GPU 불필요, 외부 서비스 불필요. 데이터 주권 100% 확보.</p>
+    </div>
+  </div>
+</section>
+
+<section class="arch">
+  <div class="section-label">Architecture</div>
+  <div class="section-title">에이전트 하네스의 기억 계층</div>
+  <div class="section-desc">STM 프록시와 LTM 서버가 MCP로 연결되어, 모든 에이전트에 투명하게 기억을 제공합니다.</div>
+  <div class="arch-diagram">
+    <div class="arch-label">AI 에이전트 / 프레임워크</div>
+    <div class="arch-row">
+      <div class="arch-node">Claude Code</div>
+      <div class="arch-node">Gemini CLI</div>
+      <div class="arch-node">Codex CLI</div>
+      <div class="arch-node">Cursor</div>
+      <div class="arch-node">LangGraph</div>
+    </div>
+    <div class="arch-arrow" style="text-align:center;">↓ MCP</div>
+    <div class="arch-row" style="margin-top:8px;">
+      <div class="arch-node teal" style="flex:1; max-width:400px;">
+        <div style="font-size:12px;">memtomem-stm (STM 프록시)</div>
+        <div style="font-size:10px; margin-top:4px; opacity:0.8;">CLEAN → COMPRESS → SURFACE → INDEX</div>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:center; gap: 40px; margin: 8px 0;">
+      <div class="arch-arrow">↕ 서피싱</div>
+      <div class="arch-arrow">↕ MCP</div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-node accent" style="flex:1; max-width:240px;">
+        <div style="font-size:12px;">memtomem (LTM)</div>
+        <div style="font-size:10px; margin-top:4px; opacity:0.8;">74 MCP 도구</div>
+      </div>
+      <div class="arch-node" style="flex:1; max-width:240px;">
+        <div style="font-size:12px;">업스트림 MCP 서버</div>
+        <div style="font-size:10px; margin-top:4px; opacity:0.7;">filesystem, GitHub, …</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="runtimes">
+  <div class="section-label">Compatibility</div>
+  <div class="section-title">지원 런타임 & 프레임워크</div>
+  <div class="section-desc" style="margin-bottom:16px;">MCP 네이티브 — 모든 MCP 호환 클라이언트에서 동작합니다.</div>
+  <div class="runtime-grid">
+    <div class="runtime-chip">Claude Code</div>
+    <div class="runtime-chip">Cursor</div>
+    <div class="runtime-chip">Windsurf</div>
+    <div class="runtime-chip">Claude Desktop</div>
+    <div class="runtime-chip">Gemini CLI</div>
+    <div class="runtime-chip">Codex CLI</div>
+    <div class="runtime-chip">Antigravity</div>
+    <div class="runtime-chip">LangGraph</div>
+    <div class="runtime-chip">CrewAI</div>
+    <div class="runtime-chip">LangChain</div>
+  </div>
+</section>
+
+<section class="docs">
+  <div class="section-label">Documentation</div>
+  <div class="section-title">문서 & 튜토리얼</div>
+  <div class="section-desc">37편 문서 + 14편 노트북으로 시작부터 고급 활용까지.</div>
+  <div class="docs-grid">
+    <div class="doc-card">
+      <h3>Quick start</h3>
+      <p>5분 안에 설치부터 첫 기억 저장까지. pip install → MCP 연동 → 검색.</p>
+      <span class="tag tag-guide">시작 가이드</span>
+    </div>
+    <div class="doc-card">
+      <h3>하이브리드 검색</h3>
+      <p>BM25 + 벡터 + RRF 융합 검색의 원리와 튜닝 방법.</p>
+      <span class="tag tag-ltm">LTM</span>
+    </div>
+    <div class="doc-card">
+      <h3>압축 전략 가이드</h3>
+      <p>10종 전략의 동작 원리, 자동 선택 로직, 커스텀 전략 작성법.</p>
+      <span class="tag tag-stm">STM</span>
+    </div>
+    <div class="doc-card">
+      <h3>능동적 서피싱</h3>
+      <p>5단계 게이팅, 피드백 루프, min_score 자동 조정 심층 해설.</p>
+      <span class="tag tag-stm">STM</span>
+    </div>
+    <div class="doc-card">
+      <h3>멀티 에이전트 협업</h3>
+      <p>네임스페이스 설계, agent_register/search/share 워크플로우.</p>
+      <span class="tag tag-ltm">LTM</span>
+    </div>
+    <div class="doc-card">
+      <h3>Context Gateway</h3>
+      <p>크로스 런타임 동기화 설정, 포맷 변환, LangGraph 어댑터.</p>
+      <span class="tag tag-guide">가이드</span>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>지금 시작하세요</h2>
+  <p>GPU 불필요. 외부 서비스 불필요. pip install 한 줄이면 됩니다.</p>
+  <div class="cta-buttons">
+    <button class="btn-primary">GitHub에서 보기</button>
+    <button class="btn-secondary">문서 읽기</button>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>DAPADA Inc. — Apache 2.0</span>
+  <span>2026 AI Champion 출품작</span>
+</footer>
+
+</div>

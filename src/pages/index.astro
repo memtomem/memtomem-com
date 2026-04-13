@@ -1,0 +1,235 @@
+---
+// Custom landing page (Korean) — bypasses Starlight's docs layout
+import '../styles/landing.css';
+---
+<html lang="ko">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
+	<meta name="description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+	<meta name="theme-color" content="#534AB7" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body>
+
+<nav class="nav">
+	<a href="/" class="nav-logo"><span>mem</span>to<span>mem</span></a>
+	<div class="nav-links">
+		<a href="/guides/quickstart/">Docs</a>
+		<a href="#architecture">Architecture</a>
+		<a href="/reference/api/">API</a>
+		<a href="https://github.com/memtomem/memtomem">GitHub</a>
+		<span class="nav-lang"><a href="/en/">EN</a></span>
+	</div>
+	<a href="/guides/quickstart/">
+		<button class="nav-cta">시작하기</button>
+	</a>
+</nav>
+
+<section class="hero">
+	<div class="hero-badge">Open Source · Apache 2.0</div>
+	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
+	<p class="hero-sub">
+		마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로.
+		STM + LTM 분리 아키텍처로 세션 간 기억을 유지하고 에이전트 간 지식을 공유합니다.
+	</p>
+	<div class="hero-install">
+		<span class="dollar">$</span> uv tool install memtomem
+	</div>
+	<div class="hero-stats">
+		<div><strong>84</strong>MCP 도구</div>
+		<div><strong>10</strong>압축 전략</div>
+		<div><strong>6+</strong>런타임 지원</div>
+		<div><strong>0</strong>GPU 필요</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">Problem</div>
+		<div class="section-title">에이전트는 왜 잊을까?</div>
+		<div class="section-desc">도구 통합(MCP), 안전(Guardrails), 관측성(Langfuse)은 성숙했지만 기억 계층은 아직 표준이 없습니다.</div>
+		<div class="problem-grid">
+			<div class="problem-card">
+				<div class="problem-num">1</div>
+				<h3>세션 간 기억 부재</h3>
+				<p>세션이 끝나면 모든 맥락이 사라집니다. 아키텍처 결정, 코딩 패턴, 디버깅 이력을 매번 다시 설명해야 합니다.</p>
+			</div>
+			<div class="problem-card">
+				<div class="problem-num">2</div>
+				<h3>에이전트 간 기억 단절</h3>
+				<p>Claude Code에서 작업한 내용을 Gemini CLI에서 이어받을 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
+			</div>
+			<div class="problem-card">
+				<div class="problem-num">3</div>
+				<h3>기존 솔루션의 한계</h3>
+				<p>기존 기억 시스템은 에이전트가 명시적으로 검색해야만 동작하고, 특정 런타임에 종속되며, LTM 단일 계층입니다.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">Solution</div>
+		<div class="section-title">memtomem이 해결합니다</div>
+		<div class="section-desc">인지과학의 작업기억/장기기억 모델을 에이전트에 적용. 단기 압축·캐싱과 장기 검색·인덱싱을 독립 MCP 서버로 분리합니다.</div>
+		<div class="feature-grid">
+			<div class="feature-card">
+				<div class="feature-icon" style="background: var(--accent-light); color: var(--accent);">S</div>
+				<h3>능동적 서피싱</h3>
+				<p>에이전트 요청 없이 관련 기억을 자동 주입. 5단계 관련성 게이팅 + 피드백 자동 튜닝.</p>
+			</div>
+			<div class="feature-card">
+				<div class="feature-icon" style="background: var(--teal-light); color: var(--teal);">G</div>
+				<h3>MCP 프록시 게이트웨이</h3>
+				<p>STM이 에이전트-서버 사이 프록시로 동작. 코드 수정 없이 모든 MCP 통신에 기억 자동 주입.</p>
+			</div>
+			<div class="feature-card">
+				<div class="feature-icon" style="background: var(--coral-light); color: var(--coral);">C</div>
+				<h3>크로스 런타임 동기화</h3>
+				<p>Context Gateway가 에이전트 정의·스킬·커맨드를 6종 런타임에 자동 동기화.</p>
+			</div>
+			<div class="feature-card">
+				<div class="feature-icon" style="background: #FAEEDA; color: #854F0B;">10</div>
+				<h3>10종 압축 전략</h3>
+				<p>콘텐츠 유형별 자동 선택. progressive delivery로 제로 정보손실 옵션 제공.</p>
+			</div>
+			<div class="feature-card">
+				<div class="feature-icon" style="background: #E6F1FB; color: #185FA5;">A</div>
+				<h3>멀티 에이전트 지식 공유</h3>
+				<p>네임스페이스 격리 + 공유. Agent→Agent, Human→Agent 전방향 지식 흐름.</p>
+			</div>
+			<div class="feature-card">
+				<div class="feature-icon" style="background: #EAF3DE; color: #3B6D11;">L</div>
+				<h3>완전 로컬 구동</h3>
+				<p>SQLite + ONNX. GPU 불필요, 외부 서비스 불필요. 데이터 주권 100% 확보.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section" id="architecture">
+	<div class="section-inner">
+		<div class="section-label">Architecture</div>
+		<div class="section-title">두 계층 아키텍처</div>
+		<div class="section-desc">STM 프록시와 LTM 서버가 MCP로 연결되어, 모든 에이전트에 투명하게 기억을 제공합니다.</div>
+		<div class="arch-diagram">
+			<div class="arch-label">AI 에이전트 / 프레임워크</div>
+			<div class="arch-row">
+				<div class="arch-node">Claude Code</div>
+				<div class="arch-node">Gemini CLI</div>
+				<div class="arch-node">Codex CLI</div>
+				<div class="arch-node">Cursor</div>
+				<div class="arch-node">LangGraph</div>
+			</div>
+			<div class="arch-arrow">↓ MCP</div>
+			<div class="arch-row" style="margin-top:8px;">
+				<div class="arch-node teal" style="flex:1; max-width:420px;">
+					<div style="font-size:13px;">memtomem-stm (STM Proxy)</div>
+					<div style="font-size:11px; margin-top:4px; opacity:0.8;">CLEAN → COMPRESS → SURFACE → INDEX</div>
+				</div>
+			</div>
+			<div style="display:flex; justify-content:center; gap:40px; margin:8px 0;">
+				<div class="arch-arrow">↕ Surfacing</div>
+				<div class="arch-arrow">↕ MCP</div>
+			</div>
+			<div class="arch-row">
+				<div class="arch-node accent" style="flex:1; max-width:260px;">
+					<div style="font-size:13px;">memtomem (LTM)</div>
+					<div style="font-size:11px; margin-top:4px; opacity:0.8;">74 MCP Tools</div>
+				</div>
+				<div class="arch-node" style="flex:1; max-width:260px;">
+					<div style="font-size:13px;">Upstream MCP Servers</div>
+					<div style="font-size:11px; margin-top:4px; opacity:0.7;">filesystem, GitHub, …</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">Compatibility</div>
+		<div class="section-title">지원 런타임 & 프레임워크</div>
+		<div class="section-desc">MCP 네이티브 — 모든 MCP 호환 클라이언트에서 동작합니다.</div>
+		<div class="runtime-grid">
+			<div class="runtime-chip">Claude Code</div>
+			<div class="runtime-chip">Cursor</div>
+			<div class="runtime-chip">Windsurf</div>
+			<div class="runtime-chip">Claude Desktop</div>
+			<div class="runtime-chip">Gemini CLI</div>
+			<div class="runtime-chip">Codex CLI</div>
+			<div class="runtime-chip">Antigravity</div>
+			<div class="runtime-chip">LangGraph</div>
+			<div class="runtime-chip">CrewAI</div>
+			<div class="runtime-chip">LangChain</div>
+		</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">Documentation</div>
+		<div class="section-title">문서 & 튜토리얼</div>
+		<div class="section-desc">시작부터 고급 활용까지.</div>
+		<div class="docs-grid">
+			<a href="/guides/quickstart/" class="doc-card">
+				<h3>Quick Start</h3>
+				<p>5분 안에 설치부터 첫 기억 저장까지. uv install → MCP 연동 → 검색.</p>
+				<span class="tag tag-guide">시작 가이드</span>
+			</a>
+			<a href="/ltm/hybrid-search/" class="doc-card">
+				<h3>하이브리드 검색</h3>
+				<p>BM25 + 벡터 + RRF 융합 검색의 원리와 튜닝 방법.</p>
+				<span class="tag tag-ltm">LTM</span>
+			</a>
+			<a href="/stm/compression/" class="doc-card">
+				<h3>압축 전략 가이드</h3>
+				<p>10종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
+				<span class="tag tag-stm">STM</span>
+			</a>
+			<a href="/stm/surfacing/" class="doc-card">
+				<h3>능동적 서피싱</h3>
+				<p>5단계 게이팅, 피드백 루프, min_score 자동 조정 심층 해설.</p>
+				<span class="tag tag-stm">STM</span>
+			</a>
+			<a href="/ltm/multi-agent/" class="doc-card">
+				<h3>멀티 에이전트 협업</h3>
+				<p>네임스페이스 설계, agent_register/search/share 워크플로우.</p>
+				<span class="tag tag-ltm">LTM</span>
+			</a>
+			<a href="/stm/context-gateway/" class="doc-card">
+				<h3>Context Gateway</h3>
+				<p>크로스 런타임 동기화 설정, 포맷 변환, LangGraph 어댑터.</p>
+				<span class="tag tag-guide">가이드</span>
+			</a>
+		</div>
+	</div>
+</section>
+
+<section class="cta-section">
+	<h2>지금 시작하세요</h2>
+	<p>GPU 불필요. 외부 서비스 불필요. uv tool install 한 줄이면 됩니다.</p>
+	<div class="cta-buttons">
+		<a href="https://github.com/memtomem/memtomem">
+			<button class="btn-primary">GitHub에서 보기</button>
+		</a>
+		<a href="/guides/quickstart/">
+			<button class="btn-secondary">문서 읽기</button>
+		</a>
+	</div>
+</section>
+
+<footer class="footer">
+	<span>DAPADA Inc. — Apache 2.0</span>
+	<span>
+		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub</a>
+		&nbsp;·&nbsp;
+		<a href="https://pypi.org/project/memtomem/" style="color:inherit;">PyPI</a>
+	</span>
+</footer>
+
+</body>
+</html>

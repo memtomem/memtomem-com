@@ -1,0 +1,24 @@
+/* memtomem brand tokens */
+:root {
+	--mm-accent: #534AB7;
+	--mm-accent-light: #EEEDFE;
+	--mm-accent-mid: #7F77DD;
+	--mm-teal: #1D9E75;
+	--mm-teal-light: #E1F5EE;
+	--mm-coral: #D85A30;
+	--mm-coral-light: #FAECE7;
+}
+
+/* Starlight overrides */
+:root {
+	--sl-color-accent-low: #EEEDFE;
+	--sl-color-accent: #534AB7;
+	--sl-color-accent-high: #3A339E;
+	--sl-font-system: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+:root[data-theme='dark'] {
+	--sl-color-accent-low: #2A2566;
+	--sl-color-accent: #7F77DD;
+	--sl-color-accent-high: #EEEDFE;
+}
