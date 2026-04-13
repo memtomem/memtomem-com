@@ -4,8 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://memtomem.github.io',
-	base: '/memtomem-com',
+	site: 'https://memtomem.com',
 	integrations: [
 		starlight({
 			title: 'memtomem',
