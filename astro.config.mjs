@@ -8,11 +8,26 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'memtomem',
+			description: 'MCP-native memory infrastructure for AI agents — STM + LTM separated architecture',
 			defaultLocale: 'root',
 			locales: {
 				root: { label: '한국어', lang: 'ko' },
 				en: { label: 'English', lang: 'en' },
 			},
+			head: [
+				{
+					tag: 'meta',
+					attrs: { property: 'og:type', content: 'website' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:site_name', content: 'memtomem' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:card', content: 'summary' },
+				},
+			],
 			social: [
 				{ icon: 'github', label: 'memtomem (LTM)', href: 'https://github.com/memtomem/memtomem' },
 				{ icon: 'github', label: 'memtomem-stm', href: 'https://github.com/memtomem/memtomem-stm' },

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://memtomem.com/sitemap-index.xml

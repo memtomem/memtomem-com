@@ -11,6 +11,44 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta name="description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+	<link rel="canonical" href="https://memtomem.com/" />
+
+	<!-- Open Graph -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://memtomem.com/" />
+	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
+	<meta property="og:description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+	<meta property="og:site_name" content="memtomem" />
+	<meta property="og:locale" content="ko_KR" />
+	<meta property="og:locale:alternate" content="en_US" />
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
+	<meta name="twitter:description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+
+	<!-- JSON-LD 구조화 데이터 -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "SoftwareApplication",
+		"name": "memtomem",
+		"description": "MCP-native memory infrastructure for AI agents. STM + LTM separated architecture for cross-session, cross-agent knowledge sharing.",
+		"url": "https://memtomem.com",
+		"applicationCategory": "DeveloperApplication",
+		"operatingSystem": "Cross-platform",
+		"license": "https://opensource.org/licenses/Apache-2.0",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD"
+		},
+		"author": {
+			"@type": "Organization",
+			"name": "DAPADA Inc."
+		}
+	}
+	</script>
 </head>
 <body>
 
