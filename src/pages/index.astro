@@ -1,6 +1,7 @@
 ---
 // Custom landing page (Korean) — bypasses Starlight's docs layout
 import '../styles/landing.css';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <html lang="ko">
 <head>
@@ -9,20 +10,20 @@ import '../styles/landing.css';
 	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
 	<meta name="description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
 	<meta name="theme-color" content="#534AB7" />
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 </head>
 <body>
 
 <nav class="nav">
-	<a href="/" class="nav-logo"><span>mem</span>to<span>mem</span></a>
+	<a href={`${base}/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href="/guides/quickstart/">Docs</a>
+		<a href={`${base}/guides/quickstart/`}>Docs</a>
 		<a href="#architecture">Architecture</a>
-		<a href="/reference/api/">API</a>
+		<a href={`${base}/reference/api/`}>API</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
-		<span class="nav-lang"><a href="/en/">EN</a></span>
+		<span class="nav-lang"><a href={`${base}/en/`}>EN</a></span>
 	</div>
-	<a href="/guides/quickstart/">
+	<a href={`${base}/guides/quickstart/`}>
 		<button class="nav-cta">시작하기</button>
 	</a>
 </nav>
@@ -175,32 +176,32 @@ import '../styles/landing.css';
 		<div class="section-title">문서 & 튜토리얼</div>
 		<div class="section-desc">시작부터 고급 활용까지.</div>
 		<div class="docs-grid">
-			<a href="/guides/quickstart/" class="doc-card">
+			<a href={`${base}/guides/quickstart/`} class="doc-card">
 				<h3>Quick Start</h3>
 				<p>5분 안에 설치부터 첫 기억 저장까지. uv install → MCP 연동 → 검색.</p>
 				<span class="tag tag-guide">시작 가이드</span>
 			</a>
-			<a href="/ltm/hybrid-search/" class="doc-card">
+			<a href={`${base}/ltm/hybrid-search/`} class="doc-card">
 				<h3>하이브리드 검색</h3>
 				<p>BM25 + 벡터 + RRF 융합 검색의 원리와 튜닝 방법.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a href="/stm/compression/" class="doc-card">
+			<a href={`${base}/stm/compression/`} class="doc-card">
 				<h3>압축 전략 가이드</h3>
 				<p>10종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
-			<a href="/stm/surfacing/" class="doc-card">
+			<a href={`${base}/stm/surfacing/`} class="doc-card">
 				<h3>능동적 서피싱</h3>
 				<p>5단계 게이팅, 피드백 루프, min_score 자동 조정 심층 해설.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
-			<a href="/ltm/multi-agent/" class="doc-card">
+			<a href={`${base}/ltm/multi-agent/`} class="doc-card">
 				<h3>멀티 에이전트 협업</h3>
 				<p>네임스페이스 설계, agent_register/search/share 워크플로우.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a href="/stm/context-gateway/" class="doc-card">
+			<a href={`${base}/stm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
 				<p>크로스 런타임 동기화 설정, 포맷 변환, LangGraph 어댑터.</p>
 				<span class="tag tag-guide">가이드</span>
@@ -216,7 +217,7 @@ import '../styles/landing.css';
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">GitHub에서 보기</button>
 		</a>
-		<a href="/guides/quickstart/">
+		<a href={`${base}/guides/quickstart/`}>
 			<button class="btn-secondary">문서 읽기</button>
 		</a>
 	</div>

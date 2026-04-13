@@ -1,6 +1,7 @@
 ---
 // Custom landing page (English) — bypasses Starlight's docs layout
 import '../../styles/landing.css';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <html lang="en">
 <head>
@@ -9,20 +10,20 @@ import '../../styles/landing.css';
 	<title>memtomem — Long &amp; Short-Term Memory Infrastructure for AI Agents</title>
 	<meta name="description" content="Index your markdown notes, docs, and code into a searchable knowledge base for any AI agent. STM + LTM architecture for persistent, cross-agent memory." />
 	<meta name="theme-color" content="#534AB7" />
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 </head>
 <body>
 
 <nav class="nav">
-	<a href="/en/" class="nav-logo"><span>mem</span>to<span>mem</span></a>
+	<a href={`${base}/en/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href="/en/guides/quickstart/">Docs</a>
+		<a href={`${base}/en/guides/quickstart/`}>Docs</a>
 		<a href="#architecture">Architecture</a>
-		<a href="/en/reference/api/">API</a>
+		<a href={`${base}/en/reference/api/`}>API</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
-		<span class="nav-lang"><a href="/">KO</a></span>
+		<span class="nav-lang"><a href={`${base}/`}>KO</a></span>
 	</div>
-	<a href="/en/guides/quickstart/">
+	<a href={`${base}/en/guides/quickstart/`}>
 		<button class="nav-cta">Get started</button>
 	</a>
 </nav>
@@ -176,32 +177,32 @@ import '../../styles/landing.css';
 		<div class="section-title">Docs & Tutorials</div>
 		<div class="section-desc">From getting started to advanced usage.</div>
 		<div class="docs-grid">
-			<a href="/en/guides/quickstart/" class="doc-card">
+			<a href={`${base}/en/guides/quickstart/`} class="doc-card">
 				<h3>Quick Start</h3>
 				<p>From install to first memory in under 5 minutes. uv install → MCP setup → search.</p>
 				<span class="tag tag-guide">Guide</span>
 			</a>
-			<a href="/en/ltm/hybrid-search/" class="doc-card">
+			<a href={`${base}/en/ltm/hybrid-search/`} class="doc-card">
 				<h3>Hybrid Search</h3>
 				<p>How BM25 + vector + RRF fusion search works and how to tune it.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a href="/en/stm/compression/" class="doc-card">
+			<a href={`${base}/en/stm/compression/`} class="doc-card">
 				<h3>Compression Strategies</h3>
 				<p>10 strategies, auto-selection logic, and query-aware budget allocation.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
-			<a href="/en/stm/surfacing/" class="doc-card">
+			<a href={`${base}/en/stm/surfacing/`} class="doc-card">
 				<h3>Proactive Surfacing</h3>
 				<p>5-level gating, feedback loop, min_score auto-tuning deep dive.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
-			<a href="/en/ltm/multi-agent/" class="doc-card">
+			<a href={`${base}/en/ltm/multi-agent/`} class="doc-card">
 				<h3>Multi-Agent Collaboration</h3>
 				<p>Namespace design, agent_register/search/share workflows.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a href="/en/stm/context-gateway/" class="doc-card">
+			<a href={`${base}/en/stm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
 				<p>Cross-runtime sync, format conversion, LangGraph adapter.</p>
 				<span class="tag tag-guide">Guide</span>
@@ -217,7 +218,7 @@ import '../../styles/landing.css';
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">View on GitHub</button>
 		</a>
-		<a href="/en/guides/quickstart/">
+		<a href={`${base}/en/guides/quickstart/`}>
 			<button class="btn-secondary">Read the Docs</button>
 		</a>
 	</div>
