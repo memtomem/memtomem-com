@@ -8,6 +8,11 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'memtomem',
+			logo: {
+				light: './src/assets/logo-light.svg',
+				dark: './src/assets/logo-dark.svg',
+				replacesTitle: true,
+			},
 			description: 'MCP-native memory infrastructure for AI agents — STM + LTM separated architecture',
 			defaultLocale: 'root',
 			locales: {
@@ -15,6 +20,10 @@ export default defineConfig({
 				ko: { label: '한국어', lang: 'ko' },
 			},
 			head: [
+				{
+					tag: 'script',
+					content: `;(function(){if(!localStorage.getItem('starlight-theme')){localStorage.setItem('starlight-theme','dark');document.documentElement.setAttribute('data-theme','dark')}})()`,
+				},
 				{
 					tag: 'meta',
 					attrs: { property: 'og:type', content: 'website' },
@@ -52,22 +61,30 @@ export default defineConfig({
 				{
 					label: 'LTM (memtomem)',
 					items: [
+						{ label: 'Overview', slug: 'ltm/overview', translations: { ko: '개요' } },
 						{ label: 'Hybrid Search', slug: 'ltm/hybrid-search', translations: { ko: '하이브리드 검색' } },
 						{ label: 'Multi-Agent Collaboration', slug: 'ltm/multi-agent', translations: { ko: '멀티 에이전트 협업' } },
+						{ label: 'MCP Tools', slug: 'ltm/mcp-tools', translations: { ko: 'MCP 도구' } },
+						{ label: 'CLI Reference', slug: 'ltm/cli', translations: { ko: 'CLI 레퍼런스' } },
 					],
 				},
 				{
 					label: 'STM (memtomem-stm)',
 					items: [
+						{ label: 'Overview', slug: 'stm/overview', translations: { ko: '개요' } },
 						{ label: 'Proactive Surfacing', slug: 'stm/surfacing', translations: { ko: '능동적 서피싱' } },
 						{ label: 'Compression Strategies', slug: 'stm/compression', translations: { ko: '압축 전략' } },
 						{ label: 'Context Gateway', slug: 'stm/context-gateway' },
+						{ label: 'MCP Tools', slug: 'stm/mcp-tools', translations: { ko: 'MCP 도구' } },
+						{ label: 'CLI Reference', slug: 'stm/cli', translations: { ko: 'CLI 레퍼런스' } },
 					],
 				},
 				{
-					label: 'API Reference',
-					translations: { ko: 'API 레퍼런스' },
-					autogenerate: { directory: 'reference' },
+					label: 'Configuration',
+					translations: { ko: '설정' },
+					items: [
+						{ label: 'Environment Variables', slug: 'reference/configuration', translations: { ko: '환경 변수' } },
+					],
 				},
 			],
 			customCss: ['./src/styles/custom.css'],

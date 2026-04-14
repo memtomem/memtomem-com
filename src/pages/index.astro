@@ -61,7 +61,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="nav-links">
 		<a href={`${base}/guides/quickstart/`}>Docs</a>
 		<a href="#architecture">Architecture</a>
-		<a href={`${base}/reference/api/`}>API</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/ko/`}>KO</a></span>
 	</div>
@@ -82,10 +81,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<span class="dollar">$</span> uv tool install memtomem
 	</div>
 	<div class="hero-stats">
-		<div><strong>84</strong>MCP Tools</div>
-		<div><strong>10</strong>Compression</div>
+		<div><strong>80+</strong>MCP Tools</div>
+		<div><strong>10+</strong>Compression</div>
 		<div><strong>6+</strong>Runtimes</div>
-		<div><strong>0</strong>GPU Required</div>
 	</div>
 </section>
 
@@ -96,17 +94,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-desc">Tool integration (MCP), safety (Guardrails), and observability (Langfuse) are mature — but the memory layer still has no standard.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
-				<div class="problem-num">1</div>
+				<div class="problem-num">01</div>
 				<h3>No Memory Between Sessions</h3>
 				<p>All context is lost when a session ends. Architecture decisions, coding patterns, and debugging history must be re-explained every time.</p>
 			</div>
 			<div class="problem-card">
-				<div class="problem-num">2</div>
+				<div class="problem-num">02</div>
 				<h3>Memory Silos Between Agents</h3>
 				<p>Knowledge from Claude Code can't be carried over to Gemini CLI. Each agent is trapped in its own isolated memory silo.</p>
 			</div>
 			<div class="problem-card">
-				<div class="problem-num">3</div>
+				<div class="problem-num">03</div>
 				<h3>Limitations of Existing Solutions</h3>
 				<p>Current memory systems only work when agents explicitly search, are locked to specific runtimes, and offer only a single LTM layer.</p>
 			</div>
@@ -120,33 +118,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-title">memtomem Solves This</div>
 		<div class="section-desc">Applying the cognitive science working-memory / long-term memory model to agents. Short-term compression and long-term search as independent MCP servers.</div>
 		<div class="feature-grid">
-			<div class="feature-card">
-				<div class="feature-icon" style="background: var(--accent-light); color: var(--accent);">S</div>
+			<div class="feature-card accent">
 				<h3>Proactive Surfacing</h3>
 				<p>Automatically inject relevant memories without agent request. 5-level relevance gating + feedback auto-tuning.</p>
 			</div>
-			<div class="feature-card">
-				<div class="feature-icon" style="background: var(--teal-light); color: var(--teal);">G</div>
+			<div class="feature-card teal">
 				<h3>MCP Proxy Gateway</h3>
 				<p>STM sits between agent and server as a transparent proxy. Memory injection into all MCP calls — no code changes.</p>
 			</div>
-			<div class="feature-card">
-				<div class="feature-icon" style="background: var(--coral-light); color: var(--coral);">C</div>
+			<div class="feature-card coral">
 				<h3>Cross-Runtime Sync</h3>
 				<p>Context Gateway auto-syncs agent definitions, skills, and commands across 6 runtimes.</p>
 			</div>
-			<div class="feature-card">
-				<div class="feature-icon" style="background: #FAEEDA; color: #854F0B;">10</div>
+			<div class="feature-card amber">
 				<h3>10 Compression Strategies</h3>
 				<p>Auto-selected by content type. Progressive delivery for zero information loss.</p>
 			</div>
-			<div class="feature-card">
-				<div class="feature-icon" style="background: #E6F1FB; color: #185FA5;">A</div>
+			<div class="feature-card blue">
 				<h3>Multi-Agent Knowledge Sharing</h3>
 				<p>Namespace isolation + sharing. Agent→Agent, Human→Agent — knowledge flows in all directions.</p>
 			</div>
-			<div class="feature-card">
-				<div class="feature-icon" style="background: #EAF3DE; color: #3B6D11;">L</div>
+			<div class="feature-card green">
 				<h3>Fully Local</h3>
 				<p>SQLite + ONNX. No GPU, no external services. 100% data sovereignty.</p>
 			</div>
@@ -160,7 +152,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-title">Two-Layer Architecture</div>
 		<div class="section-desc">STM proxy and LTM server connected via MCP, transparently providing memory to all agents.</div>
 		<div class="arch-diagram">
-			<div class="arch-label">AI Agents / Frameworks</div>
+			<div class="arch-tier-label">AI Agents / Frameworks</div>
 			<div class="arch-row">
 				<div class="arch-node">Claude Code</div>
 				<div class="arch-node">Gemini CLI</div>
@@ -168,25 +160,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<div class="arch-node">Cursor</div>
 				<div class="arch-node">LangGraph</div>
 			</div>
-			<div class="arch-arrow">↓ MCP</div>
-			<div class="arch-row" style="margin-top:8px;">
-				<div class="arch-node teal" style="flex:1; max-width:420px;">
-					<div style="font-size:13px;">memtomem-stm (STM Proxy)</div>
-					<div style="font-size:11px; margin-top:4px; opacity:0.8;">CLEAN → COMPRESS → SURFACE → INDEX</div>
+			<div class="arch-connector"><span>MCP</span></div>
+			<div class="arch-row">
+				<div class="arch-node teal arch-node-wide">
+					<div class="arch-node-title">memtomem-stm</div>
+					<div class="arch-node-sub">STM Proxy</div>
+					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE &rarr; INDEX</div>
 				</div>
 			</div>
-			<div style="display:flex; justify-content:center; gap:40px; margin:8px 0;">
-				<div class="arch-arrow">↕ Surfacing</div>
-				<div class="arch-arrow">↕ MCP</div>
+			<div class="arch-connector-pair">
+				<div class="arch-connector"><span>Surfacing</span></div>
+				<div class="arch-connector"><span>MCP</span></div>
 			</div>
 			<div class="arch-row">
-				<div class="arch-node accent" style="flex:1; max-width:260px;">
-					<div style="font-size:13px;">memtomem (LTM)</div>
-					<div style="font-size:11px; margin-top:4px; opacity:0.8;">74 MCP Tools</div>
+				<div class="arch-node accent arch-node-half">
+					<div class="arch-node-title">memtomem</div>
+					<div class="arch-node-sub">LTM Server</div>
+					<div class="arch-node-detail">74 MCP Tools</div>
 				</div>
-				<div class="arch-node" style="flex:1; max-width:260px;">
-					<div style="font-size:13px;">Upstream MCP Servers</div>
-					<div style="font-size:11px; margin-top:4px; opacity:0.7;">filesystem, GitHub, …</div>
+				<div class="arch-node arch-node-half">
+					<div class="arch-node-title">Upstream MCP Servers</div>
+					<div class="arch-node-detail">filesystem, GitHub, …</div>
 				</div>
 			</div>
 		</div>

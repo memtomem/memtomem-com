@@ -1,24 +1,283 @@
-/* memtomem brand tokens */
-:root {
-	--mm-accent: #534AB7;
-	--mm-accent-light: #EEEDFE;
-	--mm-accent-mid: #7F77DD;
-	--mm-teal: #1D9E75;
-	--mm-teal-light: #E1F5EE;
-	--mm-coral: #D85A30;
-	--mm-coral-light: #FAECE7;
-}
+/* ── memtomem — Starlight theme overrides ─────────────────── */
 
-/* Starlight overrides */
+/* ── Light theme ─────────────────────────────────────────── */
 :root {
 	--sl-color-accent-low: #EEEDFE;
 	--sl-color-accent: #534AB7;
 	--sl-color-accent-high: #3A339E;
 	--sl-font-system: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+	--sl-text-sm: 0.875rem;
+	--sl-text-base: 0.95rem;
 }
 
+/* ── Dark theme — matched to landing page palette ────────── */
 :root[data-theme='dark'] {
-	--sl-color-accent-low: #2A2566;
-	--sl-color-accent: #7F77DD;
-	--sl-color-accent-high: #EEEDFE;
+	--sl-color-accent-low: #1E1A3A;
+	--sl-color-accent: #8B83E0;
+	--sl-color-accent-high: #E4E4EA;
+
+	--sl-color-white: #E4E4EA;
+	--sl-color-gray-1: #BFC0CC;
+	--sl-color-gray-2: #8A8B9E;
+	--sl-color-gray-3: #5A5B70;
+	--sl-color-gray-4: #343448;
+	--sl-color-gray-5: #1E2030;
+	--sl-color-gray-6: #141620;
+	--sl-color-black: #09090F;
+}
+
+/* ── Navigation — glass effect ───────────────────────────── */
+:root[data-theme='dark'] header {
+	backdrop-filter: blur(16px) !important;
+	-webkit-backdrop-filter: blur(16px) !important;
+}
+:root[data-theme='dark'] .header {
+	background: rgba(9, 9, 15, 0.85) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.site-title .sr-only + * {
+	font-weight: 600;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+:root[data-theme='dark'] nav.sidebar .top-level > li + li {
+	border-color: rgba(255, 255, 255, 0.06);
+}
+:root[data-theme='dark'] nav.sidebar a[aria-current="page"],
+:root[data-theme='dark'] nav.sidebar a[aria-current="true"] {
+	background: var(--sl-color-accent-low);
+	border-color: var(--sl-color-accent);
+	color: var(--sl-color-accent) !important;
+}
+nav.sidebar summary,
+nav.sidebar a {
+	transition: color 0.15s, background 0.15s;
+}
+nav.sidebar .group-label {
+	font-weight: 700;
+	letter-spacing: -0.2px;
+}
+
+/* ── Content typography ──────────────────────────────────── */
+.sl-markdown-content {
+	line-height: 1.75;
+}
+.content-panel:first-child > h1 {
+	font-weight: 700 !important;
+	letter-spacing: -0.5px !important;
+	font-size: 2.2rem !important;
+	line-height: 1.2 !important;
+}
+.sl-markdown-content h2 {
+	font-weight: 700;
+	letter-spacing: -0.3px;
+	margin-top: 2.5rem;
+	padding-bottom: 0.5rem;
+}
+:root[data-theme='dark'] .sl-markdown-content h2 {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sl-markdown-content h3 {
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	margin-top: 1.75rem;
+}
+.sl-markdown-content p {
+	margin-bottom: 1.15rem;
+}
+.sl-markdown-content li + li {
+	margin-top: 0.35rem;
+}
+
+/* ── Code blocks (Expressive Code) ───────────────────────── */
+:root[data-theme='dark'] .expressive-code .frame {
+	background: #0C0E16 !important;
+	border: 1px solid rgba(255, 255, 255, 0.06) !important;
+	border-radius: 10px !important;
+}
+:root[data-theme='dark'] .expressive-code .frame.has-title .header,
+:root[data-theme='dark'] .expressive-code .frame .header {
+	background: rgba(255, 255, 255, 0.03) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+:root[data-theme='dark'] .expressive-code pre {
+	background: transparent !important;
+}
+.expressive-code .frame {
+	border-radius: 10px !important;
+	overflow: hidden;
+}
+
+/* light theme code blocks */
+:root:not([data-theme='dark']) .expressive-code .frame {
+	border-radius: 10px !important;
+	border: 1px solid #E5E5E5 !important;
+}
+
+/* ── Inline code ─────────────────────────────────────────── */
+.sl-markdown-content :not(pre) > code {
+	border-radius: 5px;
+	padding: 0.15em 0.45em;
+	font-size: 0.85em;
+	font-weight: 500;
+}
+:root[data-theme='dark'] .sl-markdown-content :not(pre) > code {
+	background: rgba(139, 131, 224, 0.1);
+	color: #A9A3EC;
+	border: 1px solid rgba(139, 131, 224, 0.12);
+}
+:root:not([data-theme='dark']) .sl-markdown-content :not(pre) > code {
+	background: #EEEDFE;
+	color: #534AB7;
+	border: 1px solid #DDDCF4;
+}
+/* Inline code inside table cells — more compact */
+.sl-markdown-content td code {
+	font-size: 0.82em;
+	white-space: nowrap;
+}
+
+/* ── Tables — API reference polish ───────────────────────── */
+.sl-markdown-content table {
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: 10px;
+	overflow: hidden;
+	width: 100%;
+	font-size: 0.9rem;
+}
+:root[data-theme='dark'] .sl-markdown-content table {
+	border: 1px solid rgba(255, 255, 255, 0.06);
+}
+:root:not([data-theme='dark']) .sl-markdown-content table {
+	border: 1px solid #E5E5E5;
+}
+.sl-markdown-content table th {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-weight: 600;
+	padding: 0.75rem 1rem;
+	text-align: left;
+}
+:root[data-theme='dark'] .sl-markdown-content table th {
+	background: #161822;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+	color: var(--sl-color-gray-1);
+}
+:root:not([data-theme='dark']) .sl-markdown-content table th {
+	background: #F8F8FA;
+	border-bottom: 1px solid #E5E5E5;
+}
+.sl-markdown-content table td {
+	padding: 0.65rem 1rem;
+	vertical-align: middle;
+}
+:root[data-theme='dark'] .sl-markdown-content table td {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+:root:not([data-theme='dark']) .sl-markdown-content table td {
+	border-bottom: 1px solid #F0F0F2;
+}
+.sl-markdown-content table tr:last-child td {
+	border-bottom: none;
+}
+:root[data-theme='dark'] .sl-markdown-content table tbody tr {
+	transition: background 0.15s;
+}
+:root[data-theme='dark'] .sl-markdown-content table tbody tr:hover {
+	background: rgba(255, 255, 255, 0.02);
+}
+:root:not([data-theme='dark']) .sl-markdown-content table tbody tr:hover {
+	background: #FAFAFE;
+}
+
+/* ── Blockquotes / callouts ──────────────────────────────── */
+.sl-markdown-content blockquote {
+	border-radius: 0 8px 8px 0;
+	padding: 0.75rem 1rem;
+}
+:root[data-theme='dark'] .sl-markdown-content blockquote {
+	border-left-color: var(--sl-color-accent);
+	background: rgba(139, 131, 224, 0.05);
+}
+:root:not([data-theme='dark']) .sl-markdown-content blockquote {
+	border-left-color: var(--sl-color-accent);
+	background: #F8F7FE;
+}
+
+/* ── Starlight asides / note callouts ────────────────────── */
+:root[data-theme='dark'] .starlight-aside {
+	border-radius: 10px;
+	border-width: 1px;
+}
+
+/* ── Links ───────────────────────────────────────────────── */
+.sl-markdown-content a:not([class]) {
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	transition: color 0.15s, text-decoration-color 0.15s;
+}
+.sl-markdown-content a:not([class]):hover {
+	text-decoration-thickness: 2px;
+}
+
+/* ── Right sidebar (TOC) ────────────────────────────────── */
+starlight-toc a {
+	transition: color 0.15s, border-color 0.15s;
+}
+starlight-toc {
+	font-size: 0.85rem;
+}
+
+/* ── Pagination (prev/next) ──────────────────────────────── */
+:root[data-theme='dark'] .pagination-links a {
+	border-color: rgba(255, 255, 255, 0.06);
+	border-radius: 10px;
+	transition: border-color 0.2s, background 0.2s;
+}
+:root[data-theme='dark'] .pagination-links a:hover {
+	border-color: rgba(255, 255, 255, 0.12);
+	background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Search modal ────────────────────────────────────────── */
+:root[data-theme='dark'] dialog::backdrop {
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(4px);
+}
+
+/* ── Scrollbar (dark) ────────────────────────────────────── */
+:root[data-theme='dark'] * {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+:root[data-theme='dark'] ::-webkit-scrollbar {
+	width: 7px;
+	height: 7px;
+}
+:root[data-theme='dark'] ::-webkit-scrollbar-track {
+	background: transparent;
+}
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+}
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Misc polish ─────────────────────────────────────────── */
+:root[data-theme='dark'] hr {
+	border-color: rgba(255, 255, 255, 0.06);
+}
+:root[data-theme='dark'] .card {
+	border-radius: 10px;
+}
+
+/* ── Mobile sidebar ──────────────────────────────────────── */
+@media (max-width: 50rem) {
+	:root[data-theme='dark'] .sidebar-pane {
+		background: #0B0D14;
+	}
 }
