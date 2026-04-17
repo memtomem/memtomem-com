@@ -1,87 +1,116 @@
 ---
 title: MCP Tools
-description: STM management tools for monitoring proxy status, cache, compression, and surfacing.
+description: STM proxy exposes 10 control tools for stats, cache, surfacing, compression, and progressive delivery.
 ---
 
-In addition to transparently proxying all upstream MCP tools, memtomem-stm exposes **6 management tools** for monitoring and controlling proxy behavior.
+In addition to transparently proxying every upstream MCP tool, memtomem-stm exposes **10 control tools** that let the agent inspect and steer the proxy.
 
-## Management Tools
+## Proxy stats & control
 
-### `stm_status`
+### `stm_proxy_stats`
 
-Check STM proxy status and connected upstream servers.
+Token savings, cache hits, per-tool call history.
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
+No parameters.
 
-Returns proxy uptime, number of connected upstream servers, and memory usage.
+### `stm_proxy_health`
 
-### `stm_cache_stats`
+Upstream connectivity and circuit breaker state.
 
-View response cache statistics.
+No parameters.
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
-
-Returns hit rate, cache size, and per-tool cache usage.
-
-### `stm_cache_clear`
+### `stm_proxy_cache_clear`
 
 Clear the response cache.
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tool_name` | string | No | Clear cache for a specific tool only |
+|---|---|---|---|
+| `server` | string | No | Scope to one upstream server |
+| `tool` | string | No | Scope to one tool |
 
-When called without parameters, clears the entire cache.
+### `stm_proxy_select_chunks`
 
-### `stm_compression_stats`
-
-View per-strategy compression statistics.
+Pick specific sections from a `selective` / `hybrid` TOC returned by an earlier call.
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
+|---|---|---|---|
+| `key` | string | Yes | TOC key from the previous response |
+| `sections` | string[] | Yes | Section ids to expand |
 
-Returns compression ratio, invocation count, and average latency for each of the 10 strategies.
+### `stm_proxy_read_more`
+
+Read the next chunk of a `progressive` response.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `key` | string | Yes | Progressive response key |
+| `offset` | integer | Yes | Byte offset to resume from |
+| `limit` | integer | No | Chars to return this turn |
+
+> Agents should split on the canonical `PROGRESSIVE_FOOTER_TOKEN` (`\n---\n[progressive: chars=`) rather than `\n---\n` alone — the latter collides with Markdown HR / YAML fences.
+
+## Surfacing feedback
+
+### `stm_surfacing_feedback`
+
+Rate surfaced memories so the auto-tuner can adjust thresholds.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `surfacing_id` | string | Yes | Id from the surfacing footer |
+| `rating` | string | Yes | `helpful` / `not_relevant` / `already_known` |
+| `memory_id` | string | No | Specific memory the feedback refers to |
 
 ### `stm_surfacing_stats`
 
-View surfacing statistics including hit rate and feedback metrics.
+Aggregated surfacing metrics and feedback distribution.
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
+|---|---|---|---|
+| `tool` | string | No | Filter by tool name |
 
-Returns surfacing hit rate, relevant/irrelevant ratio, current `min_score` threshold, and feedback counts.
+## Compression feedback
 
-### `stm_feedback`
+### `stm_compression_feedback`
 
-Submit quality feedback on surfacing or compression results. Feedback is used to auto-tune surfacing thresholds via the feedback loop.
+Report missing information that compression dropped.
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `type` | string | Yes | `helpful`, `not_relevant`, or `already_known` |
-| `tool_name` | string | No | The tool call this feedback relates to |
-| `details` | string | No | Additional context |
+|---|---|---|---|
+| `server` | string | Yes | Upstream server |
+| `tool` | string | Yes | Tool name |
+| `missing` | string | Yes | What the agent needed but didn't get |
+| `kind` | string | No | Category hint |
+| `trace_id` | string | No | Langfuse trace id if available |
 
-## Proxied Upstream Tools
+### `stm_compression_stats`
 
-All tools from registered upstream MCP servers are transparently proxied through STM. When an agent calls an upstream tool:
+Compression feedback counts per tool.
 
-1. STM intercepts the request
-2. Surfaces relevant memories from LTM alongside the call
-3. Forwards the call to the upstream server
-4. Compresses the response if it exceeds the context budget
-5. Returns the compressed response + surfaced memories to the agent
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `tool` | string | No | Filter by tool name |
 
-Upstream tools can optionally be prefixed to avoid name collisions. Configure prefixes when registering servers:
+### `stm_tuning_recommendations`
+
+Per-tool auto-tuner recommendations derived from recent feedback.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `since_hours` | integer | No | Time window |
+| `tool` | string | No | Filter by tool name |
+
+## Proxied upstream tools
+
+Every tool from a registered upstream MCP server is proxied through STM using the pattern `{prefix}__{tool}`. For example:
 
 ```bash
-mms add filesystem --command filesystem-server --prefix fs_
-# Upstream tool "read_file" becomes "fs_read_file"
+mms add filesystem --command npx \
+  --args "-y @modelcontextprotocol/server-filesystem ~/projects" \
+  --prefix fs
+# filesystem's read_file becomes fs__read_file
 ```
 
-> See the [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) docs for details on how these mechanisms work.
+When the agent calls `fs__read_file`, the proxy runs the pipeline: **CLEAN → COMPRESS → SURFACE → INDEX**, then returns the compressed response plus any surfaced memories.
+
+> See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.

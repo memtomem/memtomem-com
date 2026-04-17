@@ -42,18 +42,22 @@ During compression, the agent's current query is taken into account — relevant
 The `progressive` strategy delivers large content without any information loss:
 
 1. First response delivers a table of contents (TOC) and the first chunk
-2. Agent requests more → cursor-based delivery of subsequent chunks
+2. Agent calls `stm_proxy_read_more(key, offset)` → cursor-based delivery of subsequent chunks
 3. Full content can be inspected sequentially
+
+Every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
+
+**F6 (unreleased):** When `MEMTOMEM_STM_SURFACING__INJECTION_MODE` is `append` or `section`, Stage 3 SURFACE now also runs on progressive continuations. `prepend` (the default) keeps its existing behavior of skipping surfacing on progressive responses.
 
 ## Fallback Ladder
 
-When the compression ratio guardrail (default 65% preservation) is violated, a 3-tier fallback activates automatically:
+The retention floor (`MEMTOMEM_STM_PROXY__MIN_RESULT_RETENTION`, default `0.65`) guards against over-compression. When an output drops below the floor, a 3-tier fallback activates automatically:
 
 ```
 progressive → hybrid → truncate
 ```
 
-Each tier checks the guardrail — if satisfied, that strategy's output is used.
+Each tier checks the floor — if satisfied, that strategy's output is used. The char budget is raised to `len(response) * min_result_retention` before truncation when per-tool `max_result_chars` would otherwise drop more than the floor allows.
 
 ## Compression Budget Tuning
 

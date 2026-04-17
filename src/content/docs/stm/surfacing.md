@@ -37,6 +37,16 @@ Surfaced memories are filtered through 5 stages to ensure usefulness:
 4. **Score filtering** — Remove results below the `min_score` threshold
 5. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
 
+## Injection Modes
+
+How surfaced memories are stitched into the response is controlled by `MEMTOMEM_STM_SURFACING__INJECTION_MODE`:
+
+| Mode | Behavior |
+|---|---|
+| `prepend` (default) | Memories prepended as a header. Skips Stage 3 on progressive continuations. |
+| `append` | Memories appended below the response. Triggers surfacing on progressive continuations (F6). |
+| `section` | Memories placed in a dedicated section. Triggers surfacing on progressive continuations (F6). |
+
 ## Model-Aware Defaults
 
 Automatically scales based on the agent's context window size:
@@ -57,7 +67,13 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 
 ## Safety Mechanisms
 
-- **Circuit breaker** (3-state) — Temporarily suspend surfacing after consecutive failures
-- **Write-tool skip** — Disable surfacing for tools with side effects (file writes, deletes)
-- **Query cooldown** — Prevent rapid repeated searches of the same query
-- **Sensitive data detection** — Auto-detect and filter API keys, passwords, PII
+- **Circuit breaker** (3-state) — Suspends surfacing after consecutive failures, retries on backoff `1s → 2s → 4s → 30s max`
+- **Surfacing timeout** — `3s` hard ceiling per call
+- **Rate limit** — `15 calls / minute` ceiling across all tools
+- **Write-tool skip** — Disables surfacing for tools with side effects (file writes, deletes)
+- **Query cooldown** — Skips surfacing when the extracted query has Jaccard similarity `> 0.95` with one seen in the last 5 seconds
+- **Cross-session dedup** — Default TTL `604800s` (7 days) via `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`
+- **Sensitive data detection** — Auto-detects API keys, passwords, PII before injection
+- **Injection size cap** — Default `3000 chars` per injection
+
+> See the [operations guide](https://github.com/memtomem/memtomem-stm/blob/main/docs/operations.md) for tuning guidance.

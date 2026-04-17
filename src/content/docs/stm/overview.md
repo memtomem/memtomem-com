@@ -33,10 +33,15 @@ STM intercepts every MCP tool call. For each call, it:
 ## Key Capabilities
 
 - **5-Level Relevance Gating** — Context extraction prioritized by specificity
-- **10 Compression Strategies** — Auto-selected by content type (truncate, hybrid, selective, progressive, extract_fields, schema_pruning, skeleton, llm_summary, auto, none)
+- **10 Compression Strategies** — Auto-selected by content type (`auto`, `hybrid`, `selective`, `progressive`, `extract_fields`, `schema_pruning`, `skeleton`, `llm_summary`, `truncate`, `none`)
+- **Progressive Surfacing (F6, unreleased)** — `append` / `section` injection modes now trigger Stage 3 SURFACE on progressive continuations
+- **Background Auto-Indexing (F4, unreleased)** — Opt in via `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND=true`; Stage 4 runs off the request path
+- **Progressive Footer Token** — Canonical `\n---\n[progressive: chars=` split token exported as `PROGRESSIVE_FOOTER_TOKEN` (avoids collisions with Markdown HR / YAML fences)
 - **Model-Aware Defaults** — Automatically adjusts behavior for small (≤32K), medium (32K–200K), and large (>200K) context windows
-- **Feedback Loop** — Agent feedback auto-tunes surfacing thresholds
-- **Circuit Breaker** — Safety mechanisms prevent runaway memory injection
+- **Feedback Loop** — `stm_surfacing_feedback` + `stm_compression_feedback` feed a per-tool auto-tuner
+- **Horizontal Scaling** — `PendingStore` protocol with in-memory (default) or SQLite-shared backend
+- **Langfuse Observability** — Spans for every pipeline stage plus upstream `_trace_id` propagation
+- **Circuit Breaker** — 3-state safety mechanism prevents runaway memory injection
 - **Context Gateway** — Auto-syncs agent definitions across 6 runtimes
 
 ## Relationship to LTM

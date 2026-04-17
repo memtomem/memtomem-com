@@ -3,7 +3,19 @@ title: MCP Tools
 description: Complete reference for memtomem LTM MCP tools — 74 tools in full mode, 9 in core mode.
 ---
 
-memtomem exposes **74 MCP tools** in `full` mode. In `core` mode (default), 9 frequently used tools are exposed directly, and the meta-tool `mem_do` routes requests to the remaining tools — keeping agent context usage minimal.
+memtomem ships **74 tools total**, exposed in three tiers controlled by the `MEMTOMEM_TOOL_MODE` environment variable:
+
+| Mode | Tools exposed | Notes |
+|---|---|---|
+| `core` (default) | **9** + `mem_do` | Minimizes agent context usage; everything else is reached through `mem_do` |
+| `standard` | ~32 | Adds CRUD, namespace, tags, sessions, scratch, relations groups |
+| `full` | 74 | Every tool individually registered |
+
+Set the mode before starting the server:
+
+```bash
+MEMTOMEM_TOOL_MODE=standard mm serve
+```
 
 ## Core Tools
 
@@ -87,8 +99,14 @@ Meta-tool that routes non-core actions in `core` mode. Provides access to all 74
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `action` | string | Yes | Tool name to invoke |
+| `action` | string | Yes | Tool name or alias (e.g. `health` → `eval`, `orphans` → `cleanup_orphans`) |
 | `params` | object | No | Parameters for the target tool |
+
+Example — run a health check while in `core` mode:
+
+```
+mem_do(action="health")
+```
 
 ## Multi-Agent Tools
 

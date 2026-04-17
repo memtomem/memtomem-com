@@ -25,7 +25,13 @@ pip install memtomem
 ### Optional extras
 
 ```bash
+pip install memtomem[onnx]         # fastembed local embeddings
+pip install memtomem[ollama]       # Ollama provider client
+pip install memtomem[openai]       # OpenAI provider client
 pip install memtomem[korean]       # kiwipiepy Korean morphological analysis
+pip install memtomem[code]         # tree-sitter (Python / JS / TS) AST chunking
+pip install memtomem[web]          # FastAPI + uvicorn for the Web UI
+pip install memtomem[all]          # everything
 ```
 
 After installation, the `mm` CLI is available:
@@ -59,8 +65,10 @@ pip install memtomem-stm[langchain]    # LangChain agent integration
 After installation, the `mms` CLI is available:
 
 ```bash
+mms init                           # first-time setup wizard
 mms add <name> --command <cmd>     # register upstream MCP server
 mms list                           # list registered servers
+mms health                         # probe upstream connectivity
 mms serve                          # start STM proxy
 ```
 
@@ -72,7 +80,7 @@ mms serve                          # start STM proxy
 | **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
 | **OpenAI** | API key required | — | Paid |
 
-Choose a provider during `mm init` or set the `MEMTOMEM_EMBEDDING_PROVIDER` environment variable.
+Choose a provider during `mm init` or set the `MEMTOMEM_EMBEDDING__PROVIDER` environment variable (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
 
 ## Tech Stack
 

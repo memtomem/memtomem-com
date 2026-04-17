@@ -34,6 +34,15 @@ mm init                            # interactive setup
 mm init -y                         # auto-accept defaults (for CI)
 ```
 
+memtomem auto-indexes `~/.claude/projects`, `~/.gemini`, and `~/.codex/memories` out of the box — conversations and memories from these agents become searchable without any extra configuration.
+
+If you also want the STM proxy, run its first-time setup:
+
+```bash
+mms init                           # STM guided wizard
+mms health                         # probe registered upstream servers
+```
+
 ## 3. Connect your MCP client
 
 ### Claude Code

@@ -14,9 +14,13 @@ Memories persist across sessions and can be shared between agents — so decisio
 - **Hybrid Search** — BM25 keyword + dense vector + RRF fusion for high-precision recall
 - **Semantic Chunking** — 6 strategies (Markdown, Python AST, JS/TS AST, JSON, YAML/TOML, plain text) that understand document structure
 - **Incremental Indexing** — Hash-based change detection, only re-indexes what changed
+- **Auto-Discovery** — `~/.claude/projects`, `~/.gemini`, `~/.codex/memories` are indexed out of the box
+- **Lifecycle Policies** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag` run on a background scheduler
+- **Memory Ingest** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory` for one-shot imports
 - **Namespace Isolation** — `agent/{id}` private namespaces + `shared` namespace for cross-agent knowledge
 - **Multi-Agent Collaboration** — Register, search, and share memories across agents
 - **Web UI Dashboard** — Browser-based search and memory management via `mm web`
+- **Database Reset** — `mm reset` / `mem_reset` / `POST /api/reset` when you want to start over
 
 ## Architecture
 
@@ -46,5 +50,5 @@ Optionally, [memtomem-stm](/stm/overview/) sits in front as a proxy, adding real
 - [Quick Start](/guides/quickstart/) — Install and store your first memory in 5 minutes
 - [Hybrid Search](/ltm/hybrid-search/) — How the search engine works
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — Namespace design and sharing workflows
-- [MCP Tools](/ltm/mcp-tools/) — Complete tool reference (74 tools)
+- [MCP Tools](/ltm/mcp-tools/) — 74 tools total; `core` / `standard` / `full` exposure modes
 - [CLI Reference](/ltm/cli/) — `mm` command reference

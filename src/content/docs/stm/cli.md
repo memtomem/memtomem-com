@@ -7,20 +7,30 @@ The `mms` command is installed with the `memtomem-stm` package. It manages upstr
 
 ## Commands
 
+### `mms init`
+
+First-time setup wizard. Writes `~/.memtomem/stm_proxy.json` interactively.
+
+```bash
+mms init
+```
+
 ### `mms add <name>`
 
 Register an upstream MCP server to proxy through STM.
 
 ```bash
 mms add filesystem --command filesystem-server
-mms add github --command github-mcp --args "--token $GH_TOKEN" --prefix gh_
+mms add github --command github-mcp --args "--token $GH_TOKEN" --prefix gh
+mms add filesystem --command filesystem-server --validate   # probe connectivity before persisting
 ```
 
 | Flag | Description |
 |------|-------------|
 | `--command` | Server command to execute |
 | `--args` | Arguments to pass to the server |
-| `--prefix` | Tool name prefix to avoid collisions |
+| `--prefix` | Tool name prefix to avoid collisions (emitted as `{prefix}__{tool}`) |
+| `--validate` | Launch the upstream server and verify MCP handshake before saving |
 
 ### `mms list`
 
@@ -53,6 +63,14 @@ Display proxy statistics including cache hit rates, compression ratios, and surf
 
 ```bash
 mms stats
+```
+
+### `mms health`
+
+Probe every registered upstream server and report MCP connectivity status.
+
+```bash
+mms health
 ```
 
 ## Example Workflow
