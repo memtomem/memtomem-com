@@ -5,25 +5,17 @@ description: Get memtomem installed and store your first memory in under 5 minut
 
 ## 1. Install
 
-To use local embeddings, pull an Ollama model first (~270MB, free, no GPU required):
-
-```bash
-ollama pull nomic-embed-text
-```
-
-Then install memtomem:
-
 ```bash
 uv tool install memtomem          # or: pipx install memtomem
 ```
 
-To also use the STM proxy:
+Optionally, also install the STM proxy:
 
 ```bash
 uv tool install memtomem-stm      # or: pip install memtomem-stm
 ```
 
-> No GPU? Pick OpenAI in the setup wizard — see the [Embeddings guide](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md).
+> memtomem works out of the box with keyword-only (BM25) search. For semantic search you can pick an embedding provider in the setup wizard — ONNX (built-in, local), Ollama (local), or OpenAI. See the [Embeddings guide](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md).
 
 ## 2. Setup
 
