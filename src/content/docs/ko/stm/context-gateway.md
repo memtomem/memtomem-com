@@ -3,6 +3,8 @@ title: Context Gateway
 description: 에이전트 정의·스킬·커맨드를 6종 런타임에 자동 동기화.
 ---
 
+여러 AI 런타임(Claude Code, Gemini CLI, Codex CLI 등)을 병행 사용하는 경우, 각 런타임은 에이전트 정의·스킬·커맨드를 고유한 포맷과 디렉터리에 저장합니다. Context Gateway는 이들을 하나의 정규 폴더에서 동기화하므로, 단일 파일 수정만으로 모든 런타임에 반영됩니다.
+
 Context Gateway는 에이전트 정의, 스킬, 커맨드를 하나의 정규 소스(`.memtomem/`)에서 여러 AI 에디터 런타임으로 자동 동기화합니다. 하나의 에이전트를 정의하면 6종 AI 에디터에서 동일하게 동작합니다.
 
 ## 동기화 구조

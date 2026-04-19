@@ -3,6 +3,8 @@ title: Proactive Surfacing
 description: Real-time surfacing per tool call, 5-level relevance gating, feedback-based auto-tuning.
 ---
 
+Surfacing is memtomem-stm's way of reminding your agent of relevant past work — without the agent asking. STM watches every tool call your agent makes, figures out what the agent is working on, and pulls matching memories from LTM into the response.
+
 Traditional RAG systems only provide relevant information when the agent explicitly requests a search. memtomem-stm's proactive surfacing observes every tool call the agent makes and **automatically** searches for and injects relevant memories into responses.
 
 ## How It Works
@@ -17,15 +19,15 @@ No agent code changes needed — just routing through the STM proxy enables auto
 
 ## 5-Level Context Extraction
 
-How search queries are extracted from tool calls, by priority:
+STM needs a search query before it can ask LTM for memories. Instead of relying on a single signal, it runs a five-pass pipeline — each pass tries a different source, and the first one that produces a usable query wins. That way a tool call with a clean `_context_query` argument is used directly, while a bare call like `fs__read_file(path=...)` still produces something searchable.
 
 | Priority | Method | Description |
 |---|---|---|
 | 1 | Tool-specific query template | Pre-defined query patterns mapped to tool names |
 | 2 | `_context_query` argument | Explicit search query passed by the agent |
 | 3 | Path arguments | Context extracted from file paths, URLs, etc. |
-| 4 | Semantic keys | Semantic keyword combination from tool arguments |
-| 5 | Tool name | Last resort — use the tool name itself as query |
+| 4 | Semantic keys | Keyword combination drawn from tool argument values |
+| 5 | Tool name | Last resort — use the tool name itself as the query |
 
 ## Relevance Gating
 

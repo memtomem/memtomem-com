@@ -3,7 +3,9 @@ title: Compression Strategies
 description: 10 compression strategies, auto-selection logic, and query-aware budget allocation.
 ---
 
-memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It provides 10 strategies that reduce response size while preserving the information the agent needs.
+Every MCP tool response passes through STM before it reaches your agent. When a response is too big for the agent's context budget, STM compresses it — and the shape of the data decides *how*. JSON doesn't compress the same way Markdown does, and a 500 KB API schema is a different problem from a 20-paragraph design note.
+
+memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It provides 10 strategies that reduce response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses per response.
 
 ## 10 Compression Strategies
 

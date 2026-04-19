@@ -33,6 +33,7 @@ mm serve --transport http --port 8765
 ```bash
 mm web               # default: http://localhost:8766
 mm web --port 9000
+mm web --open        # 기본 브라우저에서 해당 URL을 자동 실행
 ```
 
 ### `mm search <query>`
@@ -78,6 +79,32 @@ mm context sync      # push canonical config → all runtimes
 
 ```bash
 mm context import    # pull runtime files → canonical source
+```
+
+### `mm config unset <key>`
+
+`~/.memtomem/config.json`에서 특정 키의 오버라이드를 제거하여 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다. 다른 머신에서 이전된 `memory_dirs`의 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
+
+```bash
+mm config unset memory_dirs
+mm config unset rerank.model
+```
+
+### `mm init --fresh`
+
+마법사가 수정하지 않은 필드 중 내장 기본값과 값이 다른 모든 키를 제거한 뒤 설정 마법사를 다시 실행합니다. 이전 버전에서 누적된 설정 항목을 정리하는 안전한 일괄 정리 옵션입니다. 이전 `config.json`은 `config.json.bak-<unix-ts>`로 백업된 후 재작성됩니다.
+
+```bash
+mm init --fresh      # 일괄 정리 + 마법사 재실행
+```
+
+### `mm purge --matching-excluded`
+
+내장 자격 증명 denylist 또는 사용자 지정 `indexing.exclude_patterns`와 일치하는 이미 인덱싱된 청크를 제거합니다. 기본 동작은 dry-run이며, `--apply` 플래그를 추가해야 실제 삭제가 수행됩니다. v0.1.10 보안 수정 이후 권장되는 정리 워크플로우의 일부입니다.
+
+```bash
+mm purge --matching-excluded              # dry-run — 삭제 대상 미리보기
+mm purge --matching-excluded --apply      # 실제 삭제 실행
 ```
 
 ## 예제 워크플로우

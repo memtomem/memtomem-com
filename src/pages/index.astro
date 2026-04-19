@@ -73,17 +73,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="hero-badge">Open Source · Apache 2.0</div>
 	<h1>AI That Never Forgets —<br /><em>Memory Infrastructure</em> for Agents</h1>
 	<p class="hero-sub">
-		Index your markdown notes, documents, and code into a searchable knowledge base
-		for any AI agent. STM + LTM architecture preserves memory across sessions
-		and shares knowledge between agents.
+		Stop re-explaining your project to your AI every session. memtomem turns your notes,
+		docs, and code into a searchable memory that any MCP-compatible agent can use —
+		across sessions, across agents, all on your machine.
 	</p>
 	<div class="hero-install">
 		<span class="dollar">$</span> uv tool install memtomem
 	</div>
 	<div class="hero-stats">
-		<div><strong>80+</strong>MCP Tools</div>
-		<div><strong>10+</strong>Compression</div>
-		<div><strong>6+</strong>Runtimes</div>
+		<div><strong>74</strong>MCP Tools</div>
+		<div><strong>10</strong>Compression Strategies</div>
+		<div><strong>10</strong>Supported Runtimes</div>
 	</div>
 </section>
 
@@ -120,27 +120,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="feature-grid">
 			<div class="feature-card accent">
 				<h3>Proactive Surfacing</h3>
-				<p>Automatically inject relevant memories without agent request. 5-level relevance gating + feedback auto-tuning.</p>
+				<p>Your agent doesn't have to ask. STM watches tool calls and slips in relevant past memories automatically — tuned by your feedback.</p>
 			</div>
 			<div class="feature-card teal">
 				<h3>MCP Proxy Gateway</h3>
-				<p>STM sits between agent and server as a transparent proxy. Memory injection into all MCP calls — no code changes.</p>
+				<p>STM sits invisibly between your agent and its tools. Existing MCP servers keep working unchanged — no code, no new integrations.</p>
 			</div>
 			<div class="feature-card coral">
 				<h3>Cross-Runtime Sync</h3>
-				<p>Context Gateway auto-syncs agent definitions, skills, and commands across 6 runtimes.</p>
+				<p>Define an agent or skill once. Context Gateway syncs it to Claude Code, Cursor, Gemini CLI, Codex CLI, and more — in each tool's native format.</p>
 			</div>
 			<div class="feature-card amber">
-				<h3>10 Compression Strategies</h3>
-				<p>Auto-selected by content type. Progressive delivery for zero information loss.</p>
+				<h3>Smart Compression</h3>
+				<p>Big tool responses get trimmed to fit your context window. Ten strategies for JSON, markdown, or free-form text, plus a zero-loss progressive mode for huge payloads.</p>
 			</div>
 			<div class="feature-card blue">
 				<h3>Multi-Agent Knowledge Sharing</h3>
-				<p>Namespace isolation + sharing. Agent→Agent, Human→Agent — knowledge flows in all directions.</p>
+				<p>Each agent gets its own private memory, plus a shared one. Knowledge flows between agents — or from you to every agent at once.</p>
 			</div>
 			<div class="feature-card green">
 				<h3>Fully Local</h3>
-				<p>SQLite + ONNX. No GPU, no external services. 100% data sovereignty.</p>
+				<p>SQLite + ONNX under the hood. No GPU, no external API, no cloud dependency — your memory stays on your machine.</p>
 			</div>
 		</div>
 	</div>

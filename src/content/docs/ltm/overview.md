@@ -5,22 +5,24 @@ description: What memtomem is — an MCP-native long-term memory server for AI a
 
 ## What is memtomem?
 
-**memtomem** is an MCP-native long-term memory (LTM) server for AI agents. It indexes your markdown notes, documents, and code into a searchable knowledge base that any MCP-compatible agent can access.
+memtomem remembers everything for your AI agent. Point it at your notes, docs, and code, and any MCP-compatible agent can search them back — across sessions, across agents.
 
-Memories persist across sessions and can be shared between agents — so decisions, patterns, and context are never lost.
+**memtomem** is a long-term memory (LTM) server that speaks the Model Context Protocol (MCP). In practice that means it runs as a local process your AI client connects to, and exposes searchable memory as a set of tools (`mem_search`, `mem_add`, ...) your agent can call directly.
 
 ## Key Capabilities
 
-- **Hybrid Search** — BM25 keyword + dense vector + RRF fusion for high-precision recall
-- **Semantic Chunking** — 6 strategies (Markdown, Python AST, JS/TS AST, JSON, YAML/TOML, plain text) that understand document structure
-- **Incremental Indexing** — Hash-based change detection, only re-indexes what changed
-- **Auto-Discovery** — `~/.claude/projects`, `~/.gemini`, `~/.codex/memories` are indexed out of the box
-- **Lifecycle Policies** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag` run on a background scheduler
-- **Memory Ingest** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory` for one-shot imports
-- **Namespace Isolation** — `agent/{id}` private namespaces + `shared` namespace for cross-agent knowledge
-- **Multi-Agent Collaboration** — Register, search, and share memories across agents
-- **Web UI Dashboard** — Browser-based search and memory management via `mm web`
-- **Database Reset** — `mm reset` / `mem_reset` / `POST /api/reset` when you want to start over
+- **Hybrid Search** — Combines keyword search (BM25) with meaning-based vector search, then merges the rankings via Reciprocal Rank Fusion (RRF) so you get hits from both.
+- **Semantic Chunking** — 7 strategies (Markdown, Python, JS/TS, JSON, YAML/TOML, reStructuredText, plain text) that split documents along real structural boundaries, not arbitrary token windows.
+- **Local Reranking** — Optional cross-encoder rerank runs fully on-device via FastEmbed ONNX — no external API, no extra install beyond `memtomem[onnx]`.
+- **Incremental Indexing** — Hash-based change detection, so re-indexing only touches what changed.
+- **Opt-in Provider Memory** — `mm init` offers to enroll Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memory (`~/.codex/memories/`) into `memory_dirs`. Disable the prompt with `indexing.auto_discover=false`.
+- **Namespace Policy Rules** — Auto-tag files by path pattern at index time instead of passing `namespace=` on every call.
+- **Lifecycle Policies** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag` run on a background scheduler.
+- **Memory Ingest** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory` for one-shot imports from other AI tools.
+- **Namespace Isolation** — `agent/{id}` private namespaces plus a `shared` namespace for cross-agent knowledge.
+- **Multi-Agent Collaboration** — Register, search, and share memories across agents.
+- **Web UI Dashboard** — Browser-based search and memory management via `mm web`.
+- **Database Reset** — `mm reset` / `mem_reset` / `POST /api/reset` when you want to start over.
 
 ## Architecture
 

@@ -5,6 +5,10 @@ description: How BM25 keyword + dense vector + RRF fusion search works and how t
 
 memtomem's hybrid search combines keyword search and semantic search, leveraging both exact term matching and meaning-based similarity in a single query.
 
+### Why both?
+
+Keyword search finds exact names like `mem_search` or `FastAPI` — things a vector model often misses because their meaning isn't distributed across the embedding space. Semantic search finds ideas like "how do I deploy?" that match documents using different wording. Running both and merging the rankings covers both cases.
+
 ## Search Architecture
 
 Hybrid search runs three search engines in parallel:
@@ -17,7 +21,7 @@ Hybrid search runs three search engines in parallel:
 
 ## Semantic Chunking
 
-During indexing, documents are split into meaningful units — not by token count, but by structure. Six chunking strategies:
+During indexing, documents are split into meaningful units — not by token count, but by structure. Seven chunking strategies:
 
 | Strategy | Target | Behavior |
 |---|---|---|
@@ -26,7 +30,10 @@ During indexing, documents are split into meaningful units — not by token coun
 | **JS/TS AST** | `.js`, `.ts` files | tree-sitter based function/module splitting |
 | **JSON** | `.json` files | Structure-aware splitting |
 | **YAML/TOML** | `.yaml`, `.toml` | Key-value block splitting |
+| **reStructuredText** | `.rst` files | Section-header-aware splitting |
 | **Plain text** | Other files | Paragraph/newline based splitting |
+
+Very short sections are greedily packed with adjacent siblings up to `indexing.target_chunk_tokens` (default `384`) to keep each chunk informative enough to retrieve. Set `target_chunk_tokens=0` to disable the pass and keep every small section as its own chunk.
 
 ## Incremental Indexing
 

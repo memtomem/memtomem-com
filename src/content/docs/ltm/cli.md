@@ -33,6 +33,7 @@ Launch the Web UI dashboard for browser-based search and memory management.
 ```bash
 mm web               # default: http://localhost:8766
 mm web --port 9000
+mm web --open        # also open the URL in your default browser
 ```
 
 ### `mm search <query>`
@@ -78,6 +79,32 @@ Reverse-extract runtime-specific files back to the canonical source.
 
 ```bash
 mm context import    # pull runtime files → canonical source
+```
+
+### `mm config unset <key>`
+
+Remove a single override from `~/.memtomem/config.json`, reverting the field to its built-in default (or to whatever a `config.d/*.json` fragment resolves to). Useful for clearing stale cross-machine paths in `memory_dirs`, or a single field that's shadowing a fragment.
+
+```bash
+mm config unset memory_dirs
+mm config unset rerank.model
+```
+
+### `mm init --fresh`
+
+Re-run the setup wizard after dropping every wizard-untouched config key whose value differs from the built-in default. A safe cleanup option when the config has accumulated leftovers from older versions. The previous `config.json` is backed up to `config.json.bak-<unix-ts>` before rewriting.
+
+```bash
+mm init --fresh      # opt-in bulk cleanup + wizard
+```
+
+### `mm purge --matching-excluded`
+
+Remove already-indexed chunks whose source paths match the built-in credential denylist or your `indexing.exclude_patterns`. Runs as a dry-run by default — pass `--apply` to actually delete. Part of the v0.1.10 security-fix cleanup workflow.
+
+```bash
+mm purge --matching-excluded              # dry-run — shows what would be removed
+mm purge --matching-excluded --apply      # perform the deletion
 ```
 
 ## Example Workflow

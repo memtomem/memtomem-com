@@ -3,11 +3,24 @@ title: Installation
 description: Detailed installation guide for memtomem and memtomem-stm.
 ---
 
+:::caution[Security advisory for memtomem 0.1.0–0.1.9]
+Older versions of memtomem could index credential files (`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`) when they lived inside an auto-discovered memory directory like `~/.claude/projects`, `~/.gemini`, or `~/.codex/memories`. If you ran memtomem alongside Gemini CLI, its hourly OAuth-token refresh triggered continuous re-indexing.
+
+**Upgrade to 0.1.10 or later** (`pip install -U memtomem` / `uv tool upgrade memtomem`), then clean up and rotate:
+
+```bash
+mm purge --matching-excluded              # dry-run — prints what would be deleted
+mm purge --matching-excluded --apply      # actually delete matching chunks
+```
+
+Also rotate any credentials (Gemini OAuth, API keys) that may have been indexed during the affected period. Full details in the [v0.1.10 release notes](https://github.com/memtomem/memtomem/releases/tag/v0.1.10).
+:::
+
 ## Requirements
 
 - **Python 3.12+**
 - **pip**, **uv**, or **pipx**
-- Embeddings: ONNX (built-in) / Ollama (~270MB) / OpenAI API
+- An embedding provider for semantic search — pick one during `mm init` (see [Embedding Providers](#embedding-providers) below). Fine to skip at first: memtomem works keyword-only until you choose.
 
 ## LTM Server (memtomem)
 
@@ -24,8 +37,10 @@ pip install memtomem
 
 ### Optional extras
 
+The base package already works — install only the extras you actually need.
+
 ```bash
-pip install memtomem[onnx]         # fastembed local embeddings
+pip install memtomem[onnx]         # fastembed local embeddings (recommended default)
 pip install memtomem[ollama]       # Ollama provider client
 pip install memtomem[openai]       # OpenAI provider client
 pip install memtomem[korean]       # kiwipiepy Korean morphological analysis
@@ -80,9 +95,11 @@ mms serve                          # start STM proxy
 | **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
 | **OpenAI** | API key required | — | Paid |
 
-Choose a provider during `mm init` or set the `MEMTOMEM_EMBEDDING__PROVIDER` environment variable (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
+**Not sure which to pick?** Start with **ONNX** — it's fully local, free, and needs no extra daemon or API key. You can always switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
 
 ## Tech Stack
+
+For the curious — you don't need to know any of this to use memtomem.
 
 | Category | Technology |
 |----------|-----------|

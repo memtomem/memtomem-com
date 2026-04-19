@@ -5,12 +5,14 @@ description: What memtomem-stm is — an MCP proxy that adds proactive surfacing
 
 ## What is memtomem-stm?
 
-**memtomem-stm** is an MCP proxy that sits between AI agents and upstream MCP servers. It adds two capabilities that agents lack on their own:
+memtomem-stm cuts your agent's token use — typically by 20–80% — and gives it memory across sessions, without touching your existing MCP servers.
 
-1. **Proactive Surfacing** — Automatically injects relevant long-term memories into every tool call, without the agent explicitly searching.
-2. **Response Compression** — Compresses large MCP responses to fit within context windows, using 10 content-aware strategies.
+**memtomem-stm** is a short-term memory (STM) proxy that sits between your AI agent and the upstream MCP (Model Context Protocol) servers it already uses. Your agent keeps talking to the same tools; STM intercepts every call and adds two things the agent can't do on its own:
 
-No agent code changes required — STM works as a transparent proxy.
+1. **Proactive surfacing** — pulls relevant past memories out of LTM and injects them into the response, so the agent "remembers" without needing to run a search first.
+2. **Response compression** — trims oversized tool responses down to fit your context window using 10 content-aware strategies (JSON, markdown, API docs, free text, ...).
+
+No agent-side code changes — STM runs as a transparent proxy in front of your existing MCP servers.
 
 ## How It Works
 
@@ -32,17 +34,17 @@ STM intercepts every MCP tool call. For each call, it:
 
 ## Key Capabilities
 
-- **5-Level Relevance Gating** — Context extraction prioritized by specificity
-- **10 Compression Strategies** — Auto-selected by content type (`auto`, `hybrid`, `selective`, `progressive`, `extract_fields`, `schema_pruning`, `skeleton`, `llm_summary`, `truncate`, `none`)
-- **Progressive Surfacing (F6, unreleased)** — `append` / `section` injection modes now trigger Stage 3 SURFACE on progressive continuations
-- **Background Auto-Indexing (F4, unreleased)** — Opt in via `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND=true`; Stage 4 runs off the request path
-- **Progressive Footer Token** — Canonical `\n---\n[progressive: chars=` split token exported as `PROGRESSIVE_FOOTER_TOKEN` (avoids collisions with Markdown HR / YAML fences)
-- **Model-Aware Defaults** — Automatically adjusts behavior for small (≤32K), medium (32K–200K), and large (>200K) context windows
-- **Feedback Loop** — `stm_surfacing_feedback` + `stm_compression_feedback` feed a per-tool auto-tuner
-- **Horizontal Scaling** — `PendingStore` protocol with in-memory (default) or SQLite-shared backend
-- **Langfuse Observability** — Spans for every pipeline stage plus upstream `_trace_id` propagation
-- **Circuit Breaker** — 3-state safety mechanism prevents runaway memory injection
-- **Context Gateway** — Auto-syncs agent definitions across 6 runtimes
+- **Relevance Gating** — Candidate memories pass through five checks (context extraction, query suitability, LTM search, score threshold, dedup window) before reaching your agent, so irrelevant hits are filtered out before they spend tokens.
+- **10 Compression Strategies** — Auto-selected by content type (`auto`, `hybrid`, `selective`, `progressive`, `extract_fields`, `schema_pruning`, `skeleton`, `llm_summary`, `truncate`, `none`).
+- **Progressive Surfacing (F6, unreleased)** — `append` / `section` injection modes now trigger Stage 3 SURFACE on progressive continuations.
+- **Background Auto-Indexing (F4, unreleased)** — Opt in via `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND=true`; Stage 4 runs off the request path.
+- **Progressive Footer Token** — Canonical `\n---\n[progressive: chars=` split token exported as `PROGRESSIVE_FOOTER_TOKEN` (avoids collisions with Markdown HR / YAML fences).
+- **Model-Aware Defaults** — Automatically adjusts behavior for small (≤32K), medium (32K–200K), and large (>200K) context windows.
+- **Feedback Loop** — `stm_surfacing_feedback` + `stm_compression_feedback` feed a per-tool auto-tuner that raises or lowers the `min_score` threshold based on agent feedback.
+- **Horizontal Scaling** — `PendingStore` protocol with in-memory (default) or SQLite-shared backend.
+- **Langfuse Observability** — Spans for every pipeline stage plus upstream `_trace_id` propagation.
+- **Circuit Breaker** — 3-state safety mechanism prevents runaway memory injection after repeated failures.
+- **Context Gateway** — Auto-syncs agent definitions across 6 runtimes.
 
 ## Relationship to LTM
 
