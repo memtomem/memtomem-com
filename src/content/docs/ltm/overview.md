@@ -15,7 +15,7 @@ memtomem remembers everything for your AI agent. Point it at your notes, docs, a
 - **Semantic Chunking** — 7 strategies (Markdown, Python, JS/TS, JSON, YAML/TOML, reStructuredText, plain text) that split documents along real structural boundaries, not arbitrary token windows.
 - **Local Reranking** — Optional cross-encoder rerank runs fully on-device via FastEmbed ONNX — no external API, no extra install beyond `memtomem[onnx]`.
 - **Incremental Indexing** — Hash-based change detection, so re-indexing only touches what changed.
-- **Opt-in Provider Memory** — `mm init` offers to enroll Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memory (`~/.codex/memories/`) into `memory_dirs`. Disable the prompt with `indexing.auto_discover=false`.
+- **Opt-in AI Agent Memory** — `mm init` offers to enroll Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memory (`~/.codex/memories/`) into `memory_dirs`. Disable the prompt with `indexing.auto_discover=false`.
 - **Namespace Policy Rules** — Auto-tag files by path pattern at index time instead of passing `namespace=` on every call.
 - **Lifecycle Policies** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag` run on a background scheduler.
 - **Memory Ingest** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory` for one-shot imports from other AI tools.

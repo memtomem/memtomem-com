@@ -30,9 +30,9 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_INDEXING__MEMORY_DIRS` | 시작 시 인덱싱되는 디렉터리 (JSON 리스트). `mm init`에서 프로바이더 기억 등록을 선택하면 해당 경로가 채워집니다. | `[]` |
+| `MEMTOMEM_INDEXING__MEMORY_DIRS` | 시작 시 인덱싱되는 디렉터리 (JSON 리스트). `mm init`에서 AI 에이전트 기억 등록을 선택하면 해당 경로가 채워집니다. | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 인덱싱 대상 파일 확장자 (JSON 리스트) | `[".md", ".py", ".js", ".ts", ".json", ".yaml", ".toml", ".rst"]` |
-| `MEMTOMEM_INDEXING__AUTO_DISCOVER` | `true`인 경우, `mm init`이 프로바이더 기억 디렉터리를 `memory_dirs`에 등록할지 질의합니다. `false` 설정 시 프롬프트 비활성화. | `true` |
+| `MEMTOMEM_INDEXING__AUTO_DISCOVER` | `true`인 경우, `mm init`이 AI 에이전트 기억 디렉터리를 `memory_dirs`에 등록할지 질의합니다. `false` 설정 시 프롬프트 비활성화. | `true` |
 | `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | 내장 자격 증명 denylist(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**` 등) 위에 추가되는 `.gitignore` 구문 패턴 (JSON 리스트). 사용자 `!negation`으로 내장 패턴을 해제할 수 없음. | `[]` |
 | `MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS` | 짧은 형제 섹션을 결합할 때의 목표 토큰 수. `0` 설정 시 결합 단계 비활성화. | `384` |
 

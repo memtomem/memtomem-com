@@ -3,9 +3,7 @@ title: Context Gateway
 description: Auto-sync agent definitions, skills, and commands across 6 runtimes.
 ---
 
-If you use multiple AI runtimes (Claude Code, Gemini CLI, Codex CLI, ...), each one stores agent definitions, skills, and commands in its own format and its own directory. Context Gateway keeps them in sync from a single canonical folder, so you edit one file and every runtime sees the update.
-
-Context Gateway automatically synchronizes agent definitions, skills, and commands from a single canonical source (`.memtomem/`) to multiple AI editor runtimes. Define an agent once — it works identically across 6 AI editors.
+If you use multiple AI runtimes (Claude Code, Gemini CLI, Codex CLI, ...), each one stores agent definitions, skills, and commands in its own format and its own directory. Context Gateway keeps them in sync from a single canonical source (`.memtomem/`) — edit one file and every runtime sees the update. Define an agent once; it works identically across 6 AI editors.
 
 ## Sync Structure
 

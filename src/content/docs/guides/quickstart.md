@@ -28,7 +28,7 @@ mm init                            # interactive setup
 mm init -y                         # auto-accept defaults (for CI)
 ```
 
-During `mm init` you can opt in to indexing provider memory directories — Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memories (`~/.codex/memories/`).
+During `mm init` you can opt in to indexing AI agent memory directories — Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memories (`~/.codex/memories/`).
 
 If you also want the STM proxy, run its first-time setup:
 

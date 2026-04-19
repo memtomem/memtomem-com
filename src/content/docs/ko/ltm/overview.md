@@ -15,7 +15,7 @@ memtomem은 AI 에이전트의 기억을 영속적으로 보존합니다. 노트
 - **시맨틱 청킹** — 문서의 실제 구조적 경계를 기준으로 분할하는 7종 전략(Markdown, Python, JS/TS, JSON, YAML/TOML, reStructuredText, 일반 텍스트)을 제공합니다.
 - **로컬 리랭킹** — 선택 기능인 cross-encoder 리랭킹이 FastEmbed ONNX를 통해 완전히 로컬에서 동작합니다. 외부 API가 필요하지 않으며, `memtomem[onnx]` 이외의 추가 설치도 필요하지 않습니다.
 - **증분 인덱싱** — 해시 기반 변경 감지로, 변경된 청크만 재인덱싱합니다.
-- **프로바이더 기억 opt-in** — `mm init`에서 Claude Code 기억(`~/.claude/projects/<project>/memory/`), Claude Code 플랜(`~/.claude/plans/`), Codex CLI 기억(`~/.codex/memories/`)을 `memory_dirs`에 등록할지 선택할 수 있습니다. `indexing.auto_discover=false` 설정 시 프롬프트 비활성화.
+- **AI 에이전트 기억 opt-in** — `mm init`에서 Claude Code 기억(`~/.claude/projects/<project>/memory/`), Claude Code 플랜(`~/.claude/plans/`), Codex CLI 기억(`~/.codex/memories/`)을 `memory_dirs`에 등록할지 선택할 수 있습니다. `indexing.auto_discover=false` 설정 시 프롬프트 비활성화.
 - **네임스페이스 정책 규칙** — 경로 패턴 기반 규칙으로 인덱싱 시점에 네임스페이스를 자동 할당할 수 있어, 호출마다 `namespace=`를 지정할 필요가 없습니다.
 - **수명 주기 정책** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag`가 백그라운드 스케줄러로 실행됩니다.
 - **기억 가져오기** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory`로 다른 AI 도구의 기억을 일괄 가져올 수 있습니다.

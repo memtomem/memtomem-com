@@ -99,8 +99,6 @@ mms serve                          # start STM proxy
 
 ## Tech Stack
 
-For the curious — you don't need to know any of this to use memtomem.
-
 | Category | Technology |
 |----------|-----------|
 | MCP | FastMCP (stdio, SSE, Streamable HTTP) |

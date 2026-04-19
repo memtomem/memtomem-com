@@ -28,7 +28,7 @@ mm init                            # 대화형 설정
 mm init -y                         # 기본값 자동 수락 (CI 용)
 ```
 
-`mm init` 단계에서 프로바이더 기억 디렉터리 인덱싱 여부를 선택할 수 있습니다 — Claude Code 기억(`~/.claude/projects/<project>/memory/`), Claude Code 플랜(`~/.claude/plans/`), Codex CLI 기억(`~/.codex/memories/`)이 대상입니다.
+`mm init` 단계에서 AI 에이전트 기억 디렉터리 인덱싱 여부를 선택할 수 있습니다 — Claude Code 기억(`~/.claude/projects/<project>/memory/`), Claude Code 플랜(`~/.claude/plans/`), Codex CLI 기억(`~/.codex/memories/`)이 대상입니다.
 
 STM 프록시도 설치한 경우 초기 설정을 수행합니다:
 

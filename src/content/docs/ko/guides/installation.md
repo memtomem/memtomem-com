@@ -99,8 +99,6 @@ mms serve                          # STM 프록시 시작
 
 ## 기술 스택
 
-참고용 정보이며, memtomem을 사용하는 데 필수 지식은 아닙니다.
-
 | 범주 | 기술 |
 |------|------|
 | MCP | FastMCP (stdio, SSE, Streamable HTTP) |

@@ -30,9 +30,9 @@ Resolution order (highest priority first): CLI flags â†’ environment variables â
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_INDEXING__MEMORY_DIRS` | Directories indexed on start (JSON list). Populated by `mm init` when you opt in to provider memory enrollment. | `[]` |
+| `MEMTOMEM_INDEXING__MEMORY_DIRS` | Directories indexed on start (JSON list). Populated by `mm init` when you opt in to AI agent memory enrollment. | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | File extensions to index (JSON list) | `[".md", ".py", ".js", ".ts", ".json", ".yaml", ".toml", ".rst"]` |
-| `MEMTOMEM_INDEXING__AUTO_DISCOVER` | When `true`, `mm init` prompts to enroll provider memory directories into `memory_dirs`. Set `false` to skip the prompt. | `true` |
+| `MEMTOMEM_INDEXING__AUTO_DISCOVER` | When `true`, `mm init` prompts to enroll AI agent memory directories into `memory_dirs`. Set `false` to skip the prompt. | `true` |
 | `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | `.gitignore`-syntax patterns (JSON list) that stack on top of the built-in credential denylist (`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**`, ...). User `!negation` cannot override the built-in secret patterns. | `[]` |
 | `MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS` | Greedy semantic-pack target for short sibling sections. Set `0` to disable the pack pass. | `384` |
 
