@@ -3,19 +3,6 @@ title: 설치
 description: memtomem과 memtomem-stm의 상세 설치 가이드.
 ---
 
-:::caution[memtomem 0.1.0–0.1.9 사용자 보안 공지]
-이전 버전의 memtomem은 `~/.claude/projects`, `~/.gemini`, `~/.codex/memories` 같은 자동 탐색 기억 디렉터리 안에 있던 자격 증명 파일(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`)을 인덱싱할 수 있었습니다. Gemini CLI와 함께 사용 중이었다면, 약 1시간 주기의 OAuth 토큰 갱신으로 인해 지속적으로 재인덱싱이 일어났습니다.
-
-**0.1.10 이상으로 업그레이드**(`pip install -U memtomem` 또는 `uv tool upgrade memtomem`)한 뒤, 기존 인덱스를 정리하고 자격 증명을 로테이션하세요.
-
-```bash
-mm purge --matching-excluded              # 삭제 대상 미리보기 (dry-run)
-mm purge --matching-excluded --apply      # 실제 삭제 실행
-```
-
-해당 기간 동안 인덱싱되었을 가능성이 있는 자격 증명(Gemini OAuth 토큰, API 키 등)은 로테이션을 권장합니다. 자세한 내용은 [v0.1.10 릴리즈 노트](https://github.com/memtomem/memtomem/releases/tag/v0.1.10)를 참고하세요.
-:::
-
 ## 요구 사항
 
 - **Python 3.12+**
