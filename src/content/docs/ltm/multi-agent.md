@@ -90,14 +90,14 @@ Knowledge accumulated by agents can be searched and browsed through the Web UI d
 
 ## AI Tool Memory Ingestion
 
-Automatically discover and index memory directories from each AI editor:
+Consolidate each AI editor's memory directory into a single searchable knowledge base. Re-runs are incremental — content-hash matching skips unchanged files.
 
 ```bash
-mm ingest claude-memory     # ~/.claude/projects
-mm ingest codex-memory      # ~/.codex/memories
+mm ingest claude-memory --source ~/.claude/projects/
+mm ingest codex-memory --source ~/.codex/memories/
 ```
 
-Consolidates scattered agent memories into a single searchable knowledge base.
+For Claude, pointing at `~/.claude/projects/` discovers per-project slug directories and indexes each under `claude-memory:<slug>`. Codex is loaded from a single directory into `codex-memory:<slug>`.
 
 ## LangGraph Adapter
 

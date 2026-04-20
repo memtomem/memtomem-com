@@ -57,11 +57,11 @@ mm index README.md            # index a single file
 
 ### `mm ingest`
 
-다른 AI 도구의 기억을 memtomem으로 통합합니다.
+다른 AI 도구의 기억을 memtomem으로 통합합니다. `--source` 경로는 필수이며, 재실행 시 콘텐츠 해시로 변경된 파일만 증분 반영됩니다.
 
 ```bash
-mm ingest claude-memory    # import Claude Code memories
-mm ingest codex-memory     # import Codex CLI memories
+mm ingest claude-memory --source ~/.claude/projects/    # import Claude Code memories
+mm ingest codex-memory --source ~/.codex/memories/      # import Codex CLI memories
 ```
 
 ### `mm context sync`
@@ -116,7 +116,7 @@ mm init
 mm index ~/projects/my-app
 
 # 3. Import existing AI tool memories
-mm ingest claude-memory
+mm ingest claude-memory --source ~/.claude/projects/
 
 # 4. Search from CLI
 mm search "database migration patterns"

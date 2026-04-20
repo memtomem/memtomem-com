@@ -57,11 +57,11 @@ mm index README.md            # index a single file
 
 ### `mm ingest`
 
-Consolidate memories from other AI tools into memtomem.
+Consolidate memories from other AI tools into memtomem. The `--source` path is required; re-runs are incremental via content-hash matching.
 
 ```bash
-mm ingest claude-memory    # import Claude Code memories
-mm ingest codex-memory     # import Codex CLI memories
+mm ingest claude-memory --source ~/.claude/projects/    # import Claude Code memories
+mm ingest codex-memory --source ~/.codex/memories/      # import Codex CLI memories
 ```
 
 ### `mm context sync`
@@ -116,7 +116,7 @@ mm init
 mm index ~/projects/my-app
 
 # 3. Import existing AI tool memories
-mm ingest claude-memory
+mm ingest claude-memory --source ~/.claude/projects/
 
 # 4. Search from CLI
 mm search "database migration patterns"
