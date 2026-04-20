@@ -36,6 +36,44 @@ With `include_shared=true`, searches both the agent's own namespace and the shar
 mem_agent_share(memory_id="...", target="shared")
 ```
 
+## Setting `agent_id`
+
+`agent_id` is not auto-detected. The principle is the same across runtimes — **pass it explicitly when a session starts**, and it is inherited by subsequent calls through session context.
+
+### Claude Code · Codex (MCP)
+
+The MCP server does not identify which client is calling, so **fix the session-start rule in the agent's instructions** (CLAUDE.md · AGENTS.md · system prompt).
+
+Example instruction:
+
+> At the start of a conversation, call `mem_session_start(agent_id="claude-code")` first to register the session. When acting as a new agent role, use `mem_agent_register(agent_id="planner", description="...")`.
+
+Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to the `agent/{agent-id}` namespace without having to pass `agent_id` again.
+
+### LangGraph · CrewAI (Python adapter)
+
+```python
+from memtomem.integrations.langgraph import MemtomemStore
+
+store = MemtomemStore()
+await store.start_session(agent_id="analyzer")
+# Subsequent store.search / store.put calls are isolated to the analyzer namespace
+```
+
+In multi-agent graphs, each node starts its own session with its own `agent_id`. Use `mem_agent_share` to publish outputs that need to cross agents to the `shared` namespace.
+
+### CLI (`mm`)
+
+Use this to pre-register a session outside the server process.
+
+```bash
+mm session start --agent-id planner
+```
+
+### Difference from `mm ingest`
+
+`mm ingest claude-memory` and `mm ingest codex-memory` **do not** assign an `agent_id`. They load memories into fixed namespaces — `claude-memory:<slug>` and `codex-memory:<slug>` — to consolidate per-editor memories into one searchable index. For per-agent isolation, use the MCP/adapter/CLI paths above to set `agent_id` explicitly.
+
 ## Interaction Patterns
 
 ### Human → Agent
