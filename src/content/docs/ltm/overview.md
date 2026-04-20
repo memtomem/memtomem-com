@@ -26,7 +26,7 @@ Full walkthrough (including other MCP clients) in [Quick Start](/guides/quicksta
 ## Core Concepts
 
 - **Hybrid Search** — BM25 keyword + dense vector search merged via RRF, so exact identifiers and meaning-based queries both land. See [Hybrid Search](/ltm/hybrid-search/).
-- **Namespaces** — Per-agent private spaces (`agent/{id}`) plus a `shared` space for cross-agent knowledge. See [Multi-Agent Collaboration](/ltm/multi-agent/).
+- **Namespaces** — Per-agent private spaces (`agent-runtime:{id}`) plus a `shared` space for cross-agent knowledge. See [Multi-Agent Collaboration](/ltm/multi-agent/).
 - **Lifecycle Policies** — `auto_archive` / `auto_expire` / `auto_promote` / `auto_tag` run on a background scheduler, so memories are aged and promoted automatically.
 
 ## Architecture

@@ -8,8 +8,8 @@ memtomem supports knowledge sharing between agents through namespace-based isola
 ## Namespace Structure
 
 ```
-agent/{agent-id}     # Agent-private — only that agent can access
-shared               # Shared — accessible by all agents
+agent-runtime:{agent-id}     # Agent-private — only that agent can access
+shared                       # Shared — accessible by all agents
 ```
 
 Each agent works in its own private namespace but can export useful knowledge to the shared namespace.
@@ -48,7 +48,7 @@ Example instruction:
 
 > At the start of a conversation, call `mem_session_start(agent_id="claude-code")` first to register the session. When acting as a new agent role, use `mem_agent_register(agent_id="planner", description="...")`.
 
-Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to the `agent/{agent-id}` namespace without having to pass `agent_id` again.
+Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to the `agent-runtime:{agent-id}` namespace without having to pass `agent_id` again.
 
 ### LangGraph · CrewAI (Python adapter)
 
