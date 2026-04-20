@@ -56,7 +56,6 @@ Automatically discover and index memory directories from each AI editor:
 
 ```bash
 mm ingest claude-memory     # ~/.claude/projects
-mm ingest gemini-memory     # ~/.gemini
 mm ingest codex-memory      # ~/.codex/memories
 ```
 

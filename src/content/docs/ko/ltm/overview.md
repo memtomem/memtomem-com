@@ -32,7 +32,7 @@ claude mcp add memtomem -s user -- memtomem-server    # 3. 에이전트 연결
 ## 아키텍처
 
 ```
-AI Agent (Claude Code, Cursor, Gemini CLI, …)
+AI Agent (Claude Code, Cursor, …)
     ↕  MCP protocol
 memtomem server
     ↕

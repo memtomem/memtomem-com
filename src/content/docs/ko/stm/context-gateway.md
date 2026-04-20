@@ -1,9 +1,9 @@
 ---
 title: Context Gateway
-description: 에이전트 정의·스킬·커맨드를 6종 런타임에 자동 동기화.
+description: 에이전트 정의·스킬·커맨드를 5종 런타임에 자동 동기화.
 ---
 
-여러 AI 런타임(Claude Code, Gemini CLI, Codex CLI 등)을 병행 사용하는 경우, 각 런타임은 에이전트 정의·스킬·커맨드를 고유한 포맷과 디렉터리에 저장합니다. Context Gateway는 이들을 하나의 정규 소스(`.memtomem/`)에서 자동 동기화하므로, 단일 파일 수정만으로 모든 런타임에 반영됩니다. 에이전트를 한 번 정의하면 6종 AI 에디터에서 동일하게 동작합니다.
+여러 AI 런타임(Claude Code, Cursor, Codex CLI 등)을 병행 사용하는 경우, 각 런타임은 에이전트 정의·스킬·커맨드를 고유한 포맷과 디렉터리에 저장합니다. Context Gateway는 이들을 하나의 정규 소스(`.memtomem/`)에서 자동 동기화하므로, 단일 파일 수정만으로 모든 런타임에 반영됩니다. 에이전트를 한 번 정의하면 5종 AI 에디터에서 동일하게 동작합니다.
 
 ## 동기화 구조
 
@@ -17,14 +17,12 @@ description: 에이전트 정의·스킬·커맨드를 6종 런타임에 자동 
 
 .claude/agents/             # Claude Code
 .claude/skills/             # Claude Code
-.gemini/agents/             # Gemini CLI
-.gemini/skills/             # Gemini CLI
 ~/.codex/agents/            # Codex CLI
 ```
 
 ## 양방향 추출
 
-기존에 Claude Code나 Gemini CLI에서 만든 에이전트/스킬 파일이 있다면, 정규 소스로 역추출할 수 있습니다:
+기존에 Claude Code에서 만든 에이전트/스킬 파일이 있다면, 정규 소스로 역추출할 수 있습니다:
 
 ```bash
 mm context import            # 기존 런타임 파일 → .memtomem/ 역추출
@@ -37,7 +35,7 @@ mm context sync              # .memtomem/ → 모든 런타임 동기화
 
 | 런타임 | 포맷 |
 |---|---|
-| Claude Code / Gemini CLI | Markdown + YAML frontmatter |
+| Claude Code | Markdown + YAML frontmatter |
 | Codex CLI | TOML |
 
 변환 시 필드 손실이 발생하면 심각도별로 추적합니다:
@@ -53,7 +51,6 @@ mm context sync              # .memtomem/ → 모든 런타임 동기화
 | 런타임 | 에이전트 | 스킬 | 커맨드 |
 |---|---|---|---|
 | Claude Code | O | O | O |
-| Gemini CLI | O | O | - |
 | Codex CLI | O | - | - |
 | Cursor | O | - | - |
 | Windsurf | O | - | - |

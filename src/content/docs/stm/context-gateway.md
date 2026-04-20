@@ -1,9 +1,9 @@
 ---
 title: Context Gateway
-description: Auto-sync agent definitions, skills, and commands across 6 runtimes.
+description: Auto-sync agent definitions, skills, and commands across 5 runtimes.
 ---
 
-If you use multiple AI runtimes (Claude Code, Gemini CLI, Codex CLI, ...), each one stores agent definitions, skills, and commands in its own format and its own directory. Context Gateway keeps them in sync from a single canonical source (`.memtomem/`) — edit one file and every runtime sees the update. Define an agent once; it works identically across 6 AI editors.
+If you use multiple AI runtimes (Claude Code, Cursor, Codex CLI, ...), each one stores agent definitions, skills, and commands in its own format and its own directory. Context Gateway keeps them in sync from a single canonical source (`.memtomem/`) — edit one file and every runtime sees the update. Define an agent once; it works identically across 5 AI editors.
 
 ## Sync Structure
 
@@ -17,14 +17,12 @@ If you use multiple AI runtimes (Claude Code, Gemini CLI, Codex CLI, ...), each 
 
 .claude/agents/             # Claude Code
 .claude/skills/             # Claude Code
-.gemini/agents/             # Gemini CLI
-.gemini/skills/             # Gemini CLI
 ~/.codex/agents/            # Codex CLI
 ```
 
 ## Bidirectional Extraction
 
-If you already have agent/skill files from Claude Code or Gemini CLI, you can reverse-extract them to the canonical source:
+If you already have agent/skill files from Claude Code, you can reverse-extract them to the canonical source:
 
 ```bash
 mm context import            # runtime files → .memtomem/
@@ -37,7 +35,7 @@ Each runtime uses different configuration formats. Context Gateway converts auto
 
 | Runtime | Format |
 |---|---|
-| Claude Code / Gemini CLI | Markdown + YAML frontmatter |
+| Claude Code | Markdown + YAML frontmatter |
 | Codex CLI | TOML |
 
 Field loss during conversion is tracked by severity:
@@ -53,7 +51,6 @@ Field loss during conversion is tracked by severity:
 | Runtime | Agents | Skills | Commands |
 |---|---|---|---|
 | Claude Code | Yes | Yes | Yes |
-| Gemini CLI | Yes | Yes | — |
 | Codex CLI | Yes | — | — |
 | Cursor | Yes | — | — |
 | Windsurf | Yes | — | — |

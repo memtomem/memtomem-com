@@ -32,7 +32,7 @@ Full walkthrough (including other MCP clients) in [Quick Start](/guides/quicksta
 ## Architecture
 
 ```
-AI Agent (Claude Code, Cursor, Gemini CLI, …)
+AI Agent (Claude Code, Cursor, …)
     ↕  MCP protocol
 memtomem server
     ↕

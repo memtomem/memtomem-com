@@ -61,7 +61,6 @@ mm index README.md            # index a single file
 
 ```bash
 mm ingest claude-memory    # import Claude Code memories
-mm ingest gemini-memory    # import Gemini CLI memories
 mm ingest codex-memory     # import Codex CLI memories
 ```
 

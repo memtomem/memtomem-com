@@ -61,7 +61,6 @@ Consolidate memories from other AI tools into memtomem.
 
 ```bash
 mm ingest claude-memory    # import Claude Code memories
-mm ingest gemini-memory    # import Gemini CLI memories
 mm ingest codex-memory     # import Codex CLI memories
 ```
 
