@@ -3,6 +3,8 @@ title: Compression Strategies
 description: 10 compression strategies, auto-selection logic, and query-aware budget allocation.
 ---
 
+> New here? Start with the [STM Overview](/stm/overview/) to see the full pipeline in context first.
+
 Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the agent's context budget, STM compresses it — and the compression method depends on the content type.
 
 memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It provides 10 strategies that reduce response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses per response.
@@ -48,8 +50,6 @@ The `progressive` strategy delivers large content without any information loss:
 3. Full content can be inspected sequentially
 
 Every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
-
-**F6 (unreleased):** When `MEMTOMEM_STM_SURFACING__INJECTION_MODE` is `append` or `section`, Stage 3 SURFACE now also runs on progressive continuations. `prepend` (the default) keeps its existing behavior of skipping surfacing on progressive responses.
 
 ## Fallback Ladder
 

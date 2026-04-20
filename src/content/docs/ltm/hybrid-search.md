@@ -3,6 +3,8 @@ title: Hybrid Search
 description: How BM25 keyword + dense vector + RRF fusion search works and how to tune it.
 ---
 
+> New to memtomem? Start with the [Memory Persistence Across Sessions](/guides/memory-persistence/) tutorial to see the basic search flow in action first.
+
 memtomem's hybrid search combines keyword search and semantic search, leveraging both exact term matching and meaning-based similarity in a single query.
 
 ### Why both?

@@ -78,6 +78,6 @@ claude mcp add memtomem-stm -s user -- memtomem-stm
 | 패키지 | 설명 |
 |--------|------|
 | **memtomem** | 코어 — MCP 서버, CLI (`mm`), Web UI, 하이브리드 검색, 스토리지 |
-| **memtomem-stm** | STM 프록시 — 도구 호출 관찰을 통한 능동적 기억 서피싱 |
+| **memtomem-stm** | STM 프록시 — 투명 MCP 프록시 기반 능동적 기억 서피싱 |
 
 두 패키지는 Python 레벨 의존성이 없습니다. STM과 LTM 간 통신은 MCP 프로토콜로 이루어지며, 독립적으로 배포·업그레이드할 수 있습니다.

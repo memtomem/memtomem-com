@@ -71,4 +71,4 @@ mms stats
 
 이제 에이전트는 개별 서버 대신 STM에 연결합니다. 모든 업스트림 도구가 프록시를 통해 사용 가능하며, 자동 기억 서피싱과 응답 압축이 적용됩니다.
 
-> 설정 방법은 [설치 가이드](/ko/guides/installation/), 서피싱 작동 방식은 [선제적 서피싱](/ko/stm/surfacing/)을 참조하세요.
+> 설정 방법은 [설치 가이드](/ko/guides/installation/), 서피싱 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참조하세요.

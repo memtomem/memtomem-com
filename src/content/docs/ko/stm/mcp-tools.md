@@ -84,4 +84,4 @@ mms add filesystem --command filesystem-server --prefix fs_
 # Upstream tool "read_file" becomes "fs_read_file"
 ```
 
-> [선제적 서피싱](/ko/stm/surfacing/) 및 [압축 전략](/ko/stm/compression/) 문서에서 이러한 메커니즘의 작동 방식을 자세히 확인할 수 있습니다.
+> [능동적 서피싱](/ko/stm/surfacing/) 및 [압축 전략](/ko/stm/compression/) 문서에서 이러한 메커니즘의 작동 방식을 자세히 확인할 수 있습니다.

@@ -78,6 +78,6 @@ You don't call these tools directly — tell your agent in plain language and it
 | Package | Description |
 |---------|-------------|
 | **memtomem** | Core — MCP server, CLI (`mm`), Web UI, hybrid search, storage |
-| **memtomem-stm** | STM proxy — proactive memory surfacing via tool interception |
+| **memtomem-stm** | STM proxy — proactive memory surfacing via transparent MCP proxying |
 
 The two packages have no Python-level dependency on each other. All communication between STM and LTM happens over the MCP protocol — they can be deployed and upgraded independently.

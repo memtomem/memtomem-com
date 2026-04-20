@@ -55,6 +55,7 @@ export default defineConfig({
 					translations: { ko: '시작하기' },
 					items: [
 						{ label: 'Quick Start', slug: 'guides/quickstart' },
+						{ label: 'Memory Persistence', slug: 'guides/memory-persistence', translations: { ko: '세션을 넘나드는 기억' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
 					],
 				},

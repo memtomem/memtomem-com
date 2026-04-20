@@ -3,6 +3,8 @@ title: Proactive Surfacing
 description: Real-time surfacing per tool call, 5-level relevance gating, feedback-based auto-tuning.
 ---
 
+> New here? Start with the [STM Overview](/stm/overview/) to see the full pipeline in context first.
+
 Traditional RAG only provides relevant information when the agent explicitly requests a search. memtomem-stm's proactive surfacing observes every tool call the agent makes, figures out what it's working on, and **automatically** injects matching memories from LTM into the response — no explicit query needed.
 
 ## How It Works

@@ -171,7 +171,7 @@ STM 설정은 네 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `PRO
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND` | LTM 서버 실행 MCP 명령어 | — |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` | LTM 명령어 인자 (JSON 리스트) | — |
 
-주입 모드(기본 `prepend`, 추가로 `append` / `section`)는 `MEMTOMEM_STM_SURFACING__INJECTION_MODE`로 설정합니다. progressive 연속 응답에서의 서피싱은 `append` / `section`에서만 동작합니다 (F6, 미출시).
+주입 모드(기본 `prepend`, 추가로 `append` / `section`)는 `MEMTOMEM_STM_SURFACING__INJECTION_MODE`로 설정합니다.
 
 ### Langfuse (관측성)
 

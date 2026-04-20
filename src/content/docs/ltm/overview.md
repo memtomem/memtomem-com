@@ -5,24 +5,29 @@ description: What memtomem is — an MCP-native long-term memory server for AI a
 
 ## What is memtomem?
 
-memtomem remembers everything for your AI agent. Point it at your notes, docs, and code, and any MCP-compatible agent can search them back — across sessions, across agents.
+memtomem gives your AI agent **memory that persists across sessions and across agents**. It runs as a local MCP server — your agent uses the same tool-calling it already does, and past information becomes searchable.
 
-**memtomem** is a long-term memory (LTM) server that speaks the Model Context Protocol (MCP). In practice that means it runs as a local process your AI client connects to, and exposes searchable memory as a set of tools (`mem_search`, `mem_add`, ...) your agent can call directly.
+## Use It When
 
-## Key Capabilities
+- **You keep re-explaining yesterday's decisions in today's session** — memtomem solves the "every new session is a blank slate" problem. Walk through the flow in [Memory Persistence Across Sessions](/guides/memory-persistence/).
+- **You want notes, docs, or code to be searchable by your agent** — point `mm index ~/notes` at a folder and every MCP-connected agent can query it.
+- **Multiple agents need to share the same knowledge** — Claude Code, Cursor, Codex CLI, and any other MCP client share one memory store.
 
-- **Hybrid Search** — Combines keyword search (BM25) with meaning-based vector search, then merges the rankings via Reciprocal Rank Fusion (RRF) so you get hits from both.
-- **Semantic Chunking** — 7 strategies (Markdown, Python, JS/TS, JSON, YAML/TOML, reStructuredText, plain text) that split documents along real structural boundaries, not arbitrary token windows.
-- **Local Reranking** — Optional cross-encoder rerank runs fully on-device via FastEmbed ONNX — no external API, no extra install beyond `memtomem[onnx]`.
-- **Incremental Indexing** — Hash-based change detection, so re-indexing only touches what changed.
-- **Opt-in AI Agent Memory** — `mm init` offers to enroll Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memory (`~/.codex/memories/`) into `memory_dirs`. Disable the prompt with `indexing.auto_discover=false`.
-- **Namespace Policy Rules** — Auto-tag files by path pattern at index time instead of passing `namespace=` on every call.
-- **Lifecycle Policies** — `auto_archive` / `auto_promote` / `auto_expire` / `auto_tag` run on a background scheduler.
-- **Memory Ingest** — `mm ingest claude-memory` / `gemini-memory` / `codex-memory` for one-shot imports from other AI tools.
-- **Namespace Isolation** — `agent/{id}` private namespaces plus a `shared` namespace for cross-agent knowledge.
-- **Multi-Agent Collaboration** — Register, search, and share memories across agents.
-- **Web UI Dashboard** — Browser-based search and memory management via `mm web`.
-- **Database Reset** — `mm reset` / `mem_reset` / `POST /api/reset` when you want to start over.
+## Start in 3 Steps
+
+```bash
+uv tool install memtomem                              # 1. install
+mm init                                               # 2. interactive setup
+claude mcp add memtomem -s user -- memtomem-server    # 3. connect your agent
+```
+
+Full walkthrough (including other MCP clients) in [Quick Start](/guides/quickstart/).
+
+## Core Concepts
+
+- **Hybrid Search** — BM25 keyword + dense vector search merged via RRF, so exact identifiers and meaning-based queries both land. See [Hybrid Search](/ltm/hybrid-search/).
+- **Namespaces** — Per-agent private spaces (`agent/{id}`) plus a `shared` space for cross-agent knowledge. See [Multi-Agent Collaboration](/ltm/multi-agent/).
+- **Lifecycle Policies** — `auto_archive` / `auto_expire` / `auto_promote` / `auto_tag` run on a background scheduler, so memories are aged and promoted automatically.
 
 ## Architecture
 
@@ -34,9 +39,17 @@ memtomem server
 SQLite (FTS5 + sqlite-vec)
 ```
 
-memtomem runs as a local MCP server. All data stays on your machine — SQLite for storage, ONNX for embeddings. No GPU, no external services.
+memtomem runs as a local MCP server. All data stays on your machine — SQLite for storage, ONNX for embeddings. No GPU, no external services, no account required.
 
-Optionally, [memtomem-stm](/stm/overview/) sits in front as a proxy, adding real-time compression and proactive memory surfacing.
+## Relationship to STM
+
+| | LTM (memtomem) | STM (memtomem-stm) |
+|---|---|---|
+| **Role** | Persistent storage & search | Real-time proxy & compression |
+| **Required?** | Yes (core) | Optional |
+| **How it works** | Agent calls `mem_search` when needed | Relevant memories auto-injected into every tool response |
+
+The default setup is LTM alone. If you want token-optimized responses with proactive memory injection, add [memtomem-stm](/stm/overview/) as a proxy in front.
 
 ## Package Info
 
@@ -50,7 +63,8 @@ Optionally, [memtomem-stm](/stm/overview/) sits in front as a proxy, adding real
 ## Next Steps
 
 - [Quick Start](/guides/quickstart/) — Install and store your first memory in 5 minutes
+- [Memory Persistence Across Sessions](/guides/memory-persistence/) — Save in session A, recall in session B
 - [Hybrid Search](/ltm/hybrid-search/) — How the search engine works
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — Namespace design and sharing workflows
-- [MCP Tools](/ltm/mcp-tools/) — 74 tools total; `core` / `standard` / `full` exposure modes
+- [MCP Tools](/ltm/mcp-tools/) — Full tool reference
 - [CLI Reference](/ltm/cli/) — `mm` command reference

@@ -5,14 +5,29 @@ description: What memtomem-stm is — an MCP proxy that adds proactive surfacing
 
 ## What is memtomem-stm?
 
-memtomem-stm cuts your agent's token use — typically by 20–80% — and gives it memory across sessions, without touching your existing MCP servers.
+memtomem-stm is a **short-term memory (STM) proxy** that sits between your AI agent and your existing MCP servers. Without any agent-side code changes, it adds **response compression** and **proactive memory injection** to every tool call — typically cutting token use by 20–80%.
 
-**memtomem-stm** is a short-term memory (STM) proxy that sits between your AI agent and the upstream MCP (Model Context Protocol) servers it already uses. Your agent keeps talking to the same tools; STM intercepts every call and adds two things the agent can't do on its own:
+## Use It When
 
-1. **Proactive surfacing** — pulls relevant past memories out of LTM and injects them into the response, so the agent "remembers" without needing to run a search first.
-2. **Response compression** — trims oversized tool responses down to fit your context window using 10 content-aware strategies (JSON, markdown, API docs, free text, ...).
+- **MCP tool responses keep blowing your context window** — filesystem or GitHub MCP servers often return 8,000-token payloads. STM compresses them to ~2,000 with a strategy picked for the content type.
+- **You want memories auto-injected without the agent having to ask** — with LTM alone, the agent has to call `mem_search`. With STM in front, relevant memories ride along with every tool response, no explicit query needed.
+- **You want tool-call history to accumulate as long-term memory automatically** — STM indexes interactions into LTM off the request path, so your knowledge base grows without manual `mem_add` calls.
 
-No agent-side code changes — STM runs as a transparent proxy in front of your existing MCP servers.
+## Start in 3 Steps
+
+```bash
+uv tool install memtomem-stm                             # 1. install
+mms init                                                 # 2. register upstream servers (interactive)
+claude mcp add memtomem-stm -s user -- memtomem-stm      # 3. connect your agent
+```
+
+Check registered upstreams and proxy state with `mms health`. Full setup walkthrough in [Quick Start](/guides/quickstart/).
+
+## Core Capabilities
+
+- **Proactive Surfacing** — Every tool call runs candidate memories through 5 relevance checks (context extraction → query suitability → LTM search → score threshold → dedup window) before anything is injected. See [Proactive Surfacing](/stm/surfacing/).
+- **Response Compression** — 10 strategies pick themselves based on content type (JSON, Markdown, API docs, free text, …) to shrink payloads while keeping meaning. See [Compression Strategies](/stm/compression/).
+- **Auto-Indexing** — Tool responses are indexed into LTM off the request path, so a searchable knowledge base builds up without extra agent calls.
 
 ## How It Works
 
@@ -25,35 +40,21 @@ memtomem-stm (STM Proxy)
                            (filesystem, GitHub, …)
 ```
 
-STM intercepts every MCP tool call. For each call, it:
+STM runs every MCP tool call through a 4-stage pipeline:
 
-1. **Cleans** the request (removes noise, normalizes format)
-2. **Compresses** the response (auto-selects from 10 strategies)
-3. **Surfaces** relevant memories from LTM (5-level relevance gating)
-4. **Indexes** the interaction for future recall
-
-## Key Capabilities
-
-- **Relevance Gating** — Candidate memories pass through five checks (context extraction, query suitability, LTM search, score threshold, dedup window) before reaching your agent, so irrelevant hits are filtered out before they spend tokens.
-- **10 Compression Strategies** — Auto-selected by content type (`auto`, `hybrid`, `selective`, `progressive`, `extract_fields`, `schema_pruning`, `skeleton`, `llm_summary`, `truncate`, `none`).
-- **Progressive Surfacing (F6, unreleased)** — `append` / `section` injection modes now trigger Stage 3 SURFACE on progressive continuations.
-- **Background Auto-Indexing (F4, unreleased)** — Opt in via `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND=true`; Stage 4 runs off the request path.
-- **Progressive Footer Token** — Canonical `\n---\n[progressive: chars=` split token exported as `PROGRESSIVE_FOOTER_TOKEN` (avoids collisions with Markdown HR / YAML fences).
-- **Model-Aware Defaults** — Automatically adjusts behavior for small (≤32K), medium (32K–200K), and large (>200K) context windows.
-- **Feedback Loop** — `stm_surfacing_feedback` + `stm_compression_feedback` feed a per-tool auto-tuner that raises or lowers the `min_score` threshold based on agent feedback.
-- **Horizontal Scaling** — `PendingStore` protocol with in-memory (default) or SQLite-shared backend.
-- **Langfuse Observability** — Spans for every pipeline stage plus upstream `_trace_id` propagation.
-- **Circuit Breaker** — 3-state safety mechanism prevents runaway memory injection after repeated failures.
-- **Context Gateway** — Auto-syncs agent definitions across 6 runtimes.
+1. **CLEAN** — normalize the request (strip noise, unify format)
+2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
+3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
+4. **INDEX** — accumulate the interaction into LTM for future recall
 
 ## Relationship to LTM
 
-STM and LTM are **independent packages** — no Python dependency between them. They communicate via MCP protocol, and each can be deployed, upgraded, and configured separately.
+STM and LTM are **independent packages** — no Python dependency between them. They communicate only via MCP protocol, and each can be deployed and upgraded separately.
 
 | | LTM (memtomem) | STM (memtomem-stm) |
 |---|---|---|
 | **Role** | Persistent storage & search | Real-time proxy & compression |
-| **Required?** | Yes (core) | Optional (enhances experience) |
+| **Required?** | Yes (core) | Optional |
 | **Communication** | Direct MCP server | MCP proxy → queries LTM |
 
 ## Package Info
@@ -67,6 +68,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 
 ## Next Steps
 
+- [Quick Start](/guides/quickstart/) — from install to agent connection
 - [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
 - [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
 - [Context Gateway](/stm/context-gateway/) — Cross-runtime sync

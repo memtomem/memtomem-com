@@ -171,7 +171,7 @@ STM settings are organized into four sections: a flat `LOG_LEVEL`, plus `PROXY__
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND` | MCP command launching the LTM server | — |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` | Args for the LTM command (JSON list) | — |
 
-Injection mode (`prepend` default, plus `append` / `section`) is set via `MEMTOMEM_STM_SURFACING__INJECTION_MODE`. Only `append` / `section` trigger surfacing on progressive continuations (F6, unreleased).
+Injection mode (`prepend` default, plus `append` / `section`) is set via `MEMTOMEM_STM_SURFACING__INJECTION_MODE`.
 
 ### Langfuse (observability)
 
