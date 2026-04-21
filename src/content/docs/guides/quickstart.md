@@ -23,11 +23,12 @@ Prefer pipx or pip? See [Installation](/guides/installation/) for all three opti
 
 ## 2. Setup
 
-Run the interactive setup wizard. It asks for your embedding provider (ONNX / Ollama / OpenAI), where to store the database, and your default namespace — you can accept every default by passing `-y`.
+Run the interactive setup wizard. It opens with a **preset picker** (Minimal / English / Korean) that bundles embedding, reranker, tokenizer, and namespace defaults, then asks for your database path. Pass `-y` to accept every default (equivalent to `--preset minimal -y`), or `--preset korean` / `--preset english` to pick a bundle non-interactively.
 
 ```bash
-mm init                            # interactive setup
-mm init -y                         # auto-accept defaults (for CI)
+mm init                            # interactive setup with preset picker
+mm init -y                         # auto-accept defaults (for CI) — uses Minimal preset
+mm init --preset korean            # Korean preset, interactive remaining steps
 ```
 
 During `mm init` you can opt in to indexing AI agent memory directories — Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memories (`~/.codex/memories/`).
@@ -39,7 +40,7 @@ mms init --mcp claude              # STM wizard + auto-register with Claude Code
 mms health                         # probe registered upstream servers
 ```
 
-Use `--mcp json` if you'd rather get a `.mcp.json` file for Cursor / Windsurf, or `--mcp skip` to handle client registration yourself. You can re-run registration any time with `mms register`.
+Using Cursor, Windsurf, or another MCP client? See the [`mms init`](/stm/cli/#mms-init) reference for the interactive 3-way prompt and all `--mcp` options.
 
 ## 3. Connect your MCP client
 
@@ -49,11 +50,7 @@ Use `--mcp json` if you'd rather get a `.mcp.json` file for Cursor / Windsurf, o
 claude mcp add memtomem -s user -- memtomem-server
 ```
 
-With STM proxy:
-
-```bash
-claude mcp add memtomem-stm -s user -- memtomem-stm
-```
+STM is already registered via `mms init --mcp claude` in Step 2 — no second command needed for Claude Code.
 
 ### Cursor / Windsurf / Claude Desktop
 

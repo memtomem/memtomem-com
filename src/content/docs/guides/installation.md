@@ -61,7 +61,7 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 uv tool install memtomem-stm
 ```
 
-### Run without installing (uvx)
+### uvx (no install)
 
 ```bash
 uvx memtomem-stm --help
