@@ -1,0 +1,127 @@
+---
+title: Installation
+description: Detailed installation guide for memtomem and memtomem-stm.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Requirements
+
+- **Python 3.12+**
+- **pip**, **uv**, or **pipx**
+- An embedding provider for semantic search — pick one during `mm init` (see [Embedding Providers](#embedding-providers) below). Fine to skip at first: memtomem works keyword-only until you choose.
+
+## LTM Server (memtomem)
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="uv (recommended)">
+    ```bash
+    uv tool install memtomem
+    ```
+  </TabItem>
+  <TabItem label="pipx">
+    ```bash
+    pipx install memtomem
+    ```
+  </TabItem>
+  <TabItem label="pip">
+    ```bash
+    pip install memtomem
+    ```
+  </TabItem>
+</Tabs>
+
+### Optional extras
+
+The base package already works — install only the extras you actually need.
+
+| Extra | Description | Command |
+|---|---|---|
+| `onnx` | fastembed local embeddings (recommended default) | `pip install memtomem[onnx]` |
+| `ollama` | Ollama provider client | `pip install memtomem[ollama]` |
+| `openai` | OpenAI provider client | `pip install memtomem[openai]` |
+| `korean` | kiwipiepy Korean morphological analysis | `pip install memtomem[korean]` |
+| `code` | tree-sitter AST chunking (Python / JS / TS) | `pip install memtomem[code]` |
+| `web` | FastAPI + uvicorn Web UI | `pip install memtomem[web]` |
+| `all` | Everything | `pip install memtomem[all]` |
+
+### `mm` CLI
+
+After installation, the following commands are available:
+
+| Command | Purpose |
+|---|---|
+| `mm init` | Interactive setup wizard |
+| `mm --version` · `mm version` | Print installed version |
+| `mm web` | Launch Web UI dashboard (http://localhost:8080) |
+
+The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config.
+
+## STM Proxy (memtomem-stm)
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="uv (recommended)">
+    ```bash
+    uv tool install memtomem-stm
+    ```
+  </TabItem>
+  <TabItem label="pipx">
+    ```bash
+    pipx install memtomem-stm
+    ```
+  </TabItem>
+  <TabItem label="pip">
+    ```bash
+    pip install memtomem-stm
+    ```
+  </TabItem>
+  <TabItem label="uvx (no install)">
+    ```bash
+    uvx memtomem-stm --help
+    ```
+    For ad-hoc execution only — use `uv tool install` or another tab for a permanent install with client registration.
+  </TabItem>
+</Tabs>
+
+### Optional extras
+
+| Extra | Description | Command |
+|---|---|---|
+| `langfuse` | Langfuse observability tracing | `pip install memtomem-stm[langfuse]` |
+| `langchain` | LangChain agent integration | `pip install memtomem-stm[langchain]` |
+
+### `mms` CLI
+
+After installation, the following commands are available:
+
+| Command | Purpose |
+|---|---|
+| `mms init --mcp claude` | First-time setup + auto-register with Claude Code |
+| `mms add <name> --command <cmd>` | Register an upstream MCP server |
+| `mms add --from-clients` | Bulk-import upstreams from existing MCP client configs |
+| `mms list` | List registered servers |
+| `mms health` | Probe upstream connectivity |
+| `mms --version` | Print installed version |
+
+The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once `memtomem-stm` is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically.
+
+## Embedding Providers
+
+| Provider | Setup | GPU | Cost |
+|---|---|---|---|
+| **ONNX** (fastembed) | Built-in | Not required | Free |
+| **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
+| **OpenAI** | API key required | — | Paid |
+
+**Not sure which to pick?** Start with **ONNX** — it's fully local, free, and needs no extra daemon or API key. You can always switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
+
+## Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| MCP | FastMCP (stdio, SSE, Streamable HTTP) |
+| Framework | Pydantic v2, Click (CLI), FastAPI (Web UI) |
+| Database | SQLite (FTS5 full-text search), sqlite-vec (vector search) |
+| Code parsing | tree-sitter (Python, JS, TS AST) |
+| Korean | kiwipiepy morphological analyzer (optional) |
+| Observability | Langfuse (optional) |

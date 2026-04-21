@@ -3,6 +3,8 @@ title: Quick Start
 description: Get memtomem installed and store your first memory in under 5 minutes.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 In 5 minutes you'll have memtomem installed, connected to your MCP client, and answering questions about your notes and code. No GPU, no external account, no database setup.
 
 ## 1. Install
@@ -23,38 +25,64 @@ Prefer pipx or pip? See [Installation](/guides/installation/) for all three opti
 
 ## 2. Setup
 
-Run the interactive setup wizard. It opens with a **preset picker** (Minimal / English / Korean) that bundles embedding, reranker, tokenizer, and namespace defaults, then asks for your database path. Pass `-y` to accept every default (equivalent to `--preset minimal -y`), or `--preset korean` / `--preset english` to pick a bundle non-interactively.
+Run the interactive setup wizard. It opens with a **preset picker** (Minimal / English / Korean) that bundles embedding, reranker, tokenizer, and namespace defaults, then asks for your database path.
 
-```bash
-mm init                            # interactive setup with preset picker
-mm init -y                         # auto-accept defaults (for CI) — uses Minimal preset
-mm init --preset korean            # Korean preset, interactive remaining steps
-```
+<Tabs>
+  <TabItem label="Interactive (default)">
+    ```bash
+    mm init
+    ```
+    Starts with the preset picker, then walks through embedding, reranker, tokenizer, namespace, and database path.
+  </TabItem>
+  <TabItem label="CI / automation">
+    ```bash
+    mm init -y
+    ```
+    Auto-accepts every default. Equivalent to `--preset minimal -y`.
+  </TabItem>
+  <TabItem label="Korean preset">
+    ```bash
+    mm init --preset korean
+    ```
+    Applies the Korean preset, then continues the remaining steps interactively. `--preset english` selects the English preset the same way.
+  </TabItem>
+</Tabs>
 
 During `mm init` you can opt in to indexing AI agent memory directories — Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memories (`~/.codex/memories/`).
 
 If you also want the STM proxy, run its first-time setup:
 
 ```bash
-mms init --mcp claude              # STM wizard + auto-register with Claude Code
-mms health                         # probe registered upstream servers
+mms init --mcp claude
+```
+
+Then probe the registered upstream servers:
+
+```bash
+mms health
 ```
 
 Using Cursor, Windsurf, or another MCP client? See the [`mms init`](/stm/cli/#mms-init) reference for the interactive 3-way prompt and all `--mcp` options.
 
 ## 3. Connect your MCP client
 
-### Claude Code
-
-```bash
-claude mcp add memtomem -s user -- memtomem-server
-```
-
-STM is already registered via `mms init --mcp claude` in Step 2 — no second command needed for Claude Code.
-
-### Cursor / Windsurf / Claude Desktop
-
-Register `memtomem-server` or `memtomem-stm` as a stdio MCP server in your editor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-client-setup.md) for details.
+<Tabs syncKey="mcp-client">
+  <TabItem label="Claude Code">
+    ```bash
+    claude mcp add memtomem -s user -- memtomem-server
+    ```
+    STM is already registered via `mms init --mcp claude` in Step 2 — no second command needed for Claude Code.
+  </TabItem>
+  <TabItem label="Cursor">
+    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Cursor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-client-setup.md) for details.
+  </TabItem>
+  <TabItem label="Windsurf">
+    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Windsurf's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-client-setup.md) for details.
+  </TabItem>
+  <TabItem label="Claude Desktop">
+    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Claude Desktop's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-client-setup.md) for details.
+  </TabItem>
+</Tabs>
 
 ## 4. Use
 
