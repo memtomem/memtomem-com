@@ -20,7 +20,7 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 | **extract_fields** | JSON 딕셔너리 | 주요 필드만 추출 |
 | **schema_pruning** | JSON 배열 | 스키마 유지 + 샘플 축소 |
 | **skeleton** | API 문서 | 구조 뼈대만 보존 |
-| **llm_summary** | 복잡한 텍스트 | LLM 기반 요약 (Ollama/OpenAI) |
+| **llm_summary** | 복잡한 텍스트 | LLM 기반 요약 (Ollama/OpenAI) — 타임아웃 보호(기본 60초), 초과 시 `truncate`로 폴백 |
 | **auto** | 모든 유형 | 콘텐츠 분석 후 최적 전략 자동 선택 |
 | **none** | — | 압축 없이 원본 전달 |
 
