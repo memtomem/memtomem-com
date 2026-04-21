@@ -70,6 +70,8 @@ await store.start_session(agent_id="analyzer")
 mm session start --agent-id planner
 ```
 
+`mm session`의 전체 서브명령(`start`, `end`, `list`, `events`, `wrap`)은 [CLI 레퍼런스의 `mm session` 섹션](/ko/ltm/cli/#mm-session)을 참조하세요.
+
 ### `mm ingest`와의 차이
 
 `mm ingest claude-memory` · `mm ingest codex-memory`는 `agent_id`를 할당하는 명령이 **아닙니다**. 각각 `claude-memory:<slug>` · `codex-memory:<slug>` 고정 네임스페이스에 적재하여 AI 에디터별 기억을 통합 인덱싱합니다. 에이전트별 격리가 목적이라면 위의 MCP/어댑터/CLI 경로로 `agent_id`를 명시해야 합니다.

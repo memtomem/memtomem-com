@@ -70,6 +70,8 @@ Use this to pre-register a session outside the server process.
 mm session start --agent-id planner
 ```
 
+See [`mm session`](/ltm/cli/#mm-session) for the full subcommand surface (`start`, `end`, `list`, `events`, `wrap`).
+
 ### Difference from `mm ingest`
 
 `mm ingest claude-memory` and `mm ingest codex-memory` **do not** assign an `agent_id`. They load memories into fixed namespaces — `claude-memory:<slug>` and `codex-memory:<slug>` — to consolidate per-editor memories into one searchable index. For per-agent isolation, use the MCP/adapter/CLI paths above to set `agent_id` explicitly.

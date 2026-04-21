@@ -11,10 +11,17 @@ memtomem ships **74 tools total**, exposed in three tiers controlled by the `MEM
 | `standard` | ~32 | Adds CRUD, namespace, tags, sessions, scratch, relations groups |
 | `full` | 74 | Every tool individually registered |
 
-Set the mode before starting the server:
+Set the mode in your MCP client config (the server ships as the `memtomem-server` console script, launched automatically by the client). For example, in Claude Desktop / Claude Code `mcp.json`:
 
-```bash
-MEMTOMEM_TOOL_MODE=standard mm serve
+```json
+{
+  "mcpServers": {
+    "memtomem": {
+      "command": "memtomem-server",
+      "env": { "MEMTOMEM_TOOL_MODE": "standard" }
+    }
+  }
+}
 ```
 
 ## Core Tools

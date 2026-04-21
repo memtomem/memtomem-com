@@ -21,6 +21,18 @@ Hybrid search runs three search engines in parallel:
 | **Vector search** | sqlite-vec + ONNX/Ollama/OpenAI embeddings | Semantic similarity. Can match "how to deploy" → "deployment checklist" |
 | **RRF fusion** | Reciprocal Rank Fusion | Combines rankings from both engines into a final score |
 
+## Reranker Pool Tuning
+
+When reranking is enabled, the reranker sees a candidate pool of size `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. The defaults (oversample `2.0`, min_pool `20`, max_pool `200`) give the classic 2× oversample at `top_k=10` and scale up with larger `top_k` requests. Tune with:
+
+| Key | Env var | Default | Notes |
+|---|---|---|---|
+| `rerank.oversample` | `MEMTOMEM_RERANK__OVERSAMPLE` | `2.0` | Pool multiplier over `response_top_k` |
+| `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | Floor — reranker never sees fewer candidates |
+| `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | Cap — prevents runaway cost on large `top_k` |
+
+Runtime-tunable via `mm config set rerank.oversample 3.0` etc. `rerank.top_k` is deprecated; use `min_pool` instead.
+
 ## Semantic Chunking
 
 During indexing, documents are split into meaningful units — not by token count, but by structure. Seven chunking strategies:
