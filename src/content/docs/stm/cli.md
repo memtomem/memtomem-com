@@ -70,9 +70,12 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 ```bash
 mms add --from-clients               # interactive bulk import
 mms add --import                     # alias
+mms add --from-clients --prune       # also remove the direct registration from each source client
 ```
 
-Incompatible with `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`. After import, `mms add` prints a **dual-registration warning** reminding you to remove the now-proxied entries from the client config so they aren't launched twice.
+After a successful import, the same server is advertised on two paths — direct from the source client and via STM's proxied namespace — and the direct path bypasses compression, caching, and LTM surfacing. `--prune` (or an interactive confirm prompt shown in TTY, defaulting to **No**) closes the dual-registration by calling `claude mcp remove` for each Claude Code scope and atomically rewriting the Claude Desktop JSON. Non-TTY callers without `--prune` keep the hint-only behavior — the import still succeeds, and the warning prints the exact manual removal command.
+
+Incompatible with `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`. `--prune` requires `--from-clients` / `--import`.
 
 ### `mms list`
 

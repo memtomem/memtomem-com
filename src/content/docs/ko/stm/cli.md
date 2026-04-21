@@ -70,9 +70,12 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 ```bash
 mms add --from-clients               # 대화형 일괄 가져오기
 mms add --import                     # 별칭
+mms add --from-clients --prune       # 가져온 뒤 source 클라이언트에서 직접 등록 제거
 ```
 
-`NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. 가져오기 완료 후 `mms add`는 **이중 등록 경고**를 출력해, 이제 프록시를 통하는 항목을 클라이언트 설정에서 제거할 것을 안내합니다.
+가져오기가 성공하면 같은 서버가 STM 프록시 경로와 source 클라이언트 경로 양쪽에 노출되어 압축·캐싱·LTM 서피싱이 우회됩니다. `--prune` 플래그(또는 TTY 환경에서 뜨는 대화형 확인 프롬프트, 기본 **No**)는 Claude Code 스코프별 `claude mcp remove`와 Claude Desktop JSON 파일의 원자적 재작성을 수행해 이중 등록을 바로 정리합니다. 비대화 환경에서 `--prune` 없이 실행하면 이전처럼 안내 경고만 출력하며, 수동 복구 명령도 함께 표시됩니다.
+
+`NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. `--prune`은 반드시 `--from-clients` / `--import`와 함께 써야 합니다.
 
 ### `mms list`
 

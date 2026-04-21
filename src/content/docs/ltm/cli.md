@@ -3,7 +3,7 @@ title: CLI Reference
 description: mm CLI commands for memtomem LTM server management.
 ---
 
-The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-runtime context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version.
+The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-runtime context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
 ## Commands
 
@@ -20,6 +20,8 @@ mm init --preset korean              # apply Korean preset non-interactively
 mm init --preset english -y          # English preset, no prompts
 mm init --advanced                   # skip picker, run full 10-step wizard
 ```
+
+On a reinstall path, `mm init` compares the embedding provider / model / dimension stored in the existing `~/.memtomem/memtomem.db` against the new preset. On mismatch, the interactive wizard offers an in-place rebuild of the vector index (`chunks_vec`); under `-y`, it prints a recovery hint pointing at `mm embedding-reset --mode apply-current`. The chunks table itself is preserved, so re-running `mm index <path>` afterwards restores the working set.
 
 ### Running the MCP server
 
@@ -146,6 +148,18 @@ Re-run the setup wizard after dropping every wizard-untouched config key whose v
 ```bash
 mm init --fresh                      # opt-in bulk cleanup + wizard
 ```
+
+### `mm embedding-reset`
+
+Check or resolve mismatches between the embedding model/dimension stored in the DB and the current config (typically after swapping providers or following a reinstall). `--mode` selects the action.
+
+```bash
+mm embedding-reset                            # --mode status (default): compare DB vs. config
+mm embedding-reset --mode apply-current       # reset DB to current config (destructive — re-index required)
+mm embedding-reset --mode revert-to-stored    # switch runtime embedder to DB stored values (non-destructive)
+```
+
+`apply-current` rebuilds `chunks_vec` at the current config's dimension. The chunks table itself is preserved, but all vectors are deleted — run `mm index <path>` afterwards to re-index. `revert-to-stored` only flips runtime state; to make it permanent, update the embedding fields in `~/.memtomem/config.json` accordingly.
 
 ### `mm purge --matching-excluded`
 
