@@ -78,4 +78,6 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 - **Sensitive data detection** — Auto-detects API keys, passwords, PII before injection
 - **Injection size cap** — Default `3000 chars` per injection
 
+A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).
+
 > See the [operations guide](https://github.com/memtomem/memtomem-stm/blob/main/docs/operations.md) for tuning guidance.

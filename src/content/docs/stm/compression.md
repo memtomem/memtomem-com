@@ -20,7 +20,7 @@ memtomem-stm automatically compresses MCP tool responses by content type to save
 | **extract_fields** | JSON dictionaries | Extract key fields only |
 | **schema_pruning** | JSON arrays | Preserve schema + reduce samples |
 | **skeleton** | API docs | Preserve structural skeleton only |
-| **llm_summary** | Complex text | LLM-based summarization (Ollama/OpenAI) |
+| **llm_summary** | Complex text | LLM-based summarization (Ollama/OpenAI) — timeout-bound (default 60s), falls back to `truncate` on timeout |
 | **auto** | All types | Analyze content and auto-select optimal strategy |
 | **none** | — | Pass through original without compression |
 
@@ -60,6 +60,8 @@ progressive → hybrid → truncate
 ```
 
 Each tier checks the floor — if satisfied, that strategy's output is used. The char budget is raised to `len(response) * min_result_retention` before truncation when per-tool `max_result_chars` would otherwise drop more than the floor allows.
+
+The `llm_summary` strategy has its own **timeout guard**: `compression.llm.llm_timeout_seconds` (default `60`, env var `MEMTOMEM_STM_PROXY__COMPRESSION__LLM_TIMEOUT_SECONDS`). A slow or stuck LLM endpoint no longer blocks the proxy — on timeout, STM falls back to `truncate` so the agent still receives a bounded response.
 
 ## Compression Budget Tuning
 

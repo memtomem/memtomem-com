@@ -17,11 +17,11 @@ memtomem-stm is a **short-term memory (STM) proxy** that sits between your AI ag
 
 ```bash
 uv tool install memtomem-stm                             # 1. install
-mms init                                                 # 2. register upstream servers (interactive)
-claude mcp add memtomem-stm -s user -- memtomem-stm      # 3. connect your agent
+mms init --mcp claude                                    # 2. register upstream + Claude Code (one step)
+mms health                                               # 3. verify connectivity
 ```
 
-Check registered upstreams and proxy state with `mms health`. Full setup walkthrough in [Quick Start](/guides/quickstart/).
+`mms init` prompts for an upstream server and then registers `memtomem-stm` with your MCP client of choice (`--mcp claude`, `--mcp json`, or `--mcp skip`). Full setup walkthrough in [Quick Start](/guides/quickstart/).
 
 ## Core Capabilities
 
