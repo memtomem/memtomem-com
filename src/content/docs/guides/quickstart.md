@@ -33,9 +33,11 @@ During `mm init` you can opt in to indexing AI agent memory directories — Clau
 If you also want the STM proxy, run its first-time setup:
 
 ```bash
-mms init                           # STM guided wizard
+mms init --mcp claude              # STM wizard + auto-register with Claude Code
 mms health                         # probe registered upstream servers
 ```
+
+Use `--mcp json` if you'd rather get a `.mcp.json` file for Cursor / Windsurf, or `--mcp skip` to handle client registration yourself. You can re-run registration any time with `mms register`.
 
 ## 3. Connect your MCP client
 

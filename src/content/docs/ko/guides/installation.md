@@ -40,9 +40,11 @@ pip install memtomem[all]          # 전체
 
 ```bash
 mm init          # 대화형 설정 마법사
-mm serve         # MCP 서버 시작
-mm web           # Web UI 대시보드
+mm --version     # 설치된 버전 출력
+mm web           # Web UI 대시보드 (http://localhost:8080)
 ```
+
+MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다.
 
 ## STM 프록시 (memtomem-stm)
 
@@ -67,12 +69,15 @@ pip install memtomem-stm[langchain]    # LangChain 에이전트 통합
 설치 후 `mms` CLI를 사용할 수 있습니다:
 
 ```bash
-mms init                           # 최초 설정 마법사
+mms init --mcp claude              # 최초 설정 + Claude Code 자동 등록
 mms add <name> --command <cmd>     # 업스트림 MCP 서버 등록
+mms add --from-clients             # 기존 MCP 클라이언트 설정에서 일괄 가져오기
 mms list                           # 등록된 서버 목록
 mms health                         # 업스트림 연결 상태 점검
-mms serve                          # STM 프록시 시작
+mms --version                      # 설치된 버전 출력
 ```
+
+STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. `memtomem-stm`이 MCP 클라이언트에 등록되면(`mms init --mcp claude`, `mms register`, `.mcp.json` 등록 중 하나) 클라이언트가 자동으로 기동합니다.
 
 ## 임베딩 프로바이더
 

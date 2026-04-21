@@ -63,21 +63,30 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (로컬 ONNX) / `cohere` (외부 API) | `fastembed` |
 | `MEMTOMEM_RERANK__MODEL` | 모델명. 비영어 콘텐츠에는 `jinaai/jina-reranker-v2-base-multilingual` 권장. | `Xenova/ms-marco-MiniLM-L-6-v2` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | — |
+| `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2.0` |
+| `MEMTOMEM_RERANK__MIN_POOL` | 하한선 — 리랭커가 받는 후보 수의 최솟값 | `20` |
+| `MEMTOMEM_RERANK__MAX_POOL` | 상한선 — 큰 `top_k`에서 비용 폭주 방지 | `200` |
 
 ### Search
 
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_SEARCH__DEFAULT_TOP_K` | 기본 검색 결과 수 | `10` |
-| `MEMTOMEM_SEARCH__BM25_CANDIDATES` | BM25 후보군 크기 | — |
-| `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | 벡터 검색 후보군 크기 | — |
-| `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion 상수 | — |
+| `MEMTOMEM_SEARCH__BM25_CANDIDATES` | BM25 후보군 크기 | `50` |
+| `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | 벡터 검색 후보군 크기 | `50` |
+| `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion 상수 | `60` |
 
 ### Tool exposure
 
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_TOOL_MODE` | `core` (9 tools + `mem_do`) / `standard` (~32) / `full` (74) | `core` |
+
+### Web UI
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_WEB__MODE` | `prod` (정돈된 페이지만) / `dev` (Sessions · Namespaces · Health Report 등 메인테이너 페이지 추가). `mm web --mode` · `mm web --dev`가 실행 시 이 값을 덮어씁니다. | `prod` |
 
 ### Lifecycle policies & webhooks
 
@@ -117,6 +126,7 @@ STM 설정은 네 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `PRO
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `INFO` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `false`일 때 관찰 도구 7개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP 도구 목록에서 숨김. Python 내부 호출은 여전히 가능. | `true` |
 
 ### Proxy
 
@@ -155,6 +165,18 @@ STM 설정은 네 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `PRO
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | Stage 4b EXTRACT (사실 추출) | `false` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | 스코어러 백엔드 | — |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | `stm_compression_feedback` 기록 | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달 읽기 텔레메트리 기록 (`stm_progressive_stats`로 노출) | `true` |
+| `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | 내부 락 획득 상한. 타임아웃 시 느린 업스트림이 아닌 데드락/멈춘 홀더 신호로 취급 | `30.0` |
+
+### Proxy → Timeouts
+
+아래 세 필드는 `~/.memtomem/stm_proxy.json`의 업스트림 항목(`UpstreamServerConfig`)에 **서버별로** 설정합니다(환경 변수 아님). 미지정 시 아래 기본값이 모든 업스트림에 적용됩니다.
+
+| 필드 | 설명 | 기본값 |
+|---|---|---|
+| `call_timeout_seconds` | `session.call_tool()` 시도당 타임아웃. 초과 시 세션을 강제 리셋하고 재시도 루프로 복귀. | `90.0` |
+| `overall_deadline_seconds` | 재시도 포함 단일 호출의 전체 벽시계 예산. `call_timeout × (max_retries+1)` 최악값 폭주 방지. | `180.0` |
+| `compression.llm.llm_timeout_seconds` | `llm_summary` 압축 타임아웃. 초과 시 `truncate`로 폴백. | `60.0` |
 
 ### Surfacing (Stage 3)
 

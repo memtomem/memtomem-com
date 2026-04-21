@@ -33,9 +33,11 @@ mm init -y                         # 기본값 자동 수락 (CI 용)
 STM 프록시도 설치한 경우 초기 설정을 수행합니다:
 
 ```bash
-mms init                           # STM 설정 마법사
+mms init --mcp claude              # STM 마법사 + Claude Code 자동 등록
 mms health                         # 등록된 업스트림 서버 연결 상태 점검
 ```
+
+Cursor/Windsurf 같은 에디터에는 `--mcp json`으로 `.mcp.json`을 생성하거나, 직접 등록하려면 `--mcp skip`을 사용합니다. 등록은 언제든 `mms register`로 다시 실행할 수 있습니다.
 
 ## 3. MCP 클라이언트 연동
 

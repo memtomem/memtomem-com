@@ -63,21 +63,30 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) | `fastembed` |
 | `MEMTOMEM_RERANK__MODEL` | Model name. Use `jinaai/jina-reranker-v2-base-multilingual` for non-English content. | `Xenova/ms-marco-MiniLM-L-6-v2` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | — |
+| `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2.0` |
+| `MEMTOMEM_RERANK__MIN_POOL` | Floor — reranker never sees fewer candidates than this | `20` |
+| `MEMTOMEM_RERANK__MAX_POOL` | Cap — prevents runaway cost at large `top_k` | `200` |
 
 ### Search
 
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_SEARCH__DEFAULT_TOP_K` | Default result count | `10` |
-| `MEMTOMEM_SEARCH__BM25_CANDIDATES` | BM25 candidate pool size | — |
-| `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | Dense vector candidate pool size | — |
-| `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion constant | — |
+| `MEMTOMEM_SEARCH__BM25_CANDIDATES` | BM25 candidate pool size | `50` |
+| `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | Dense vector candidate pool size | `50` |
+| `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion constant | `60` |
 
 ### Tool exposure
 
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_TOOL_MODE` | `core` (9 tools + `mem_do`) / `standard` (~32) / `full` (74) | `core` |
+
+### Web UI
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_WEB__MODE` | `prod` (polished pages only) / `dev` (adds maintainer pages: Sessions, Namespaces, Health Report). `mm web --mode` and `mm web --dev` override this at launch. | `prod` |
 
 ### Lifecycle policies & webhooks
 
@@ -117,6 +126,7 @@ STM settings are organized into four sections: a flat `LOG_LEVEL`, plus `PROXY__
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `INFO` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `false`, hides the seven observability tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`) from the MCP tool list. Tools remain callable from Python. | `true` |
 
 ### Proxy
 
@@ -155,6 +165,18 @@ STM settings are organized into four sections: a flat `LOG_LEVEL`, plus `PROXY__
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | Stage 4b EXTRACT (fact extraction) | `false` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | Scorer backend | — |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | Persist `stm_compression_feedback` | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_progressive_stats`) | `true` |
+| `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | Internal lock-acquisition ceiling; a timeout signals a deadlock/stuck holder rather than a slow upstream | `30.0` |
+
+### Proxy → Timeouts
+
+These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_proxy.json` (set per server, not via env vars). Defaults apply to every registered upstream unless overridden.
+
+| Field | Description | Default |
+|---|---|---|
+| `call_timeout_seconds` | Per-attempt timeout for `session.call_tool()`. On timeout the session is force-reset and the retry loop proceeds. | `90.0` |
+| `overall_deadline_seconds` | Total wall-clock budget across all retry attempts. Prevents `call_timeout × (max_retries+1)` worst-case blowout. | `180.0` |
+| `compression.llm.llm_timeout_seconds` | Timeout for `llm_summary` compression; on timeout STM falls back to `truncate`. | `60.0` |
 
 ### Surfacing (Stage 3)
 
