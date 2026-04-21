@@ -9,17 +9,22 @@ The `mms` command is installed with the `memtomem-stm` package. It manages upstr
 
 ### `mms init`
 
-Guided first-time setup. Prompts for a single upstream server, writes `~/.memtomem/stm_proxy.json`, and (optionally) registers `memtomem-stm` with your MCP client.
+Run `mms init` with no flags — the wizard asks for one upstream server, optionally probes its connectivity, writes `~/.memtomem/stm_proxy.json`, and then offers a 3-way MCP-client registration prompt:
+
+1. **Add to Claude Code** — runs `claude mcp add` for you.
+2. **Generate `.mcp.json`** — writes a project-scoped config in the current directory.
+3. **Skip** — prints paste hints so you can wire it up by hand later.
+
+Use the `--mcp` flag to pre-answer the prompt in scripted / CI runs:
 
 ```bash
-mms init                             # interactive; prompts for upstream + MCP client
-mms init --mcp claude                # auto-register with Claude Code (runs `claude mcp add`)
-mms init --mcp json                  # write a .mcp.json file in the current directory
-mms init --mcp skip                  # skip registration; print manual instructions
+mms init --mcp claude                # auto-register with Claude Code
+mms init --mcp json                  # write .mcp.json in the current directory
+mms init --mcp skip                  # write config, print paste hints, exit
 mms init --no-validate               # skip the upstream connectivity probe
 ```
 
-`mms init` aborts if the config file already exists — use `mms add` to append more upstream servers.
+`mms init` aborts if the config file already exists — use `mms add` to append more upstream servers, or `mms register` to re-run the registration prompt without touching the config.
 
 ### `mms register`
 

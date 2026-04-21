@@ -31,6 +31,10 @@ To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` in the cli
 
 Launch the Web UI dashboard for browser-based search and memory management.
 
+On launch, `mm web` opens the dashboard at `http://127.0.0.1:8080` with these tabs: **Home · Search · Sources · Index · Tags · Timeline · More**. The **More** tab holds Settings, Dedup, Age-out, Export/Import, and Reset Database.
+
+Pass `--dev` (or set `MEMTOMEM_WEB__MODE=dev`) to unlock maintainer pages: **Namespaces, Sessions, Working Memory, Health Report**. Most users won't need these.
+
 ```bash
 mm web                               # default: http://localhost:8080 (prod tier)
 mm web --port 9000
@@ -38,8 +42,6 @@ mm web --open                        # also open the URL in your default browser
 mm web --dev                         # shortcut for --mode dev
 mm web --mode dev                    # expose opt-in maintainer pages
 ```
-
-`--mode prod` (default) shows the polished page set. `--mode dev` adds maintainer-only pages like Sessions, Namespaces, and Health Report. The env var `MEMTOMEM_WEB__MODE` sets the default.
 
 ### `mm search <query>`
 

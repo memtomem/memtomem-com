@@ -9,17 +9,22 @@ description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 
 ### `mms init`
 
-첫 설치용 가이드 마법사. 업스트림 서버 한 개를 질의받아 `~/.memtomem/stm_proxy.json`을 작성하고, 원하는 경우 `memtomem-stm`을 MCP 클라이언트에 등록합니다.
+플래그 없이 `mms init` 을 실행하면 마법사가 업스트림 서버 한 개를 질의하고, 선택적으로 연결을 점검한 뒤 `~/.memtomem/stm_proxy.json` 을 작성하고, 이어서 MCP 클라이언트 등록용 3지선다 프롬프트를 띄웁니다:
+
+1. **Claude Code 에 추가** — `claude mcp add` 를 자동 실행합니다.
+2. **`.mcp.json` 생성** — 현재 디렉터리에 프로젝트 스코프 설정 파일을 작성합니다.
+3. **건너뛰기** — 수동 등록용 paste hint 를 출력합니다.
+
+스크립트/CI 실행에서 프롬프트를 미리 답하려면 `--mcp` 플래그를 사용합니다:
 
 ```bash
-mms init                             # 대화형; 업스트림 + MCP 클라이언트 프롬프트
-mms init --mcp claude                # Claude Code에 자동 등록 (`claude mcp add`)
+mms init --mcp claude                # Claude Code 에 자동 등록
 mms init --mcp json                  # 현재 디렉터리에 .mcp.json 생성
-mms init --mcp skip                  # 등록 건너뛰기; 수동 안내 출력
+mms init --mcp skip                  # 설정만 쓰고 paste hint 출력 후 종료
 mms init --no-validate               # 업스트림 연결 점검 생략
 ```
 
-설정 파일이 이미 있으면 `mms init`는 중단됩니다 — 업스트림을 추가하려면 `mms add`를 사용하세요.
+설정 파일이 이미 있으면 `mms init` 는 중단됩니다 — 업스트림을 추가하려면 `mms add`, 등록 프롬프트만 재실행하려면 `mms register` 를 사용하세요.
 
 ### `mms register`
 
