@@ -8,14 +8,16 @@ In 5 minutes you'll have memtomem installed, connected to your MCP client, and a
 ## 1. Install
 
 ```bash
-uv tool install memtomem          # or: pipx install memtomem
+uv tool install memtomem
 ```
 
 Optionally, also install the STM proxy:
 
 ```bash
-uv tool install memtomem-stm      # or: pip install memtomem-stm
+uv tool install memtomem-stm
 ```
+
+Prefer pipx or pip? See [Installation](/guides/installation/) for all three options side by side.
 
 > memtomem works out of the box with keyword-only (BM25) search. For semantic search you can pick an embedding provider in the setup wizard — ONNX (built-in, local), Ollama (local), or OpenAI. See the [Embeddings guide](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md).
 

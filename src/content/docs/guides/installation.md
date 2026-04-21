@@ -11,14 +11,21 @@ description: Detailed installation guide for memtomem and memtomem-stm.
 
 ## LTM Server (memtomem)
 
+### Using uv (recommended)
+
 ```bash
-# uv (recommended)
 uv tool install memtomem
+```
 
-# pipx
+### Using pipx
+
+```bash
 pipx install memtomem
+```
 
-# pip
+### Using pip
+
+```bash
 pip install memtomem
 ```
 
@@ -48,14 +55,21 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 
 ## STM Proxy (memtomem-stm)
 
+### Using uv (recommended)
+
 ```bash
-# uv (recommended)
 uv tool install memtomem-stm
+```
 
-# run without installing
+### Run without installing (uvx)
+
+```bash
 uvx memtomem-stm --help
+```
 
-# pip
+### Using pip
+
+```bash
 pip install memtomem-stm
 ```
 

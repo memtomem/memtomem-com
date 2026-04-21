@@ -8,14 +8,16 @@ description: 5분 안에 memtomem을 설치하고 첫 기억을 저장해 보세
 ## 1. 설치
 
 ```bash
-uv tool install memtomem          # 또는: pipx install memtomem
+uv tool install memtomem
 ```
 
 STM 프록시도 함께 사용하려면:
 
 ```bash
-uv tool install memtomem-stm      # 또는: pip install memtomem-stm
+uv tool install memtomem-stm
 ```
+
+pipx 또는 pip 을 선호하면 [설치](/ko/guides/installation/) 에서 세 옵션을 한눈에 확인할 수 있습니다.
 
 > memtomem은 설치 직후 키워드 검색(BM25)만으로 동작합니다. 시맨틱 검색을 사용하려면 설정 마법사에서 임베딩 프로바이더를 선택합니다 — ONNX(내장, 로컬), Ollama(로컬), 또는 OpenAI. [임베딩 가이드](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md)를 참고하세요.
 
