@@ -142,6 +142,8 @@ mms add filesystem --command npx \
 # filesystem's read_file becomes fs__read_file
 ```
 
+Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
+
 When the agent calls `fs__read_file`, the proxy runs the pipeline: **CLEAN → COMPRESS → SURFACE → INDEX**, then returns the compressed response plus any surfaced memories.
 
 > See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.

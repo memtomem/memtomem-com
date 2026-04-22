@@ -205,6 +205,8 @@ Injection mode (`prepend` default, plus `append` / `section`) is set via `MEMTOM
 | `MEMTOMEM_STM_LANGFUSE__HOST` | Langfuse host URL | — |
 | `MEMTOMEM_STM_LANGFUSE__SAMPLING_RATE` | 0.0–1.0 | `1.0` |
 
+Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra installed raises a `ValueError` at startup (fail-fast since v0.1.16). Install the extra first, or leave `enabled=false`. The old silent-disable-with-WARNING behavior is gone, so a typo no longer leaves tracing quietly off.
+
 ### Compression strategies (`MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION`)
 
 | Strategy | Use for |

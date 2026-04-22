@@ -205,6 +205,8 @@ STM 설정은 네 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `PRO
 | `MEMTOMEM_STM_LANGFUSE__HOST` | Langfuse 호스트 URL | — |
 | `MEMTOMEM_STM_LANGFUSE__SAMPLING_RATE` | 0.0–1.0 | `1.0` |
 
+`MEMTOMEM_STM_LANGFUSE__ENABLED=true` 로 설정했는데 `[langfuse]` extra 가 설치되어 있지 않으면 시작 시점에 `ValueError` 로 실패합니다(v0.1.16 이후 fail-fast). 먼저 extra 를 설치하거나 `enabled=false` 로 두세요 — 기존의 "조용히 비활성화 + WARNING" 동작은 제거되었으므로, 설정 오타로 트레이싱이 말없이 꺼지는 일은 없습니다.
+
 ### 압축 전략 (`MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION`)
 
 | Strategy | 용도 |

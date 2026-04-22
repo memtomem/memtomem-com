@@ -142,6 +142,8 @@ mms add filesystem --command npx \
 # filesystem의 read_file 은 fs__read_file 이 됩니다
 ```
 
+MCP 도구 선택 UI(예: Claude Code의 `/mcp`)에서 렌더링되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내도록 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file` 로 표시됩니다. 이는 도구를 호출할 때 사용하는 `{prefix}__{tool}` 이름과는 별개이며, 업스트림 도구가 이미 `annotations.title` 을 제공하는 경우에만 적용됩니다.
+
 에이전트가 `fs__read_file`을 호출하면 프록시가 **CLEAN → COMPRESS → SURFACE → INDEX** 파이프라인을 실행하고, 압축된 응답 + 서피싱된 기억을 함께 반환합니다.
 
 > 메커니즘은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참조하세요.
