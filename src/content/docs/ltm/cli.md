@@ -56,13 +56,15 @@ mm search "deployment config" --namespace project-x --limit 5
 
 ### `mm index <path>`
 
-Index files or directories into the knowledge base. Uses hash-based change detection for incremental indexing.
+One-shot command that **seeds** the index with files already on disk. Re-runs are safe — chunks are content-hashed, so unchanged files are skipped.
 
 ```bash
 mm index .                           # index current directory
 mm index ~/docs/architecture         # index a specific directory
 mm index README.md                   # index a single file
 ```
+
+Paths listed in `indexing.memory_dirs` are additionally watched by the file watcher that `mm server` starts — but the watcher is **reactive only**. It reindexes on modify/create/move events that fire after it starts, so **pre-existing files at boot time are not auto-scanned**. The normal flow is to seed once with `mm index <dir>` (or `mem_index(path="<dir>")`) and then let the watcher handle further edits. This is why the `mm init` wizard prints `mm index {memory_dir}` as step 1 of its `Next steps`.
 
 ### `mm ingest`
 
@@ -169,6 +171,20 @@ Remove already-indexed chunks whose source paths match the built-in credential d
 mm purge --matching-excluded          # dry-run — shows what would be removed
 mm purge --matching-excluded --apply  # perform the deletion
 ```
+
+### `mm uninstall`
+
+Clean up `~/.memtomem/` state (config, DB, fragments, backups, uploads) separately from removing the binary. Package-manager commands like `uv tool uninstall memtomem` only remove the executable, which leaves stale state behind on reinstall — since v0.1.23 this subcommand closes the gap.
+
+```bash
+mm uninstall                  # interactive, removes everything
+mm uninstall -y               # skip the confirmation prompt
+mm uninstall --keep-config    # preserve config.json + config.d/* + backups
+mm uninstall --keep-data      # preserve the SQLite DB + ~/.memtomem/memories/
+mm uninstall --force          # bypass the running-server safety check
+```
+
+Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first or pass `--force`. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
 
 ## Example Workflow
 

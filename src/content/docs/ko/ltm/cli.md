@@ -56,13 +56,15 @@ mm search "deployment config" --namespace project-x --limit 5
 
 ### `mm index <path>`
 
-파일 또는 디렉토리를 지식 베이스에 인덱싱합니다. 해시 기반 변경 감지로 증분 인덱싱을 수행합니다.
+디스크에 이미 존재하는 파일을 **한 번에 시드**하는 one-shot 명령입니다. 해시 기반 변경 감지로 증분 인덱싱을 수행하므로 재실행은 안전합니다.
 
 ```bash
 mm index .                           # 현재 디렉토리 인덱싱
 mm index ~/docs/architecture         # 특정 디렉토리 인덱싱
 mm index README.md                   # 단일 파일 인덱싱
 ```
+
+`indexing.memory_dirs` 에 등록된 경로는 `mm server` 가 시작하는 파일 워처가 **반응형(reactive)** 으로 감시합니다 — 워처 기동 이후에 발생하는 modify/create/move 이벤트만 재인덱싱하므로, 기동 시점에 **이미 존재하던 파일은 자동 스캔되지 않습니다**. 그래서 `mm index <dir>` (또는 `mem_index(path="<dir>")`) 로 한 번 시드한 뒤 워처에 맡기는 흐름이 기본입니다. `mm init` 마법사의 `Next steps` 가 `mm index {memory_dir}` 를 1단계로 출력하는 이유이기도 합니다.
 
 ### `mm ingest`
 
@@ -169,6 +171,20 @@ mm embedding-reset --mode revert-to-stored    # 런타임 임베더를 DB 저장
 mm purge --matching-excluded              # dry-run — 삭제 대상 미리보기
 mm purge --matching-excluded --apply      # 실제 삭제 실행
 ```
+
+### `mm uninstall`
+
+바이너리 제거와는 별개로 `~/.memtomem/` 상태(설정·DB·프래그먼트·백업·업로드)를 정리합니다. `uv tool uninstall memtomem` 같은 패키지 매니저 명령은 바이너리만 제거하므로, 재설치 시 구 버전 상태가 그대로 남아 문제가 될 수 있습니다 — v0.1.23부터 이 간극을 닫는 전용 명령이 추가되었습니다.
+
+```bash
+mm uninstall                  # 대화형, 전체 삭제
+mm uninstall -y               # 확인 프롬프트 스킵
+mm uninstall --keep-config    # config.json + config.d/* + 백업 보존
+mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
+mm uninstall --force          # 서버 실행 중 안전장치 우회
+```
+
+이 명령은 기본 경로 바깥의 `storage.sqlite_path` 도 인벤토리에 포함시키고, WAL 손상 위험 때문에 MCP 서버가 살아 있을 때는 실행을 거부합니다. 외부 에디터의 MCP 엔트리(`~/.claude.json`, `~/.codex/config.toml` 등)는 감지해서 경로만 알려주며 수정하지는 않습니다. 실행 후 마지막에 설치 컨텍스트에 맞는 바이너리 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력하므로 그 단계를 이어서 수행하면 됩니다.
 
 ## 예제 워크플로우
 
