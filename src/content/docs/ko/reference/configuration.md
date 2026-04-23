@@ -76,6 +76,76 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 | `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | 벡터 검색 후보군 크기 | `50` |
 | `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion 상수 | `60` |
 
+### Decay (시간 감쇠)
+
+반감기 기반 시간 감쇠 가중. 인덱싱된 지 오래된 청크의 검색 점수를 점진적으로 낮춥니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_DECAY__ENABLED` | 시간 감쇠 가중 활성화 | `false` |
+| `MEMTOMEM_DECAY__HALF_LIFE_DAYS` | 반감기 (일). 이 기간이 지나면 기여도가 절반으로 | `30.0` |
+
+### MMR (다양성 재순위)
+
+Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서로 다른 관점을 섞습니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_MMR__ENABLED` | MMR 다양성 재순위 활성화 | `false` |
+| `MEMTOMEM_MMR__LAMBDA_PARAM` | 0.0–1.0. `0.0`=다양성 최대, `1.0`=관련성 최대 | `0.7` |
+
+### Access (접근 빈도 가중)
+
+자주 조회된 청크를 상위로 밀어 올리는 빈도 기반 배수.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_ACCESS__ENABLED` | 접근 빈도 기반 가중 활성화 | `false` |
+| `MEMTOMEM_ACCESS__MAX_BOOST` | 점수 배수 상한 (`>= 1.0`) | `1.5` |
+
+### Importance (중요도 가중)
+
+청크 메타데이터(태그 · 크기 · 위치 등)에서 파생된 중요도 점수를 검색 점수에 배수로 적용합니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_IMPORTANCE__ENABLED` | 중요도 가중 활성화 | `false` |
+| `MEMTOMEM_IMPORTANCE__MAX_BOOST` | 점수 배수 상한 (`>= 1.0`) | `1.5` |
+| `MEMTOMEM_IMPORTANCE__WEIGHTS` | 중요도 피처 가중치 벡터 (JSON 리스트, REPLACE 병합) | `[0.3, 0.2, 0.3, 0.2]` |
+
+### Query expansion (쿼리 확장)
+
+원본 쿼리에 태그·헤딩·LLM 생성 용어를 추가해 재현율을 높입니다. `strategy=llm` 은 아래 LLM 섹션 설정을 사용합니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_QUERY_EXPANSION__ENABLED` | 쿼리 확장 활성화 | `false` |
+| `MEMTOMEM_QUERY_EXPANSION__MAX_TERMS` | 추가 용어 최대 개수 | `3` |
+| `MEMTOMEM_QUERY_EXPANSION__STRATEGY` | `tags` / `headings` / `both` / `llm` | `tags` |
+
+### Context window (컨텍스트 윈도우)
+
+검색 히트 주변의 ±N 인접 청크를 함께 반환하는 small-to-big retrieval. 파편화된 맥락을 회복할 때 유용합니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_CONTEXT_WINDOW__ENABLED` | 컨텍스트 윈도우 확장 활성화 | `false` |
+| `MEMTOMEM_CONTEXT_WINDOW__WINDOW_SIZE` | 히트당 ±N 인접 청크 (`0`–`10`) | `2` |
+
+### LLM (요약 · 쿼리 확장 백엔드)
+
+`query_expansion.strategy=llm`, 통합 요약 등 LLM 기반 기능에서 공통으로 사용하는 백엔드 설정.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_LLM__ENABLED` | LLM 기반 기능 활성화 | `false` |
+| `MEMTOMEM_LLM__PROVIDER` | `ollama` / `openai` 등 | `ollama` |
+| `MEMTOMEM_LLM__MODEL` | 모델명. 빈 문자열이면 프로바이더별 기본값 | `""` |
+| `MEMTOMEM_LLM__BASE_URL` | 엔드포인트 URL | `http://localhost:11434` |
+| `MEMTOMEM_LLM__API_KEY` | API 키 (유료 프로바이더) | — |
+| `MEMTOMEM_LLM__MAX_TOKENS` | 생성 토큰 상한 | `1024` |
+| `MEMTOMEM_LLM__TIMEOUT` | 요청 타임아웃 (초) | `60.0` |
+
 ### Tool exposure
 
 | Variable | Description | Default |
@@ -99,6 +169,31 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 | `MEMTOMEM_WEBHOOK__EVENTS` | 전송 이벤트 유형 (JSON 리스트) | — |
 | `MEMTOMEM_WEBHOOK__SECRET` | HMAC 서명용 시크릿 | — |
 | `MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS` | HTTP 타임아웃 | — |
+
+### Consolidation schedule (통합 스케줄)
+
+중복·유사 기억을 주기적으로 묶어 아카이브 요약으로 압축하는 백그라운드 잡.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__ENABLED` | 스케줄 실행 활성화 | `false` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__INTERVAL_HOURS` | 실행 주기 (시간) | `24.0` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__MIN_GROUP_SIZE` | 통합 대상 최소 그룹 크기 | `3` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__MAX_GROUPS` | 1회 실행당 처리 그룹 상한 | `10` |
+
+### Health watchdog (상태 모니터)
+
+주기적 헬스 체크, 고아 레코드 정리, 자동 유지보수를 수행하는 백그라운드 루프.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_HEALTH_WATCHDOG__ENABLED` | 상태 모니터 실행 | `false` |
+| `MEMTOMEM_HEALTH_WATCHDOG__HEARTBEAT_INTERVAL_SECONDS` | 하트비트 주기 | `60.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | 진단 체크 주기 | `300.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | 딥 스캔 주기 | `3600.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | 보관 스냅샷 수 상한 | `1000` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | 고아 레코드 정리 임계치 | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | 자동 유지보수 수행 | `true` |
 
 ### Logging
 

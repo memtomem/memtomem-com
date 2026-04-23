@@ -76,6 +76,76 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 | `MEMTOMEM_SEARCH__DENSE_CANDIDATES` | Dense vector candidate pool size | `50` |
 | `MEMTOMEM_SEARCH__RRF_K` | Reciprocal Rank Fusion constant | `60` |
 
+### Decay (time-based scoring)
+
+Half-life decay multiplier applied to hybrid-search scores. Gradually deprioritises older chunks.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_DECAY__ENABLED` | Enable time-based decay weighting | `false` |
+| `MEMTOMEM_DECAY__HALF_LIFE_DAYS` | Half-life in days — a chunk's contribution halves every interval | `30.0` |
+
+### MMR (diversity rerank)
+
+Maximal Marginal Relevance rerank. Reduces redundancy among top results and mixes in alternate angles.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_MMR__ENABLED` | Enable MMR diversity rerank | `false` |
+| `MEMTOMEM_MMR__LAMBDA_PARAM` | 0.0–1.0. `0.0` = max diversity, `1.0` = max relevance | `0.7` |
+
+### Access (frequency boost)
+
+Frequency-based multiplier that promotes chunks which have been accessed often.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_ACCESS__ENABLED` | Enable access-frequency boost | `false` |
+| `MEMTOMEM_ACCESS__MAX_BOOST` | Score multiplier ceiling (must be `>= 1.0`) | `1.5` |
+
+### Importance (metadata boost)
+
+Multiplier derived from chunk metadata features (tags, size, position, ...) applied on top of the search score.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_IMPORTANCE__ENABLED` | Enable importance boost | `false` |
+| `MEMTOMEM_IMPORTANCE__MAX_BOOST` | Score multiplier ceiling (must be `>= 1.0`) | `1.5` |
+| `MEMTOMEM_IMPORTANCE__WEIGHTS` | Importance-feature weight vector (JSON list, REPLACE merge) | `[0.3, 0.2, 0.3, 0.2]` |
+
+### Query expansion
+
+Augments the original query with related tags, headings, or LLM-generated terms to improve recall. `strategy=llm` uses the LLM section below.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_QUERY_EXPANSION__ENABLED` | Enable query expansion | `false` |
+| `MEMTOMEM_QUERY_EXPANSION__MAX_TERMS` | Max additional terms to append | `3` |
+| `MEMTOMEM_QUERY_EXPANSION__STRATEGY` | `tags` / `headings` / `both` / `llm` | `tags` |
+
+### Context window
+
+Small-to-big retrieval: returns ±N adjacent chunks around each search hit. Useful for recovering fragmented context in long documents.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_CONTEXT_WINDOW__ENABLED` | Enable context-window expansion | `false` |
+| `MEMTOMEM_CONTEXT_WINDOW__WINDOW_SIZE` | ±N adjacent chunks per hit (`0`–`10`) | `2` |
+
+### LLM (summarisation · query-expansion backend)
+
+Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summaries, and other LLM-powered features.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_LLM__ENABLED` | Enable LLM-powered features | `false` |
+| `MEMTOMEM_LLM__PROVIDER` | `ollama` / `openai` / etc. | `ollama` |
+| `MEMTOMEM_LLM__MODEL` | Model name. Empty = provider-specific default | `""` |
+| `MEMTOMEM_LLM__BASE_URL` | Endpoint URL | `http://localhost:11434` |
+| `MEMTOMEM_LLM__API_KEY` | API key for paid providers | — |
+| `MEMTOMEM_LLM__MAX_TOKENS` | Generation token cap | `1024` |
+| `MEMTOMEM_LLM__TIMEOUT` | Request timeout in seconds | `60.0` |
+
 ### Tool exposure
 
 | Variable | Description | Default |
@@ -99,6 +169,31 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 | `MEMTOMEM_WEBHOOK__EVENTS` | Event types to send (JSON list) | — |
 | `MEMTOMEM_WEBHOOK__SECRET` | HMAC signing secret | — |
 | `MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS` | HTTP timeout | — |
+
+### Consolidation schedule
+
+Background job that periodically groups near-duplicate memories and compresses them into archive summaries.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__ENABLED` | Run the consolidation scheduler | `false` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__INTERVAL_HOURS` | Scheduler interval (hours) | `24.0` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__MIN_GROUP_SIZE` | Minimum group size to consolidate | `3` |
+| `MEMTOMEM_CONSOLIDATION_SCHEDULE__MAX_GROUPS` | Max groups processed per run | `10` |
+
+### Health watchdog
+
+Background loop for periodic health checks, orphan-record cleanup, and automatic maintenance.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_HEALTH_WATCHDOG__ENABLED` | Run the health watchdog | `false` |
+| `MEMTOMEM_HEALTH_WATCHDOG__HEARTBEAT_INTERVAL_SECONDS` | Heartbeat interval | `60.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | Diagnostic-check interval | `300.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | Deep-scan interval | `3600.0` |
+| `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | Snapshot retention cap | `1000` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | Orphan-record cleanup threshold | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | Perform automatic maintenance | `true` |
 
 ### Logging
 
