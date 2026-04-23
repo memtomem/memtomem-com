@@ -10,8 +10,10 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 ## 1. 설치
 
 ```bash
-uv tool install memtomem
+uv tool install 'memtomem[all]'       # 또는: pipx install 'memtomem[all]'
 ```
+
+`[all]`은 ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다. BM25 전용 최소 설치(~40 MB, 전체 설치는 ~250 MB)는 [최소 설치](/ko/guides/installation/#ltm-서버-memtomem) 안내를 참고하세요.
 
 STM 프록시도 함께 사용하려면:
 

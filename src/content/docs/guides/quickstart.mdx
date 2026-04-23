@@ -10,8 +10,10 @@ In 5 minutes you'll have memtomem installed, connected to your MCP client, and a
 ## 1. Install
 
 ```bash
-uv tool install memtomem
+uv tool install 'memtomem[all]'       # or: pipx install 'memtomem[all]'
 ```
+
+`[all]` bundles ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI. For a BM25-only install (~40 MB vs ~250 MB), see the [Minimal install](/guides/installation/#ltm-server-memtomem) note.
 
 Optionally, also install the STM proxy:
 

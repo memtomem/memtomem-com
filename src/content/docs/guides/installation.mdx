@@ -16,24 +16,32 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (recommended)">
     ```bash
-    uv tool install memtomem
+    uv tool install 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pipx">
     ```bash
-    pipx install memtomem
+    pipx install 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pip">
     ```bash
-    pip install memtomem
+    pip install 'memtomem[all]'
     ```
   </TabItem>
 </Tabs>
 
+`[all]` bundles ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI (~250 MB). Want a leaner footprint? Drop the extra for a BM25-only install (~40 MB):
+
+```bash
+uv tool install memtomem                      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
+```
+
+Opt into features later with e.g. `uv tool install --reinstall 'memtomem[onnx,web]'`.
+
 ### Optional extras
 
-The base package already works — install only the extras you actually need.
+The extras below are what `[all]` bundles — install them individually when you want a narrower footprint.
 
 | Extra | Description | Command |
 |---|---|---|

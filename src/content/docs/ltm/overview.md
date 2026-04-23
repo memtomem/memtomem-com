@@ -16,7 +16,7 @@ memtomem gives your AI agent **memory that persists across sessions and across a
 ## Start in 3 Steps
 
 ```bash
-uv tool install memtomem                              # 1. install
+uv tool install 'memtomem[all]'                       # 1. install
 mm init                                               # 2. interactive setup
 claude mcp add memtomem -s user -- memtomem-server    # 3. connect your agent
 ```

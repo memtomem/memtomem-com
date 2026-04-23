@@ -16,24 +16,32 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (권장)">
     ```bash
-    uv tool install memtomem
+    uv tool install 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pipx">
     ```bash
-    pipx install memtomem
+    pipx install 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pip">
     ```bash
-    pip install memtomem
+    pip install 'memtomem[all]'
     ```
   </TabItem>
 </Tabs>
 
+`[all]`은 ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
+
+```bash
+uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
+```
+
+이후 필요한 기능만 골라 추가하려면 `uv tool install --reinstall 'memtomem[onnx,web]'` 형식으로 재설치합니다.
+
 ### 선택적 확장
 
-기본 패키지만으로도 동작합니다. 실제로 필요한 확장만 선택적으로 설치하면 됩니다.
+아래 extras 는 `[all]`에 포함된 항목입니다. 설치 용량을 줄이려면 필요한 항목만 개별 설치하세요.
 
 | Extra | 설명 | 명령 |
 |---|---|---|
