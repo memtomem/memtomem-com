@@ -83,7 +83,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="hero-stats">
 		<div><strong>74</strong>MCP 도구</div>
 		<div><strong>10</strong>압축 전략</div>
-		<div><strong>10</strong>지원 런타임</div>
+		<div><strong>6+ · 3+</strong>MCP 에디터 · 프레임워크</div>
 	</div>
 </section>
 
@@ -197,6 +197,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="runtime-chip">Windsurf</div>
 			<div class="runtime-chip">Claude Desktop</div>
 			<div class="runtime-chip">Codex CLI</div>
+			<div class="runtime-chip">Gemini CLI</div>
 			<div class="runtime-chip">Antigravity</div>
 			<div class="runtime-chip">LangGraph</div>
 			<div class="runtime-chip">CrewAI</div>
@@ -213,7 +214,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="docs-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
 				<h3>Quick Start</h3>
-				<p>5분 안에 설치부터 첫 기억 저장까지. uv install → MCP 연동 → 검색.</p>
+				<p>5분 안에 설치부터 첫 기억 저장까지. uv tool install → 대화형 mm init → 에이전트에게 질문.</p>
 				<span class="tag tag-guide">시작 가이드</span>
 			</a>
 			<a href={`${base}/ko/ltm/hybrid-search/`} class="doc-card">
@@ -236,10 +237,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<p>네임스페이스 설계, agent_register/search/share 워크플로우.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a href={`${base}/ko/stm/context-gateway/`} class="doc-card">
+			<a href={`${base}/ko/ltm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
 				<p>크로스 런타임 동기화 설정, 포맷 변환, LangGraph 어댑터.</p>
-				<span class="tag tag-guide">가이드</span>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 		</div>
 	</div>

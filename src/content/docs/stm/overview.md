@@ -71,6 +71,6 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 - [Quick Start](/guides/quickstart/) — from install to agent connection
 - [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
 - [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
-- [Context Gateway](/stm/context-gateway/) — Cross-runtime sync
+- [Context Gateway](/ltm/context-gateway/) — Cross-runtime sync (LTM feature)
 - [MCP Tools](/stm/mcp-tools/) — STM management tools
 - [CLI Reference](/stm/cli/) — `mms` command reference
