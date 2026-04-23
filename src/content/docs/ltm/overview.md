@@ -32,7 +32,7 @@ Full walkthrough (including other MCP clients) in [Quick Start](/guides/quicksta
 ## Architecture
 
 ```
-AI Agent (Claude Code, Cursor, …)
+AI Agent (Claude Code, Cursor, Gemini CLI, …)
     ↕  MCP protocol
 memtomem server
     ↕
@@ -66,5 +66,6 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 - [Memory Persistence Across Sessions](/guides/memory-persistence/) — Save in session A, recall in session B
 - [Hybrid Search](/ltm/hybrid-search/) — How the search engine works
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — Namespace design and sharing workflows
+- [Context Gateway](/ltm/context-gateway/) — Define agents / skills / commands once, sync across runtimes
 - [MCP Tools](/ltm/mcp-tools/) — Full tool reference
 - [CLI Reference](/ltm/cli/) — `mm` command reference

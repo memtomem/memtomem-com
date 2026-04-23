@@ -29,6 +29,18 @@ memtomem's MCP server ships as the `memtomem-server` console script. You normall
 
 To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` in the client's MCP config. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
+Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
+
+### `mm status`
+
+Terminal mirror of the MCP `mem_status` tool. Use it as a post-install sanity check: confirms the binary runs, the config parses, the DB is reachable, and the embedding config is in sync — without needing to launch an MCP client. Sits between `mm config show` (config only) and `mm watchdog status` (periodic snapshots).
+
+```bash
+mm status                            # indexing stats + config summary (same output as mem_status)
+```
+
+Added in v0.1.25. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
+
 ### `mm web`
 
 Launch the Web UI dashboard for browser-based search and memory management.
@@ -54,6 +66,31 @@ mm search "how does the auth middleware work"
 mm search "deployment config" --namespace project-x --limit 5
 ```
 
+### `mm add`
+
+Add a memory entry and index it. Without `--file`, the content is appended to `~/.memtomem/memories/<today-UTC>.md`.
+
+```bash
+mm add "apply tree-sitter AST parser to hallway-door PR"
+mm add "API timeout policy" --title "API timeout" --tags "ops,api"
+mm add "postmortem summary" --file postmortems/2026-04-auth.md
+```
+
+Tags passed via `--tags` are merged onto the appended file's chunk metadata right after indexing — the chunker doesn't parse tag text from the body, so the merge is explicit. `--file` only accepts paths relative to `~/.memtomem/memories/` and rejects `..` components.
+
+### `mm recall`
+
+Browse recent memory chunks chronologically. Unlike `mm search`, no query needed — filter by date range, source path, or namespace instead.
+
+```bash
+mm recall                                    # most recent 20 chunks (default table)
+mm recall --since 2026-04 --limit 50
+mm recall --source-filter "postmortems/" --format json
+mm recall --namespace project-x --format plain
+```
+
+`--format` picks `table` (default, human), `json` (scripting), or `plain` (text pipe). Date arguments accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, and ISO datetimes.
+
 ### `mm index <path>`
 
 One-shot command that **seeds** the index with files already on disk. Re-runs are safe — chunks are content-hashed, so unchanged files are skipped.
@@ -72,6 +109,7 @@ Consolidate memories from other AI tools into memtomem. The `--source` path is r
 
 ```bash
 mm ingest claude-memory --source ~/.claude/projects/    # import Claude Code memories
+mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # import Gemini CLI GEMINI.md
 mm ingest codex-memory --source ~/.codex/memories/      # import Codex CLI memories
 ```
 
@@ -143,6 +181,34 @@ mm agent migrate --dry-run           # preview planned renames
 mm agent migrate                     # apply
 ```
 
+### `mm watchdog`
+
+Periodic health-check command group. Read back snapshots left by the background scheduler, or run every check once on demand.
+
+```bash
+mm watchdog status                           # latest results summary
+mm watchdog status --json                    # JSON output
+mm watchdog run                              # run all checks now
+mm watchdog history db_size --hours 48       # 48h trend for a specific check
+```
+
+The scheduler only runs in the background when `health_watchdog.enabled` is on (the MCP server drives it). Even with the scheduler off, `mm watchdog run` works any time for a one-shot offline check.
+
+### `mm shell`
+
+Start an interactive REPL — search, add, recall, tag counts, and index stats all from a single prompt. Handy for browsing memory from a terminal without an MCP client, or for a quick post-install feel-check of the DB.
+
+```bash
+mm shell
+mm> search deployment checklist
+mm> ask summarize last week's migration rollback decision
+mm> add "new fact I just learned"
+mm> stats
+mm> quit
+```
+
+Bare text (no command) is treated as an implicit `search`. Exit with Ctrl+D or `quit` / `exit` / `q`.
+
 ### `mm init --fresh`
 
 Re-run the setup wizard after dropping every wizard-untouched config key whose value differs from the built-in default. A safe cleanup option when the config has accumulated leftovers from older versions. The previous `config.json` is backed up to `config.json.bak-<unix-ts>` before rewriting.
@@ -171,6 +237,17 @@ Remove already-indexed chunks whose source paths match the built-in credential d
 mm purge --matching-excluded          # dry-run — shows what would be removed
 mm purge --matching-excluded --apply  # perform the deletion
 ```
+
+### `mm reset`
+
+Delete all data (chunks, sessions, activity log, etc.) from the DB and reinitialize the schema. Embedding configuration is preserved — re-index to repopulate, no re-config needed. A confirmation prompt shows the row count; pass `-y` to skip.
+
+```bash
+mm reset                             # confirm, then delete
+mm reset -y                          # skip prompt
+```
+
+Where `mm embedding-reset --mode apply-current` rebuilds vectors only, `mm reset` drops the whole index. It doesn't touch the config file — for a full wipe, pair it with `mm init --fresh` or `mm uninstall`.
 
 ### `mm uninstall`
 

@@ -47,13 +47,18 @@ The base package already works — install only the extras you actually need.
 
 ### `mm` CLI
 
-After installation, the following commands are available:
+After installation, the commands you'll reach for most often:
 
 | Command | Purpose |
 |---|---|
 | `mm init` | Interactive setup wizard |
-| `mm --version` · `mm version` | Print installed version |
+| `mm status` | Post-install DB / config / embedding health check |
+| `mm search <query>` | Search the knowledge base |
+| `mm add <content>` | Add a memory entry |
 | `mm web` | Launch Web UI dashboard (http://localhost:8080) |
+| `mm --version` · `mm version` | Print installed version |
+
+Full command list (including `ingest`, `session`, `context`, `watchdog`, `shell`, `reset`, `uninstall`): see the [CLI Reference](/ltm/cli/).
 
 The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config.
 

@@ -47,13 +47,18 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 ### `mm` CLI
 
-설치 후 사용 가능한 주요 명령:
+설치 후 가장 자주 쓰는 명령은 다음과 같습니다:
 
 | 명령 | 용도 |
 |---|---|
 | `mm init` | 대화형 설정 마법사 |
-| `mm --version` · `mm version` | 설치된 버전 출력 |
+| `mm status` | 설치 후 DB·설정·임베딩 정합성 점검 |
+| `mm search <query>` | 지식 베이스 검색 |
+| `mm add <content>` | 기억 항목 추가 |
 | `mm web` | Web UI 대시보드 (http://localhost:8080) |
+| `mm --version` · `mm version` | 설치된 버전 출력 |
+
+전체 명령(`ingest`, `session`, `context`, `watchdog`, `shell`, `reset`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
 
 MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다.
 

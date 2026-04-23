@@ -49,15 +49,19 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 2. 에이전트가 추가 부분을 요청하면 커서 기반으로 다음 청크 전달
 3. 전체 내용을 순차적으로 확인 가능
 
+모든 progressive 청크는 정규 푸터 `\n---\n[progressive: chars=<n>]` 로 끝납니다 — 에이전트는 `memtomem_stm.proxy.progressive` 에서 export 되는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN` 으로 분할해야 합니다. `\n---\n` 만으로 분할하면 본문 안의 Markdown 수평선이나 YAML 펜스에 걸려 바이트가 조용히 누락될 수 있습니다.
+
 ## 폴백 래더
 
-압축 비율 가드레일(기본 65% 보존)을 위반하면 3단계 폴백이 자동 동작합니다:
+보존 하한(`MEMTOMEM_STM_PROXY__MIN_RESULT_RETENTION`, 기본 `0.65`)이 과도한 압축을 방지합니다. 출력이 하한보다 작아지면 3단계 폴백이 자동 동작합니다:
 
 ```
 progressive → hybrid → truncate
 ```
 
-각 단계에서 가드레일을 충족하면 해당 전략으로 응답합니다.
+각 단계에서 하한을 충족하면 해당 전략의 결과를 사용합니다. 도구별 `max_result_chars` 가 하한 이상으로 깎으려 할 경우, 절삭 전에 char 예산이 `len(response) * min_result_retention` 까지 상향됩니다.
+
+`llm_summary` 전략은 별도의 **타임아웃 가드**를 가집니다: `compression.llm.llm_timeout_seconds` (기본 `60`, env var `MEMTOMEM_STM_PROXY__COMPRESSION__LLM_TIMEOUT_SECONDS`). 느리거나 멈춘 LLM 엔드포인트가 더 이상 프록시 전체를 멈추지 않으며 — 타임아웃 발생 시 STM이 `truncate` 로 폴백해 에이전트에 한정된 길이의 응답이 반환됩니다.
 
 ## 압축 예산 설정
 

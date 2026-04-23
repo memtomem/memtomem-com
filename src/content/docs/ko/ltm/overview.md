@@ -32,7 +32,7 @@ claude mcp add memtomem -s user -- memtomem-server    # 3. 에이전트 연결
 ## 아키텍처
 
 ```
-AI Agent (Claude Code, Cursor, …)
+AI Agent (Claude Code, Cursor, Gemini CLI, …)
     ↕  MCP protocol
 memtomem server
     ↕
@@ -66,5 +66,6 @@ SQLite (FTS5 + sqlite-vec)
 - [세션을 넘나드는 기억](/ko/guides/memory-persistence/) — 세션 A에서 저장 → 세션 B에서 불러오기
 - [하이브리드 검색](/ko/ltm/hybrid-search/) — 검색 엔진 작동 원리
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 네임스페이스 설계와 공유 워크플로우
+- [Context Gateway](/ko/ltm/context-gateway/) — 에이전트·스킬·커맨드를 한 번 정의, 모든 런타임에 동기화
 - [MCP 도구](/ko/ltm/mcp-tools/) — 전체 도구 레퍼런스
 - [CLI 레퍼런스](/ko/ltm/cli/) — `mm` 명령어 레퍼런스

@@ -74,7 +74,7 @@ See [`mm session`](/ltm/cli/#mm-session) for the full subcommand surface (`start
 
 ### Difference from `mm ingest`
 
-`mm ingest claude-memory` and `mm ingest codex-memory` **do not** assign an `agent_id`. They load memories into fixed namespaces — `claude-memory:<slug>` and `codex-memory:<slug>` — to consolidate per-editor memories into one searchable index. For per-agent isolation, use the MCP/adapter/CLI paths above to set `agent_id` explicitly.
+`mm ingest claude-memory`, `mm ingest gemini-memory`, and `mm ingest codex-memory` **do not** assign an `agent_id`. They load memories into fixed namespaces — `claude-memory:<slug>`, `gemini-memory:<slug>`, and `codex-memory:<slug>` — to consolidate per-editor memories into one searchable index. For per-agent isolation, use the MCP/adapter/CLI paths above to set `agent_id` explicitly.
 
 ## Interaction Patterns
 
@@ -96,6 +96,7 @@ Consolidate each AI editor's memory directory into a single searchable knowledge
 
 ```bash
 mm ingest claude-memory --source ~/.claude/projects/
+mm ingest gemini-memory --source ~/.gemini/GEMINI.md
 mm ingest codex-memory --source ~/.codex/memories/
 ```
 
