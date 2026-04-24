@@ -62,6 +62,5 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 - **회로 차단기** (3-state: closed / open / half-open) — `circuit_max_failures`(기본 `3`)회 연속 실패 후 open 상태가 되며, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
 - **쓰기 도구 스킵** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
 - **쿼리 쿨다운** — 동일 쿼리의 빈번한 반복 검색 방지
-- **민감 데이터 감지** — API 키, 비밀번호, PII 자동 탐지 및 필터링
 
 `trace_id`가 서피싱과 점진적 전달 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.
