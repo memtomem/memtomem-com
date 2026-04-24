@@ -39,6 +39,16 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 4. **점수 필터링** — `min_score` 임계값 이하의 결과 제거
 5. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
 
+## 주입 모드
+
+서피싱된 기억이 응답에 엮이는 방식은 `MEMTOMEM_STM_SURFACING__INJECTION_MODE` 로 제어합니다:
+
+| 모드 | 동작 |
+|---|---|
+| `prepend` (기본값) | 기억을 헤더로 앞에 붙임. progressive 연속 호출에서 Stage 3 건너뜀. |
+| `append` | 기억을 응답 아래에 덧붙임. progressive 연속 호출에서도 서피싱 트리거 (F6). |
+| `section` | 기억을 전용 섹션에 배치. progressive 연속 호출에서도 서피싱 트리거 (F6). |
+
 ## 모델 인식 기본값
 
 에이전트의 컨텍스트 윈도우 크기를 인식하여 자동 스케일링합니다:
@@ -60,7 +70,11 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 ## 안전 장치
 
 - **회로 차단기** (3-state: closed / open / half-open) — `circuit_max_failures`(기본 `3`)회 연속 실패 후 open 상태가 되며, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
+- **서피싱 타임아웃** — 호출당 `3s` 하드 제한
+- **레이트 리밋** — 전체 도구 합산 `15 calls / minute` 상한
 - **쓰기 도구 스킵** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
 - **쿼리 쿨다운** — 동일 쿼리의 빈번한 반복 검색 방지
+- **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
+- **주입 크기 상한** — 주입당 기본 `3000 chars`
 
 `trace_id`가 서피싱과 점진적 전달 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.
