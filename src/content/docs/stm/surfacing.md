@@ -69,7 +69,7 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 
 ## Safety Mechanisms
 
-- **Circuit breaker** (3-state) — Suspends surfacing after consecutive failures, retries on backoff `1s → 2s → 4s → 30s max`
+- **Circuit breaker** (3-state: closed / open / half-open) — Opens after `circuit_max_failures` consecutive failures (default `3`) and returns to half-open after `circuit_reset_seconds` (default `60s`)
 - **Surfacing timeout** — `3s` hard ceiling per call
 - **Rate limit** — `15 calls / minute` ceiling across all tools
 - **Write-tool skip** — Disables surfacing for tools with side effects (file writes, deletes)
