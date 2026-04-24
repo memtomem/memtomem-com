@@ -25,8 +25,8 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 |---|---|---|
 | 1 | Tool-specific query template | Pre-defined query patterns mapped to tool names |
 | 2 | `_context_query` argument | Explicit search query passed by the agent |
-| 3 | Path arguments | Context extracted from file paths, URLs, etc. |
-| 4 | Semantic keys | Keyword combination drawn from tool argument values |
+| 3 | Path arguments | Dedicated tokenization for `path` / `file` / `filepath` / `file_path` / `filename` keys (split on separators, drop extensions) |
+| 4 | Semantic keys | Keyword combination from `query` / `search` / `url` / `description` and similar argument values |
 | 5 | Tool name | Last resort — use the tool name itself as the query |
 
 ## Relevance Gating
