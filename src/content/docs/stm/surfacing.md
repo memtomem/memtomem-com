@@ -75,7 +75,6 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 - **Write-tool skip** — Disables surfacing for tools with side effects (file writes, deletes)
 - **Query cooldown** — Skips surfacing when the extracted query has Jaccard similarity `> 0.95` with one seen in the last 5 seconds
 - **Cross-session dedup** — Default TTL `604800s` (7 days) via `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`
-- **Sensitive data detection** — Auto-detects API keys, passwords, PII before injection
 - **Injection size cap** — Default `3000 chars` per injection
 
 A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).
