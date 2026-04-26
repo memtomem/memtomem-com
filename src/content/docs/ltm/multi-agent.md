@@ -28,7 +28,10 @@ mem_agent_register(agent_id="analyzer", description="Code analysis agent")
 mem_session_start(agent_id="analyzer")
 ```
 
-The session record's namespace auto-derives to `agent-runtime:analyzer`. Subsequent `mem_agent_search` / `mem_agent_share` calls in this session inherit the agent scope without re-passing `agent_id`.
+The session record's namespace auto-derives to `agent-runtime:analyzer`. Subsequent calls in this session inherit the agent scope without re-passing `agent_id`:
+
+- **Writes** — `mem_add(content="...")` and `mem_batch_add(...)` write to `agent-runtime:analyzer` automatically. Pass `namespace="shared"` explicitly to publish cross-agent on a single call.
+- **Reads** — `mem_agent_search` / `mem_agent_share` resolve to the agent scope without `agent_id=`. (`mem_search` itself stays single-agent — use `mem_agent_search` to read inside the agent scope.)
 
 ### Step 3: Search Knowledge
 

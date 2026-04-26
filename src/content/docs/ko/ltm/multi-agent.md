@@ -28,7 +28,10 @@ mem_agent_register(agent_id="analyzer", description="코드 분석 에이전트"
 mem_session_start(agent_id="analyzer")
 ```
 
-세션 레코드의 네임스페이스는 `agent-runtime:analyzer`로 자동 파생됩니다. 같은 세션 안에서 호출되는 `mem_agent_search` / `mem_agent_share`는 `agent_id`를 다시 전달하지 않아도 에이전트 스코프를 자동 상속합니다.
+세션 레코드의 네임스페이스는 `agent-runtime:analyzer`로 자동 파생됩니다. 같은 세션 안에서 호출되는 다음 명령들은 `agent_id`를 다시 전달하지 않아도 에이전트 스코프를 자동 상속합니다:
+
+- **쓰기** — `mem_add(content="...")` / `mem_batch_add(...)`는 `agent-runtime:analyzer`로 자동 기록됩니다. 다른 스코프(예: 공유)로 보내려면 한 번의 호출에 `namespace="shared"`를 명시하세요.
+- **읽기** — `mem_agent_search` / `mem_agent_share`는 `agent_id=` 없이도 에이전트 스코프로 결정됩니다. (단일 에이전트 환경의 `mem_search`는 변경되지 않으므로, 에이전트 스코프 안에서 검색하려면 `mem_agent_search`를 사용하세요.)
 
 ### 3단계: 지식 검색
 
