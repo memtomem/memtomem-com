@@ -14,7 +14,7 @@ shared                       # Shared — accessible by all agents
 
 Each agent works in its own private namespace but can export useful knowledge to the shared namespace.
 
-## 3-Step Workflow
+## 5-Step Workflow
 
 ### Step 1: Register an Agent
 
@@ -22,7 +22,18 @@ Each agent works in its own private namespace but can export useful knowledge to
 mem_agent_register(agent_id="analyzer", description="Code analysis agent")
 ```
 
-### Step 2: Search Knowledge
+### Step 2: Start a Session
+
+```
+mem_session_start(agent_id="analyzer")
+```
+
+The session record's namespace auto-derives to `agent-runtime:analyzer`. Subsequent calls in this session inherit the agent scope without re-passing `agent_id`:
+
+- **Writes** — `mem_add(content="...")` and `mem_batch_add(...)` write to `agent-runtime:analyzer` automatically. Pass `namespace="shared"` explicitly to publish cross-agent on a single call.
+- **Reads** — `mem_agent_search` / `mem_agent_share` resolve to the agent scope without `agent_id=`. (`mem_search` itself stays single-agent — use `mem_agent_search` to read inside the agent scope.)
+
+### Step 3: Search Knowledge
 
 ```
 mem_agent_search(query="auth module structure", include_shared=true)
@@ -30,10 +41,16 @@ mem_agent_search(query="auth module structure", include_shared=true)
 
 With `include_shared=true`, searches both the agent's own namespace and the shared namespace.
 
-### Step 3: Share Knowledge
+### Step 4: Share Knowledge
 
 ```
-mem_agent_share(memory_id="...", target="shared")
+mem_agent_share(chunk_id="...", target="shared")
+```
+
+### Step 5: End the Session
+
+```
+mem_session_end(summary="...")
 ```
 
 ## Setting `agent_id`
@@ -56,7 +73,7 @@ Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to
 from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
-await store.start_session(agent_id="analyzer")
+await store.start_agent_session(agent_id="analyzer")
 # Subsequent store.search / store.put calls are isolated to the analyzer namespace
 ```
 
