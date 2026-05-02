@@ -43,7 +43,7 @@ Sidebar structure is configured in `astro.config.mjs` — slugs must match file 
 ## Brand
 
 - Accent: `#534AB7`, Teal: `#1D9E75`, Coral: `#D85A30`
-- Font: Pretendard (loaded via CDN on homepage), system fallback on docs
+- Font: Pretendard Variable (self-hosted via the npm `pretendard` package, bundled by Vite under `dist/_astro/`), system fallback on docs
 - CSS tokens defined in `src/styles/custom.css` (Starlight overrides) and inline in `index.astro`
 
 ## Language
