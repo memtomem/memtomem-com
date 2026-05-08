@@ -1,18 +1,18 @@
 ---
 title: MCP Tools
-description: STM proxy exposes 11 control tools for stats, cache, surfacing, compression, and progressive delivery.
+description: STM proxy exposes 12 control tools for stats, cache, surfacing, compression, progressive delivery, and INDEX writes.
 ---
 
-In addition to transparently proxying every upstream MCP tool, memtomem-stm exposes **11 control tools** that let the agent inspect and steer the proxy.
+In addition to transparently proxying every upstream MCP tool, memtomem-stm exposes **12 control tools** that let the agent inspect and steer the proxy.
 
 ## Advertising observability tools
 
-Seven of the eleven tools are **observability** tools that can be hidden from the MCP tool list to free up agent context. Set the env var `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false` in your MCP client config to hide them — they remain callable from Python tests / direct code paths, but are absent from `tools/list`.
+Eight of the twelve tools are **observability** tools that can be hidden from the MCP tool list to free up agent context. Set the env var `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false` in your MCP client config to hide them — they remain callable from Python tests / direct code paths, but are absent from `tools/list`.
 
 | Category | Always advertised | Hidden when flag off |
 |---|---|---|
 | **Always on** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **Observability** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
+| **Observability** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_tuning_recommendations` |
 
 ## Proxy stats & control
 
@@ -117,6 +117,18 @@ Per-response follow-up rate and coverage across all progressive-compressed calls
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `tool` | string | No | Filter by upstream tool name |
+
+*(Observability — hidden when `advertise_observability_tools=false`.)*
+
+## INDEX write stats
+
+### `stm_index_stats`
+
+STM-driven LTM write activity across both INDEX paths — `auto_index_response` (verbatim response → markdown chunk) and `extract_and_store` (response → LLM-extracted facts → markdown chunks). Mirror of `stm_surfacing_stats` for the write side; INDEX intentionally has no quality signal, so operators only see `attempts` (per-tool / per-path counts) and 4-label `outcomes` (`stored` / `error` / `dedup_skip` / `extracted_zero_facts`).
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `tool` | string | No | Filter by upstream tool name — the `__total__` aggregate row is always included |
 
 *(Observability — hidden when `advertise_observability_tools=false`.)*
 
