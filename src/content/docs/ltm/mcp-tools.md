@@ -1,17 +1,17 @@
 ---
 title: MCP Tools
-description: Complete reference for memtomem LTM MCP tools — 74 tools in full mode, 9 in core mode.
+description: Reference for memtomem LTM MCP tools — ~80 tools in full mode, 9 in core.
 ---
 
-memtomem ships **74 tools total**, exposed in three tiers controlled by the `MEMTOMEM_TOOL_MODE` environment variable:
+memtomem registers **~80 MCP tools** in `full` mode. In `core` mode (default) only 9 tools are advertised — one of them is the meta tool `mem_do`, which routes non-core actions — minimizing the number of tools the agent has to scan over.
 
-| Mode | Tools exposed | Notes |
+Set the mode via `MEMTOMEM_TOOL_MODE` in your MCP client's `env`:
+
+| Mode | Tools advertised | Notes |
 |---|---|---|
-| `core` (default) | **9** + `mem_do` | Minimizes agent context usage; everything else is reached through `mem_do` |
-| `standard` | ~32 | Adds CRUD, namespace, tags, sessions, scratch, relations groups |
-| `full` | 74 | Every tool individually registered |
-
-Set the mode in your MCP client config (the server ships as the `memtomem-server` console script, launched automatically by the client). For example, in Claude Desktop / Claude Code `mcp.json`:
+| `core` (default) | **9** (incl. `mem_do`) | Smallest context footprint. Non-core actions go through `mem_do(action=...)` |
+| `standard` | ~30 | core + frequently-used groups (CRUD, namespace, tags, sessions, scratch, relations) |
+| `full` | ~80 | Every tool individually registered |
 
 ```json
 {
@@ -28,7 +28,7 @@ Set the mode in your MCP client config (the server ships as the `memtomem-server
 
 ### `mem_status`
 
-Check server connection status and statistics.
+Server connection status and statistics.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -36,7 +36,7 @@ Check server connection status and statistics.
 
 ### `mem_add`
 
-Store a memory with content, tags, and namespace.
+Store a memory with content, tags, namespace.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -58,11 +58,16 @@ Hybrid search using BM25 keyword + dense vector + RRF fusion.
 
 ### `mem_recall`
 
-Retrieve a single memory by ID.
+Recall recent memory chunks by date range — newest first. Use this to scan by time / source / namespace without a keyword; for keyword search use `mem_search`.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | Yes | Memory ID |
+| `since` | string | No | Inclusive start. `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or ISO datetime |
+| `until` | string | No | Exclusive end (same formats as `since`) |
+| `source_filter` | string | No | Source file path substring or glob (`*`, `?`, `[]`) |
+| `namespace` | string | No | Namespace — single, comma-separated, or glob (e.g. `project:*`) |
+| `limit` | integer | No | Chunks to return (default 20, max 500) |
+| `output_format` | string | No | `compact` (default) or `structured` (JSON) |
 
 ### `mem_list`
 
@@ -102,86 +107,81 @@ Get index and search statistics.
 
 ### `mem_do`
 
-Meta-tool that routes non-core actions in `core` mode. Provides access to all 74 tools through a single entry point, minimizing the number of tools exposed to the agent.
+Meta tool that routes non-core actions in `core` mode. Single entry point to ~80 tools, keeping the advertised tool count small.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `action` | string | Yes | Tool name or alias (e.g. `health` → `eval`, `orphans` → `cleanup_orphans`) |
+| `action` | string | Yes | Tool name or alias (e.g. `orphans` → `cleanup_orphans`) |
 | `params` | object | No | Parameters for the target tool |
-
-Example — run a health check while in `core` mode:
-
-```
-mem_do(action="health")
-```
 
 ## Multi-Agent Tools
 
 ### `mem_agent_register`
 
-Register an agent with an ID and description.
+Register an agent and create the `agent-runtime:{agent_id}` namespace. Re-calling with an existing ID updates metadata.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `agent_id` | string | Yes | Unique agent identifier |
-| `description` | string | No | Agent description |
+| `agent_id` | string | Yes | Unique agent identifier (`[A-Za-z0-9._-]` only) |
+| `description` | string | No | Optional role description |
+| `color` | string | No | Optional UI color hex code |
 
 ### `mem_agent_search`
 
-Search across the agent's private namespace and the shared namespace.
+Search the agent's private namespace and (optionally) the shared namespace. With `agent_id` omitted, falls back to the active session's agent or the legacy `current_namespace`.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | Yes | Search query |
-| `agent_id` | string | Yes | Calling agent's ID |
-| `limit` | integer | No | Max results |
+| `agent_id` | string | No | Calling agent's ID (omit to use session context) |
+| `include_shared` | boolean | No | Also search the shared namespace (default `true`) |
+| `top_k` | integer | No | Max results (default 10) |
+| `output_format` | string | No | `compact` (default) / `verbose` / `structured` |
 
 ### `mem_agent_share`
 
-Export a memory from a private namespace to the shared namespace.
+**Copy** a chunk into another namespace. This is a copy, not a reference link — the new chunk gets a fresh UUID, and updates to the source do not propagate. Provenance is recorded only via a `shared-from=<source-uuid>` tag on the copy.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `memory_id` | string | Yes | Memory to share |
-| `agent_id` | string | Yes | Source agent's ID |
+| `chunk_id` | string | Yes | UUID of the chunk to copy |
+| `target` | string | No | Target namespace (default `shared`. `agent-runtime:{agent_id}` also valid) |
 
-## Maintenance Tools
+## Tag Management
 
-### `mem_tag`
+Tag operations route through `services.tag_management` so MCP, the Web UI, and the search-cache invalidation stay in sync.
 
-Tag management — add, remove, or list tags on memories.
+| Tool | Description |
+|---|---|
+| `mem_tag_list` | List tags with usage counts (descending frequency) |
+| `mem_tag_rename(old_tag, new_tag, dry_run=false)` | Rename a tag across all chunks |
+| `mem_tag_delete(tag, dry_run=false)` | Strip a tag from every chunk (the chunks themselves are preserved) |
+| `mem_tag_merge(sources, target, dry_run=false)` | Fold multiple source tags into a single target tag |
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `action` | string | Yes | `add`, `remove`, or `list` |
-| `memory_id` | string | Depends | Target memory (for add/remove) |
-| `tag` | string | Depends | Tag name (for add/remove) |
+Pass `dry_run=true` to see counts and a sample of affected chunks without writing.
 
-### `mem_namespace`
+## Namespace Management
 
-Namespace management operations.
+| Tool | Description |
+|---|---|
+| `mem_ns_list` | List namespaces with chunk counts |
+| `mem_ns_get` | Show the current session namespace |
+| `mem_ns_set(namespace)` | Set the session-default namespace; subsequent search/add/recall use it unless overridden |
+| `mem_ns_rename(old, new)` | Rename a namespace (SQL UPDATE — no re-indexing) |
+| `mem_ns_assign(namespace, source_filter?, old_namespace?)` | Move existing chunks into a namespace (at least one filter required) |
+| `mem_ns_update(namespace, description?, color?)` | Update namespace metadata |
+| `mem_ns_delete(namespace)` | Delete every chunk in a namespace from the index (source files are not touched) |
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `action` | string | Yes | Management action |
-| `namespace` | string | No | Target namespace |
+Every namespace argument runs through `validate_namespace()`; hostile shapes (`shared:foo:bar` etc.) are rejected.
 
-### `mem_health`
+## Cleanup, Dedup, Decay
 
-Run index health diagnostics.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
-
-### `mem_cleanup`
-
-Clean up expired and duplicate memories.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `dry_run` | boolean | No | Preview changes without applying (default: false) |
+| Tool | Description |
+|---|---|
+| `mem_cleanup_orphans` | Remove chunks whose source files are gone |
+| `mem_dedup_scan` / `mem_dedup_merge` | Detect and merge duplicate chunks |
+| `mem_decay_scan` / `mem_decay_expire` | Score time-based decay / apply TTL expiry |
 
 ---
 
-> The full list of 74 tools is available in the [memtomem repository docs](https://github.com/memtomem/memtomem/tree/main/docs).
+> The full list of ~80 tools and their signatures is in the [memtomem repository docs](https://github.com/memtomem/memtomem/tree/main/docs).
