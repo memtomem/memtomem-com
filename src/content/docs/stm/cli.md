@@ -22,7 +22,11 @@ mms init --mcp claude                # auto-register with Claude Code
 mms init --mcp json                  # write .mcp.json in the current directory
 mms init --mcp skip                  # write config, print paste hints, exit
 mms init --no-validate               # skip the upstream connectivity probe
+mms init --lang ko                   # token-aware budget preset for CJK workloads
+mms init --prune-originals           # also remove imported upstreams from source clients
 ```
+
+`--lang ko` writes Korean / CJK token-equivalent defaults: `chars_per_token=1.85`, `default_max_result_chars=8500`, `min_response_chars=230`. Non-TTY callers default to `en` when `--lang` is omitted.
 
 `mms init` aborts if the config file already exists — use `mms add` to append more upstream servers, or `mms register` to re-run the registration prompt without touching the config.
 
@@ -112,7 +116,91 @@ Probe every registered upstream server and report MCP connectivity status. Outpu
 mms health                           # human-readable
 mms health --json                    # scriptable JSON
 mms health --timeout 5               # per-server connect timeout (seconds)
+mms health --names                   # also flag tools whose proxied name overflows the 64-char MCP limit
 ```
+
+`--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
+
+### `mms prune`
+
+After registering upstreams via `mms init` or `mms add --import`, this collapses the dual-registration: it removes the direct entries from source MCP clients (Claude Code, Claude Desktop, project `.mcp.json`) so tool calls only route through STM — picking up compression, caching, and LTM surfacing. STM's own config is left alone.
+
+```bash
+mms prune --all                      # every dual-registered upstream
+mms prune filesystem github          # specific names
+mms prune --all --dry-run            # show what would be pruned, no writes
+mms prune --all -y                   # skip the confirm prompt (CI)
+```
+
+### `mms version`
+
+Print the installed version (same as `mms --version`).
+
+```bash
+mms version
+```
+
+## Project Management (W1)
+
+`.mms/project.toml` markers let you scope which MCPs are active per directory — for example, GitHub MCP only when working in your work repo, filesystem only in side projects. Project markers are indexed at `~/.mms/projects/index.toml` so the active set is consistent regardless of where you invoke `mms` from.
+
+### `mms project init [PATH]`
+
+Create `<path>/.mms/project.toml` and add it to the projects index. Defaults to cwd.
+
+```bash
+mms project init                     # create .mms/project.toml in cwd
+mms project init ~/work/billing      # create in another directory
+mms project init --name acme         # override directory-basename name
+mms project init --force             # overwrite an existing marker
+```
+
+### `mms project show [NAME]`
+
+Show the detected (or named) project's enabled MCP list and marker path.
+
+```bash
+mms project show
+mms project show acme
+mms project show --json
+```
+
+### `mms project list`
+
+List indexed projects. The current cwd's project is marked with `*`.
+
+```bash
+mms project list
+mms project list --json
+mms project list --prune             # drop entries whose path is gone
+```
+
+### `mms project enable / disable <mcps...>`
+
+Add or remove MCP names from a project's `mcp.enabled` list. Target is auto-detected from cwd; pass `--project <name>` to override.
+
+```bash
+mms project enable filesystem github
+mms project disable github
+mms project enable filesystem --project acme
+```
+
+`enable` only accepts MCPs that are already in the registry — it errors clearly when the registry is empty. `disable` works regardless of registry state.
+
+## Importing host configs (W1)
+
+### `mms import`
+
+Discover MCP definitions in host MCP clients (Claude Code, Claude Desktop, Cursor, …) and copy them into `~/.mms/registry.toml`. **`--plan` is the default** — pass `--apply` to actually write.
+
+```bash
+mms import --plan                    # default: show what would be imported (secrets REDACTED)
+mms import --apply                   # write to the registry
+mms import --from claude --plan      # restrict source (claude / cursor / desktop / all)
+mms import --plan --show-imported    # reveal secret values in the plan output (use carefully)
+```
+
+First-import-wins: identical names with different definitions are flagged as conflicts and skipped. Identical definitions are reported as idempotent.
 
 ### Operational statistics
 

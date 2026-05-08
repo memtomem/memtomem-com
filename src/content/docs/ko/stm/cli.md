@@ -22,7 +22,11 @@ mms init --mcp claude                # Claude Code 에 자동 등록
 mms init --mcp json                  # 현재 디렉터리에 .mcp.json 생성
 mms init --mcp skip                  # 설정만 쓰고 paste hint 출력 후 종료
 mms init --no-validate               # 업스트림 연결 점검 생략
+mms init --lang ko                   # 한국어 토큰-aware 예산 프리셋 (CJK 대응)
+mms init --prune-originals           # 가져온 업스트림을 source 클라이언트에서 함께 제거
 ```
+
+`--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, `min_response_chars=230` 같은 한국어 / CJK 워크로드용 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
 
 설정 파일이 이미 있으면 `mms init` 는 중단됩니다 — 업스트림을 추가하려면 `mms add`, 등록 프롬프트만 재실행하려면 `mms register` 를 사용하세요.
 
@@ -112,7 +116,93 @@ mms remove filesystem -y             # 확인 생략
 mms health                           # 사람이 읽기 좋은 출력
 mms health --json                    # 스크립트용 JSON
 mms health --timeout 5               # 서버별 연결 타임아웃(초)
+mms health --names                   # 64자 MCP 도구명 한도를 넘는 도구도 함께 보고
 ```
+
+`--names` 는 `mcp__<server>__<prefix>__<tool>` 의 합산 길이가 MCP 64자 제한(#261)을 초과해 등록 후 조용히 사라진 업스트림 도구를 가려낼 때 씁니다.
+
+### `mms prune`
+
+`mms init` 또는 `mms add --import` 로 업스트림을 STM에 등록한 뒤, source MCP 클라이언트(Claude Code, Claude Desktop, 프로젝트 `.mcp.json`)에 남아 있는 직접 등록을 일괄 제거합니다. 압축·캐싱·LTM 서피싱이 우회되는 이중 등록 상태를 정리하려는 explicit opt-in 명령입니다.
+
+```bash
+mms prune --all                      # 이중 등록된 업스트림 모두
+mms prune filesystem github          # 이름 지정 (한 개 이상)
+mms prune --all --dry-run            # 무엇을 지울지만 미리보기
+mms prune --all -y                   # 비대화 — 확인 프롬프트 생략
+```
+
+STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 건드리지 않습니다 — source 클라이언트 등록만 정리합니다.
+
+### `mms version`
+
+설치된 버전을 출력합니다 (`mms --version` 과 동일).
+
+```bash
+mms version
+```
+
+## 프로젝트 관리 (W1)
+
+`.mms/project.toml` 마커로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리 단위로 다른 MCP 세트를 가져갈 때 — 예를 들어 회사 코드 작업 시에만 GitHub MCP, 사이드 프로젝트에서는 filesystem 만 — `~/.mms/projects/index.toml` 에 기록되어 어디서 호출해도 일관되게 작동합니다.
+
+### `mms project init [PATH]`
+
+대상 디렉터리에 `.mms/project.toml` 을 만들고 인덱스에 등록합니다. 경로 생략 시 cwd.
+
+```bash
+mms project init                     # cwd 에 .mms/project.toml 생성
+mms project init ~/work/billing      # 다른 디렉터리에 생성
+mms project init --name acme         # 디렉터리 basename 대신 명시적 이름
+mms project init --force             # 기존 마커 덮어쓰기
+```
+
+### `mms project show [NAME]`
+
+현재 cwd 에서 감지된(또는 이름으로 지정한) 프로젝트의 활성 MCP 목록과 마커 경로를 출력합니다.
+
+```bash
+mms project show
+mms project show acme
+mms project show --json
+```
+
+### `mms project list`
+
+인덱싱된 모든 프로젝트를 보여줍니다. 현재 cwd 에 해당하는 프로젝트는 `*` 로 표시됩니다.
+
+```bash
+mms project list
+mms project list --json
+mms project list --prune             # 더 이상 존재하지 않는 경로 항목 정리
+```
+
+### `mms project enable / disable <mcps...>`
+
+프로젝트의 `mcp.enabled` 목록에 MCP 이름을 추가하거나 제거합니다. 대상 프로젝트는 cwd 로 자동 감지되며, `--project <name>` 으로 명시할 수 있습니다.
+
+```bash
+mms project enable filesystem github
+mms project disable github
+mms project enable filesystem --project acme
+```
+
+`enable` 은 등록된 MCP 만 받아들이므로 — 비어 있는 registry 에 enable 하면 명확한 에러로 멈춥니다. `disable` 은 registry 와 무관하게 동작합니다.
+
+## 호스트 설정 일괄 가져오기 (W1)
+
+### `mms import`
+
+Claude Code, Claude Desktop, Cursor 같은 host MCP 클라이언트의 설정에서 MCP 정의를 발견해 `~/.mms/registry.toml` 로 옮깁니다. **dry-run 이 기본값** — `--apply` 를 줘야 실제로 씁니다.
+
+```bash
+mms import --plan                    # 기본: 무엇을 가져올지 계획만 (secret 은 REDACT)
+mms import --apply                   # 실제 registry 에 쓰기
+mms import --from claude --plan      # host 한정 (claude / cursor / desktop / all)
+mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지 않음 (조심해서)
+```
+
+first-import-wins 정책: registry 에 동일 이름이 다르게 등록돼 있으면 conflict 로 처리하고 건너뜁니다. 동일 정의는 idempotent 로 표시됩니다.
 
 ### 운영 통계
 
