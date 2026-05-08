@@ -63,8 +63,10 @@ mm web --mode dev                    # 메인테이너용 페이지 추가 노�
 
 ```bash
 mm search "how does the auth middleware work"
-mm search "deployment config" --namespace project-x --limit 5
+mm search "deployment config" --namespace project-x --top-k 5
 ```
+
+`--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다.
 
 ### `mm add`
 
@@ -154,32 +156,51 @@ mm context sync                      # 정규 설정 → 모든 런타임
 mm context import                    # 런타임 파일 → 정규 소스
 ```
 
-### `mm config show`
+### `mm config show / set / unset`
 
-현재 설정을 표시합니다(API 키는 마스킹). `--json`(또는 `--format json`)은 전체 설정을 기계 판독용 JSON으로 출력합니다.
+`mm config show` 는 현재 설정을 표시하며 API 키는 자동으로 마스킹됩니다. `--json`(또는 `--format json`)은 전체 설정을 기계 판독용 JSON으로 출력합니다. `mm config set <key> <value>` 는 내장 기본값에 사용자 오버라이드를 덧씌우고, `mm config unset <keys...>` 는 그 오버라이드를 제거해 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다.
 
 ```bash
 mm config show                       # 읽기 좋은 테이블
 mm config show --json                # 스크립트용 JSON
-```
-
-### `mm config unset <key>`
-
-`~/.memtomem/config.json`에서 특정 키의 오버라이드를 제거하여 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다. 다른 머신에서 이전된 `memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
-
-```bash
+mm config set search.default_top_k 20
+mm config set rerank.model bge-reranker-base
 mm config unset memory_dirs
-mm config unset rerank.model
+mm config unset rerank.model search.default_top_k
 ```
 
-### `mm agent migrate`
+`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
 
-구 형식 `agent/{id}` 네임스페이스를 현재 `agent-runtime:{id}` 형식으로 변환합니다. 이미 신형식인 행은 건드리지 않으므로 반복 실행해도 안전합니다. 변경 전 확인용으로 `--dry-run`을 사용하세요.
+### `mm agent register / list / share`
+
+멀티 에이전트 워크플로우의 에이전트 등록·조회·청크 공유를 다룹니다 — MCP `mem_agent_*` 도구의 CLI 미러입니다.
 
 ```bash
-mm agent migrate --dry-run           # 변경 계획만 출력
-mm agent migrate                     # 실제 적용
+mm agent register planner --description "Planning subagent" --color "#6c5ce7"
+mm agent list                        # 등록된 에이전트 + 공유 네임스페이스
+mm agent list --json
+mm agent share <chunk-id>                          # `shared` 로 복사
+mm agent share <chunk-id> --target agent-runtime:reviewer
 ```
+
+`mm agent register` 는 `agent-runtime:{agent_id}` 네임스페이스를 자동 생성하며, 같은 ID 로 다시 호출하면 메타데이터만 갱신됩니다. `agent_id` 는 `[A-Za-z0-9._-]` 만 허용 — 적대적 형식은 거부됩니다.
+
+`mm agent share` 는 청크를 **복제**합니다 (참조 링크 아님). 새 청크는 별도 UUID를 받고, 원본 변경은 사본에 전파되지 않습니다. 출처는 `shared-from=<원본-uuid>` 태그로만 추적됩니다.
+
+### `mm schedule add / list / run-now / delete`
+
+크론 기반 스케줄 잡(인덱스 압축, 중요도 감쇠, dead-link 정리, 중복 검사 등)을 등록·조회·실행·삭제합니다.
+
+```bash
+mm schedule add --cron "0 3 * * *" --job dedup_scan
+mm schedule add --cron "0 */6 * * *" --job decay_expire --params '{"max_age_days": 90}'
+mm schedule list
+mm schedule list --json
+mm schedule run-now <sched-id>       # 다음 발화를 기다리지 않고 즉시 실행
+mm schedule delete <sched-id>
+```
+
+`--cron` 은 5필드 표현식(UTC). `--params` 는 잡별 파라미터의 JSON 딕셔너리. 등록된 잡은 `health_watchdog.enabled` 와는 무관하게 MCP 서버가 살아 있는 동안 백그라운드에서 발화합니다.
 
 ### `mm watchdog`
 

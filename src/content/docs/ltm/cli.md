@@ -63,8 +63,10 @@ Search the knowledge base from the command line.
 
 ```bash
 mm search "how does the auth middleware work"
-mm search "deployment config" --namespace project-x --limit 5
+mm search "deployment config" --namespace project-x --top-k 5
 ```
+
+`--top-k` / `-k` caps results (default 10). Other filters: `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (point-in-time bound, `YYYY-MM-DD` / `YYYY-QN`), and `--format` (`table` / `json` / `plain` / `context` / `smart`).
 
 ### `mm add`
 
@@ -154,32 +156,51 @@ Reverse-extract runtime-specific files back to the canonical source.
 mm context import                    # pull runtime files → canonical source
 ```
 
-### `mm config show`
+### `mm config show / set / unset`
 
-Show current configuration (API keys masked). `--json` (or `--format json`) emits the full config as machine-readable JSON for scripting.
+`mm config show` displays the current configuration with API keys masked. `--json` (or `--format json`) emits the full config as machine-readable JSON. `mm config set <key> <value>` writes a user override on top of built-in defaults; `mm config unset <keys...>` removes those overrides so the field reverts to its built-in default (or whatever a `config.d/*.json` fragment resolves to).
 
 ```bash
 mm config show                       # human-readable table
 mm config show --json                # JSON for scripting
-```
-
-### `mm config unset <key>`
-
-Remove a single override from `~/.memtomem/config.json`, reverting the field to its built-in default (or to whatever a `config.d/*.json` fragment resolves to). Useful for clearing stale cross-machine paths in `memory_dirs`, or a single field that's shadowing a fragment.
-
-```bash
+mm config set search.default_top_k 20
+mm config set rerank.model bge-reranker-base
 mm config unset memory_dirs
-mm config unset rerank.model
+mm config unset rerank.model search.default_top_k
 ```
 
-### `mm agent migrate`
+`mm config unset` is idempotent — removing a key that isn't there is a silent no-op. Useful for clearing stale cross-machine paths in `memory_dirs`, or a single field that's shadowing a `config.d` fragment.
 
-Rename legacy `agent/{id}` namespaces to the current `agent-runtime:{id}` format. Safe to re-run — rows already in the new format are left untouched. Use `--dry-run` to preview the planned renames.
+### `mm agent register / list / share`
+
+CLI mirrors of the MCP `mem_agent_*` tools — register agents, inspect the registry, and copy chunks between scopes.
 
 ```bash
-mm agent migrate --dry-run           # preview planned renames
-mm agent migrate                     # apply
+mm agent register planner --description "Planning subagent" --color "#6c5ce7"
+mm agent list                        # registered agents + the shared namespace
+mm agent list --json
+mm agent share <chunk-id>                          # copy into the shared namespace
+mm agent share <chunk-id> --target agent-runtime:reviewer
 ```
+
+`mm agent register` creates the `agent-runtime:{agent_id}` namespace; re-registering with the same id only updates metadata. `agent_id` must match `[A-Za-z0-9._-]` — hostile shapes are rejected.
+
+`mm agent share` is a **copy**, not a reference link. The new chunk gets a fresh UUID and source updates do not propagate; provenance is recorded only via a `shared-from=<source-uuid>` tag on the copy.
+
+### `mm schedule add / list / run-now / delete`
+
+Register cron-driven jobs (compaction, importance decay, dead-link cleanup, dedup scans, …) and inspect or run them.
+
+```bash
+mm schedule add --cron "0 3 * * *" --job dedup_scan
+mm schedule add --cron "0 */6 * * *" --job decay_expire --params '{"max_age_days": 90}'
+mm schedule list
+mm schedule list --json
+mm schedule run-now <sched-id>       # fire immediately, out of band
+mm schedule delete <sched-id>
+```
+
+`--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters. Registered jobs run while the MCP server is up — independent of `health_watchdog.enabled`.
 
 ### `mm watchdog`
 
