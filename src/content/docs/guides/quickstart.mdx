@@ -70,10 +70,12 @@ Using Cursor, Windsurf, or another MCP client? See the [`mms init`](/stm/cli/#mm
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
+    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered. STM (`memtomem-stm`) was also registered by `mms init --mcp claude` in Step 2 — no extra command needed.
+
+    For a manual registration (skipped the wizard prompt, or moved to a new machine):
     ```bash
     claude mcp add memtomem -s user -- memtomem-server
     ```
-    STM is already registered via `mms init --mcp claude` in Step 2 — no second command needed for Claude Code.
   </TabItem>
   <TabItem label="Cursor">
     Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Cursor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md) for details.
