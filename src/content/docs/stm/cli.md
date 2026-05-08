@@ -142,7 +142,7 @@ mms version
 
 ## Project Management (W1)
 
-`.mms/project.toml` markers let you scope which MCPs are active per directory — for example, GitHub MCP only when working in your work repo, filesystem only in side projects. Project markers are indexed at `~/.mms/projects/index.toml` so the active set is consistent regardless of where you invoke `mms` from.
+`.mms/project.toml` markers let you scope which MCPs are active per directory — for example, GitHub MCP only when working in your work repo, filesystem only in side projects. Project markers are indexed at `~/.mms/projects.toml` so the active set is consistent regardless of where you invoke `mms` from.
 
 ### `mms project init [PATH]`
 

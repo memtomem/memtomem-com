@@ -165,11 +165,11 @@ mm config show                       # 읽기 좋은 테이블
 mm config show --json                # 스크립트용 JSON
 mm config set search.default_top_k 20
 mm config set rerank.model bge-reranker-base
-mm config unset memory_dirs
+mm config unset indexing.memory_dirs
 mm config unset rerank.model search.default_top_k
 ```
 
-`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
+`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `indexing.memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
 
 ### `mm agent register / list / share`
 
@@ -193,7 +193,7 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 
 ```bash
 mm schedule add --cron "0 3 * * *" --job dedup_scan
-mm schedule add --cron "0 */6 * * *" --job decay_expire --params '{"max_age_days": 90}'
+mm schedule add --cron "0 */6 * * *" --job importance_decay --params '{"max_age_days": 90}'
 mm schedule list
 mm schedule list --json
 mm schedule run-now <sched-id>       # 다음 발화를 기다리지 않고 즉시 실행

@@ -165,11 +165,11 @@ mm config show                       # human-readable table
 mm config show --json                # JSON for scripting
 mm config set search.default_top_k 20
 mm config set rerank.model bge-reranker-base
-mm config unset memory_dirs
+mm config unset indexing.memory_dirs
 mm config unset rerank.model search.default_top_k
 ```
 
-`mm config unset` is idempotent — removing a key that isn't there is a silent no-op. Useful for clearing stale cross-machine paths in `memory_dirs`, or a single field that's shadowing a `config.d` fragment.
+`mm config unset` is idempotent — removing a key that isn't there is a silent no-op. Useful for clearing stale cross-machine paths in `indexing.memory_dirs`, or a single field that's shadowing a `config.d` fragment.
 
 ### `mm agent register / list / share`
 
@@ -193,7 +193,7 @@ Register cron-driven jobs (compaction, importance decay, dead-link cleanup, dedu
 
 ```bash
 mm schedule add --cron "0 3 * * *" --job dedup_scan
-mm schedule add --cron "0 */6 * * *" --job decay_expire --params '{"max_age_days": 90}'
+mm schedule add --cron "0 */6 * * *" --job importance_decay --params '{"max_age_days": 90}'
 mm schedule list
 mm schedule list --json
 mm schedule run-now <sched-id>       # fire immediately, out of band

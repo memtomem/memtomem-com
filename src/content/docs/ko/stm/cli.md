@@ -144,7 +144,7 @@ mms version
 
 ## 프로젝트 관리 (W1)
 
-`.mms/project.toml` 마커로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리 단위로 다른 MCP 세트를 가져갈 때 — 예를 들어 회사 코드 작업 시에만 GitHub MCP, 사이드 프로젝트에서는 filesystem 만 — `~/.mms/projects/index.toml` 에 기록되어 어디서 호출해도 일관되게 작동합니다.
+`.mms/project.toml` 마커로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리 단위로 다른 MCP 세트를 가져갈 때 — 예를 들어 회사 코드 작업 시에만 GitHub MCP, 사이드 프로젝트에서는 filesystem 만 — `~/.mms/projects.toml` 에 기록되어 어디서 호출해도 일관되게 작동합니다.
 
 ### `mms project init [PATH]`
 
