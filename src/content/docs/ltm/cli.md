@@ -145,16 +145,25 @@ With `--json`, a successful write returns `{"ok": true, ...}` on stdout; no acti
 Sync agent definitions, skills, and commands across runtimes via the Context Gateway.
 
 ```bash
-mm context sync                      # push canonical config → all runtimes
+mm context detect
+mm context init --scope project_shared --confirm-project-shared
+mm context sync --scope project_shared
+mm context diff --scope project_shared
 ```
 
-### `mm context import`
+Use `--scope user` for personal cross-project context and `--scope project_local` for local drafts. `project_shared` is git-tracked, so it requires explicit confirmation and should not contain secrets.
 
-Reverse-extract runtime-specific files back to the canonical source.
+### Seeding from existing runtime files
+
+There is no separate `mm context import` command. To seed canonical files from runtime-specific files, run `mm context init` with the artifact kinds and destination tier.
 
 ```bash
-mm context import                    # pull runtime files → canonical source
+mm context detect --include agents,skills
+mm context init --include agents,skills --scope project_shared --confirm-project-shared
+mm context diff --include agents,skills --scope project_shared
 ```
+
+This is useful when you already authored files directly in Claude Code, Codex CLI, Gemini CLI, or another runtime and want memtomem to manage them going forward.
 
 ### `mm config show / set / unset`
 

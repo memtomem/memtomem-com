@@ -1,72 +1,63 @@
 ---
 title: Quick Start
-description: Get memtomem installed and store your first memory in under 5 minutes.
+description: Install memtomem, connect an MCP client, and make your first searchable memory.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-In 5 minutes you'll have memtomem installed, connected to your MCP client, and answering questions about your notes and code. No GPU, no external account, no database setup.
+This path gets one thing working first: install the LTM server, register it with your MCP client, index a folder, then search it from your agent. STM is optional and can be added after the basic memory loop works.
 
 ## 1. Install
 
 ```bash
 uv tool install 'memtomem[all]'       # or: pipx install 'memtomem[all]'
+mm --version
 ```
 
-`[all]` bundles ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI. For a BM25-only install (~40 MB vs ~250 MB), see the [Minimal install](/guides/installation/#ltm-server-memtomem) note.
+`[all]` includes the Web UI, local ONNX embeddings, code chunking, Korean tokenizer support, and provider clients for Ollama / OpenAI. For a smaller BM25-only install, see [Installation](/guides/installation/#ltm-server-memtomem).
 
-Optionally, also install the STM proxy:
+If `mm --version` prints an older version right after install, upgrade with refreshed package metadata:
 
 ```bash
-uv tool install memtomem-stm
+uv tool install 'memtomem[all]' --upgrade
 ```
 
-Prefer pipx or pip? See [Installation](/guides/installation/) for all three options side by side.
-
-> memtomem works out of the box with keyword-only (BM25) search. For semantic search you can pick an embedding provider in the setup wizard — ONNX (built-in, local), Ollama (local), or OpenAI. See the [Embeddings guide](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md).
-
-## 2. Setup
-
-Run the interactive setup wizard. It opens with a **preset picker** (Minimal / English / Korean) that bundles embedding, reranker, tokenizer, and namespace defaults, then asks for your database path.
-
-<Tabs>
-  <TabItem label="Interactive (default)">
-    ```bash
-    mm init
-    ```
-    Starts with the preset picker, then walks through embedding, reranker, tokenizer, namespace, and database path.
-  </TabItem>
-  <TabItem label="CI / automation">
-    ```bash
-    mm init -y
-    ```
-    Auto-accepts every default. Equivalent to `--preset minimal -y`.
-  </TabItem>
-  <TabItem label="Korean preset">
-    ```bash
-    mm init --preset korean
-    ```
-    Applies the Korean preset, then continues the remaining steps interactively. `--preset english` selects the English preset the same way.
-  </TabItem>
-</Tabs>
-
-During `mm init` you can opt in to indexing AI agent memory directories — Claude Code memory (`~/.claude/projects/<project>/memory/`), Claude Code plans (`~/.claude/plans/`), and Codex CLI memories (`~/.codex/memories/`).
-
-If you also want the STM proxy, run its first-time setup:
+## 2. Run Setup
 
 ```bash
-mms init --mcp claude
+mm init
 ```
 
-Then probe the registered upstream servers:
+The wizard starts with a preset picker:
+
+| Preset | Best for | What it does |
+|---|---|---|
+| Minimal | First smoke test, smallest install | BM25 keyword search only |
+| English | Most English projects | Local ONNX embeddings + English reranker |
+| Korean | Korean or multilingual notes | Multilingual embeddings, reranker, Korean tokenizer |
+
+For scripts or CI:
 
 ```bash
-mms health
+mm init -y                   # minimal preset, no prompts
+mm init --preset english -y  # English preset, no prompts
+mm init --preset korean -y   # Korean preset, no prompts
+mm init --advanced           # full wizard
 ```
 
-Using Cursor, Windsurf, or another MCP client? See the [`mms init`](/stm/cli/#mms-init) reference for the interactive 3-way prompt and all `--mcp` options.
+During setup you can also enroll existing AI-agent memory folders, such as Claude Code memories, Claude plans, or Codex CLI memories. Enrollment only registers the folders for future watching; seed existing files once with `mm index`.
 
-## 3. Connect your MCP client
+## 3. Check Locally
+
+Before wiring an editor, confirm the CLI can open the config and database:
+
+```bash
+mm status
+```
+
+You should see storage, embedding, and chunk-count information. Zero chunks is normal before indexing.
+
+## 4. Connect Your MCP Client
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
@@ -78,39 +69,69 @@ Using Cursor, Windsurf, or another MCP client? See the [`mms init`](/stm/cli/#mm
     ```
   </TabItem>
   <TabItem label="Cursor">
-    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Cursor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md) for details.
+    Register `memtomem-server` as a stdio MCP server in Cursor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
   </TabItem>
   <TabItem label="Windsurf">
-    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Windsurf's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md) for details.
+    Register `memtomem-server` as a stdio MCP server in Windsurf's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
   </TabItem>
   <TabItem label="Claude Desktop">
-    Register `memtomem-server` and `memtomem-stm` as stdio MCP servers in Claude Desktop's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md) for details.
+    Register `memtomem-server` as a stdio MCP server in Claude Desktop's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
   </TabItem>
 </Tabs>
 
-## 4. Use
+Ask your agent to "call `mem_status`" after registration. That verifies the MCP client is launching the same server your terminal sees.
 
-You don't call these tools directly — tell your agent in plain language and it chooses the right tool.
+## 5. Add and Search Memory
 
-| Tell your agent | MCP tool called | What you'll see |
+Use the CLI once so you can see the full loop without depending on an agent:
+
+```bash
+mm add \
+  "The staging deploy uses the blue-green checklist in docs/deploy.md" \
+  --tags "deploy,ops"
+mm search "staging deployment checklist"
+```
+
+Then index the notes, docs, or code you want agents to search:
+
+```bash
+mm index ~/notes
+mm index ~/projects/my-app/docs
+```
+
+After that, use natural language in your MCP client:
+
+| Tell your agent | Tool usually called | Result |
 |---|---|---|
-| "Check server status" | `mem_status` | Connection info, namespace list, total memory count |
-| "Index my ~/notes folder" | `mem_index(path="~/notes")` | Number of files indexed, chunks created |
-| "Search for deployment" | `mem_search(query="deployment checklist")` | Ranked memory hits with snippets |
-| "Remember this insight" | `mem_add(content="...", tags=["ops"])` | Confirmation with the new memory's namespace and ID |
+| "Check memtomem status" | `mem_status` | Connection and index summary |
+| "Remember this decision..." | `mem_add` | New memory stored in markdown |
+| "Index this docs folder" | `mem_index` | Existing files become searchable |
+| "Search for the deploy checklist" | `mem_search` | Ranked snippets from your memory |
+
+## 6. Open the Web UI
+
+```bash
+mm web --open
+```
+
+The default Web UI is the polished user surface for search, sources, tags, timeline, settings, and Context Gateway. `mm web --dev` adds maintainer-oriented pages that most users do not need.
+
+## Optional: Add STM Later
+
+`memtomem-stm` is a separate proxy for proactive memory surfacing and response compression. Add it after the LTM flow above works:
+
+```bash
+uv tool install memtomem-stm
+mms init --mcp claude
+mms health
+```
+
+See [STM Overview](/stm/overview/) when you want tool-response compression or automatic memory injection.
 
 ## Next
 
-- [Installation](/guides/installation/) — optional extras, embedding providers, full CLI
-- [LTM Overview](/ltm/overview/) — what the LTM server does and how search actually works
-- [STM Overview](/stm/overview/) — when the optional STM proxy is worth adding
-- [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion explained
-
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| **memtomem** | Core — MCP server, CLI (`mm`), Web UI, hybrid search, storage |
-| **memtomem-stm** | STM proxy — proactive memory surfacing via transparent MCP proxying |
-
-The two packages have no Python-level dependency on each other. All communication between STM and LTM happens over the MCP protocol — they can be deployed and upgraded independently.
+- [Memory Persistence](/guides/memory-persistence/) — save in one session, recall in another
+- [Installation](/guides/installation/) — install options and extras
+- [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion
+- [MCP Tools](/ltm/mcp-tools/) — `core`, `standard`, and `full` tool modes
+- [Context Gateway](/ltm/context-gateway/) — sync agents, skills, and commands across runtimes

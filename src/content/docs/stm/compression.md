@@ -30,12 +30,14 @@ The `auto` strategy (default) analyzes content to pick the optimal strategy:
 
 | Content type | Selected strategy |
 |---|---|
-| JSON dictionary | `extract_fields` |
-| Large JSON array | `schema_pruning` |
-| Markdown document | `hybrid` |
-| API documentation | `skeleton` |
-| Small text (< threshold) | `truncate` |
-| Other large text | `selective` |
+| Already within budget | `none` |
+| Large JSON array, or dict containing large arrays | `schema_pruning` |
+| Nested JSON dictionary | `extract_fields` |
+| API docs with HTTP endpoints | `skeleton` |
+| Large structured Markdown / code-heavy text | `hybrid` |
+| Other text or simple JSON | `truncate` |
+
+`selective`, `progressive`, and `llm_summary` are explicit strategy choices; `auto` does not select them as the first pass.
 
 ## Query-Aware Budget Allocation
 

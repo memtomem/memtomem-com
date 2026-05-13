@@ -31,13 +31,20 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]`은 ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
+`[all]`은 이 문서의 기본 흐름과 맞는 권장 설치입니다. ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
 
 ```bash
 uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
 ```
 
 이후 필요한 기능만 골라 추가하려면 `uv tool install --reinstall 'memtomem[onnx,web]'` 형식으로 재설치합니다.
+
+설치 후 바이너리를 확인하고, 버전이 오래되어 보이면 패키지 메타데이터를 새로고침하면서 업그레이드하세요:
+
+```bash
+mm --version
+uv tool install 'memtomem[all]' --upgrade
+```
 
 ### 선택적 확장
 
@@ -71,6 +78,8 @@ uv tool install memtomem                      # extras 미포함 — 벡터 검�
 MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다.
 
 ## STM 프록시 (memtomem-stm)
+
+STM은 선택 사항입니다. 능동적 기억 서피싱이나 도구 응답 압축이 필요할 때, LTM 빠른 시작 흐름이 동작한 뒤 설치하세요.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (권장)">

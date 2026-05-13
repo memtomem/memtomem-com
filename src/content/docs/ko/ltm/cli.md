@@ -145,16 +145,25 @@ mm activity log --type decision --content "전략 X 채택" --meta '{"k":"v"}' -
 Context Gateway를 통해 에이전트 정의, 스킬, 명령어를 런타임 간에 동기화합니다.
 
 ```bash
-mm context sync                      # 정규 설정 → 모든 런타임
+mm context detect
+mm context init --scope project_shared --confirm-project-shared
+mm context sync --scope project_shared
+mm context diff --scope project_shared
 ```
 
-### `mm context import`
+개인용 크로스 프로젝트 컨텍스트는 `--scope user`, 로컬 초안은 `--scope project_local`을 사용합니다. `project_shared`는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다.
 
-런타임별 파일을 정규 소스로 역추출합니다.
+### 기존 런타임 파일에서 시드하기
+
+별도의 `mm context import` 명령은 없습니다. 런타임별 파일에서 정규 파일을 시드하려면 아티팩트 종류와 대상 티어를 지정해 `mm context init`을 실행합니다.
 
 ```bash
-mm context import                    # 런타임 파일 → 정규 소스
+mm context detect --include agents,skills
+mm context init --include agents,skills --scope project_shared --confirm-project-shared
+mm context diff --include agents,skills --scope project_shared
 ```
+
+이미 Claude Code, Codex CLI, Gemini CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다.
 
 ### `mm config show / set / unset`
 

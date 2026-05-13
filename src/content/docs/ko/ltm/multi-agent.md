@@ -74,7 +74,7 @@ from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
 await store.start_agent_session(agent_id="analyzer")
-# 이후 store.search / store.put 호출은 analyzer 네임스페이스로 격리
+# 이후 store.search / store.add 호출은 analyzer 네임스페이스로 격리
 ```
 
 멀티 에이전트 그래프에서는 각 노드가 자신의 `agent_id`로 별도 세션을 시작합니다. 공유가 필요한 산출물은 `mem_agent_share`로 `shared` 네임스페이스에 내보냅니다.

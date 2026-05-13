@@ -30,12 +30,14 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 
 | 콘텐츠 유형 | 선택되는 전략 |
 |---|---|
-| JSON 딕셔너리 | `extract_fields` |
-| 대형 JSON 배열 | `schema_pruning` |
-| Markdown 문서 | `hybrid` |
-| API 문서 | `skeleton` |
-| 소형 텍스트 (< 임계값) | `truncate` |
-| 기타 대형 텍스트 | `selective` |
+| 이미 예산 안에 들어오는 응답 | `none` |
+| 대형 JSON 배열 또는 대형 배열을 포함한 딕셔너리 | `schema_pruning` |
+| 중첩 JSON 딕셔너리 | `extract_fields` |
+| HTTP 엔드포인트가 있는 API 문서 | `skeleton` |
+| 큰 구조화 Markdown / 코드 비중이 높은 텍스트 | `hybrid` |
+| 기타 텍스트 또는 단순 JSON | `truncate` |
+
+`selective`, `progressive`, `llm_summary`는 명시적으로 선택하는 전략입니다. `auto`가 첫 선택으로 고르지는 않습니다.
 
 ## 쿼리 인식 예산 배분
 

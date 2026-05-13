@@ -1,6 +1,6 @@
 ---
 title: MCP 도구
-description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전달, INDEX 쓰기를 위한 12개 관리 도구를 제공합니다.
+description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점진적 전달을 위한 12개 관리 도구를 제공합니다.
 ---
 
 업스트림 MCP 도구를 투명하게 프록시하는 것 외에도, memtomem-stm은 프록시를 관찰·제어하기 위한 **12개 관리 도구**를 노출합니다.
@@ -12,7 +12,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 | 범주 | 항상 노출 | 플래그 off일 때 숨김 |
 |---|---|---|
 | **항상 on** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **관찰** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_tuning_recommendations` |
+| **관찰** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
 
 ## 프록시 통계 및 제어
 
@@ -84,6 +84,18 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 
 *(관찰.)*
 
+## 인덱싱 통계
+
+### `stm_index_stats`
+
+자동 인덱싱과 추출 경로를 통한 STM 기반 LTM 쓰기 통계.
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 |
+
+*(관찰.)*
+
 ## 압축 피드백
 
 ### `stm_compression_feedback`
@@ -117,18 +129,6 @@ Progressive 압축을 거친 호출의 응답별 후속 읽기 비율과 커버�
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 |
-
-*(관찰 — `advertise_observability_tools=false`일 때 숨김.)*
-
-## INDEX 쓰기 통계
-
-### `stm_index_stats`
-
-STM이 LTM에 쓴 활동 통계 — 두 INDEX 경로(`auto_index_response` = 응답 verbatim 청킹, `extract_and_store` = LLM 사실 추출 후 청킹)를 함께 다룹니다. SURFACE 경로의 `stm_surfacing_stats`와 대칭이지만 INDEX는 의도적으로 품질 시그널을 두지 않습니다 — 운영자가 보는 값은 `attempts`(경로별 시도 수)와 `outcomes`(stored / error / dedup_skip / extracted_zero_facts) 분포뿐입니다.
-
-| 파라미터 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 — `__total__` 행은 항상 포함 |
 
 *(관찰 — `advertise_observability_tools=false`일 때 숨김.)*
 

@@ -74,7 +74,7 @@ from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
 await store.start_agent_session(agent_id="analyzer")
-# Subsequent store.search / store.put calls are isolated to the analyzer namespace
+# Subsequent store.search / store.add calls are isolated to the analyzer namespace
 ```
 
 In multi-agent graphs, each node starts its own session with its own `agent_id`. Use `mem_agent_share` to publish outputs that need to cross agents to the `shared` namespace.
