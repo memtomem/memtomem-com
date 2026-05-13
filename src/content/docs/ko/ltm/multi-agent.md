@@ -25,15 +25,15 @@ mem_agent_register(agent_id="analyzer", description="코드 분석 에이전트"
 ### 2단계: 지식 검색
 
 ```
-mem_agent_search(query="인증 모듈 구조", include_shared=true)
+mem_agent_search(query="인증 모듈 구조", include_shared=True)
 ```
 
-`include_shared=true`로 자신의 네임스페이스 + 공유 네임스페이스를 동시에 검색합니다.
+`include_shared=True`로 자신의 네임스페이스 + 공유 네임스페이스를 동시에 검색합니다.
 
 ### 3단계: 지식 공유
 
 ```
-mem_agent_share(memory_id="...", target="shared")
+mem_agent_share(chunk_id="...", target="shared")
 ```
 
 ## `agent_id` 설정하기
@@ -56,8 +56,8 @@ MCP 서버는 호출 클라이언트를 구분하지 않으므로, **에이전�
 from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
-await store.start_session(agent_id="analyzer")
-# 이후 store.search / store.put 호출은 analyzer 네임스페이스로 격리
+await store.start_agent_session(agent_id="analyzer")
+# 이후 store.search / store.add 호출은 analyzer 네임스페이스로 격리
 ```
 
 멀티 에이전트 그래프에서는 각 노드가 자신의 `agent_id`로 별도 세션을 시작합니다. 공유가 필요한 산출물은 `mem_agent_share`로 `shared` 네임스페이스에 내보냅니다.

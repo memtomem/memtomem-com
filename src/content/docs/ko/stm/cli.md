@@ -86,6 +86,44 @@ mms list                             # 사람이 읽기 좋은 표
 mms list --json                      # 스크립트용 JSON
 ```
 
+### `mms import`
+
+호스트 설정에 있는 MCP 서버 정의를 `mms` 레지스트리로 가져오기 전에 미리 보거나 실제로 반영합니다. Claude Code, Cursor, Codex, Claude Desktop 또는 전체 호스트를 스캔할 수 있습니다.
+
+```bash
+mms import                           # plan만 출력; secret은 숨김
+mms import --from claude-code        # 특정 호스트만 스캔
+mms import --apply                   # ~/.mms/registry.toml 작성
+mms import --plan --show-imported    # plan에서 가져온 값 표시
+```
+
+레지스트리 수준의 가져오기 계획을 보고 싶을 때 사용합니다. `~/.memtomem/stm_proxy.json`에 쓰는 대화형 STM 프록시 가져오기 흐름은 `mms add --from-clients`를 사용하세요.
+
+### `mms prune`
+
+이미 STM을 통해 라우팅되는 업스트림의 직접 MCP 클라이언트 등록을 제거합니다. STM 자체 프록시 설정은 바꾸지 않습니다.
+
+```bash
+mms prune --all --dry-run            # 제거 대상을 미리 보기
+mms prune filesystem -y              # 특정 업스트림을 확인 없이 정리
+mms prune --all -y                   # 이중 등록된 모든 업스트림 정리
+```
+
+### 고급 레지스트리/프로젝트 명령
+
+여러 프로젝트를 관리하거나 호스트 MCP 설정과 `mms` 레지스트리의 차이를 확인할 때 사용합니다.
+
+```bash
+mms project init                     # 현재 디렉터리에 .mms/project.toml 생성
+mms project enable filesystem github # 감지된 프로젝트에 MCP 활성화
+mms project show                     # 감지된 프로젝트 표시
+mms project list                     # 알려진 프로젝트 목록
+
+mms host scan                        # 호스트 설정 전체를 읽기 전용으로 스캔
+mms host status                      # 레지스트리와 호스트 baseline 비교
+mms host sync --plan                 # registry + sidecar 조정 미리 보기
+```
+
 ### `mms status`
 
 프록시 게이트웨이 설정과 전체 서버 목록을 표시합니다.
@@ -112,6 +150,7 @@ mms remove filesystem -y             # 확인 생략
 mms health                           # 사람이 읽기 좋은 출력
 mms health --json                    # 스크립트용 JSON
 mms health --timeout 5               # 서버별 연결 타임아웃(초)
+mms health --names                   # 64자 MCP 제한을 넘는 프록시 도구명 표시
 ```
 
 ### 운영 통계

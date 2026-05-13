@@ -31,13 +31,20 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]` bundles ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI (~250 MB). Want a leaner footprint? Drop the extra for a BM25-only install (~40 MB):
+`[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI (~250 MB). Want a leaner footprint? Drop the extra for a BM25-only install (~40 MB):
 
 ```bash
 uv tool install memtomem                      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
 ```
 
 Opt into features later with e.g. `uv tool install --reinstall 'memtomem[onnx,web]'`.
+
+After installing, verify the binary and upgrade with refreshed package metadata if the version looks stale:
+
+```bash
+mm --version
+uv tool install 'memtomem[all]' --upgrade
+```
 
 ### Optional extras
 
@@ -71,6 +78,8 @@ Full command list (including `ingest`, `session`, `context`, `watchdog`, `shell`
 The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config.
 
 ## STM Proxy (memtomem-stm)
+
+STM is optional. Install it after the LTM quick-start flow works if you want proactive memory surfacing or tool-response compression.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (recommended)">

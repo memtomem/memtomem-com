@@ -86,6 +86,44 @@ mms list                             # human-readable
 mms list --json                      # scriptable JSON
 ```
 
+### `mms import`
+
+Preview or import MCP server definitions from host configs into the `mms` registry. This scans Claude Code, Cursor, Codex, Claude Desktop, or all supported hosts.
+
+```bash
+mms import                           # plan only; secrets redacted
+mms import --from claude-code        # scan one host
+mms import --apply                   # write ~/.mms/registry.toml
+mms import --plan --show-imported    # reveal imported values in the plan
+```
+
+Use this when you want a registry-level import plan. Use `mms add --from-clients` when you want the interactive STM proxy import flow that writes `~/.memtomem/stm_proxy.json`.
+
+### `mms prune`
+
+Remove direct MCP-client registrations for upstreams that are already routed through STM. STM's own proxy config is not changed.
+
+```bash
+mms prune --all --dry-run            # show what would be removed
+mms prune filesystem -y              # prune one upstream without prompting
+mms prune --all -y                   # prune every dual-registered upstream
+```
+
+### Advanced registry and project commands
+
+Use these when you manage multiple projects or want to compare host MCP configs against the `mms` registry.
+
+```bash
+mms project init                     # create .mms/project.toml for cwd
+mms project enable filesystem github # enable MCPs for the detected project
+mms project show                     # show the detected project
+mms project list                     # list known projects
+
+mms host scan                        # read-only inventory across host configs
+mms host status                      # compare registry entries with host baselines
+mms host sync --plan                 # preview registry + sidecar reconciliation
+```
+
 ### `mms status`
 
 Show proxy gateway configuration and the full server list.
@@ -112,6 +150,7 @@ Probe every registered upstream server and report MCP connectivity status. Outpu
 mms health                           # human-readable
 mms health --json                    # scriptable JSON
 mms health --timeout 5               # per-server connect timeout (seconds)
+mms health --names                   # flag proxied names over the 64-char MCP limit
 ```
 
 ### Operational statistics

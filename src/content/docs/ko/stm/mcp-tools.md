@@ -1,18 +1,18 @@
 ---
 title: MCP 도구
-description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전달을 위한 11개 관리 도구를 제공합니다.
+description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점진적 전달을 위한 12개 관리 도구를 제공합니다.
 ---
 
-업스트림 MCP 도구를 투명하게 프록시하는 것 외에도, memtomem-stm은 프록시를 관찰·제어하기 위한 **11개 관리 도구**를 노출합니다.
+업스트림 MCP 도구를 투명하게 프록시하는 것 외에도, memtomem-stm은 프록시를 관찰·제어하기 위한 **12개 관리 도구**를 노출합니다.
 
 ## 관찰 도구 노출 제어
 
-11개 중 7개는 **관찰(observability)** 도구이며, 에이전트 컨텍스트를 아끼려면 MCP 도구 목록에서 숨길 수 있습니다. MCP 클라이언트 설정의 `env`에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false`를 지정하면 관찰 도구가 `tools/list`에서 빠집니다. 파이썬 테스트나 내부 코드에서는 여전히 호출 가능합니다.
+12개 중 8개는 **관찰(observability)** 도구이며, 에이전트 컨텍스트를 아끼려면 MCP 도구 목록에서 숨길 수 있습니다. MCP 클라이언트 설정의 `env`에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false`를 지정하면 관찰 도구가 `tools/list`에서 빠집니다. 파이썬 테스트나 내부 코드에서는 여전히 호출 가능합니다.
 
 | 범주 | 항상 노출 | 플래그 off일 때 숨김 |
 |---|---|---|
 | **항상 on** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **관찰** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
+| **관찰** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
 
 ## 프록시 통계 및 제어
 
@@ -81,6 +81,18 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 | `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 |
 | `since` | string | 아니오 | ISO-8601 타임스탬프(예: `2026-04-20T00:00:00`) 이후 이벤트만 포함 |
 | `limit` | integer | 아니오 | `Recent` 섹션 꼬리 크기 (기본 `10`, `0`은 숨김) |
+
+*(관찰.)*
+
+## 인덱싱 통계
+
+### `stm_index_stats`
+
+자동 인덱싱과 추출 경로를 통한 STM 기반 LTM 쓰기 통계.
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 |
 
 *(관찰.)*
 

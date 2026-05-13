@@ -150,7 +150,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 tools + `mem_do`) / `standard` (~32) / `full` (74) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including `mem_do`) / `standard` (~38) / `full` (80+) | `core` |
 
 ### Web UI
 
@@ -221,7 +221,7 @@ STM settings are organized into four sections: a flat `LOG_LEVEL`, plus `PROXY__
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `INFO` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `false`, hides the seven observability tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`) from the MCP tool list. Tools remain callable from Python. | `true` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `false`, hides the eight observability tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`) from the MCP tool list. Tools remain callable from Python. | `true` |
 
 ### Proxy
 

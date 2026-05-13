@@ -150,7 +150,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 tools + `mem_do`) / `standard` (~32) / `full` (74) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 포함 총 9개) / `standard` (약 38개) / `full` (80+개) | `core` |
 
 ### Web UI
 
@@ -221,7 +221,7 @@ STM 설정은 네 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `PRO
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `INFO` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `false`일 때 관찰 도구 7개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP 도구 목록에서 숨김. Python 내부 호출은 여전히 가능. | `true` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `false`일 때 관찰 도구 8개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP 도구 목록에서 숨김. Python 내부 호출은 여전히 가능. | `true` |
 
 ### Proxy
 

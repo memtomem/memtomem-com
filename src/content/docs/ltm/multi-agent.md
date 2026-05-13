@@ -25,15 +25,15 @@ mem_agent_register(agent_id="analyzer", description="Code analysis agent")
 ### Step 2: Search Knowledge
 
 ```
-mem_agent_search(query="auth module structure", include_shared=true)
+mem_agent_search(query="auth module structure", include_shared=True)
 ```
 
-With `include_shared=true`, searches both the agent's own namespace and the shared namespace.
+With `include_shared=True`, searches both the agent's own namespace and the shared namespace.
 
 ### Step 3: Share Knowledge
 
 ```
-mem_agent_share(memory_id="...", target="shared")
+mem_agent_share(chunk_id="...", target="shared")
 ```
 
 ## Setting `agent_id`
@@ -56,8 +56,8 @@ Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to
 from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
-await store.start_session(agent_id="analyzer")
-# Subsequent store.search / store.put calls are isolated to the analyzer namespace
+await store.start_agent_session(agent_id="analyzer")
+# Subsequent store.search / store.add calls are isolated to the analyzer namespace
 ```
 
 In multi-agent graphs, each node starts its own session with its own `agent_id`. Use `mem_agent_share` to publish outputs that need to cross agents to the `shared` namespace.

@@ -35,19 +35,17 @@ Runtime-tunable via `mm config set rerank.oversample 3.0` etc. `rerank.top_k` is
 
 ## Semantic Chunking
 
-During indexing, documents are split into meaningful units — not by token count, but by structure. Seven chunking strategies:
+During indexing, supported documents are split into meaningful units by structure before the short-section merge pass runs.
 
-| Strategy | Target | Behavior |
+| Chunker | Target | Behavior |
 |---|---|---|
 | **Markdown** | `.md` files | Split by heading level, preserving hierarchy |
-| **Python AST** | `.py` files | Split by function/class, including docstrings |
-| **JS/TS AST** | `.js`, `.ts` files | tree-sitter based function/module splitting |
-| **JSON** | `.json` files | Structure-aware splitting |
-| **YAML/TOML** | `.yaml`, `.toml` | Key-value block splitting |
+| **Structured data** | `.json`, `.yaml`, `.yml`, `.toml` files | Top-level key splitting, with recursive mode available via config |
 | **reStructuredText** | `.rst` files | Section-header-aware splitting |
-| **Plain text** | Other files | Paragraph/newline based splitting |
 
 Very short sections are greedily packed with adjacent siblings up to `indexing.target_chunk_tokens` (default `384`) to keep each chunk informative enough to retrieve. Set `target_chunk_tokens=0` to disable the pass and keep every small section as its own chunk.
+
+Directory indexing is extension-filtered. If a file type is not chunked by the active registry, it is skipped rather than indexed as plain text.
 
 ## Incremental Indexing
 

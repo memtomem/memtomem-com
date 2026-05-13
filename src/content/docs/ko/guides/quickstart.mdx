@@ -1,114 +1,134 @@
 ---
 title: Quick Start
-description: 5분 안에 memtomem을 설치하고 첫 기억을 저장해 보세요.
+description: memtomem을 설치하고, MCP 클라이언트에 연결하고, 첫 검색 가능한 기억을 만들어 보세요.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-5분 안에 memtomem 설치, MCP 클라이언트 연동, 그리고 노트·코드에 대한 질의 응답까지 완료합니다. GPU, 외부 계정, 별도 데이터베이스 설정이 모두 필요 없습니다.
+이 가이드는 먼저 하나의 기본 흐름을 성공시키는 데 집중합니다. LTM 서버를 설치하고, MCP 클라이언트에 등록하고, 폴더를 인덱싱한 뒤 에이전트가 검색하게 만듭니다. STM은 선택 사항이며 기본 기억 루프가 동작한 뒤 추가하면 됩니다.
 
 ## 1. 설치
 
 ```bash
 uv tool install 'memtomem[all]'       # 또는: pipx install 'memtomem[all]'
+mm --version
 ```
 
-`[all]`은 ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다. BM25 전용 최소 설치(~40 MB, 전체 설치는 ~250 MB)는 [최소 설치](/ko/guides/installation/#ltm-서버-memtomem) 안내를 참고하세요.
+`[all]`은 Web UI, 로컬 ONNX 임베딩, 코드 청킹, 한국어 토크나이저, Ollama / OpenAI 프로바이더 클라이언트를 포함합니다. 더 작은 BM25 전용 설치는 [설치](/ko/guides/installation/#ltm-서버-memtomem)를 참고하세요.
 
-STM 프록시도 함께 사용하려면:
+설치 직후 `mm --version`이 예상보다 오래된 버전을 출력하면 패키지 메타데이터를 새로고침하면서 업그레이드하세요:
 
 ```bash
-uv tool install memtomem-stm
+uv tool install 'memtomem[all]' --upgrade
 ```
-
-pipx 또는 pip 을 선호하면 [설치](/ko/guides/installation/) 에서 세 옵션을 한눈에 확인할 수 있습니다.
-
-> memtomem은 설치 직후 키워드 검색(BM25)만으로 동작합니다. 시맨틱 검색을 사용하려면 설정 마법사에서 임베딩 프로바이더를 선택합니다 — ONNX(내장, 로컬), Ollama(로컬), 또는 OpenAI. [임베딩 가이드](https://github.com/memtomem/memtomem/blob/main/docs/guides/embeddings.md)를 참고하세요.
 
 ## 2. 초기 설정
 
-대화형 설정 마법사를 실행합니다. 시작 시 **프리셋 피커**(Minimal / English / Korean)가 임베딩·리랭커·토크나이저·네임스페이스 기본값을 한 번에 적용하고, 이어서 데이터베이스 경로 등을 질의합니다.
-
-<Tabs>
-  <TabItem label="대화형 (기본)">
-    ```bash
-    mm init
-    ```
-    프리셋 피커로 시작하여 임베딩·리랭커·토크나이저·네임스페이스·DB 경로를 순차 선택합니다.
-  </TabItem>
-  <TabItem label="CI / 자동화">
-    ```bash
-    mm init -y
-    ```
-    모든 기본값을 자동 수락합니다. `--preset minimal -y` 와 동일합니다.
-  </TabItem>
-  <TabItem label="한국어 프리셋">
-    ```bash
-    mm init --preset korean
-    ```
-    한국어 프리셋을 선택한 뒤 나머지 단계는 대화형으로 진행합니다. `--preset english` 로 영어 프리셋도 같은 방식으로 선택할 수 있습니다.
-  </TabItem>
-</Tabs>
-
-`mm init` 단계에서 AI 에이전트 기억 디렉터리 인덱싱 여부를 선택할 수 있습니다 — Claude Code 기억(`~/.claude/projects/<project>/memory/`), Claude Code 플랜(`~/.claude/plans/`), Codex CLI 기억(`~/.codex/memories/`)이 대상입니다.
-
-STM 프록시도 설치한 경우 첫 설정을 수행합니다:
-
 ```bash
-mms init --mcp claude
+mm init
 ```
 
-완료 후 등록된 업스트림 서버의 연결 상태를 점검합니다:
+마법사는 프리셋 피커로 시작합니다:
+
+| 프리셋 | 적합한 상황 | 동작 |
+|---|---|---|
+| Minimal | 첫 스모크 테스트, 최소 설치 | BM25 키워드 검색만 사용 |
+| English | 영어 프로젝트 대부분 | 로컬 ONNX 임베딩 + 영어 리랭커 |
+| Korean | 한국어 또는 다국어 노트 | 다국어 임베딩, 리랭커, 한국어 토크나이저 |
+
+스크립트나 CI에서는 다음을 사용할 수 있습니다:
 
 ```bash
-mms health
+mm init -y                   # minimal 프리셋, 프롬프트 없음
+mm init --preset english -y  # 영어 프리셋, 프롬프트 없음
+mm init --preset korean -y   # 한국어 프리셋, 프롬프트 없음
+mm init --advanced           # 전체 마법사
 ```
 
-Cursor · Windsurf 등 다른 MCP 클라이언트를 쓴다면 [`mms init`](/ko/stm/cli/#mms-init) 레퍼런스의 3지선다 프롬프트와 `--mcp` 옵션 안내를 참고하세요.
+설정 중 Claude Code 기억, Claude 플랜, Codex CLI 기억 같은 기존 AI 에이전트 메모리 폴더를 등록할 수 있습니다. 등록은 이후 변경 감시를 위한 것이므로, 이미 존재하는 파일은 `mm index`로 한 번 시드하세요.
 
-## 3. MCP 클라이언트 연동
+## 3. 로컬 점검
+
+에디터에 연결하기 전에 CLI가 설정과 DB를 열 수 있는지 확인합니다:
+
+```bash
+mm status
+```
+
+스토리지, 임베딩, 청크 수 요약이 보이면 정상입니다. 아직 인덱싱 전이라 청크가 0개인 것은 정상입니다.
+
+## 4. MCP 클라이언트 연결
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
     ```bash
     claude mcp add memtomem -s user -- memtomem-server
     ```
-    STM 은 2단계의 `mms init --mcp claude` 에서 이미 Claude Code 에 등록됐으므로 추가 명령이 필요 없습니다.
   </TabItem>
   <TabItem label="Cursor">
-    Cursor 의 MCP 설정에서 `memtomem-server` 와 `memtomem-stm` 을 stdio 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
+    Cursor MCP 설정에서 `memtomem-server`를 stdio MCP 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
   </TabItem>
   <TabItem label="Windsurf">
-    Windsurf 의 MCP 설정에서 `memtomem-server` 와 `memtomem-stm` 을 stdio 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
+    Windsurf MCP 설정에서 `memtomem-server`를 stdio MCP 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
   </TabItem>
   <TabItem label="Claude Desktop">
-    Claude Desktop 의 MCP 설정에서 `memtomem-server` 와 `memtomem-stm` 을 stdio 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
+    Claude Desktop MCP 설정에서 `memtomem-server`를 stdio MCP 서버로 등록합니다. 자세한 절차는 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
   </TabItem>
 </Tabs>
 
-## 4. 사용
+등록 후 에이전트에게 "`mem_status`를 호출해줘"라고 요청하세요. MCP 클라이언트가 터미널에서 확인한 서버를 제대로 실행하는지 검증할 수 있습니다.
 
-도구를 직접 호출할 필요는 없습니다. 에이전트에 자연어로 지시하면 적절한 도구가 자동으로 선택됩니다.
+## 5. 기억 추가와 검색
 
-| 에이전트에 지시 | 호출되는 MCP 도구 | 반환되는 정보 |
+먼저 CLI로 전체 루프를 확인합니다:
+
+```bash
+mm add \
+  "스테이징 배포는 docs/deploy.md의 blue-green 체크리스트를 따른다" \
+  --tags "deploy,ops"
+mm search "스테이징 배포 체크리스트"
+```
+
+그 다음 에이전트가 검색해야 할 노트, 문서, 코드를 인덱싱합니다:
+
+```bash
+mm index ~/notes
+mm index ~/projects/my-app/docs
+```
+
+이후 MCP 클라이언트에서는 자연어로 지시하면 됩니다:
+
+| 에이전트에 지시 | 보통 호출되는 도구 | 결과 |
 |---|---|---|
-| "서버 상태 확인" | `mem_status` | 연결 정보, 네임스페이스 목록, 전체 기억 수 |
-| "~/notes 폴더 인덱싱" | `mem_index(path="~/notes")` | 인덱싱된 파일 수, 생성된 청크 수 |
-| "배포 관련 내용 검색" | `mem_search(query="deployment checklist")` | 순위가 매겨진 기억 목록과 발췌문 |
-| "이 인사이트 기록" | `mem_add(content="...", tags=["ops"])` | 신규 기억의 네임스페이스 및 ID 확인 |
+| "memtomem 상태 확인" | `mem_status` | 연결 및 인덱스 요약 |
+| "이 결정을 기억해줘..." | `mem_add` | 마크다운 기억으로 저장 |
+| "이 docs 폴더 인덱싱해줘" | `mem_index` | 기존 파일이 검색 가능해짐 |
+| "배포 체크리스트 검색" | `mem_search` | 관련 기억 스니펫 순위 목록 |
+
+## 6. Web UI 열기
+
+```bash
+mm web --open
+```
+
+기본 Web UI는 검색, 소스, 태그, 타임라인, 설정, Context Gateway를 다루는 사용자용 화면입니다. `mm web --dev`는 대부분의 사용자가 필요로 하지 않는 유지보수용 페이지를 추가합니다.
+
+## 선택 사항: STM은 나중에 추가
+
+`memtomem-stm`은 능동적 기억 서피싱과 응답 압축을 위한 별도 프록시입니다. 위 LTM 흐름이 동작한 뒤 추가하세요:
+
+```bash
+uv tool install memtomem-stm
+mms init --mcp claude
+mms health
+```
+
+도구 응답 압축이나 자동 기억 주입이 필요해질 때 [STM 개요](/ko/stm/overview/)를 참고하세요.
 
 ## 다음 단계
 
-- [설치](/ko/guides/installation/) — 선택 확장, 임베딩 프로바이더, 전체 CLI
-- [LTM 개요](/ko/ltm/overview/) — LTM 서버의 역할과 검색 동작 방식
-- [STM 개요](/ko/stm/overview/) — 선택 사항인 STM 프록시를 추가할 시점
-- [하이브리드 검색](/ko/ltm/hybrid-search/) — BM25 + 벡터 + RRF 융합 검색의 원리
-
-## 패키지 구성
-
-| 패키지 | 설명 |
-|--------|------|
-| **memtomem** | 코어 — MCP 서버, CLI (`mm`), Web UI, 하이브리드 검색, 스토리지 |
-| **memtomem-stm** | STM 프록시 — 투명 MCP 프록시 기반 능동적 기억 서피싱 |
-
-두 패키지는 Python 레벨 의존성이 없습니다. STM과 LTM 간 통신은 MCP 프로토콜로 이루어지며, 독립적으로 배포·업그레이드할 수 있습니다.
+- [세션을 넘나드는 기억](/ko/guides/memory-persistence/) — 한 세션에서 저장하고 다른 세션에서 불러오기
+- [설치](/ko/guides/installation/) — 설치 방식과 extras
+- [하이브리드 검색](/ko/ltm/hybrid-search/) — BM25 + 벡터 + RRF 융합
+- [MCP 도구](/ko/ltm/mcp-tools/) — `core`, `standard`, `full` 도구 모드
+- [Context Gateway](/ko/ltm/context-gateway/) — 에이전트, 스킬, 커맨드를 런타임 간 동기화

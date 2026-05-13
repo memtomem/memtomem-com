@@ -1,187 +1,100 @@
 ---
 title: MCP Tools
-description: Complete reference for memtomem LTM MCP tools — 74 tools in full mode, 9 in core mode.
+description: How memtomem exposes memory features to MCP clients.
 ---
 
-memtomem ships **74 tools total**, exposed in three tiers controlled by the `MEMTOMEM_TOOL_MODE` environment variable:
+memtomem exposes its LTM features as MCP tools. New users should keep the default `core` mode: it gives agents the common tools directly and routes everything else through `mem_do`, which keeps the agent's visible tool list small.
 
-| Mode | Tools exposed | Notes |
+## Tool Modes
+
+Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
+
+| Mode | Tools exposed | Use when |
 |---|---|---|
-| `core` (default) | **9** + `mem_do` | Minimizes agent context usage; everything else is reached through `mem_do` |
-| `standard` | ~32 | Adds CRUD, namespace, tags, sessions, scratch, relations groups |
-| `full` | 74 | Every tool individually registered |
+| `core` (default) | 9 total, including `mem_do` | Best default for most agents |
+| `standard` | ~38 | You want common management tools directly visible |
+| `full` | 80+ | You are debugging, documenting, or using a client that handles large tool lists well |
 
-Set the mode in your MCP client config (the server ships as the `memtomem-server` console script, launched automatically by the client). For example, in Claude Desktop / Claude Code `mcp.json`:
+Example:
 
 ```json
 {
   "mcpServers": {
     "memtomem": {
       "command": "memtomem-server",
-      "env": { "MEMTOMEM_TOOL_MODE": "standard" }
+      "env": { "MEMTOMEM_TOOL_MODE": "core" }
     }
   }
 }
 ```
 
-## Core Tools
+## Core Mode
 
-### `mem_status`
+In `core` mode, the agent sees the tools needed for daily memory work:
 
-Check server connection status and statistics.
+| Tool | Purpose |
+|---|---|
+| `mem_status` | Check server, storage, embedding, and index status |
+| `mem_stats` | Return index statistics |
+| `mem_add` | Store a new memory |
+| `mem_search` | Hybrid search over indexed memory |
+| `mem_recall` | Browse recent or date-filtered memory |
+| `mem_index` | Index a file or directory |
+| `mem_list` | List indexed memories / sources |
+| `mem_read` | Read an indexed source file |
+| `mem_do` | Route all non-core actions by name |
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
+Tell the agent what you want in natural language. It will usually pick the right core tool.
 
-### `mem_add`
+## `mem_do`
 
-Store a memory with content, tags, and namespace.
+`mem_do` is the escape hatch for the rest of the surface. It takes an `action` and optional `params`.
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `content` | string | Yes | Memory content to store |
-| `tags` | string[] | No | Tags for categorization |
-| `namespace` | string | No | Target namespace (default: `default`) |
-| `ttl` | integer | No | Time-to-live in seconds |
-
-### `mem_search`
-
-Hybrid search using BM25 keyword + dense vector + RRF fusion.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | Yes | Search query |
-| `namespace` | string | No | Namespace to search |
-| `limit` | integer | No | Max results (default: 10) |
-| `min_score` | float | No | Minimum relevance score |
-
-### `mem_recall`
-
-Retrieve a single memory by ID.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Memory ID |
-
-### `mem_list`
-
-List memories with filtering and pagination.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `namespace` | string | No | Filter by namespace |
-| `tags` | string[] | No | Filter by tags |
-| `limit` | integer | No | Max results |
-| `offset` | integer | No | Pagination offset |
-
-### `mem_read`
-
-Read a source file that was previously indexed.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path` | string | Yes | File path to read |
-
-### `mem_index`
-
-Index a path or file into the knowledge base.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path` | string | Yes | File or directory path |
-| `recursive` | boolean | No | Index subdirectories (default: true) |
-
-### `mem_stats`
-
-Get index and search statistics.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
-
-### `mem_do`
-
-Meta-tool that routes non-core actions in `core` mode. Provides access to all 74 tools through a single entry point, minimizing the number of tools exposed to the agent.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `action` | string | Yes | Tool name or alias (e.g. `health` → `eval`, `orphans` → `cleanup_orphans`) |
-| `params` | object | No | Parameters for the target tool |
-
-Example — run a health check while in `core` mode:
-
-```
-mem_do(action="health")
+```text
+mem_do(action="help")
+mem_do(action="help", params={"category": "context"})
+mem_do(action="schedule_list")
+mem_do(action="context_diff", params={"scope": "project_shared"})
 ```
 
-## Multi-Agent Tools
+Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-### `mem_agent_register`
+## Common Actions
 
-Register an agent with an ID and description.
+| Category | Examples |
+|---|---|
+| Namespace | `ns_list`, `ns_set`, `ns_assign`, `ns_update`, `ns_rename`, `ns_delete` |
+| Tags | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
+| Sessions | `session_start`, `session_end`, `session_list` |
+| Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
+| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_migrate` |
+| Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
+| Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
+| Analytics | `activity`, `timeline`, `eval`, `reflect` |
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `agent_id` | string | Yes | Unique agent identifier |
-| `description` | string | No | Agent description |
+## When to Change Modes
 
-### `mem_agent_search`
+Stay in `core` when:
 
-Search across the agent's private namespace and the shared namespace.
+- You are setting up memtomem for an agent.
+- You want lower prompt/tool-list overhead.
+- You are not sure which mode you need.
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `query` | string | Yes | Search query |
-| `agent_id` | string | Yes | Calling agent's ID |
-| `limit` | integer | No | Max results |
+Use `standard` when an MCP client works better with direct tools than `mem_do` routing.
 
-### `mem_agent_share`
+Use `full` when you are testing, writing docs, or manually exercising every tool. `full` intentionally exposes a large surface.
 
-Export a memory from a private namespace to the shared namespace.
+## CLI Mirrors
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `memory_id` | string | Yes | Memory to share |
-| `agent_id` | string | Yes | Source agent's ID |
+Most common MCP operations have CLI equivalents:
 
-## Maintenance Tools
+| MCP | CLI |
+|---|---|
+| `mem_status` | `mm status` |
+| `mem_add` | `mm add` |
+| `mem_search` | `mm search` |
+| `mem_index` | `mm index` |
+| `mem_do(action="context_sync")` | `mm context sync` |
+| `mem_do(action="schedule_list")` | `mm schedule list` |
 
-### `mem_tag`
-
-Tag management — add, remove, or list tags on memories.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `action` | string | Yes | `add`, `remove`, or `list` |
-| `memory_id` | string | Depends | Target memory (for add/remove) |
-| `tag` | string | Depends | Tag name (for add/remove) |
-
-### `mem_namespace`
-
-Namespace management operations.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `action` | string | Yes | Management action |
-| `namespace` | string | No | Target namespace |
-
-### `mem_health`
-
-Run index health diagnostics.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| — | — | — | No parameters |
-
-### `mem_cleanup`
-
-Clean up expired and duplicate memories.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `dry_run` | boolean | No | Preview changes without applying (default: false) |
-
----
-
-> The full list of 74 tools is available in the [memtomem repository docs](https://github.com/memtomem/memtomem/tree/main/docs).
+If an agent is struggling to call the right tool, run the CLI command once yourself and then ask the agent to follow the same operation.

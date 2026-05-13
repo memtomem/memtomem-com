@@ -10,7 +10,7 @@ memtomem gives your AI agent **memory that persists across sessions and across a
 ## Use It When
 
 - **You keep re-explaining yesterday's decisions in today's session** — memtomem solves the "every new session is a blank slate" problem. Walk through the flow in [Memory Persistence Across Sessions](/guides/memory-persistence/).
-- **You want notes, docs, or code to be searchable by your agent** — point `mm index ~/notes` at a folder and every MCP-connected agent can query it.
+- **You want notes or docs to be searchable by your agent** — point `mm index ~/notes` at a folder of Markdown / structured files and every MCP-connected agent can query it.
 - **Multiple agents need to share the same knowledge** — Claude Code, Cursor, Codex CLI, and any other MCP client share one memory store.
 
 ## Start in 3 Steps

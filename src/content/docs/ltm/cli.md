@@ -16,7 +16,7 @@ At startup, the wizard offers a **preset picker** (Minimal / English / Korean) t
 ```bash
 mm init                              # interactive setup with preset picker
 mm init -y                           # auto-accept; behaves as `--preset minimal -y`
-mm init --preset korean              # apply Korean preset non-interactively
+mm init --preset korean              # select Korean preset, then continue interactively
 mm init --preset english -y          # English preset, no prompts
 mm init --advanced                   # skip picker, run full 10-step wizard
 ```
@@ -63,7 +63,7 @@ Search the knowledge base from the command line.
 
 ```bash
 mm search "how does the auth middleware work"
-mm search "deployment config" --namespace project-x --limit 5
+mm search "deployment config" --namespace project-x --top-k 5
 ```
 
 ### `mm add`
@@ -143,16 +143,25 @@ With `--json`, a successful write returns `{"ok": true, ...}` on stdout; no acti
 Sync agent definitions, skills, and commands across runtimes via the Context Gateway.
 
 ```bash
-mm context sync                      # push canonical config → all runtimes
+mm context detect
+mm context init --scope project_shared --confirm-project-shared
+mm context sync --scope project_shared
+mm context diff --scope project_shared
 ```
 
-### `mm context import`
+Use `--scope user` for personal cross-project context and `--scope project_local` for local drafts. `project_shared` is git-tracked, so it requires explicit confirmation and should not contain secrets.
 
-Reverse-extract runtime-specific files back to the canonical source.
+### Seeding from existing runtime files
+
+There is no separate `mm context import` command. To seed canonical files from runtime-specific files, run `mm context init` with the artifact kinds and destination tier.
 
 ```bash
-mm context import                    # pull runtime files → canonical source
+mm context detect --include agents,skills
+mm context init --include agents,skills --scope project_shared --confirm-project-shared
+mm context diff --include agents,skills --scope project_shared
 ```
+
+This is useful when you already authored files directly in Claude Code, Codex CLI, Gemini CLI, or another runtime and want memtomem to manage them going forward.
 
 ### `mm config show`
 
@@ -168,7 +177,7 @@ mm config show --json                # JSON for scripting
 Remove a single override from `~/.memtomem/config.json`, reverting the field to its built-in default (or to whatever a `config.d/*.json` fragment resolves to). Useful for clearing stale cross-machine paths in `memory_dirs`, or a single field that's shadowing a fragment.
 
 ```bash
-mm config unset memory_dirs
+mm config unset indexing.memory_dirs
 mm config unset rerank.model
 ```
 

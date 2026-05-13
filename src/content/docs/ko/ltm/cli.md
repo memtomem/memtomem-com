@@ -16,7 +16,7 @@ description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 ```bash
 mm init                              # 대화형 설정 + 프리셋 피커
 mm init -y                           # 자동 수락; `--preset minimal -y`와 동일
-mm init --preset korean              # 한국어 프리셋을 비대화 모드로 적용
+mm init --preset korean              # 한국어 프리셋 선택 후 대화형 진행
 mm init --preset english -y          # 영어 프리셋, 프롬프트 없음
 mm init --advanced                   # 피커 생략, 10단계 전체 마법사
 ```
@@ -63,7 +63,7 @@ mm web --mode dev                    # 메인테이너용 페이지 추가 노�
 
 ```bash
 mm search "how does the auth middleware work"
-mm search "deployment config" --namespace project-x --limit 5
+mm search "deployment config" --namespace project-x --top-k 5
 ```
 
 ### `mm add`
@@ -143,16 +143,25 @@ mm activity log --type decision --content "전략 X 채택" --meta '{"k":"v"}' -
 Context Gateway를 통해 에이전트 정의, 스킬, 명령어를 런타임 간에 동기화합니다.
 
 ```bash
-mm context sync                      # 정규 설정 → 모든 런타임
+mm context detect
+mm context init --scope project_shared --confirm-project-shared
+mm context sync --scope project_shared
+mm context diff --scope project_shared
 ```
 
-### `mm context import`
+개인용 크로스 프로젝트 컨텍스트는 `--scope user`, 로컬 초안은 `--scope project_local`을 사용합니다. `project_shared`는 git으로 추적되므로 명시 확인이 필요하며 비밀값을 넣으면 안 됩니다.
 
-런타임별 파일을 정규 소스로 역추출합니다.
+### 기존 런타임 파일에서 시드
+
+별도의 `mm context import` 명령은 없습니다. 런타임별 파일에서 정규 파일을 시드하려면 아티팩트 종류와 대상 티어를 지정해 `mm context init`을 실행합니다.
 
 ```bash
-mm context import                    # 런타임 파일 → 정규 소스
+mm context detect --include agents,skills
+mm context init --include agents,skills --scope project_shared --confirm-project-shared
+mm context diff --include agents,skills --scope project_shared
 ```
+
+이미 Claude Code, Codex CLI, Gemini CLI 등 특정 런타임에서 직접 작성한 파일을 앞으로 memtomem이 관리하게 만들 때 사용합니다.
 
 ### `mm config show`
 
@@ -168,7 +177,7 @@ mm config show --json                # 스크립트용 JSON
 `~/.memtomem/config.json`에서 특정 키의 오버라이드를 제거하여 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다. 다른 머신에서 이전된 `memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
 
 ```bash
-mm config unset memory_dirs
+mm config unset indexing.memory_dirs
 mm config unset rerank.model
 ```
 
