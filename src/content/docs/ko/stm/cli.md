@@ -142,6 +142,37 @@ STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 건드리지 않습니
 mms version
 ```
 
+### `mms hook`
+
+지원 host의 built-in 도구 호출을 STM 서피싱으로 연결합니다. Claude Code와 호환 host는 이를 `PostToolUse` hook으로 호출합니다. JSON payload는 stdin으로 들어오고, `mms hook`은 surfaced memory가 담긴 `additionalContext`를 포함할 수 있는 hook output을 출력합니다. Bash 출력 압축은 별도 기능이며 `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`로 opt-in합니다.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|WebFetch|Bash",
+        "hooks": [{ "type": "command", "command": "mms hook" }]
+      }
+    ]
+  }
+}
+```
+
+hook은 항상 exit 0으로 종료합니다. 서피싱, daemon, 압축 중 어떤 단계가 실패해도 host 도구 출력은 변경 없이 통과합니다.
+
+### `mms daemon`
+
+`mms hook`이 사용하는 로컬 surfacing daemon을 관리합니다. daemon 모드는 기본 on(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`)이며 첫 적격 hook 호출에서 자동으로 spawn되므로 보통 수동 시작이 필요 없습니다.
+
+```bash
+mms daemon status                    # warm daemon 실행 여부 확인
+mms daemon start                     # 명시적으로 시작
+mms daemon stop                      # 현재 config용 daemon 중지
+```
+
+daemon은 활성 config용 LTM MCP 세션 하나를 warm 상태로 유지합니다. 기존 cold in-process hook 경로를 강제하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`, daemon 미가용 시 cold fallback을 원하면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
+
 ## 프로젝트 관리 (W1)
 
 `.mms/project.toml` 마커로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리 단위로 다른 MCP 세트를 가져갈 때 — 예를 들어 회사 코드 작업 시에만 GitHub MCP, 사이드 프로젝트에서는 filesystem 만 — `~/.mms/projects.toml` 에 기록되어 어디서 호출해도 일관되게 작동합니다.
@@ -206,7 +237,7 @@ first-import-wins 정책: registry 에 동일 이름이 다르게 등록돼 있�
 
 ### 운영 통계
 
-프록시/서피싱/압축 통계는 CLI 서브명령이 아닌 **MCP 도구**로 노출됩니다 — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health`, `stm_tuning_recommendations`. MCP 클라이언트에서 호출하거나, `advertise_observability_tools=false`로 에이전트 노출에서 숨길 수 있습니다. 자세한 도구 목록은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
+프록시/서피싱/INDEX/압축 통계는 CLI 서브명령이 아닌 **MCP 도구**로 노출됩니다 — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_proxy_health`, `stm_tuning_recommendations`. 기본적으로 MCP `tools/list`에서는 숨겨져 있으며, 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 자세한 도구 목록은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
 
 ### 프록시 서버 실행
 

@@ -140,6 +140,37 @@ Print the installed version (same as `mms --version`).
 mms version
 ```
 
+### `mms hook`
+
+Bridge supported host built-in tool calls into STM surfacing. Claude Code and compatible hosts call it as a `PostToolUse` hook: the JSON payload arrives on stdin, and `mms hook` prints hook output that can include `additionalContext` with surfaced memories. Bash output compression is separate and opt-in via `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|WebFetch|Bash",
+        "hooks": [{ "type": "command", "command": "mms hook" }]
+      }
+    ]
+  }
+}
+```
+
+The hook always exits 0. If surfacing, the daemon, or compression fails, the host tool output passes through unchanged.
+
+### `mms daemon`
+
+Manage the local surfacing daemon used by `mms hook`. Daemon mode is on by default (`MEMTOMEM_STM_HOOK__USE_DAEMON=1`) and auto-spawns on the first eligible hook call, so manual startup is usually unnecessary.
+
+```bash
+mms daemon status                    # show whether the warm daemon is running
+mms daemon start                     # start it explicitly
+mms daemon stop                      # stop the daemon for this config
+```
+
+The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable.
+
 ## Project Management (W1)
 
 `.mms/project.toml` markers let you scope which MCPs are active per directory — for example, GitHub MCP only when working in your work repo, filesystem only in side projects. Project markers are indexed at `~/.mms/projects.toml` so the active set is consistent regardless of where you invoke `mms` from.
@@ -204,7 +235,7 @@ First-import-wins: identical names with different definitions are flagged as con
 
 ### Operational statistics
 
-Proxy, surfacing, and compression statistics are exposed as **MCP tools** rather than CLI subcommands — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. Call them from your MCP client, or hide them from the agent surface via `advertise_observability_tools=false`. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
+Proxy, surfacing, index, and compression statistics are exposed as **MCP tools** rather than CLI subcommands — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. They are hidden from MCP `tools/list` by default; set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them to the agent. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
 
 ### Running the proxy server
 

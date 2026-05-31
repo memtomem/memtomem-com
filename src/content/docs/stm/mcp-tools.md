@@ -1,15 +1,15 @@
 ---
 title: MCP Tools
-description: STM proxy exposes 12 control tools for stats, cache, surfacing, indexing, compression, and progressive delivery.
+description: STM proxy exposes 12 control tools for stats, cache, surfacing, compression, progressive delivery, and optional INDEX write stats.
 ---
 
-In addition to transparently proxying every upstream MCP tool, memtomem-stm exposes **12 control tools** that let the agent inspect and steer the proxy.
+In addition to transparently proxying every upstream MCP tool, memtomem-stm provides **12 control tools** that inspect and steer the proxy. Four model-facing tools are advertised by default; eight observability tools are opt-in for MCP advertisement.
 
 ## Advertising observability tools
 
-Eight of the twelve tools are **observability** tools that can be hidden from the MCP tool list to free up agent context. Set the env var `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false` in your MCP client config to hide them — they remain callable from Python tests / direct code paths, but are absent from `tools/list`.
+Eight of the twelve tools are **observability** tools that are hidden from the MCP tool list by default to free up agent context. Set the env var `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` in your MCP client config to advertise them — they remain callable from Python tests / direct code paths either way.
 
-| Category | Always advertised | Hidden when flag off |
+| Category | Always advertised | Advertised when flag on |
 |---|---|---|
 | **Always on** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
 | **Observability** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
@@ -20,7 +20,7 @@ Eight of the twelve tools are **observability** tools that can be hidden from th
 
 Token savings, cache hits, per-tool call history.
 
-No parameters. *(Observability — hidden when `advertise_observability_tools=false`.)*
+No parameters. *(Observability — advertised only when `advertise_observability_tools=true`.)*
 
 ### `stm_proxy_health`
 
@@ -69,8 +69,9 @@ Rate surfaced memories so the auto-tuner can adjust thresholds.
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `surfacing_id` | string | Yes | Id from the surfacing footer |
-| `rating` | string | Yes | `helpful` / `not_relevant` / `already_known` |
+| `rating` | string | Yes | `helpful` / `partially_helpful` / `not_relevant` / `already_known` |
 | `memory_id` | string | No | Specific memory the feedback refers to |
+| `ratings` | object[] | No | Batched per-memory feedback, each with `memory_id` and `rating` |
 
 ### `stm_surfacing_stats`
 
@@ -130,7 +131,21 @@ Per-response follow-up rate and coverage across all progressive-compressed calls
 |---|---|---|---|
 | `tool` | string | No | Filter by upstream tool name |
 
-*(Observability — hidden when `advertise_observability_tools=false`.)*
+*(Observability — advertised only when `advertise_observability_tools=true`.)*
+
+## INDEX write stats
+
+### `stm_index_stats`
+
+STM-driven LTM write activity across both INDEX paths — `auto_index_response` (verbatim response → markdown chunk) and `extract_and_store` (response → LLM-extracted facts → markdown chunks). Mirror of `stm_surfacing_stats` for the write side; INDEX intentionally has no quality signal, so operators only see `attempts` (per-tool / per-path counts) and 4-label `outcomes` (`stored` / `error` / `dedup_skip` / `extracted_zero_facts`).
+
+In the standalone `mms` server today, Stage 4 INDEX config is valid but inert because no `FileIndexer` engine is wired at startup. These counters are useful for library integrations and future server wiring, but enabling `auto_index` in `stm_proxy.json` does not currently write back to LTM from the standalone server.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `tool` | string | No | Filter by upstream tool name — the `__total__` aggregate row is always included |
+
+*(Observability — advertised only when `advertise_observability_tools=true`.)*
 
 ### `stm_tuning_recommendations`
 
@@ -156,6 +171,6 @@ mms add filesystem --command npx \
 
 Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
 
-When the agent calls `fs__read_file`, the proxy runs the pipeline: **CLEAN → COMPRESS → SURFACE → INDEX**, then returns the compressed response plus any surfaced memories.
+When the agent calls `fs__read_file`, the proxy runs the active pipeline: **CLEAN → COMPRESS → SURFACE**, with **INDEX** available only when an index engine is wired. It returns the compressed response plus any surfaced memories.
 
 > See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.

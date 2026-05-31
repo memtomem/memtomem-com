@@ -19,7 +19,7 @@ mm --version
 If `mm --version` prints an older version right after install, upgrade with refreshed package metadata:
 
 ```bash
-uv tool install 'memtomem[all]' --upgrade
+uv tool install 'memtomem[all]' --refresh
 ```
 
 ## 2. Run Setup
@@ -61,7 +61,7 @@ You should see storage, embedding, and chunk-count information. Zero chunks is n
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
-    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered. STM (`memtomem-stm`) was also registered by `mms init --mcp claude` in Step 2 — no extra command needed.
+    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered — no extra LTM command needed.
 
     For a manual registration (skipped the wizard prompt, or moved to a new machine):
     ```bash

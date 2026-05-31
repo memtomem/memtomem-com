@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </nav>
 
 <section class="hero">
-	<div class="hero-badge">Open Source · Apache 2.0</div>
+	<div class="hero-badge">memtomem v0.2.2 · memtomem-stm v0.1.24 · Apache 2.0</div>
 	<h1>AI That Never Forgets —<br /><em>Memory Infrastructure</em> for Agents</h1>
 	<p class="hero-sub">
 		Stop re-explaining your project to your AI every session. memtomem turns your notes,
@@ -81,9 +81,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<span class="dollar">$</span> uv tool install 'memtomem[all]'
 	</div>
 	<div class="hero-stats">
-		<div><strong>80+</strong>MCP Tools</div>
+		<div><strong>84</strong>LTM MCP Tools</div>
 		<div><strong>10</strong>Compression Strategies</div>
-		<div><strong>6+ · 3+</strong>MCP Editors · Frameworks</div>
+		<div><strong>12</strong>STM Control Tools</div>
 	</div>
 </section>
 
@@ -120,11 +120,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="feature-grid">
 			<div class="feature-card accent">
 				<h3>Proactive Surfacing</h3>
-				<p>Your agent doesn't have to ask. STM watches tool calls and slips in relevant past memories automatically — tuned by your feedback.</p>
+				<p>Your agent doesn't have to ask. STM watches proxied MCP calls, and v0.1.24 adds <code>mms hook</code> for Claude Code native-tool surfacing with a warm daemon.</p>
 			</div>
 			<div class="feature-card teal">
 				<h3>MCP Proxy Gateway</h3>
-				<p>STM sits invisibly between your agent and its tools. Existing MCP servers keep working unchanged — no code, no new integrations.</p>
+				<p>STM sits invisibly between your agent and its tools. Existing MCP servers keep working unchanged, while LTM can be reached over stdio, SSE, or streamable HTTP.</p>
 			</div>
 			<div class="feature-card coral">
 				<h3>Cross-Runtime Sync</h3>
@@ -132,7 +132,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</div>
 			<div class="feature-card amber">
 				<h3>Smart Compression</h3>
-				<p>Big tool responses get trimmed to fit your context window. Ten strategies for JSON, markdown, or free-form text, plus a zero-loss progressive mode for huge payloads.</p>
+				<p>Big tool responses get trimmed to fit your context window. Ten strategies now use query-aware ranking, safer JSON tiers, and zero-loss progressive mode for huge payloads.</p>
 			</div>
 			<div class="feature-card blue">
 				<h3>Multi-Agent Knowledge Sharing</h3>
@@ -150,7 +150,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 		<div class="section-label">Architecture</div>
 		<div class="section-title">Two-Layer Architecture</div>
-		<div class="section-desc">STM proxy and LTM server connected via MCP, transparently providing memory to all agents.</div>
+		<div class="section-desc">STM proxy and LTM server connected via MCP, transparently providing surfacing and compression to agents.</div>
 		<div class="arch-diagram">
 			<div class="arch-tier-label">AI Agents / Frameworks</div>
 			<div class="arch-row">
@@ -164,7 +164,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<div class="arch-node teal arch-node-wide">
 					<div class="arch-node-title">memtomem-stm</div>
 					<div class="arch-node-sub">STM Proxy</div>
-					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE &rarr; INDEX</div>
+					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE &rarr; (INDEX)</div>
 				</div>
 			</div>
 			<div class="arch-connector-pair">
@@ -175,7 +175,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<div class="arch-node accent arch-node-half">
 					<div class="arch-node-title">memtomem</div>
 					<div class="arch-node-sub">LTM Server</div>
-					<div class="arch-node-detail">80+ MCP Tools</div>
+					<div class="arch-node-detail">84 MCP Tools</div>
 				</div>
 				<div class="arch-node arch-node-half">
 					<div class="arch-node-title">Upstream MCP Servers</div>

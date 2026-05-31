@@ -5,7 +5,7 @@ description: 도구 호출 단위 실시간 서피싱, 5단계 관련성 게이�
 
 > 처음이라면 [STM 개요](/ko/stm/overview/)에서 전체 파이프라인을 먼저 확인하세요.
 
-기존 RAG는 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 에이전트의 모든 도구 호출을 관찰하여 현재 작업 맥락을 파악하고, 부합하는 기억을 LTM에서 조회하여 **자동으로** 응답에 주입합니다. 별도의 검색 요청이 필요하지 않습니다.
+기존 RAG는 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 프록시된 MCP 호출을 관찰하여 현재 작업 맥락을 파악하고, 부합하는 기억을 LTM에서 조회하여 **자동으로** 응답에 주입합니다. v0.1.24의 `mms hook`은 지원되는 Claude Code 네이티브 도구 `PostToolUse` 이벤트에도 `additionalContext` 형태로 서피싱을 확장합니다.
 
 ## 동작 원리
 
@@ -15,7 +15,7 @@ description: 도구 호출 단위 실시간 서피싱, 5단계 관련성 게이�
 도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 판정 → 응답에 주입
 ```
 
-에이전트 코드를 수정할 필요 없이, STM 프록시를 거치는 것만으로 모든 MCP 통신에서 기억이 자동 주입됩니다.
+에이전트 코드를 수정할 필요 없이, STM 프록시를 거치는 것만으로 MCP 통신에서 기억이 자동 주입됩니다. Claude Code built-in 도구에는 `mms hook`을 host hook으로 등록합니다. 기본적으로 warm local daemon을 사용하므로 반복 hook 호출에서 LTM cold start 비용을 치르지 않습니다.
 
 ## 5단계 컨텍스트 추출
 
@@ -45,8 +45,8 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 
 | 모드 | 동작 |
 |---|---|
-| `prepend` (기본값) | 기억을 헤더로 앞에 붙임. progressive 연속 호출에서 Stage 3 건너뜀. |
-| `append` | 기억을 응답 아래에 덧붙임. progressive 연속 호출에서도 서피싱 트리거 (F6). |
+| `append` (기본값) | 기억을 응답 아래에 덧붙임. progressive delivery offset을 보존하며 적격 continuation 경로에서도 동작. |
+| `prepend` | 기억을 헤더로 앞에 붙임. `stm_proxy_read_more` offset을 밀어버리므로 progressive delivery에서는 스킵. |
 | `section` | 기억을 전용 섹션에 배치. progressive 연속 호출에서도 서피싱 트리거 (F6). |
 
 ## 모델 인식 기본값
@@ -64,8 +64,9 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 에이전트가 서피싱 품질을 평가하면, 자동 튜너가 도구별 관련성 임계값을 지속적으로 최적화합니다:
 
 - **helpful** → 해당 도구의 `min_score` 유지 또는 하향
+- **partially_helpful** → 중립 피드백으로 집계
 - **not_relevant** → `min_score` 상향 (더 엄격한 필터링)
-- **already_known** → 중복 제거 윈도우 확대
+- **already_known** → negative feedback으로 집계하고 로컬 demotion / dedup 동작에 반영
 
 ## 안전 장치
 
@@ -76,5 +77,19 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 - **쿼리 쿨다운** — 동일 쿼리의 빈번한 반복 검색 방지
 - **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
+- **로컬 피드백 demotion** — 같은 기억이 서로 다른 이벤트에서 `not_relevant` 또는 `already_known`으로 반복 평가되면 `feedback_demotion_negative_threshold`(기본 `3`) 이후 주입 전에 필터링
+- **쿼리 텍스트 프라이버시** — `query_retention_days`는 기본 30일 이후 저장된 원문 쿼리를 비우고, `persist_query_text=false`는 원문 대신 `sha256:` digest를 저장
+
+## LTM 전송
+
+STM은 LTM과 MCP 프로토콜로 통신합니다. 기본값은 stdio로 `memtomem-server`를 실행하는 방식이며, v0.1.24부터는 장기 실행 LTM 서비스를 `sse` 또는 `streamable_http`로 연결할 수 있습니다:
+
+```bash
+export MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT=streamable_http
+export MEMTOMEM_STM_SURFACING__LTM_MCP_URL=https://ltm.example/mcp
+export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
+```
+
+LTM 응답은 서피싱 엔진이 소비하며, 프록시 압축/캐시 파이프라인을 거치지 않습니다.
 
 `trace_id`가 서피싱과 점진적 전달 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.

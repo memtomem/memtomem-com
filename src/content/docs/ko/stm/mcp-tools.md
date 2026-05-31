@@ -1,15 +1,15 @@
 ---
 title: MCP 도구
-description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점진적 전달을 위한 12개 관리 도구를 제공합니다.
+description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전달, 선택적 INDEX 쓰기 통계를 위한 12개 관리 도구를 제공합니다.
 ---
 
-업스트림 MCP 도구를 투명하게 프록시하는 것 외에도, memtomem-stm은 프록시를 관찰·제어하기 위한 **12개 관리 도구**를 노출합니다.
+업스트림 MCP 도구를 투명하게 프록시하는 것 외에도, memtomem-stm은 프록시를 관찰·제어하기 위한 **12개 관리 도구**를 제공합니다. 모델용 도구 4개는 기본 노출되며, 관찰 도구 8개는 MCP 노출 opt-in입니다.
 
 ## 관찰 도구 노출 제어
 
-12개 중 8개는 **관찰(observability)** 도구이며, 에이전트 컨텍스트를 아끼려면 MCP 도구 목록에서 숨길 수 있습니다. MCP 클라이언트 설정의 `env`에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=false`를 지정하면 관찰 도구가 `tools/list`에서 빠집니다. 파이썬 테스트나 내부 코드에서는 여전히 호출 가능합니다.
+12개 중 8개는 **관찰(observability)** 도구이며, 에이전트 컨텍스트를 아끼기 위해 기본적으로 MCP 도구 목록에서 숨겨집니다. MCP 클라이언트 설정의 `env`에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 지정하면 관찰 도구가 `tools/list`에 노출됩니다. 파이썬 테스트나 내부 코드에서는 어느 쪽이든 호출 가능합니다.
 
-| 범주 | 항상 노출 | 플래그 off일 때 숨김 |
+| 범주 | 항상 노출 | 플래그 on일 때 노출 |
 |---|---|---|
 | **항상 on** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
 | **관찰** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
@@ -20,7 +20,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점�
 
 토큰 절감, 캐시 히트, 도구별 호출 이력.
 
-파라미터 없음. *(관찰 — `advertise_observability_tools=false`일 때 숨김.)*
+파라미터 없음. *(관찰 — `advertise_observability_tools=true`일 때만 MCP에 노출.)*
 
 ### `stm_proxy_health`
 
@@ -69,8 +69,9 @@ description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점�
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `surfacing_id` | string | 예 | 서피싱 푸터에서 얻은 id |
-| `rating` | string | 예 | `helpful` / `not_relevant` / `already_known` |
+| `rating` | string | 예 | `helpful` / `partially_helpful` / `not_relevant` / `already_known` |
 | `memory_id` | string | 아니오 | 피드백 대상 개별 기억 |
+| `ratings` | object[] | 아니오 | `memory_id`와 `rating`을 가진 per-memory batch 피드백 |
 
 ### `stm_surfacing_stats`
 
@@ -130,7 +131,21 @@ Progressive 압축을 거친 호출의 응답별 후속 읽기 비율과 커버�
 |---|---|---|---|
 | `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 |
 
-*(관찰 — `advertise_observability_tools=false`일 때 숨김.)*
+*(관찰 — `advertise_observability_tools=true`일 때만 MCP에 노출.)*
+
+## INDEX 쓰기 통계
+
+### `stm_index_stats`
+
+STM이 LTM에 쓴 활동 통계 — 두 INDEX 경로(`auto_index_response` = 응답 verbatim 청킹, `extract_and_store` = LLM 사실 추출 후 청킹)를 함께 다룹니다. SURFACE 경로의 `stm_surfacing_stats`와 대칭이지만 INDEX는 의도적으로 품질 시그널을 두지 않습니다 — 운영자가 보는 값은 `attempts`(경로별 시도 수)와 `outcomes`(stored / error / dedup_skip / extracted_zero_facts) 분포뿐입니다.
+
+현재 standalone `mms` 서버에서는 Stage 4 INDEX 설정이 유효한 설정이지만, 시작 시 `FileIndexer` 엔진이 연결되지 않아 inert 상태입니다. 이 카운터는 라이브러리 통합과 향후 서버 연결에서 의미가 있으며, 지금 `stm_proxy.json`에서 `auto_index`를 켠다고 standalone 서버가 LTM으로 write-back하지는 않습니다.
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 — `__total__` 행은 항상 포함 |
+
+*(관찰 — `advertise_observability_tools=true`일 때만 MCP에 노출.)*
 
 ### `stm_tuning_recommendations`
 
@@ -156,6 +171,6 @@ mms add filesystem --command npx \
 
 MCP 도구 선택 UI(예: Claude Code의 `/mcp`)에서 렌더링되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내도록 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file` 로 표시됩니다. 이는 도구를 호출할 때 사용하는 `{prefix}__{tool}` 이름과는 별개이며, 업스트림 도구가 이미 `annotations.title` 을 제공하는 경우에만 적용됩니다.
 
-에이전트가 `fs__read_file`을 호출하면 프록시가 **CLEAN → COMPRESS → SURFACE → INDEX** 파이프라인을 실행하고, 압축된 응답 + 서피싱된 기억을 함께 반환합니다.
+에이전트가 `fs__read_file`을 호출하면 프록시는 활성 파이프라인인 **CLEAN → COMPRESS → SURFACE**를 실행하며, **INDEX**는 index engine이 연결된 경우에만 동작합니다. 반환값은 압축된 응답 + 서피싱된 기억입니다.
 
 > 메커니즘은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참조하세요.

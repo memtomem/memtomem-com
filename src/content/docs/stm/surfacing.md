@@ -5,7 +5,7 @@ description: Real-time surfacing per tool call, 5-level relevance gating, feedba
 
 > New here? Start with the [STM Overview](/stm/overview/) to see the full pipeline in context first.
 
-Traditional RAG only provides relevant information when the agent explicitly requests a search. memtomem-stm's proactive surfacing observes every tool call the agent makes, figures out what it's working on, and **automatically** injects matching memories from LTM into the response — no explicit query needed.
+Traditional RAG only provides relevant information when the agent explicitly requests a search. memtomem-stm's proactive surfacing observes proxied MCP calls, figures out what the agent is working on, and **automatically** injects matching memories from LTM into the response — no explicit query needed. In v0.1.24, `mms hook` extends this surfacing path to supported Claude Code native-tool `PostToolUse` events as `additionalContext`.
 
 ## How It Works
 
@@ -15,7 +15,7 @@ When an agent calls an MCP tool, the STM proxy runs this pipeline:
 Tool call → Context extraction → LTM search → Relevance gating → Inject into response
 ```
 
-No agent code changes needed — just routing through the STM proxy enables automatic memory injection for all MCP communication.
+No agent code changes needed — routing through the STM proxy enables automatic memory injection for MCP communication. For Claude Code built-in tools, install `mms hook` as a host hook; it uses a warm local daemon by default so repeated hook calls do not pay LTM cold-start cost.
 
 ## 5-Level Context Extraction
 
@@ -45,8 +45,8 @@ How surfaced memories are stitched into the response is controlled by `MEMTOMEM_
 
 | Mode | Behavior |
 |---|---|
-| `prepend` (default) | Memories prepended as a header. Skips Stage 3 on progressive continuations. |
-| `append` | Memories appended below the response. Triggers surfacing on progressive continuations (F6). |
+| `append` (default) | Memories appended below the response. Preserves progressive-delivery offsets and works on eligible continuation paths. |
+| `prepend` | Memories prepended as a header. Skipped on progressive delivery because it would shift `stm_proxy_read_more` offsets. |
 | `section` | Memories placed in a dedicated section. Triggers surfacing on progressive continuations (F6). |
 
 ## Model-Aware Defaults
@@ -64,8 +64,9 @@ Automatically scales based on the agent's context window size:
 When an agent evaluates surfacing quality, the auto-tuner continuously optimizes per-tool relevance thresholds:
 
 - **helpful** → Maintain or lower `min_score` for that tool
+- **partially_helpful** → Count as neutral evidence
 - **not_relevant** → Raise `min_score` (stricter filtering)
-- **already_known** → Expand deduplication window
+- **already_known** → Count as negative feedback and feed local demotion / dedup behavior
 
 ## Safety Mechanisms
 
@@ -76,5 +77,19 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 - **Query cooldown** — Skips surfacing when the extracted query has Jaccard similarity `> 0.95` with one seen in the last 5 seconds
 - **Cross-session dedup** — Default TTL `604800s` (7 days) via `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`
 - **Injection size cap** — Default `3000 chars` per injection
+- **Local feedback demotion** — Memories repeatedly rated `not_relevant` or `already_known` are filtered before injection once they cross `feedback_demotion_negative_threshold` (default `3` distinct events)
+- **Query-text privacy** — `query_retention_days` clears persisted raw query text after 30 days by default, and `persist_query_text=false` stores a `sha256:` digest instead of the raw query
+
+## LTM Transport
+
+STM talks to LTM over MCP. The default transport spawns `memtomem-server` over stdio, and v0.1.24 also supports long-running LTM services over `sse` or `streamable_http`:
+
+```bash
+export MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT=streamable_http
+export MEMTOMEM_STM_SURFACING__LTM_MCP_URL=https://ltm.example/mcp
+export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
+```
+
+LTM responses are consumed by the surfacing engine and bypass the proxy compression/cache pipeline.
 
 A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).

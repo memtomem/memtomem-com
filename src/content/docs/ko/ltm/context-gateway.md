@@ -74,7 +74,7 @@ mm context sync --include skills --scope user
 
 ```bash
 mm context init --include agents --scope project_local
-mm context status --scope project_local
+mm context diff --include agents --scope project_local
 ```
 
 `project_local` 정규 파일은 gitignored이며 에이전트 / 스킬 / 커맨드 런타임 경로로 fan-out되지 않습니다. 준비가 끝나면 파일을 `project_shared`로 승격한 뒤 `mm context sync --scope project_shared`를 실행합니다.

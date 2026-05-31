@@ -41,7 +41,7 @@ During indexing, supported documents are split into meaningful units by structur
 |---|---|---|
 | **Markdown** | `.md` files | Split by heading level, preserving hierarchy |
 | **Structured data** | `.json`, `.yaml`, `.yml`, `.toml` files | Top-level key splitting, with recursive mode available via config |
-| **reStructuredText** | `.rst` files | Section-header-aware splitting |
+| **Code** | `.py`, `.js`, `.ts`, `.tsx`, `.jsx` files | Function / class-aware splitting when code chunking extras are installed |
 
 Very short sections are greedily packed with adjacent siblings up to `indexing.target_chunk_tokens` (default `384`) to keep each chunk informative enough to retrieve. Set `target_chunk_tokens=0` to disable the pass and keep every small section as its own chunk.
 

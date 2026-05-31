@@ -7,7 +7,7 @@ description: 10종 압축 전략의 동작 원리, 자동 선택 로직, 쿼리 
 
 모든 MCP 도구 응답은 에이전트에 전달되기 전에 STM을 거칩니다. 응답이 에이전트의 컨텍스트 예산을 초과할 경우 STM이 압축을 수행하며, 압축 방식은 콘텐츠 유형에 따라 달라집니다.
 
-memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압축하여 토큰을 절감합니다. 에이전트가 필요로 하는 정보를 유지하면서 응답 크기를 축소하는 10가지 전략을 제공합니다. 전략 선택이 어려운 경우 `auto` 설정을 유지하면 응답별로 적절한 전략이 자동 선택됩니다.
+memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압축하여 토큰을 절감합니다. 에이전트가 필요로 하는 정보를 유지하면서 응답 크기를 축소하는 10가지 전략을 제공합니다. 전략 선택이 어려운 경우 `auto` 설정을 유지하면 즉시 응답형 전략 중에서 응답별로 적절한 전략이 자동 선택됩니다.
 
 ## 10가지 압축 전략
 
@@ -15,11 +15,11 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 |---|---|---|
 | **truncate** | 소형 텍스트 | 길이 제한 절삭 (기본 폴백) |
 | **hybrid** | Markdown | 구조 보존 + 불필요 섹션 축약 |
-| **selective** | 일반 텍스트 | 쿼리와 관련된 부분만 보존 |
+| **selective** | 대형 구조화 데이터 | 먼저 TOC를 반환하고 필요한 섹션을 후속 호출로 선택 |
 | **progressive** | 대형 콘텐츠 | 커서 기반 순차 전달 (제로 정보손실) |
-| **extract_fields** | JSON 딕셔너리 | 주요 필드만 추출 |
-| **schema_pruning** | JSON 배열 | 스키마 유지 + 샘플 축소 |
-| **skeleton** | API 문서 | 구조 뼈대만 보존 |
+| **extract_fields** | JSON 딕셔너리 | top-level 형태와 대표 nested 값을 보존 |
+| **schema_pruning** | JSON 배열 | 재귀적 schema-preserving 샘플링 |
+| **skeleton** | API 문서 | 헤딩과 섹션 첫 줄 중심으로 구조 보존 |
 | **llm_summary** | 복잡한 텍스트 | LLM 기반 요약 (Ollama/OpenAI) — 타임아웃 보호(기본 60초), 초과 시 `truncate`로 폴백 |
 | **auto** | 모든 유형 | 콘텐츠 분석 후 최적 전략 자동 선택 |
 | **none** | — | 압축 없이 원본 전달 |
@@ -37,11 +37,15 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 | 큰 구조화 Markdown / 코드 비중이 높은 텍스트 | `hybrid` |
 | 기타 텍스트 또는 단순 JSON | `truncate` |
 
-`selective`, `progressive`, `llm_summary`는 명시적으로 선택하는 전략입니다. `auto`가 첫 선택으로 고르지는 않습니다.
+`selective`, `progressive`, `llm_summary`는 opt-in 전용입니다. 상호작용 패턴을 바꾸거나 외부 LLM 지연을 추가하기 때문에 `auto`가 자동 선택하지 않습니다.
 
 ## 쿼리 인식 예산 배분
 
-압축 시 에이전트의 현재 쿼리를 인식하여, 관련 섹션에 더 많은 토큰 예산을 할당합니다. 예를 들어, "인증 모듈"에 대해 질문한 상태에서 API 문서를 압축하면, 인증 관련 엔드포인트에 더 많은 공간을 배분합니다.
+압축 시 에이전트의 현재 쿼리를 인식하여, 관련 섹션에 더 많은 토큰 예산을 할당합니다. 예를 들어, "인증 모듈"에 대해 질문한 상태에서 API 문서를 압축하면, 인증 관련 엔드포인트에 더 많은 공간을 배분합니다. v0.1.24에서는 SELECTIVE / Hybrid / SCHEMA_PRUNING / SKELETON의 TOC 항목도 활성 쿼리와의 관련성으로 정렬됩니다.
+
+## JSON 안전성
+
+JSON-aware 계층은 압축 후 엄격한 JSON으로 다시 직렬화합니다. `NaN`, `Infinity`, `-Infinity` 같은 non-finite 값은 출력 전에 `null`로 변환되어, 다운스트림 파서가 Python 확장 토큰을 받지 않습니다. JSON 계층은 예산이 줄어들수록 단조롭게 degrade됩니다. 문서화된 예외는 standalone SELECTIVE입니다. 먼저 entry preview를 줄이지만, 섹션 수가 매우 많으면 preview가 0이어도 TOC envelope가 예산을 넘을 수 있습니다. entry를 삭제하면 선택 계약이 깨지므로 이 trade-off를 유지합니다.
 
 ## 제로 정보손실: Progressive Delivery
 

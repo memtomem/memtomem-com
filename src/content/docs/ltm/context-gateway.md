@@ -74,7 +74,7 @@ This writes the canonical skill under `~/.memtomem/skills/` and fans it out to s
 
 ```bash
 mm context init --include agents --scope project_local
-mm context status --scope project_local
+mm context diff --include agents --scope project_local
 ```
 
 `project_local` canonical files are gitignored and do not fan out to runtime agent / skill / command paths. Promote the file to `project_shared` when it is ready, then run `mm context sync --scope project_shared`.

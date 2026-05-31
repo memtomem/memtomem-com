@@ -12,8 +12,8 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 | Mode | Tools exposed | Use when |
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
-| `standard` | ~38 | You want common management tools directly visible |
-| `full` | 80+ | You are debugging, documenting, or using a client that handles large tool lists well |
+| `standard` | 37, including `mem_do` | You want common management tools directly visible |
+| `full` | 84 | You are debugging, documenting, or using a client that handles large tool lists well |
 
 Example:
 
