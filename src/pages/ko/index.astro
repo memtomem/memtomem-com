@@ -101,7 +101,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="problem-card">
 				<div class="problem-num">02</div>
 				<h3>에이전트 간 기억 단절</h3>
-				<p>Claude Code에서 작업한 내용을 Cursor에서 이어받을 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
+				<p>Claude Code에서 작업한 내용을 다른 클라이언트로 이어갈 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">03</div>
@@ -152,12 +152,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-title">두 계층 아키텍처</div>
 		<div class="section-desc">STM 프록시와 LTM 서버가 MCP로 연결되어, 에이전트에 서피싱과 압축을 투명하게 제공합니다.</div>
 		<div class="arch-diagram">
-			<div class="arch-tier-label">AI 에이전트 / 프레임워크</div>
+			<div class="arch-tier-label">주요 AI 런타임 / 기타</div>
 			<div class="arch-row">
 				<div class="arch-node">Claude Code</div>
 				<div class="arch-node">Codex CLI</div>
 				<div class="arch-node">Antigravity CLI</div>
-				<div class="arch-node">LangGraph 등</div>
+				<div class="arch-node">기타 MCP 클라이언트</div>
 			</div>
 			<div class="arch-connector"><span>MCP</span></div>
 			<div class="arch-row">
@@ -189,16 +189,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Compatibility</div>
-		<div class="section-title">지원 런타임 & 프레임워크</div>
-		<div class="section-desc">MCP 네이티브 — 모든 MCP 호환 클라이언트에서 동작합니다.</div>
+		<div class="section-title">주요 런타임 & 호환성</div>
+		<div class="section-desc">주요 CLI 런타임에 최적화하고, 나머지는 MCP 네이티브 호환성으로 지원합니다.</div>
 		<div class="runtime-grid">
 			<div class="runtime-chip">Claude Code</div>
 			<div class="runtime-chip">Codex CLI</div>
 			<div class="runtime-chip">Antigravity CLI</div>
-			<div class="runtime-chip">IDEs (Cursor 등)</div>
-			<div class="runtime-chip">LangGraph</div>
-			<div class="runtime-chip">CrewAI</div>
-			<div class="runtime-chip">LangChain</div>
+			<div class="runtime-chip">기타 MCP 클라이언트</div>
+			<div class="runtime-chip">프레임워크 어댑터</div>
 		</div>
 	</div>
 </section>
@@ -236,7 +234,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ko/ltm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
-				<p>크로스 런타임 동기화 설정, 포맷 변환, LangGraph 어댑터.</p>
+				<p>크로스 런타임 동기화 설정, 포맷 변환, 프레임워크 어댑터.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 		</div>

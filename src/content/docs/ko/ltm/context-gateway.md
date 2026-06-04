@@ -14,7 +14,7 @@ AI 런타임마다 컨텍스트 파일 위치와 포맷이 다릅니다:
 | Claude Code | `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md` |
 | Codex CLI | `.agents/agents/*.toml`, `.agents/skills/*/SKILL.md` |
 | Antigravity CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
-| Cursor / Windsurf / Claude Desktop | 런타임별 에이전트 정의 위치가 다름 |
+| 기타 MCP 클라이언트 / 프레임워크 | 런타임별 에이전트 정의 위치가 다름 |
 
 정규 계층이 없으면 각 런타임 복사본이 쉽게 어긋납니다. Context Gateway를 사용하면 정규 파일을 수정하고 바깥 런타임 경로로 동기화합니다.
 

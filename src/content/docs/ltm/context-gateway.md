@@ -14,7 +14,7 @@ AI runtimes store context in different places and formats:
 | Claude Code | `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md` |
 | Codex CLI | `.agents/agents/*.toml`, `.agents/skills/*/SKILL.md` |
 | Antigravity CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
-| Cursor / Windsurf / Claude Desktop | Agent definition surfaces vary by runtime |
+| Other MCP clients / frameworks | Agent definition surfaces vary by runtime |
 
 Without a canonical layer, every runtime copy drifts. With Context Gateway, you edit the canonical file and sync outward.
 
