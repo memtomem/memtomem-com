@@ -182,7 +182,7 @@ mm context init --include agents,skills --scope project_shared --confirm-project
 mm context diff --include agents,skills --scope project_shared
 ```
 
-이미 Claude Code, Codex CLI, Gemini CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다.
+이미 Claude Code, Codex CLI, Antigravity CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다.
 
 ### `mm config show / set / unset`
 
