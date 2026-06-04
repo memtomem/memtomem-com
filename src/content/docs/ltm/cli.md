@@ -182,7 +182,7 @@ mm context init --include agents,skills --scope project_shared --confirm-project
 mm context diff --include agents,skills --scope project_shared
 ```
 
-This is useful when you already authored files directly in Claude Code, Codex CLI, Gemini CLI, or another runtime and want memtomem to manage them going forward.
+This is useful when you already authored files directly in Claude Code, Codex CLI, Antigravity CLI, or another runtime and want memtomem to manage them going forward.
 
 ### `mm config show / set / unset`
 
