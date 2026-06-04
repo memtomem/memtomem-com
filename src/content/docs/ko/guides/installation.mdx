@@ -70,6 +70,7 @@ uv tool install 'memtomem[all]' --refresh
 | `mm status` | 설치 후 DB·설정·임베딩 정합성 점검 |
 | `mm search <query>` | 지식 베이스 검색 |
 | `mm add <content>` | 기억 항목 추가 |
+| `mm tags` | 메모리 태그 관리 (조회, 이름 변경, 삭제, 병합) |
 | `mm web` | Web UI 대시보드 (http://localhost:8080) |
 | `mm --version` · `mm version` | 설치된 버전 출력 |
 
@@ -123,6 +124,8 @@ STM은 선택 사항입니다. 능동적 기억 서피싱이나 도구 응답 �
 | `mms add --from-clients` | 기존 MCP 클라이언트 설정에서 일괄 가져오기 |
 | `mms list` | 등록된 서버 목록 |
 | `mms health` | 업스트림 연결 상태 점검 |
+| `mms stats` | 프록시 성능 및 토큰 압축 통계 조회 |
+| `mms surfacing` | 업스트림별 능동적 서피싱 범위 설정 및 토글 |
 | `mms --version` | 설치된 버전 출력 |
 
 STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. `memtomem-stm`이 MCP 클라이언트에 등록되면(`mms init --mcp claude`, `mms register`, `.mcp.json` 등록 중 하나) 클라이언트가 자동으로 기동합니다.

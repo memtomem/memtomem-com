@@ -70,6 +70,7 @@ After installation, the commands you'll reach for most often:
 | `mm status` | Post-install DB / config / embedding health check |
 | `mm search <query>` | Search the knowledge base |
 | `mm add <content>` | Add a memory entry |
+| `mm tags` | Manage memory tags (list, rename, delete, merge) |
 | `mm web` | Launch Web UI dashboard (http://localhost:8080) |
 | `mm --version` · `mm version` | Print installed version |
 
@@ -123,6 +124,8 @@ After installation, the following commands are available:
 | `mms add --from-clients` | Bulk-import upstreams from existing MCP client configs |
 | `mms list` | List registered servers |
 | `mms health` | Probe upstream connectivity |
+| `mms stats` | Show proxy performance and token compression statistics |
+| `mms surfacing` | Scope or toggle proactive surfacing per upstream |
 | `mms --version` | Print installed version |
 
 The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once `memtomem-stm` is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically.

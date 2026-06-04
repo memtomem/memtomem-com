@@ -13,7 +13,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 |---|---|---|
 | `core` (기본) | `mem_do` 포함 총 9개 | 대부분의 에이전트에 가장 좋은 기본값 |
 | `standard` | `mem_do` 포함 37개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
-| `full` | 84개 | 디버깅, 문서화, 대량 도구 목록을 잘 다루는 클라이언트 |
+| `full` | 86개 | 디버깅, 문서화, 대량 도구 목록을 잘 다루는 클라이언트 |
 
 예시:
 
@@ -27,6 +27,9 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
   }
 }
 ```
+
+`full` 모드에서는 모든 도구가 `mem_do` 없이 직접 노출됩니다. 개별 도구 이름은 액션 이름 앞에 `mem_` 접두사를 붙여 구성됩니다. 예를 들어, `context_version` 및 `context_promote` 액션은 각각 개별 도구인 `mem_context_version` 및 `mem_context_promote`로 매핑됩니다.
+
 
 ## Core 모드
 
@@ -67,7 +70,7 @@ mem_do(action="context_diff", params={"scope": "project_shared"})
 | 태그 | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
 | 세션 | `session_start`, `session_end`, `session_list` |
 | 스크래치 | `scratch_set`, `scratch_get`, `scratch_promote` |
-| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_migrate` |
+| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_migrate`, `context_version`, `context_promote` |
 | 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
 | 가져오기 / 내보내기 | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | 분석 | `activity`, `timeline`, `eval`, `reflect` |
