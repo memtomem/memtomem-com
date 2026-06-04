@@ -175,7 +175,13 @@ Register it in Claude Code (e.g., in `~/.claude.json`) under a `PostToolUse` mat
       {
         "matcher": "Read|Grep|Glob|WebFetch|Bash",
         "hooks": [{ "type": "command", "command": "mms hook" }]
-     You can test the hook manually by piping a JSON payload into `mms hook`:
+      }
+    ]
+  }
+}
+```
+
+You can test the hook manually by piping a JSON payload into `mms hook`:
 
 ```bash
 # Test manually via standard input

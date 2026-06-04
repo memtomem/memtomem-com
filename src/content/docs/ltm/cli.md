@@ -111,7 +111,7 @@ Consolidate memories from other AI tools into memtomem. The `--source` path is r
 
 ```bash
 mm ingest claude-memory --source ~/.claude/projects/    # import Claude Code memories
-mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # import Gemini CLI GEMINI.md
+mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # import Antigravity CLI GEMINI.md
 mm ingest codex-memory --source ~/.codex/memories/      # import Codex CLI memories
 ```
 

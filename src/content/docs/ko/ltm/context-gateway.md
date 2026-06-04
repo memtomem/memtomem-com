@@ -13,7 +13,7 @@ AI 런타임마다 컨텍스트 파일 위치와 포맷이 다릅니다:
 |---|---|
 | Claude Code | `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md` |
 | Codex CLI | `.agents/agents/*.toml`, `.agents/skills/*/SKILL.md` |
-| Gemini CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
+| Antigravity CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
 | Cursor / Windsurf / Claude Desktop | 런타임별 에이전트 정의 위치가 다름 |
 
 정규 계층이 없으면 각 런타임 복사본이 쉽게 어긋납니다. Context Gateway를 사용하면 정규 파일을 수정하고 바깥 런타임 경로로 동기화합니다.
@@ -103,7 +103,7 @@ mm context diff --include agents,skills --scope project_shared
 
 .claude/                    # Claude Code 런타임 파일
 .agents/                    # Codex 호환 런타임 파일
-.gemini/                    # Gemini 런타임 파일
+.gemini/                    # Antigravity 런타임 파일
 ```
 
 `sync`는 정규 파일에서 런타임 파일로 가는 단방향 변환입니다. 기존 런타임 파일에서 정규 파일을 시드하려면 `mm context init`에 `--include`를 함께 사용합니다.
