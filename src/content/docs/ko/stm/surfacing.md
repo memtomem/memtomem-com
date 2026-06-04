@@ -77,4 +77,15 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 - **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
 
+## 서피싱 범위 제한하기
+
+특정 도구에서 불필요한 서피싱이 발생하는 것을 방지하기 위해 범위를 제한하거나 끌 수 있습니다:
+
+- **클라이언트별 환경 변수 제외** — `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` 환경 변수(예: `'["context7__*","langfuse-docs__*"]'`)를 설정하여 제외할 도구 이름 패턴을 지정합니다.
+- **공유 프록시 설정 제외** — CLI를 사용하여 `stm_proxy_json` 파일에서 특정 업스트림의 서피싱을 비활성화합니다:
+  ```bash
+  mms surfacing <server> off
+  ```
+  이 설정은 클라이언트와 무관하게 유지되며, 재시작 없이 반영되고 LTM 검색을 미리 건너뛰어 성능을 최적화합니다.
+
 `trace_id`가 서피싱과 점진적 전달 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.

@@ -69,8 +69,9 @@ Rate surfaced memories so the auto-tuner can adjust thresholds.
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `surfacing_id` | string | Yes | Id from the surfacing footer |
-| `rating` | string | Yes | `helpful` / `not_relevant` / `already_known` |
+| `rating` | string | No | `helpful` / `partially_helpful` / `not_relevant` / `already_known` |
 | `memory_id` | string | No | Specific memory the feedback refers to |
+| `ratings` | object[] | No | Array of batched per-memory feedback items (each with `memory_id` and `rating` keys) |
 
 ### `stm_surfacing_stats`
 

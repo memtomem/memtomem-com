@@ -69,8 +69,9 @@ description: STM 프록시는 상태, 캐시, 서피싱, 인덱싱, 압축, 점�
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `surfacing_id` | string | 예 | 서피싱 푸터에서 얻은 id |
-| `rating` | string | 예 | `helpful` / `not_relevant` / `already_known` |
+| `rating` | string | 아니오 | `helpful` / `partially_helpful` / `not_relevant` / `already_known` |
 | `memory_id` | string | 아니오 | 피드백 대상 개별 기억 |
+| `ratings` | object[] | 아니오 | 배치 형태의 개별 기억 피드백 배열 (각 항목은 `memory_id`와 `rating` 키를 포함) |
 
 ### `stm_surfacing_stats`
 

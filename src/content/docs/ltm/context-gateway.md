@@ -116,18 +116,37 @@ When a target runtime cannot represent a field exactly, memtomem classifies the 
 | `warn` | Continue, but print a warning |
 | `error` | Abort conversion |
 
-## Web UI
+## Web UI & Context Portal
 
-Run:
+Run the Web UI dashboard:
 
 ```bash
 mm web --open
 ```
 
-Open Settings -> Context Gateway to inspect project selection, tier badges, runtime detection, sync status, and per-artifact details from the browser.
+By default, the Context Gateway lands on the **Context Portal** (Projects Portal). It provides:
+- A unified view of registered MCP clients and active project/tier selection.
+- Clear indicators of client/runtime registration and active files.
+- A **Sync All** flow that syncs canonical configurations to all enrolled runtimes in one pass with phase-by-phase progress tooltips.
+
+## Sync Enrollment
+
+Context Gateway decouples project detection from sync. Pre-existing projects are automatically detected, but they will not be synced until you explicitly **enroll** them:
+- **Enroll, Pause, and Resume**: You can manage the sync status of any project in the UI.
+- **Write-Gating**: Paused or non-enrolled projects are gated from writing. Any attempt by a runtime or API to write canonical files will be blocked with a `409 Conflict` response.
+
+## Artifact Versioning (ADR-0022)
+
+Canonical agents and commands can maintain Git-style version snapshots and label pointers instead of a single flat file.
+
+- **Version snapshots**: Writable canonical files can be frozen as immutable snapshots (e.g. `v1`, `v2`) with notes.
+- **Labels**: Movable pointers (e.g. `production` or `staging`) target specific version snapshots.
+- **Reserved `latest` Label**: The label `latest` is reserved and read-only. It always points to the active working canonical file and cannot be targeted by promote actions.
+- **Versioned Sync**: Pass `--label <name>` to CLI commands (e.g. `mm context sync --label production` or `mm context generate --label production`) to deploy a specific version instead of the active working canonical.
+- **Direct Tools**: Version snapshots and promotions are exposed as the direct MCP tools `mem_context_version` and `mem_context_promote` respectively in `full` mode.
 
 ## Next
 
 - [CLI Reference](/ltm/cli/) — full `mm context` command list
-- [MCP Tools](/ltm/mcp-tools/) — context actions through `mem_do`
+- [MCP Tools](/ltm/mcp-tools/) — context actions
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — memory namespaces for multiple agents

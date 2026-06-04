@@ -150,7 +150,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including `mem_do`) / `standard` (~38) / `full` (80+) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including `mem_do`) / `standard` (~38) / `full` (86) | `core` |
 
 ### Web UI
 

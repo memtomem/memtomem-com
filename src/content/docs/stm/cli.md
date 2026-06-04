@@ -99,6 +99,16 @@ mms status
 mms status --json                    # scriptable JSON
 ```
 
+### `mms stats`
+
+Show proxy compression and surfacing statistics from the persistent databases (`proxy_metrics.db` and `stm_feedback.db`).
+
+```bash
+mms stats                            # show all-time totals
+mms stats --tool fs__read_file       # filter to one upstream tool name
+mms stats --json                     # output as JSON for scripting
+```
+
 ### `mms remove <name>`
 
 Remove a registered upstream server.
@@ -121,6 +131,18 @@ mms health --names                   # also flag tools whose proxied name overfl
 
 `--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
 
+### `mms surfacing`
+
+Toggle proactive memory surfacing for a registered upstream server.
+
+```bash
+mms surfacing context7               # show current surfacing state (on/off)
+mms surfacing context7 off           # disable surfacing for this upstream
+mms surfacing context7 on            # enable surfacing for this upstream
+```
+
+Disabling an upstream's surfacing short-circuits the surfacing flow and skips LTM searches entirely, which is persistent across restarts and hot-reloaded immediately by the running proxy.
+
 ### `mms prune`
 
 After registering upstreams via `mms init` or `mms add --import`, this collapses the dual-registration: it removes the direct entries from source MCP clients (Claude Code, Claude Desktop, project `.mcp.json`) so tool calls only route through STM — picking up compression, caching, and LTM surfacing. STM's own config is left alone.
@@ -138,6 +160,43 @@ Print the installed version (same as `mms --version`).
 
 ```bash
 mms version
+```
+
+### `mms hook`
+
+A bridge that integrates memory surfacing and output compression into a host's built-in tool execution (e.g. Claude Code's native commands). It reads a JSON payload from standard input and prints the hook response.
+
+Register it in Claude Code (e.g., in `~/.claude.json`) under a `PostToolUse` matcher:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Bash",
+        "hooks": [{ "type": "command", "command": "mms hook" }]
+      }
+    ]
+  }
+}
+```
+
+You can test the hook manually by piping a JSON payload into `mms hook`:
+
+```bash
+# Test manually via standard input
+echo '{"tool_name": "Read", "tool_input": {"path": "src/main.py"}, "tool_response": {"text": "file content"}}' | mms hook
+```
+
+### `mms daemon`
+
+Manage the background daemon process that maintains a warm LTM connection, avoiding LTM startup latency on every built-in tool call monitored by `mms hook`.
+
+```bash
+mms daemon start                     # spawn the daemon in the background
+mms daemon status                    # check if the daemon is running (pid, port, uptime)
+mms daemon stop                      # stop the running daemon process
+mms daemon restart                   # restart the daemon process
 ```
 
 ## Project Management (W1)
@@ -204,7 +263,7 @@ First-import-wins: identical names with different definitions are flagged as con
 
 ### Operational statistics
 
-Proxy, surfacing, and compression statistics are exposed as **MCP tools** rather than CLI subcommands — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. Call them from your MCP client, or hide them from the agent surface via `advertise_observability_tools=false`. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
+Proxy, surfacing, and compression statistics are available both via the `mms stats` CLI command and as **MCP tools** — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. Call them from your MCP client, or hide them from the agent surface via `advertise_observability_tools=false`. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
 
 ### Running the proxy server
 

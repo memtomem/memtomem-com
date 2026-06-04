@@ -116,16 +116,37 @@ mm context diff --include agents,skills --scope project_shared
 | `warn` | 경고 출력 후 계속 |
 | `error` | 변환 중단 |
 
-## Web UI
+## Web UI & Context Portal
+
+Web UI 대시보드 실행:
 
 ```bash
 mm web --open
 ```
 
-Settings -> Context Gateway에서 프로젝트 선택, 티어 배지, 런타임 감지, 동기화 상태, 아티팩트별 상세 정보를 브라우저에서 확인할 수 있습니다.
+기본적으로 Context Gateway는 **Context Portal**(프로젝트 포털) 화면으로 연결됩니다. 다음 기능을 제공합니다:
+- 등록된 MCP 클라이언트와 활성 프로젝트/티어 선택을 보여주는 통합 뷰.
+- 클라이언트/런타임 등록 상태 및 활성 파일 표시.
+- 한 번의 실행으로 등록된 모든 런타임에 정규 설정을 반영하는 **Sync All** 기능 (단계별 실시간 진행 상황 툴팁 제공).
+
+## Sync Enrollment (동기화 등록)
+
+Context Gateway는 프로젝트 감지와 실제 동기화 단계를 분리하여 작동합니다. 기존 프로젝트는 자동으로 감지되지만, 사용자가 명시적으로 **등록(enroll)**하기 전까지는 동기화가 실행되지 않습니다:
+- **등록, 일시 정지 및 재개(Enroll, Pause, Resume)**: UI에서 각 프로젝트의 동기화 활성 상태를 자유롭게 제어할 수 있습니다.
+- **쓰기 제한**: 일시 정지되었거나 등록되지 않은 프로젝트는 동기화 쓰기 작업이 제한됩니다. 에디터 런타임이나 API에서 쓰기를 시도하면 `409 Conflict` 응답과 함께 세부 정보가 차단됩니다.
+
+## Artifact Versioning (아티팩트 버전 관리 - ADR-0022)
+
+정규 에이전트와 명령어 파일에 대해 단일 플랫 파일 대신 Git 스타일의 버전 스냅샷과 라벨 포인터를 사용할 수 있습니다.
+
+- **버전 스냅샷**: 수정 가능한 정규 아티팩트 파일을 불변 스냅샷(예: `v1`, `v2`)으로 동결하고 설명을 남길 수 있습니다.
+- **라벨 포인터**: 특정 버전 스냅샷을 가리키는 이동 가능한 포인터(예: `production`, `staging`)를 지정합니다.
+- **예약된 `latest` 라벨**: `latest` 라벨은 예약된 읽기 전용 라벨입니다. 항상 현재 활성화되어 작업 중인 정규 파일을 가리키며, promote 명령을 통해 대상을 변경할 수 없습니다.
+- **버전 동기화**: CLI 명령에서 `--label <이름>` (예: `mm context sync --label production` 또는 `mm context generate --label production`)을 전달하여 활성 작업 파일 대신 특정 버전/라벨을 배포할 수 있습니다.
+- **개별 도구**: `full` 모드에서는 버전 스냅샷 생성 및 라벨 관리를 위한 개별 MCP 도구인 `mem_context_version` 및 `mem_context_promote`가 직접 제공됩니다.
 
 ## 다음 단계
 
 - [CLI 레퍼런스](/ko/ltm/cli/) — 전체 `mm context` 명령 목록
-- [MCP 도구](/ko/ltm/mcp-tools/) — `mem_do`를 통한 context 액션
+- [MCP 도구](/ko/ltm/mcp-tools/) — context 액션
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 여러 에이전트를 위한 기억 네임스페이스

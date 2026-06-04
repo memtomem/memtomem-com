@@ -77,4 +77,15 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 - **Cross-session dedup** — Default TTL `604800s` (7 days) via `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`
 - **Injection size cap** — Default `3000 chars` per injection
 
+## Scoping Surfacing
+
+Surfacing can be scoped or disabled to prevent noise on specific tools:
+
+- **Per-client env exclude** — Set `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` (e.g. `'["context7__*","langfuse-docs__*"]'`) to exclude matching tool-names from surfacing.
+- **Shared proxy-config exclude** — Turn off surfacing for a registered upstream in `stm_proxy.json` using the CLI:
+  ```bash
+  mms surfacing <server> off
+  ```
+  This is client-independent, persists across restarts, hot-reloads, and skips LTM searches entirely.
+
 A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).

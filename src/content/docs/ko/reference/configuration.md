@@ -150,7 +150,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 포함 총 9개) / `standard` (약 38개) / `full` (80+개) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 포함 총 9개) / `standard` (약 38개) / `full` (86개) | `core` |
 
 ### Web UI
 

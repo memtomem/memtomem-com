@@ -148,10 +148,29 @@ Context Gateway를 통해 에이전트 정의, 스킬, 명령어를 런타임 �
 mm context detect
 mm context init --scope project_shared --confirm-project-shared
 mm context sync --scope project_shared
+mm context sync --scope project_shared --label production
 mm context diff --scope project_shared
 ```
 
-개인용 크로스 프로젝트 컨텍스트는 `--scope user`, 로컬 초안은 `--scope project_local`을 사용합니다. `project_shared`는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다.
+개인용 크로스 프로젝트 컨텍스트는 `--scope user`, 로컬 초안은 `--scope project_local`을 사용합니다. `project_shared`는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다. `--label <이름>` (예: `--label production` 또는 `--label v1`)을 전달하여 작업 중인 정규 파일 대신 특정 버전 스냅샷이나 라벨 포인터를 동기화할 수 있습니다.
+
+### `mm context version`
+
+에이전트와 명령어의 버전 스냅샷 및 라벨 포인터를 관리합니다. 버전은 아티팩트 작업 정규 파일의 불변 스냅샷이고, 라벨(예: `production` 또는 `staging`)은 버전을 가리키는 이동 가능한 포인터입니다.
+
+> [!IMPORTANT]
+> `latest`는 작업 중인 정규 파일을 가리키는 예약된 읽기 전용 라벨로, 수정하거나 promote 명령의 대상으로 지정할 수 없습니다.
+
+```bash
+# my-agent의 현재 작업 정규 파일을 v1 버전으로 스냅샷 생성
+mm context version create agents my-agent --note "stable v1 release"
+
+# my-agent의 모든 버전 스냅샷 및 라벨 포인터 목록 확인
+mm context version list agents my-agent
+
+# 'production' 라벨을 v1 버전으로 승격(또는 롤백)
+mm context version promote agents my-agent --to production --version v1
+```
 
 ### 기존 런타임 파일에서 시드하기
 
@@ -195,6 +214,24 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 `mm agent register` 는 `agent-runtime:{agent_id}` 네임스페이스를 자동 생성하며, 같은 ID 로 다시 호출하면 메타데이터만 갱신됩니다. `agent_id` 는 `[A-Za-z0-9._-]` 만 허용 — 적대적 형식은 거부됩니다.
 
 `mm agent share` 는 청크를 **복제**합니다 (참조 링크 아님). 새 청크는 별도 UUID를 받고, 원본 변경은 사본에 전파되지 않습니다. 출처는 `shared-from=<원본-uuid>` 태그로만 추적됩니다.
+
+### `mm tags`
+
+전체 청크에 걸쳐 태그를 관리(조회, 이름 변경, 삭제, 병합)합니다.
+
+```bash
+# 모든 태그와 각 태그별 청크 개수를 조회 (자주 사용되는 순)
+mm tags list
+
+# OLD_TAG의 이름을 NEW_TAG로 일괄 변경
+mm tags rename OLD_TAG NEW_TAG
+
+# 특정 태그를 모든 청크에서 삭제 (청크 자체는 유지됨)
+mm tags delete DEPRECATED_TAG
+
+# 여러 태그를 하나의 대상 태그로 병합
+mm tags merge source-tag1 source-tag2 --into target-tag
+```
 
 ### `mm schedule add / list / run-now / delete`
 
