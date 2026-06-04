@@ -13,7 +13,7 @@ AI runtimes store context in different places and formats:
 |---|---|
 | Claude Code | `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md` |
 | Codex CLI | `.agents/agents/*.toml`, `.agents/skills/*/SKILL.md` |
-| Gemini CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
+| Antigravity CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
 | Cursor / Windsurf / Claude Desktop | Agent definition surfaces vary by runtime |
 
 Without a canonical layer, every runtime copy drifts. With Context Gateway, you edit the canonical file and sync outward.
@@ -103,7 +103,7 @@ Review the generated canonical files before committing.
 
 .claude/                    # Claude Code runtime files
 .agents/                    # Codex-compatible runtime files
-.gemini/                    # Gemini runtime files
+.gemini/                    # Antigravity runtime files
 ```
 
 Conversion is one-way during `sync`: canonical to runtime. Use `mm context init` with `--include` when you intentionally want to seed canonical files from existing runtime files.

@@ -111,7 +111,7 @@ mm index README.md                   # 단일 파일 인덱싱
 
 ```bash
 mm ingest claude-memory --source ~/.claude/projects/    # Claude Code 메모리 수집
-mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # Gemini CLI GEMINI.md 수집
+mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # Antigravity CLI GEMINI.md 수집
 mm ingest codex-memory --source ~/.codex/memories/      # Codex CLI 메모리 수집
 ```
 
