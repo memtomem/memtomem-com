@@ -92,4 +92,15 @@ export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
 
 LTM responses are consumed by the surfacing engine and bypass the proxy compression/cache pipeline.
 
+## Scoping Surfacing
+
+Surfacing can be scoped or disabled to prevent noise on specific tools:
+
+- **Per-client env exclude** — Set `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` (e.g. `'["context7__*","langfuse-docs__*"]'`) to exclude matching tool-names from surfacing.
+- **Shared proxy-config exclude** — Turn off surfacing for a registered upstream in `stm_proxy.json` using the CLI:
+  ```bash
+  mms surfacing <server> off
+  ```
+  This is client-independent, persists across restarts, hot-reloads, and skips LTM searches entirely.
+
 A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).

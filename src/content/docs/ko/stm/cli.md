@@ -99,6 +99,16 @@ mms status
 mms status --json                    # 스크립트용 JSON
 ```
 
+### `mms stats`
+
+지속성 데이터베이스(`proxy_metrics.db` 및 `stm_feedback.db`)에서 프록시 압축 및 서피싱 통계를 표시합니다.
+
+```bash
+mms stats                            # 누적 전체 통계 표시
+mms stats --tool fs__read_file       # 특정 업스트림 도구 이름으로 필터링
+mms stats --json                     # 스크립팅용 JSON 출력
+```
+
 ### `mms remove <name>`
 
 등록된 업스트림 서버를 제거합니다.
@@ -120,6 +130,18 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 ```
 
 `--names` 는 `mcp__<server>__<prefix>__<tool>` 의 합산 길이가 MCP 64자 제한(#261)을 초과해 등록 후 조용히 사라진 업스트림 도구를 가려낼 때 씁니다.
+
+### `mms surfacing`
+
+등록된 업스트림 서버에 대해 능동적 기억 서피싱(proactive memory surfacing) 활성화 여부를 전환합니다.
+
+```bash
+mms surfacing context7               # 현재 서피싱 활성화 상태 표시 (on/off)
+mms surfacing context7 off           # 해당 업스트림 서피싱 비활성화
+mms surfacing context7 on            # 해당 업스트림 서피싱 활성화
+```
+
+업스트림의 서피싱을 비활성화하면 서피싱 단계가 단락되어 LTM 검색을 아예 수행하지 않으므로 자원을 아낄 수 있습니다. 이 설정은 재시작 시에도 유지되며 프록시 서버에서 실시간으로 핫 리로드됩니다.
 
 ### `mms prune`
 
@@ -144,7 +166,9 @@ mms version
 
 ### `mms hook`
 
-지원 host의 built-in 도구 호출을 STM 서피싱으로 연결합니다. Claude Code와 호환 host는 이를 `PostToolUse` hook으로 호출합니다. JSON payload는 stdin으로 들어오고, `mms hook`은 surfaced memory가 담긴 `additionalContext`를 포함할 수 있는 hook output을 출력합니다. Bash 출력 압축은 별도 기능이며 `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`로 opt-in합니다.
+호스트의 내장 도구 실행(예: Claude Code의 내장 명령어)에 기억 서피싱 및 출력 압축을 통합하는 브리지입니다. 표준 입력(stdin)으로부터 JSON 페이로드를 읽고 훅 응답을 출력합니다.
+
+Claude Code 설정 파일(예: `~/.claude.json`)의 `PostToolUse` 매처 아래에 다음과 같이 등록합니다:
 
 ```json
 {
@@ -159,19 +183,27 @@ mms version
 }
 ```
 
-hook은 항상 exit 0으로 종료합니다. 서피싱, daemon, 압축 중 어떤 단계가 실패해도 host 도구 출력은 변경 없이 통과합니다.
+hook은 항상 exit 0으로 종료합니다. 서피싱, 데몬, 압축 중 어떤 단계가 실패해도 호스트 도구 출력은 변경 없이 통과합니다.
+
+JSON 페이로드를 `mms hook`에 파이프로 전달하여 수동으로 테스트해 볼 수 있습니다:
+
+```bash
+# 표준 입력을 통한 수동 테스트
+echo '{"tool_name": "Read", "tool_input": {"path": "src/main.py"}, "tool_response": {"text": "file content"}}' | mms hook
+```
 
 ### `mms daemon`
 
-`mms hook`이 사용하는 로컬 surfacing daemon을 관리합니다. daemon 모드는 기본 on(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`)이며 첫 적격 hook 호출에서 자동으로 spawn되므로 보통 수동 시작이 필요 없습니다.
+`mms hook`에서 감시하는 내장 도구 호출 시 LTM 시작 지연을 방지하기 위해 웜 LTM 연결을 유지하는 백그라운드 데몬 프로세스를 관리합니다. 데몬 모드는 기본적으로 활성화되어 있으며(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`), 적격한 첫 번째 훅 호출 시 자동으로 실행되므로 보통 수동으로 작동할 필요가 없습니다.
 
 ```bash
-mms daemon status                    # warm daemon 실행 여부 확인
-mms daemon start                     # 명시적으로 시작
-mms daemon stop                      # 현재 config용 daemon 중지
+mms daemon start                     # 백그라운드 데몬 기동
+mms daemon status                    # 데몬 작동 여부 확인 (pid, 포트, 업타임)
+mms daemon stop                      # 실행 중인 데몬 프로세스 중지
+mms daemon restart                   # 데몬 프로세스 재시작
 ```
 
-daemon은 활성 config용 LTM MCP 세션 하나를 warm 상태로 유지합니다. 기존 cold in-process hook 경로를 강제하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`, daemon 미가용 시 cold fallback을 원하면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
+데몬은 활성 설정에 대해 하나의 LTM MCP 세션을 웜 상태로 보존합니다. 이전 버전의 인프로세스(cold) 동작을 원한다면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`을, 데몬이 작동 불가능할 때 cold fallback 처리를 원한다면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
 
 ## 프로젝트 관리 (W1)
 
@@ -237,7 +269,7 @@ first-import-wins 정책: registry 에 동일 이름이 다르게 등록돼 있�
 
 ### 운영 통계
 
-프록시/서피싱/INDEX/압축 통계는 CLI 서브명령이 아닌 **MCP 도구**로 노출됩니다 — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_proxy_health`, `stm_tuning_recommendations`. 기본적으로 MCP `tools/list`에서는 숨겨져 있으며, 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 자세한 도구 목록은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
+프록시, 서피싱 및 압축 통계는 `mms stats` CLI 명령과 **MCP 도구** 양쪽 모두에서 확인할 수 있습니다. MCP 도구로는 `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health` 및 `stm_tuning_recommendations`가 노출됩니다. MCP 클라이언트에서 호출하거나, `advertise_observability_tools=false`로 에이전트 노출에서 숨길 수 있습니다. 자세한 도구 목록은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
 
 ### 프록시 서버 실행
 

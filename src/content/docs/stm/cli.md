@@ -99,6 +99,16 @@ mms status
 mms status --json                    # scriptable JSON
 ```
 
+### `mms stats`
+
+Show proxy compression and surfacing statistics from the persistent databases (`proxy_metrics.db` and `stm_feedback.db`).
+
+```bash
+mms stats                            # show all-time totals
+mms stats --tool fs__read_file       # filter to one upstream tool name
+mms stats --json                     # output as JSON for scripting
+```
+
 ### `mms remove <name>`
 
 Remove a registered upstream server.
@@ -121,6 +131,18 @@ mms health --names                   # also flag tools whose proxied name overfl
 
 `--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
 
+### `mms surfacing`
+
+Toggle proactive memory surfacing for a registered upstream server.
+
+```bash
+mms surfacing context7               # show current surfacing state (on/off)
+mms surfacing context7 off           # disable surfacing for this upstream
+mms surfacing context7 on            # enable surfacing for this upstream
+```
+
+Disabling an upstream's surfacing short-circuits the surfacing flow and skips LTM searches entirely, which is persistent across restarts and hot-reloaded immediately by the running proxy.
+
 ### `mms prune`
 
 After registering upstreams via `mms init` or `mms add --import`, this collapses the dual-registration: it removes the direct entries from source MCP clients (Claude Code, Claude Desktop, project `.mcp.json`) so tool calls only route through STM — picking up compression, caching, and LTM surfacing. STM's own config is left alone.
@@ -142,7 +164,9 @@ mms version
 
 ### `mms hook`
 
-Bridge supported host built-in tool calls into STM surfacing. Claude Code and compatible hosts call it as a `PostToolUse` hook: the JSON payload arrives on stdin, and `mms hook` prints hook output that can include `additionalContext` with surfaced memories. Bash output compression is separate and opt-in via `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`.
+A bridge that integrates memory surfacing and output compression into a host's built-in tool execution (e.g. Claude Code's native commands). It reads a JSON payload from standard input and prints the hook response.
+
+Register it in Claude Code (e.g., in `~/.claude.json`) under a `PostToolUse` matcher:
 
 ```json
 {
@@ -151,22 +175,22 @@ Bridge supported host built-in tool calls into STM surfacing. Claude Code and co
       {
         "matcher": "Read|Grep|Glob|WebFetch|Bash",
         "hooks": [{ "type": "command", "command": "mms hook" }]
-      }
-    ]
-  }
-}
-```
+     You can test the hook manually by piping a JSON payload into `mms hook`:
 
-The hook always exits 0. If surfacing, the daemon, or compression fails, the host tool output passes through unchanged.
+```bash
+# Test manually via standard input
+echo '{"tool_name": "Read", "tool_input": {"path": "src/main.py"}, "tool_response": {"text": "file content"}}' | mms hook
+```
 
 ### `mms daemon`
 
-Manage the local surfacing daemon used by `mms hook`. Daemon mode is on by default (`MEMTOMEM_STM_HOOK__USE_DAEMON=1`) and auto-spawns on the first eligible hook call, so manual startup is usually unnecessary.
+Manage the local surfacing daemon used by `mms hook` that maintains a warm LTM connection, avoiding LTM startup latency on every built-in tool call. Daemon mode is on by default (`MEMTOMEM_STM_HOOK__USE_DAEMON=1`) and auto-spawns on the first eligible hook call, so manual startup is usually unnecessary.
 
 ```bash
-mms daemon status                    # show whether the warm daemon is running
-mms daemon start                     # start it explicitly
-mms daemon stop                      # stop the daemon for this config
+mms daemon start                     # spawn the daemon in the background
+mms daemon status                    # check if the daemon is running (pid, port, uptime)
+mms daemon stop                      # stop the running daemon process
+mms daemon restart                   # restart the daemon process
 ```
 
 The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable.
@@ -235,7 +259,7 @@ First-import-wins: identical names with different definitions are flagged as con
 
 ### Operational statistics
 
-Proxy, surfacing, index, and compression statistics are exposed as **MCP tools** rather than CLI subcommands — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. They are hidden from MCP `tools/list` by default; set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them to the agent. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
+Proxy, surfacing, and compression statistics are available both via the `mms stats` CLI command and as **MCP tools** — `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health`, and `stm_tuning_recommendations`. Call them from your MCP client, or hide them from the agent surface via `advertise_observability_tools=false`. See the [MCP Tools](/stm/mcp-tools/) page for the full tool catalog.
 
 ### Running the proxy server
 

@@ -148,10 +148,29 @@ Sync agent definitions, skills, and commands across runtimes via the Context Gat
 mm context detect
 mm context init --scope project_shared --confirm-project-shared
 mm context sync --scope project_shared
+mm context sync --scope project_shared --label production
 mm context diff --scope project_shared
 ```
 
-Use `--scope user` for personal cross-project context and `--scope project_local` for local drafts. `project_shared` is git-tracked, so it requires explicit confirmation and should not contain secrets.
+Use `--scope user` for personal cross-project context and `--scope project_local` for local drafts. `project_shared` is git-tracked, so it requires explicit confirmation and should not contain secrets. Pass `--label <name>` (e.g. `--label production` or `--label v1`) to sync a specific version snapshot/label pointer instead of the working canonical.
+
+### `mm context version`
+
+Manage version snapshots and label pointers for agents and commands. A version is an immutable snapshot of an artifact's working canonical; a label (e.g. `production` or `staging`) is a movable pointer over versions.
+
+> [!IMPORTANT]
+> `latest` is a reserved read-only label pointing to the working canonical file and cannot be modified or targeted by promote actions.
+
+```bash
+# Snapshot the current working canonical for my-agent as version v1
+mm context version create agents my-agent --note "stable v1 release"
+
+# List all version snapshots and label pointers for my-agent
+mm context version list agents my-agent
+
+# Promote (or roll back) the 'production' label to version v1
+mm context version promote agents my-agent --to production --version v1
+```
 
 ### Seeding from existing runtime files
 
@@ -195,6 +214,24 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 `mm agent register` creates the `agent-runtime:{agent_id}` namespace; re-registering with the same id only updates metadata. `agent_id` must match `[A-Za-z0-9._-]` — hostile shapes are rejected.
 
 `mm agent share` is a **copy**, not a reference link. The new chunk gets a fresh UUID and source updates do not propagate; provenance is recorded only via a `shared-from=<source-uuid>` tag on the copy.
+
+### `mm tags`
+
+Manage tags (list, rename, delete, or merge them) across all chunks.
+
+```bash
+# List all tags and their chunk counts (most frequent first)
+mm tags list
+
+# Rename OLD_TAG to NEW_TAG across all chunks
+mm tags rename OLD_TAG NEW_TAG
+
+# Delete a tag from every chunk that carries it (the chunks themselves stay)
+mm tags delete DEPRECATED_TAG
+
+# Merge multiple tags into a single target tag
+mm tags merge source-tag1 source-tag2 --into target-tag
+```
 
 ### `mm schedule add / list / run-now / delete`
 
