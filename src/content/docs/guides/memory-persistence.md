@@ -59,5 +59,5 @@ Storage and retrieval both run against your local SQLite — no cross-session sy
 ## Next Steps
 
 - [Hybrid Search](/ltm/hybrid-search/) — how to tune search when results don't land
-- [STM Overview](/stm/overview/) — if you want memories injected without even having to ask, add the STM proxy
+- [STM Overview](/stm/overview/) — if you want memories injected without even having to ask, add the STM proxy. Adopting it is reversible (`mms eject` restores your original host MCP config).
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — namespace design for sharing memory across several agents

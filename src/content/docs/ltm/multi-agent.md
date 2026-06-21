@@ -47,6 +47,8 @@ With `include_shared=true`, searches both the agent's own namespace and the shar
 mem_agent_share(chunk_id="...", target="shared")
 ```
 
+Before the copy is written into a wider namespace, share re-scans the content with the trust-boundary redaction guard. Secret-looking content is blocked at share time (the block is recorded in the audit counters), so a sensitive chunk does not silently propagate into a wider namespace.
+
 ### Step 5: End the Session
 
 ```
@@ -79,7 +81,7 @@ await store.start_agent_session(agent_id="analyzer")
 
 In multi-agent graphs, each node starts its own session with its own `agent_id`. Use `mem_agent_share` to publish outputs that need to cross agents to the `shared` namespace.
 
-### CLI (`mm`)
+### CLI (`mm session`)
 
 Use this to pre-register a session outside the server process.
 
@@ -88,6 +90,18 @@ mm session start --agent-id planner
 ```
 
 See [`mm session`](/ltm/cli/#mm-session) for the full subcommand surface (`start`, `end`, `list`, `events`, `wrap`).
+
+### CLI (`mm agent`)
+
+Use this to register or list agents and share chunks from a shell without an MCP client. Each command mirrors the `mem_agent_register` / `mem_agent_share` MCP tools above.
+
+```bash
+mm agent register analyzer --description "Code analysis agent" --color "#534AB7"
+mm agent list                 # lists registered agent-runtime: namespaces + shared (--json supported)
+mm agent share <chunk_id> --target shared
+```
+
+`mm agent share` also re-runs the redaction guard before copying; secret-looking content is blocked unless re-confirmed with `--force-unsafe`. See the [CLI reference](/ltm/cli/) for the full flag surface.
 
 ### Difference from `mm ingest`
 
@@ -101,31 +115,12 @@ When a developer works in Claude Code or Cursor, architecture decisions, coding 
 
 ### Agent → Agent
 
-In LangGraph/CrewAI workflows, when an agent chain runs, the "code analysis agent" discovers codebase structure and the "test generation agent" references it. Intermediate outputs and decision history are automatically passed through the shared LTM store.
+In LangGraph/CrewAI workflows, when an agent chain runs, the "test generation agent" reads the codebase structure that the "code analysis agent" published to the shared namespace via `mem_agent_share`. The shared LTM store is the cross-agent handoff point; intermediate outputs and decision history cross agents through that explicit share step.
 
 ### Agent → Human
 
 Knowledge accumulated by agents can be searched and browsed through the Web UI dashboard. When onboarding new team members, they can review architecture decisions, bug resolution patterns, and coding conventions at a glance.
 
-## AI Tool Memory Ingestion
+## Related — AI Tool Memory Ingestion
 
-Consolidate each AI editor's memory directory into a single searchable knowledge base. Re-runs are incremental — content-hash matching skips unchanged files.
-
-```bash
-mm ingest claude-memory --source ~/.claude/projects/
-mm ingest gemini-memory --source ~/.gemini/GEMINI.md
-mm ingest codex-memory --source ~/.codex/memories/
-```
-
-For Claude, pointing at `~/.claude/projects/` discovers per-project slug directories and indexes each under `claude-memory:<slug>`. Codex is loaded from a single directory into `codex-memory:<slug>`.
-
-## LangGraph Adapter
-
-Use the `MemtomemStore` class for direct memory access from LangGraph/CrewAI:
-
-```python
-from memtomem.integrations.langgraph import MemtomemStore
-
-store = MemtomemStore()
-# Search/store/manage sessions in LangGraph workflows
-```
+`mm ingest {claude,gemini,codex}-memory` is a separate feature from per-agent isolation: it consolidates each AI editor's memory directory into fixed namespaces (`*-memory:<slug>`) for unified indexing (see [Difference from `mm ingest`](#difference-from-mm-ingest) above). For the full options — source paths and slug behavior — see the [installation guide](/guides/installation/).

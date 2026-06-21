@@ -5,15 +5,14 @@ description: What memtomem-stm is — an MCP proxy that adds proactive surfacing
 
 ## What is memtomem-stm?
 
-memtomem-stm is a **short-term memory (STM) proxy** that sits between your AI agent and your existing MCP servers. Without any agent-side code changes, it adds **response compression** and **proactive memory injection** to every tool call — typically cutting token use by 20–80%.
-
-The current PyPI release is **memtomem-stm v0.1.24**. It adds `mms hook` for Claude Code native-tool surfacing, a warm local daemon for hook calls, network LTM MCP transport, query-aware compression, relevance buckets, richer feedback, and query-text privacy controls.
+memtomem-stm is a **short-term memory (STM) proxy** that sits between your AI agent and your existing MCP servers. Without any agent-side code changes, it adds **response compression**, **proactive memory injection**, and **exposed-tool curation** to every tool call — typically cutting token use by 20–80%.
 
 ## Use It When
 
 - **MCP tool responses keep blowing your context window** — filesystem or GitHub MCP servers often return 8,000-token payloads. STM compresses them to ~2,000 with a strategy picked for the content type.
 - **You want memories auto-injected without the agent having to ask** — with LTM alone, the agent has to call `mem_search`. With STM in front, relevant memories ride along with every tool response, no explicit query needed.
-- **You want Claude Code native-tool context to see memories too** — `mms hook` can add `additionalContext` for read-like PostToolUse events, using a daemon-warmed LTM connection by default.
+- **You want to curate the tool list your agent sees** — STM drops unresponsive servers, credential-leaking descriptions, and duplicate-named tools from the advertised list at exposure time.
+- **You want to try the proxy without committing** — STM imports your existing MCP servers and proxies them in front, and the move is reversible. `mms eject` restores an imported server to its original host config, returning you to the pre-STM state.
 
 ## Start in 3 Steps
 
@@ -27,10 +26,10 @@ mms health                                               # 3. verify connectivit
 
 ## Core Capabilities
 
-- **Proactive Surfacing** — Every tool call runs candidate memories through 5 relevance checks (context extraction → query suitability → LTM search → score threshold → dedup window) before anything is injected. See [Proactive Surfacing](/stm/surfacing/).
-- **Response Compression** — 10 strategies pick themselves based on content type (JSON, Markdown, API docs, free text, …), with query-aware ranking and safer JSON output tiers. See [Compression Strategies](/stm/compression/).
-- **Hook + Daemon Path** — `mms hook` bridges supported host PostToolUse payloads into STM surfacing, while `mms daemon` keeps the LTM session warm so hook calls avoid repeated cold starts.
-- **Optional INDEX hooks** — Stage 4 config exists for library integrations, but the standalone `mms` server does not wire an index engine yet; `auto_index` and extraction are inert there until the MCP-only adapter lands.
+- **Proactive Surfacing** — Every tool call runs candidate memories through 5 relevance checks (context extraction → query suitability → LTM search → score threshold → dedup window) before anything is injected. Surfacing toggles per upstream (`mms surfacing <server> on|off`), so you can exclude a single server's responses from surfacing. See [Proactive Surfacing](/stm/surfacing/).
+- **Response Compression** — 8 strategies pick themselves based on content type (JSON, Markdown, API docs, free text, …), with query-aware ranking and safer JSON output tiers. See [Compression Strategies](/stm/compression/).
+- **Exposed-Tool Curation** — STM does not just relay every upstream tool as-is; it curates the advertised tool list at exposure time. Tools from unresponsive servers, descriptions that leak credentials, and duplicate or overflowing names are withheld from the agent. Tune the policy with `exposure.profile` (`strict` default / `review` / `explore`); `stm_proxy_health` reports "N discovered / M advertised".
+- **Reversible Import** — Imported upstreams record their origin, so `mms list` distinguishes directly-registered servers from imported ones in an ORIGIN column (`*` marks a pruned host original). `mms eject` verifies the restore before it removes the STM entry.
 
 ## How It Works
 
@@ -43,12 +42,13 @@ memtomem-stm (STM Proxy)
                            (filesystem, GitHub, …)
 ```
 
-STM runs every MCP tool call through a 4-stage pipeline:
+STM runs every MCP tool call through this pipeline:
 
 1. **CLEAN** — normalize the request (strip noise, unify format)
-2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
+2. **COMPRESS** — shrink the response (auto-select from 8 strategies)
 3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
-4. **INDEX** — optional write-back hook for future LTM accumulation; inert in the standalone `mms` server today
+
+STM does not write memories back to LTM at runtime. Surfacing only reads from LTM, and the INDEX (auto-accumulation) stage is inert by design in the standalone `mms` server.
 
 ## Relationship to LTM
 
@@ -65,7 +65,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.1.24` |
+| **Latest release** | `0.1.29` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
@@ -74,7 +74,6 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 
 - [Quick Start](/guides/quickstart/) — from install to agent connection
 - [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
-- [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
-- [Context Gateway](/ltm/context-gateway/) — Cross-runtime sync (LTM feature)
-- [MCP Tools](/stm/mcp-tools/) — STM management tools
+- [Compression Strategies](/stm/compression/) — 8 strategies and auto-selection logic
+- [MCP Tools](/stm/mcp-tools/) — STM management and observability tools
 - [CLI Reference](/stm/cli/) — `mms` command reference

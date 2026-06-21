@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, and the Web UI (~250 MB). Want a leaner footprint? Drop the extra for a BM25-only install (~40 MB):
+`[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, the Web UI, and Langfuse observability tracing (~250 MB). For a leaner footprint, drop the extras for a BM25-only install (~40 MB):
 
 ```bash
 uv tool install memtomem                      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
@@ -58,6 +58,7 @@ The extras below are what `[all]` bundles — install them individually when you
 | `korean` | kiwipiepy Korean morphological analysis | `pip install memtomem[korean]` |
 | `code` | tree-sitter AST chunking (Python / JS / TS) | `pip install memtomem[code]` |
 | `web` | FastAPI + uvicorn Web UI | `pip install memtomem[web]` |
+| `langfuse` | Langfuse observability tracing | `pip install memtomem[langfuse]` |
 | `all` | Everything | `pip install memtomem[all]` |
 
 ### `mm` CLI
@@ -70,17 +71,16 @@ After installation, the commands you'll reach for most often:
 | `mm status` | Post-install DB / config / embedding health check |
 | `mm search <query>` | Search the knowledge base |
 | `mm add <content>` | Add a memory entry |
-| `mm tags` | Manage memory tags (list, rename, delete, merge) |
 | `mm web` | Launch Web UI dashboard (http://localhost:8080) |
 | `mm --version` · `mm version` | Print installed version |
 
-Full command list (including `ingest`, `session`, `context`, `watchdog`, `shell`, `reset`, `uninstall`): see the [CLI Reference](/ltm/cli/).
+Full command list (including `ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall`): see the [CLI Reference](/ltm/cli/).
 
 The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config.
 
 ## STM Proxy (memtomem-stm)
 
-STM is optional. Install it after the LTM quick-start flow works if you want proactive memory surfacing or tool-response compression.
+STM is optional. Install it after the LTM quick-start flow works if you want proactive memory surfacing (presenting relevant memories) or tool-response compression.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (recommended)">
@@ -122,10 +122,9 @@ After installation, the following commands are available:
 | `mms init --mcp claude` | First-time setup + auto-register with Claude Code |
 | `mms add <name> --command <cmd>` | Register an upstream MCP server |
 | `mms add --from-clients` | Bulk-import upstreams from existing MCP client configs |
+| `mms eject <name>` | Restore an imported server to its original client and unregister it from STM |
 | `mms list` | List registered servers |
 | `mms health` | Probe upstream connectivity |
-| `mms stats` | Show proxy performance and token compression statistics |
-| `mms surfacing` | Scope or toggle proactive surfacing per upstream |
 | `mms --version` | Print installed version |
 
 The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once `memtomem-stm` is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically.

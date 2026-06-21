@@ -12,8 +12,8 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 | Mode | Tools exposed | Use when |
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
-| `standard` | 37, including `mem_do` | You want common management tools directly visible |
-| `full` | 86 | You are debugging, documenting, or using a client that handles large tool lists well |
+| `standard` | 38, including `mem_do` | You want common management tools directly visible |
+| `full` | 87 | You are debugging, documenting, or using a client that handles large tool lists well |
 
 Example:
 
@@ -27,9 +27,6 @@ Example:
   }
 }
 ```
-
-In `full` mode, all tools are exposed directly (without needing `mem_do`). The direct tool names are constructed by prefixing `mem_` to their action names. For example, the `context_version` and `context_promote` actions map to the direct `mem_context_version` and `mem_context_promote` tools respectively.
-
 
 ## Core Mode
 
@@ -51,13 +48,14 @@ Tell the agent what you want in natural language. It will usually pick the right
 
 ## `mem_do`
 
-`mem_do` is the escape hatch for the rest of the surface. It takes an `action` and optional `params`.
+`mem_do` provides access to every remaining action. It takes an `action` and optional `params`.
 
 ```text
 mem_do(action="help")
 mem_do(action="help", params={"category": "context"})
 mem_do(action="schedule_list")
 mem_do(action="context_diff", params={"scope": "project_shared"})
+mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name": "my-skill", "mode": "copy", "to_scope": "project_shared"})
 ```
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
@@ -70,7 +68,7 @@ Use `mem_do(action="help")` from your MCP client to see the action catalog for t
 | Tags | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
 | Sessions | `session_start`, `session_end`, `session_list` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
-| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_migrate`, `context_version`, `context_promote` |
+| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
 | Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Analytics | `activity`, `timeline`, `eval`, `reflect` |

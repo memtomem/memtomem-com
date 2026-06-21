@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]`은 이 문서의 기본 흐름과 맞는 권장 설치입니다. ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI 를 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
+`[all]`은 이 문서의 기본 흐름과 맞는 권장 설치입니다. ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI, Langfuse 관측성 트레이싱을 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
 
 ```bash
 uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
@@ -58,6 +58,7 @@ uv tool install 'memtomem[all]' --refresh
 | `korean` | kiwipiepy 한국어 형태소 분석 | `pip install memtomem[korean]` |
 | `code` | tree-sitter AST 청킹 (Python / JS / TS) | `pip install memtomem[code]` |
 | `web` | FastAPI + uvicorn 기반 Web UI | `pip install memtomem[web]` |
+| `langfuse` | Langfuse 관측성 트레이싱 | `pip install memtomem[langfuse]` |
 | `all` | 전체 | `pip install memtomem[all]` |
 
 ### `mm` CLI
@@ -70,17 +71,16 @@ uv tool install 'memtomem[all]' --refresh
 | `mm status` | 설치 후 DB·설정·임베딩 정합성 점검 |
 | `mm search <query>` | 지식 베이스 검색 |
 | `mm add <content>` | 기억 항목 추가 |
-| `mm tags` | 메모리 태그 관리 (조회, 이름 변경, 삭제, 병합) |
 | `mm web` | Web UI 대시보드 (http://localhost:8080) |
 | `mm --version` · `mm version` | 설치된 버전 출력 |
 
-전체 명령(`ingest`, `session`, `context`, `watchdog`, `shell`, `reset`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
+전체 명령(`ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
 
 MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다.
 
 ## STM 프록시 (memtomem-stm)
 
-STM은 선택 사항입니다. 능동적 기억 서피싱이나 도구 응답 압축이 필요할 때, LTM 빠른 시작 흐름이 동작한 뒤 설치하세요.
+STM은 선택 사항입니다. 능동적 기억 제시(surfacing)나 도구 응답 압축이 필요할 때, LTM 빠른 시작 흐름이 동작한 뒤 설치하세요.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (권장)">
@@ -122,10 +122,9 @@ STM은 선택 사항입니다. 능동적 기억 서피싱이나 도구 응답 �
 | `mms init --mcp claude` | 최초 설정 + Claude Code 자동 등록 |
 | `mms add <name> --command <cmd>` | 업스트림 MCP 서버 등록 |
 | `mms add --from-clients` | 기존 MCP 클라이언트 설정에서 일괄 가져오기 |
+| `mms eject <name>` | 가져온 서버를 원래 클라이언트로 복원하고 STM 등록을 해제 |
 | `mms list` | 등록된 서버 목록 |
 | `mms health` | 업스트림 연결 상태 점검 |
-| `mms stats` | 프록시 성능 및 토큰 압축 통계 조회 |
-| `mms surfacing` | 업스트림별 능동적 서피싱 범위 설정 및 토글 |
 | `mms --version` | 설치된 버전 출력 |
 
 STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. `memtomem-stm`이 MCP 클라이언트에 등록되면(`mms init --mcp claude`, `mms register`, `.mcp.json` 등록 중 하나) 클라이언트가 자동으로 기동합니다.

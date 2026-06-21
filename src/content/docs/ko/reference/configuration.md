@@ -7,9 +7,9 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 우선순위(높은 순): CLI 플래그 → 환경 변수 → 설정 파일 → 내장 기본값.
 
-## LTM (memtomem) — 접두사 `MEMTOMEM_`
+이 공개 레퍼런스는 `memtomem` 0.3.0 및 `memtomem-stm` 0.1.29 설정 표면을 기준으로 합니다.
 
-이 공개 레퍼런스는 `memtomem` 0.2.2 설정 표면을 기준으로 합니다.
+## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
 ### Storage
 
@@ -177,7 +177,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 포함 총 9개) / `standard` (`mem_do` 포함 37개) / `full` (86개) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 라우터 포함 총 9개) / `standard` (`mem_do` 포함 38개) / `full` (87개 전체를 개별 노출) | `core` |
 
 ### Web UI
 
@@ -245,6 +245,25 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 | `MEMTOMEM_SESSION_SUMMARY__EXPANSION_SCORE_THRESHOLD` | rescue 확장에 필요한 최소 요약 점수 | `0.3` |
 | `MEMTOMEM_SESSION_SUMMARY__EXPANSION_RESCUE_WEIGHT` | rescue된 source-file hit의 RRF 입력 가중치 | `0.5` |
 
+### Session tracing (세션 실행 추적)
+
+세션 명령 실행을 JSONL 파일과 (선택적으로) Langfuse로 추적합니다. 기본적으로 비활성화됩니다. `payload_mode`의 기본값은 `metadata`로, 페이로드 본문을 기록하지 않습니다. `redacted`는 시크릿을 가린 본문을 남기며, `full`은 전체 본문을 남깁니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_SESSION_TRACE__ENABLED` | 세션 실행 추적 활성화 | `false` |
+| `MEMTOMEM_SESSION_TRACE__JSONL_ENABLED` | JSONL 싱크 기록 | `true` |
+| `MEMTOMEM_SESSION_TRACE__JSONL_PATH` | JSONL 출력 파일 경로 | `~/.memtomem/traces/session-traces.jsonl` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_ENABLED` | Langfuse 싱크로 트레이스 전송 | `false` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_PUBLIC_KEY` | Langfuse public key | `""` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_SECRET_KEY` | Langfuse secret key | `""` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_HOST` | Langfuse 호스트 URL | `""` |
+| `MEMTOMEM_SESSION_TRACE__SAMPLING_RATE` | 0.0–1.0. 기록할 세션 비율 | `1.0` |
+| `MEMTOMEM_SESSION_TRACE__PAYLOAD_MODE` | `metadata` (본문 미기록) / `redacted` (시크릿 마스킹 본문) / `full` (전체 본문) | `metadata` |
+| `MEMTOMEM_SESSION_TRACE__MAX_PAYLOAD_CHARS` | 트레이스에 남기는 페이로드 문자 상한 | `10000` |
+
+`langfuse_enabled=true`로 설정하려면 `langfuse` extra가 설치되어 있고 public/secret key가 모두 지정되어야 하며, 그렇지 않으면 시작 시점에 검증에 실패합니다.
+
 ### Logging
 
 | Variable | Description | Default |
@@ -258,8 +277,9 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 |---|---|---|
 | `MEMTOMEM_HOOKS__TARGET_SCOPE` | memtomem 관리 Claude Code settings hook 대상 스코프: `user`, `project_shared`, `project_local` | `user` |
 | `MEMTOMEM_CONTEXT_GATEWAY__KNOWN_PROJECTS_PATH` | Context Gateway용 Web UI 프로젝트 레지스트리 | `~/.memtomem/known_projects.json` |
-| `MEMTOMEM_CONTEXT_GATEWAY__EXPERIMENTAL_CLAUDE_PROJECTS_SCAN` | `~/.claude/projects/<encoded>` 디렉터리를 프로젝트 루트로 reverse-decode | `false` |
-| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED` | discovery 응답에 user-tier 정규 아티팩트 노출 | `false` |
+| `MEMTOMEM_CONTEXT_GATEWAY__EXPERIMENTAL_CLAUDE_PROJECTS_SCAN` | `~/.claude/projects/<encoded>` 디렉터리명을 프로젝트 루트로 복원해 스캔(검증되지 않은 후보까지 포함) | `false` |
+| `MEMTOMEM_CONTEXT_GATEWAY__AUTO_DISPLAY_CONFIGURED_PROJECTS` | 스캔 후보 중 인식된 런타임 마커(`.claude`/`.gemini`/`.codex`/`.agents`/`.kimi`/`.memtomem`)를 가진 프로젝트만 자동 표시 | `true` |
+| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED` | User 티어(사용자 전역) 아티팩트 쓰기 허용 여부를 제어하는 forward-compat 필드. `false`이면 User 티어가 discovery 응답에서 숨겨짐 | `false` |
 
 ### 임베딩 프로바이더 비교
 
@@ -280,7 +300,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `WARNING` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰 도구 8개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_tuning_recommendations`)를 MCP `tools/list`에 노출. 미설정/`false`일 때도 모델용 도구 4개는 계속 노출되고, 관찰 도구는 Python 내부 호출 가능. | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰/관리 도구 9개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP `tools/list`에 노출. 미설정/`false`일 때도 모델용 도구 4개(`stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback`)는 계속 노출됩니다. 관찰 도구는 MCP `tools/list`에서 빠질 뿐, Python(테스트·CLI 경로)에서는 그대로 import·호출할 수 있습니다. | `false` |
 
 ### Proxy
 
@@ -306,12 +326,12 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__ENABLED` | 도구 응답을 LTM으로 인덱싱 | `false` |
-| `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND` | Stage 4를 요청 경로 외부에서 실행 (F4) | `false` |
+| `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND` | 인덱싱을 요청 경로 외부의 백그라운드에서 실행 | `false` |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__MIN_CHARS` | 인덱싱 대상 최소 응답 크기 | — |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__MEMORY_DIR` | 출력 디렉터리 | — |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__NAMESPACE` | 자동 인덱싱 기억의 네임스페이스 | `proxy-{server}` |
 
-standalone `mms` 서버에서는 시작 시 `FileIndexer` 엔진이 연결되지 않으므로 `auto_index`와 extraction이 현재 inert 상태입니다. 이 필드는 유효한 설정이지만, MCP-only adapter가 제공되기 전까지 LTM write-back은 수행하지 않습니다.
+기본 제공되는 `mms` 서버는 설계상 LTM에서 읽기만 하고 LTM으로 다시 쓰지 않습니다. 따라서 `auto_index`와 extraction 필드는 유효한 설정으로 수용되지만 실제 동작에는 영향을 주지 않습니다.
 
 ### Proxy → Metrics / Extraction / Relevance scorer
 
@@ -324,15 +344,64 @@ standalone `mms` 서버에서는 시작 시 `FileIndexer` 엔진이 연결되지
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달 읽기 텔레메트리 기록 (`stm_progressive_stats`로 노출) | `true` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | 내부 락 획득 상한. 타임아웃 시 느린 업스트림이 아닌 데드락/멈춘 홀더 신호로 취급 | `30.0` |
 
-### Proxy → Timeouts
+### Proxy → Tool exposure (도구 노출 필터)
 
-아래 세 필드는 `~/.memtomem/stm_proxy.json`의 업스트림 항목(`UpstreamServerConfig`)에 **서버별로** 설정합니다(환경 변수 아님). 미지정 시 아래 기본값이 모든 업스트림에 적용됩니다.
+업스트림이 제공하는 도구 중 어떤 것을 에이전트에게 광고할지 도구 광고 시점에 결정하는 STM 자체 필터입니다. 실패가 잦거나 자격 증명을 노출하거나 이름이 중복되는 도구를 광고 대상에서 제외합니다. 건강 신호는 프록시 시작 시 한 번 평가되어 세션 동안 광고 집합이 안정적으로 유지됩니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__EXPOSURE__PROFILE` | `strict`(신호 규칙으로 하드 차단) / `review`(차단 대신 랭킹에서 강등하고 telemetry에 기록) / `explore`(신호 규칙 비활성화) | `strict` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_WINDOW_HOURS` | 도구별 건강도 판정에 사용하는 메트릭 조회 윈도우(시간) | `24.0` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_MIN_CALLS` | 건강도를 판정하기 위한 윈도우 내 최소 호출 수. 미만이면 건강한 것으로 간주 | `5` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_ERROR_RATE_THRESHOLD` | 이 이상의 업스트림 귀책 오류율에서 도구를 unhealthy로 표시 | `0.95` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__REVIEW_RISK_PENALTY` | `review` 프로파일에서 신호 표시된 도구에 적용하는 랭킹 강등 배수 | `0.5` |
+
+### Proxy → Selection telemetry / Tool relevance (선택 텔레메트리 · 도구 랭킹)
+
+프록시 호출마다 선택·실행 기록을 JSONL로 남기고, 광고된 도구 집합을 호출 신호 기준으로 BM25 랭킹합니다. 랭킹은 telemetry에만 기록되며 노출 자체는 바꾸지 않습니다.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__ENABLED` | 호출당 selection/execution JSONL 기록 활성화 | `false` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__PATH` | JSONL 로그 경로 | `~/.memtomem/stm_selection_log.jsonl` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__SAMPLE_RATE` | 0.0–1.0. 기록할 호출 비율 | `1.0` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BYTES` | 로그 회전 크기 임계값 | `50000000` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BACKUPS` | 보관할 회전 파일 수 (`0`은 잘라내기) | `3` |
+| `MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__ENABLED` | 호출당 도구 BM25 랭킹 기록. `selection_telemetry`가 켜져 있어야 실제로 기록됨 | `true` |
+| `MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__TOP_N` | selection 이벤트당 기록하는 랭킹 후보 수 | `20` |
+
+### Proxy → Tool-graph eligibility (외부 도구 그래프, 선택)
+
+별도의 도구 그래프 MCP 서버에 cross-server 권한·데이터 흐름 적격성을 질의해 노출 필터의 추가 규칙으로 사용합니다. 기본적으로 비활성화이며, 그래프 서버는 proxy하지 않고 consult만 합니다(클라이언트는 그래프의 도구를 보지 않음).
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENABLED` | 외부 도구 그래프 적격성 제공자 활성화 | `false` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__COMMAND` | stdio 도구 그래프 MCP 서버 실행 명령어 | `toolgraph` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ARGS` | 명령어 인자 (JSON 리스트) | `["serve"]` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENV` | 그래프 서버용 추가 환경 변수(예: `NEO4J_*`, JSON object) | `null` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__AGENT_ID` | 그래프에 등록된, 적격성을 판정할 에이전트 식별자 | `stm-proxy` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__QUERY_PROFILE` | 그래프 consult에 전달하는 프로파일 | `strict` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_UNREACHABLE` | 그래프 도달 불가 시: `open`(STM 자체 규칙으로 광고) / `closed`(그래프 승인 외 전부 보류) | `open` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_TOOL_NOT_FOUND` | 그래프에 없는 후보 도구: `open` / `closed` | `open` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_AGENT_NOT_FOUND` | `agent_id` 미등록(대개 오타): `fail_start` / `open` / `closed` | `fail_start` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_PROTOCOL_ERROR` | 그래프 응답 규약 위반: `fail_start` / `open` / `closed` | `fail_start` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__RISK_PENALTY_SCALE` | 적격하지만 위험한 도구의 랭킹 강등 배수 | `1.0` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__TIMEOUT_SECONDS` | consult 타임아웃 | `5.0` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_ENABLED` | consult 결과를 디스크 캐시 | `true` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | consult 캐시 SQLite 경로 | `~/.memtomem/toolgraph_consult.db` |
+
+### Per-upstream (`UpstreamServerConfig`)
+
+아래 필드는 `~/.memtomem/stm_proxy.json`의 업스트림 항목(`UpstreamServerConfig`)에 **서버별로** 설정합니다(환경 변수 아님). 타임아웃 필드는 미지정 시 아래 기본값이 모든 업스트림에 적용됩니다.
 
 | 필드 | 설명 | 기본값 |
 |---|---|---|
-| `call_timeout_seconds` | `session.call_tool()` 시도당 타임아웃. 초과 시 세션을 강제 리셋하고 재시도 루프로 복귀. | `90.0` |
-| `overall_deadline_seconds` | 재시도 포함 단일 호출의 전체 벽시계 예산. `call_timeout × (max_retries+1)` 최악값 폭주 방지. | `180.0` |
-| `compression.llm.llm_timeout_seconds` | `llm_summary` 압축 타임아웃. 초과 시 `truncate`로 폴백. | `60.0` |
+| `surfacing_enabled` | 이 업스트림의 응답을 능동적 서피싱 대상에 포함할지 여부. `false`이면 해당 서버의 모든 도구에서 서피싱을 생략 | `true` |
+| `origin` | import 출처(provenance) 블록. `mms add --import`/`mms init`이 기록하며, 이후 `mms eject`가 호스트 설정으로 원본 항목을 복원하는 데 사용 | — |
+| `call_timeout_seconds` | `session.call_tool()` 시도당 타임아웃. 초과 시 세션을 강제 리셋하고 재시도 루프로 복귀 | `90.0` |
+| `overall_deadline_seconds` | 재시도 포함 단일 호출의 전체 벽시계 예산. `call_timeout × (max_retries+1)` 최악값 폭주 방지 | `180.0` |
+| `compression.llm.llm_timeout_seconds` | `llm_summary` 압축 타임아웃. 초과 시 `truncate`로 폴백 | `60.0` |
 
 ### Surfacing (Stage 3)
 
@@ -362,14 +431,14 @@ standalone `mms` 서버에서는 시작 시 `FileIndexer` 엔진이 연결되지
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_STM_HOOK__USE_DAEMON` | `mms hook` 서피싱을 cold in-process 경로 대신 warm local daemon으로 처리 | `true` |
+| `MEMTOMEM_STM_HOOK__USE_DAEMON` | `mms hook` 서피싱을 매번 새로 띄우는 in-process 경로 대신 상주 로컬 daemon으로 처리 | `true` |
 | `MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS` | hook-to-daemon 왕복 타임아웃 | `2.5` |
-| `MEMTOMEM_STM_HOOK__FALLBACK` | daemon 미가용 시 동작: `skip` 또는 `cold` | `skip` |
-| `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | 첫 적격 hook 호출에서 daemon을 fire-and-forget spawn | `true` |
+| `MEMTOMEM_STM_HOOK__FALLBACK` | daemon 미가용 시 동작: `skip`(건너뜀) 또는 `cold`(in-process 경로로 처리) | `skip` |
+| `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | 첫 적격 hook 호출에서 daemon을 비동기로 기동(응답을 기다리지 않음) | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | hook 서피싱 피드백/쿼리 이벤트 저장. 기본값은 dedup만 유지하고 원문 쿼리 텍스트는 저장하지 않음 | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | built-in Bash `updatedToolOutput` 압축 활성화 | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MAX_CHARS` | Bash output replacement 대상 문자 예산 | `16000` |
-| `MEMTOMEM_STM_DAEMON__HOST` | 로컬 daemon bind 주소. loopback-only 유지 권장 | `127.0.0.1` |
+| `MEMTOMEM_STM_DAEMON__HOST` | 로컬 daemon bind 주소. 루프백 전용 유지 권장 | `127.0.0.1` |
 | `MEMTOMEM_STM_DAEMON__IDLE_TIMEOUT_SECONDS` | 이 초 동안 idle이면 daemon 중지. `0`은 idle shutdown 비활성화 | `900.0` |
 
 ### Langfuse (관측성)
@@ -395,7 +464,7 @@ standalone `mms` 서버에서는 시작 시 `FileIndexer` 엔진이 연결되지
 | `extract_fields` | JSON 딕셔너리 |
 | `schema_pruning` | 대형 JSON 배열 |
 | `skeleton` | API 문서 (스키마만 유지) |
-| `llm_summary` | LLM 기반 요약 (Ollama / OpenAI) |
+| `llm_summary` | LLM 기반 요약 (OpenAI / Anthropic / Ollama) |
 | `truncate` | 폴백 절삭 |
 | `none` | 패스스루 |
 

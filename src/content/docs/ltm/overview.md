@@ -56,7 +56,7 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **Latest release** | `0.2.2` |
+| **Latest release** | `0.3.0` |
 | **CLI** | `mm` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |
@@ -67,6 +67,6 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 - [Memory Persistence Across Sessions](/guides/memory-persistence/) — Save in session A, recall in session B
 - [Hybrid Search](/ltm/hybrid-search/) — How the search engine works
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — Namespace design and sharing workflows
-- [Context Gateway](/ltm/context-gateway/) — Define agents / skills / commands once, sync across runtimes
+- [Context Gateway](/ltm/context-gateway/) — Define agents / skills / commands once, then sync, move, or copy them across projects and runtimes
 - [MCP Tools](/ltm/mcp-tools/) — Full tool reference
 - [CLI Reference](/ltm/cli/) — `mm` command reference

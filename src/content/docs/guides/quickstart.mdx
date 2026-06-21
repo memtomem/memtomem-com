@@ -45,7 +45,7 @@ mm init --preset korean -y   # Korean preset, no prompts
 mm init --advanced           # full wizard
 ```
 
-During setup you can also enroll existing AI-agent memory folders, such as Claude Code memories, Claude plans, or Codex CLI memories. Enrollment only registers the folders for future watching; seed existing files once with `mm index`.
+During setup you can also register existing AI-agent memory folders for watching, such as Claude Code memories, Claude plans, or Codex CLI memories. Registration only sets them up for future watching; seed existing files once with `mm index`.
 
 ## 3. Check Locally
 
@@ -114,7 +114,7 @@ After that, use natural language in your MCP client:
 mm web --open
 ```
 
-The default Web UI is the polished user surface for search, sources, tags, timeline, settings, and Context Gateway. `mm web --dev` adds maintainer-oriented pages that most users do not need.
+The default Web UI is the user-facing surface for search, sources, tags, timeline, settings, and Context Gateway. `mm web --dev` adds maintainer-oriented pages that most users do not need.
 
 ## Optional: Add STM Later
 
@@ -126,12 +126,13 @@ mms init --mcp claude
 mms health
 ```
 
+Moving a server behind the proxy is reversible — if STM isn't a fit, `mms eject` restores each server to the host config it came from.
+
 See [STM Overview](/stm/overview/) when you want tool-response compression or automatic memory injection.
 
 ## Next
 
 - [Memory Persistence](/guides/memory-persistence/) — save in one session, recall in another
-- [Installation](/guides/installation/) — install options and extras
 - [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion
 - [MCP Tools](/ltm/mcp-tools/) — `core`, `standard`, and `full` tool modes
-- [Context Gateway](/ltm/context-gateway/) — sync agents, skills, and commands across runtimes
+- [Context Gateway](/ltm/context-gateway/) — sync agents, skills, and commands across runtimes, move or copy them between projects, and sync many projects at once

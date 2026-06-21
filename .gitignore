@@ -17,3 +17,9 @@ node_modules/
 
 # os
 .DS_Store
+
+# revamp scratch (analysis artifacts, not for commit)
+.revamp/
+
+# local Antigravity / MCP runtime state (machine-specific, never commit)
+.antigravitycli/

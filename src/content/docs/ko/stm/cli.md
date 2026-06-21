@@ -3,7 +3,9 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 ---
 
-`mms` 명령어는 `memtomem-stm` 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
+`mms` 명령어는 `memtomem-stm` v0.1.29 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
+
+STM의 가져오기는 되돌릴 수 있습니다. 업스트림을 STM 프록시 뒤로 들여와도 원래 등록 정보가 보존되므로, 결과가 마음에 들지 않으면 `mms eject` 로 원래 host MCP 클라이언트 설정으로 복원할 수 있습니다.
 
 ## 명령어
 
@@ -13,20 +15,20 @@ description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 
 1. **Claude Code 에 추가** — `claude mcp add` 를 자동 실행합니다.
 2. **`.mcp.json` 생성** — 현재 디렉터리에 프로젝트 스코프 설정 파일을 작성합니다.
-3. **건너뛰기** — 수동 등록용 paste hint 를 출력합니다.
+3. **건너뛰기** — 수동 등록에 필요한 설정 스니펫을 출력합니다.
 
 스크립트/CI 실행에서 프롬프트를 미리 답하려면 `--mcp` 플래그를 사용합니다:
 
 ```bash
 mms init --mcp claude                # Claude Code 에 자동 등록
 mms init --mcp json                  # 현재 디렉터리에 .mcp.json 생성
-mms init --mcp skip                  # 설정만 쓰고 paste hint 출력 후 종료
+mms init --mcp skip                  # 설정만 쓰고 등록 스니펫 출력 후 종료
 mms init --no-validate               # 업스트림 연결 점검 생략
 mms init --lang ko                   # 한국어 토큰-aware 예산 프리셋 (CJK 대응)
 mms init --prune-originals           # 가져온 업스트림을 source 클라이언트에서 함께 제거
 ```
 
-`--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, `min_response_chars=230` 같은 한국어 / CJK 워크로드용 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
+`--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, 그리고 서버별 `max_result_tokens=2000` 같은 한국어 / CJK 워크로드용 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
 
 설정 파일이 이미 있으면 `mms init` 는 중단됩니다 — 업스트림을 추가하려면 `mms add`, 등록 프롬프트만 재실행하려면 `mms register` 를 사용하세요.
 
@@ -69,15 +71,17 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 
 #### MCP 클라이언트에서 일괄 가져오기
 
-`mms add --from-clients` (별칭 `--import`)는 Claude Desktop, Claude Code, 프로젝트 `.mcp.json`에서 등록된 서버를 탐색해 일괄 가져옵니다 — `mms init`의 탐색 + TUI 흐름을 재사용합니다. 이미 등록된 서버는 건너뜁니다.
+`mms add --from-clients` (별칭 `--import`)는 Claude Desktop, Claude Code, 프로젝트 `.mcp.json`에 등록된 서버를 탐색해 STM 프록시 설정(`stm_proxy.json`)으로 일괄 가져옵니다 — `mms init`의 탐색 + TUI 흐름을 재사용합니다. 이미 등록된 서버는 건너뜁니다. (이는 host 설정을 `~/.mms/registry.toml`로 옮기는 [`mms import`](#mms-import)와 다른 명령입니다.)
 
 ```bash
 mms add --from-clients               # 대화형 일괄 가져오기
 mms add --import                     # 별칭
-mms add --from-clients --prune       # 가져온 뒤 source 클라이언트에서 직접 등록 제거
+mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에서 직접 등록 제거
 ```
 
-가져오기가 성공하면 같은 서버가 STM 프록시 경로와 source 클라이언트 경로 양쪽에 노출되어 압축·캐싱·LTM 서피싱이 우회됩니다. `--prune` 플래그(또는 TTY 환경에서 뜨는 대화형 확인 프롬프트, 기본 **No**)는 Claude Code 스코프별 `claude mcp remove`와 Claude Desktop JSON 파일의 원자적 재작성을 수행해 이중 등록을 바로 정리합니다. 비대화 환경에서 `--prune` 없이 실행하면 이전처럼 안내 경고만 출력하며, 수동 복구 명령도 함께 표시됩니다.
+가져오기가 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트 경로 양쪽에 노출되며, 직접 경로는 압축·캐싱·LTM 서피싱을 거치지 않습니다. 가져온 항목에는 출처(provenance)가 함께 기록됩니다 — 원본 클라이언트 종류와 원래 등록 정보 사본이 보존되므로, [`mms eject`](#mms-eject-name) 로 언제든 원래 상태로 복원할 수 있습니다.
+
+`--prune` 플래그(또는 TTY 환경에서 뜨는 대화형 확인 프롬프트, 기본 **No**)는 Claude Code 스코프별 `claude mcp remove`와 Claude Desktop JSON 파일의 원자적 재작성을 수행해 이중 등록을 정리합니다. 제거 전 각 항목은 `~/.memtomem/pruned_upstreams.json`에 백업되므로 정리 작업도 되돌릴 수 있습니다. 비대화 환경에서 `--prune` 없이 실행하면 안내 경고만 출력하며, 수동 복구 명령도 함께 표시됩니다.
 
 `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. `--prune`은 반드시 `--from-clients` / `--import`와 함께 써야 합니다.
 
@@ -90,6 +94,8 @@ mms list                             # 사람이 읽기 좋은 표
 mms list --json                      # 스크립트용 JSON
 ```
 
+표에는 각 업스트림의 가져오기 출처를 알려 주는 **ORIGIN** 열이 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, 수동으로 `mms add` 한 항목은 `-` 로 나타납니다. 값 뒤의 `*` 는 원본 등록이 정리(prune)되어 현재 STM 뒤에만 존재함을 뜻하며, `mms eject <name>` 로 복원할 수 있습니다.
+
 ### `mms status`
 
 프록시 게이트웨이 설정과 전체 서버 목록을 표시합니다.
@@ -99,15 +105,19 @@ mms status
 mms status --json                    # 스크립트용 JSON
 ```
 
-### `mms stats`
+`status` 출력에는 업스트림별 압축 설정, 출력 크기 예산과 함께 서피싱 활성화 상태(`surfacing=on/off`)도 표시됩니다.
 
-지속성 데이터베이스(`proxy_metrics.db` 및 `stm_feedback.db`)에서 프록시 압축 및 서피싱 통계를 표시합니다.
+### `mms surfacing <server> [on|off]`
+
+특정 업스트림 서버에 대한 능동적 기억 서피싱을 켜거나 끕니다. 상태 인수를 생략하면 현재 값만 출력합니다.
 
 ```bash
-mms stats                            # 누적 전체 통계 표시
-mms stats --tool fs__read_file       # 특정 업스트림 도구 이름으로 필터링
-mms stats --json                     # 스크립팅용 JSON 출력
+mms surfacing filesystem             # 현재 상태 확인
+mms surfacing filesystem off         # 이 업스트림의 서피싱 비활성화
+mms surfacing filesystem on          # 다시 활성화
 ```
+
+`surfacing_enabled` 값은 공유 프록시 설정(`stm_proxy.json`)에 기록됩니다. 실행 중인 프록시는 재시작 없이 즉시 반영하며, 이 `mms` 를 통해 프록시하는 모든 MCP 클라이언트가 동일한 범위를 공유합니다. 서피싱 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/) 페이지를 참조하세요.
 
 ### `mms remove <name>`
 
@@ -117,6 +127,8 @@ mms stats --json                     # 스크립팅용 JSON 출력
 mms remove filesystem                # 확인 프롬프트
 mms remove filesystem -y             # 확인 생략
 ```
+
+가져온(imported) 서버를 제거하면, 원본 host 등록을 잃지 않고 복원할 수 있도록 `mms eject` 를 안내하는 힌트가 함께 출력됩니다.
 
 ### `mms health`
 
@@ -131,21 +143,9 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 
 `--names` 는 `mcp__<server>__<prefix>__<tool>` 의 합산 길이가 MCP 64자 제한(#261)을 초과해 등록 후 조용히 사라진 업스트림 도구를 가려낼 때 씁니다.
 
-### `mms surfacing`
-
-등록된 업스트림 서버에 대해 능동적 기억 서피싱(proactive memory surfacing) 활성화 여부를 전환합니다.
-
-```bash
-mms surfacing context7               # 현재 서피싱 활성화 상태 표시 (on/off)
-mms surfacing context7 off           # 해당 업스트림 서피싱 비활성화
-mms surfacing context7 on            # 해당 업스트림 서피싱 활성화
-```
-
-업스트림의 서피싱을 비활성화하면 서피싱 단계가 단락되어 LTM 검색을 아예 수행하지 않으므로 자원을 아낄 수 있습니다. 이 설정은 재시작 시에도 유지되며 프록시 서버에서 실시간으로 핫 리로드됩니다.
-
 ### `mms prune`
 
-`mms init` 또는 `mms add --import` 로 업스트림을 STM에 등록한 뒤, source MCP 클라이언트(Claude Code, Claude Desktop, 프로젝트 `.mcp.json`)에 남아 있는 직접 등록을 일괄 제거합니다. 압축·캐싱·LTM 서피싱이 우회되는 이중 등록 상태를 정리하려는 explicit opt-in 명령입니다.
+`mms init` 또는 `mms add --import` 로 업스트림을 STM에 등록한 뒤, 원본 MCP 클라이언트(Claude Code, Claude Desktop, 프로젝트 `.mcp.json`)에 남아 있는 직접 등록을 일괄 제거합니다. 이렇게 하면 모든 도구 호출이 STM 프록시 한 경로로만 흐르면서 압축·캐싱·LTM 서피싱을 거치게 됩니다. 명시적으로 실행해야 하는 옵트인 명령입니다.
 
 ```bash
 mms prune --all                      # 이중 등록된 업스트림 모두
@@ -154,21 +154,35 @@ mms prune --all --dry-run            # 무엇을 지울지만 미리보기
 mms prune --all -y                   # 비대화 — 확인 프롬프트 생략
 ```
 
-STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 건드리지 않습니다 — source 클라이언트 등록만 정리합니다.
+제거하기 전에 각 항목은 `~/.memtomem/pruned_upstreams.json`에 백업되므로 작업을 되돌릴 수 있습니다 — 원본 클라이언트 등록으로 복원하려면 [`mms eject`](#mms-eject-name) 를 사용하세요. STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 건드리지 않습니다.
 
-### `mms version`
+### `mms eject <name>`
 
-설치된 버전을 출력합니다 (`mms --version` 과 동일).
+`prune` 의 반대 동작입니다. 가져온 업스트림을 다시 원본 host MCP 클라이언트 설정으로 복원하고, 복원이 확인된 뒤에만 STM 항목을 제거합니다. 즉 STM 프록시를 일단 시험해 보고, 마음에 들지 않으면 원래 상태로 안전하게 되돌릴 수 있습니다. 여러 이름을 한 번에 지정할 수 있습니다.
 
 ```bash
-mms version
+mms eject filesystem                 # 원본 host 설정으로 복원 후 STM 항목 제거
+mms eject filesystem github          # 여러 개 한 번에
+mms eject filesystem --dry-run       # 무엇을 복원할지만 미리보기
+mms eject filesystem --keep          # host로 복원하되 STM 항목은 유지 (이중 등록)
+mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 ```
+
+가져오기 시 기록된 원본 등록 정보(provenance)를 그대로 host로 다시 쓰고, host 설정을 재확인해 검증한 다음에야 STM 항목을 삭제합니다. 어느 단계에서 실패하더라도 서버는 최소 한 곳에는 남으므로 — 최악의 경우는 이중 등록이며, 서버가 사라지는 일은 없습니다.
+
+| 플래그 | 설명 |
+|------|-------------|
+| `--to TARGET` | 출처가 기록되지 않은 항목의 복원 대상 지정 (`claude-user` / `claude-project[:PATH]` / `mcp-json[:PATH]` / `claude-desktop`). 출처가 있는 항목은 무시됩니다 |
+| `--keep` | host로 복원하되 STM 항목 유지 (이중 등록) |
+| `--force` | 같은 이름이지만 내용이 다른 host 항목 덮어쓰기 |
+| `--allow-argv-secrets` | secret 으로 분류된 값을 담은 `claude mcp add-json` 실행 허용 (argv 가 프로세스 목록에 노출됨) |
+| `--accept-schema-loss` | 복원된 host 항목이 원본과 구조적으로 일치하지 않아도 STM 제거를 진행 (기본값은 STM 항목 유지 후 실패) |
+| `--dry-run` | 계획만 출력, 쓰기 없음 |
+| `--yes` / `-y` | 확인 프롬프트 생략 (스크립트 / CI / 비-TTY) |
 
 ### `mms hook`
 
-호스트의 내장 도구 실행(예: Claude Code의 내장 명령어)에 기억 서피싱 및 출력 압축을 통합하는 브리지입니다. 표준 입력(stdin)으로부터 JSON 페이로드를 읽고 훅 응답을 출력합니다.
-
-Claude Code 설정 파일(예: `~/.claude.json`)의 `PostToolUse` 매처 아래에 다음과 같이 등록합니다:
+지원 host의 built-in 도구 호출을 STM 서피싱으로 연결합니다. Claude Code와 호환 host는 이를 `PostToolUse` hook으로 호출합니다. JSON payload는 stdin으로 들어오고, `mms hook`은 surfaced memory가 담긴 `additionalContext`를 포함할 수 있는 hook output을 출력합니다. Bash 출력 압축은 별도 기능이며 `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`로 opt-in합니다.
 
 ```json
 {
@@ -183,27 +197,19 @@ Claude Code 설정 파일(예: `~/.claude.json`)의 `PostToolUse` 매처 아래�
 }
 ```
 
-hook은 항상 exit 0으로 종료합니다. 서피싱, 데몬, 압축 중 어떤 단계가 실패해도 호스트 도구 출력은 변경 없이 통과합니다.
-
-JSON 페이로드를 `mms hook`에 파이프로 전달하여 수동으로 테스트해 볼 수 있습니다:
-
-```bash
-# 표준 입력을 통한 수동 테스트
-echo '{"tool_name": "Read", "tool_input": {"path": "src/main.py"}, "tool_response": {"text": "file content"}}' | mms hook
-```
+hook은 항상 exit 0으로 종료합니다. 서피싱, daemon, 압축 중 어떤 단계가 실패해도 host 도구의 출력은 변경 없이 그대로 통과합니다.
 
 ### `mms daemon`
 
-`mms hook`에서 감시하는 내장 도구 호출 시 LTM 시작 지연을 방지하기 위해 웜 LTM 연결을 유지하는 백그라운드 데몬 프로세스를 관리합니다. 데몬 모드는 기본적으로 활성화되어 있으며(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`), 적격한 첫 번째 훅 호출 시 자동으로 실행되므로 보통 수동으로 작동할 필요가 없습니다.
+`mms hook`이 사용하는 로컬 서피싱 daemon을 관리합니다. daemon 모드는 기본 활성(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`)이며, 첫 적격 hook 호출에서 자동으로 기동되므로 보통 수동 시작이 필요 없습니다.
 
 ```bash
-mms daemon start                     # 백그라운드 데몬 기동
-mms daemon status                    # 데몬 작동 여부 확인 (pid, 포트, 업타임)
-mms daemon stop                      # 실행 중인 데몬 프로세스 중지
-mms daemon restart                   # 데몬 프로세스 재시작
+mms daemon status                    # daemon 실행 여부 확인
+mms daemon start                     # 명시적으로 시작
+mms daemon stop                      # 현재 설정용 daemon 중지
 ```
 
-데몬은 활성 설정에 대해 하나의 LTM MCP 세션을 웜 상태로 보존합니다. 이전 버전의 인프로세스(cold) 동작을 원한다면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`을, 데몬이 작동 불가능할 때 cold fallback 처리를 원한다면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
+daemon은 활성 설정에 대한 LTM MCP 세션 하나를 미리 연결된(warm) 상태로 유지합니다. 매 호출마다 세션을 새로 여는 기존 경로를 강제하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`, daemon 미가용 시 해당 경로로 대체(fallback)하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
 
 ## 프로젝트 관리 (W1)
 
@@ -256,22 +262,22 @@ mms project enable filesystem --project acme
 
 ### `mms import`
 
-Claude Code, Claude Desktop, Cursor 같은 host MCP 클라이언트의 설정에서 MCP 정의를 발견해 `~/.mms/registry.toml` 로 옮깁니다. **dry-run 이 기본값** — `--apply` 를 줘야 실제로 씁니다.
+Claude Code, Claude Desktop, Cursor 같은 host MCP 클라이언트의 설정에서 MCP 정의를 발견해 `~/.mms/registry.toml` 로 옮깁니다. 이는 프로젝트 관리(W1)용 레지스트리를 채우는 명령으로, 업스트림을 프록시 설정으로 가져오는 [`mms add --from-clients`](#mcp-클라이언트에서-일괄-가져오기)와는 대상 파일과 용도가 다릅니다. **미리보기(dry-run)가 기본값** — `--apply` 를 줘야 실제로 씁니다.
 
 ```bash
-mms import --plan                    # 기본: 무엇을 가져올지 계획만 (secret 은 REDACT)
+mms import --plan                    # 기본: 무엇을 가져올지 계획만 (secret 은 가림)
 mms import --apply                   # 실제 registry 에 쓰기
-mms import --from claude --plan      # host 한정 (claude / cursor / desktop / all)
-mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지 않음 (조심해서)
+mms import --from claude-code --plan # host 한정 (claude-code / cursor / codex / claude-desktop / all)
+mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지 않음 (주의)
 ```
 
-first-import-wins 정책: registry 에 동일 이름이 다르게 등록돼 있으면 conflict 로 처리하고 건너뜁니다. 동일 정의는 idempotent 로 표시됩니다.
+먼저 가져온 항목이 우선됩니다. registry 에 동일 이름이 다르게 등록돼 있으면 충돌로 처리해 건너뛰고, 동일한 정의는 변경 없이 그대로 둡니다.
 
-### 운영 통계
+## 운영 통계
 
-프록시, 서피싱 및 압축 통계는 `mms stats` CLI 명령과 **MCP 도구** 양쪽 모두에서 확인할 수 있습니다. MCP 도구로는 `stm_proxy_stats`, `stm_surfacing_stats`, `stm_progressive_stats`, `stm_compression_stats`, `stm_proxy_health` 및 `stm_tuning_recommendations`가 노출됩니다. MCP 클라이언트에서 호출하거나, `advertise_observability_tools=false`로 에이전트 노출에서 숨길 수 있습니다. 자세한 도구 목록은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
+프록시·서피싱·선택·압축 동작을 런타임에 점검하려면 STM이 관측용 MCP 도구를 제공합니다 — 이 통계는 CLI 서브명령이 아니라 **MCP 도구**로 노출됩니다. 0.1.29 기준 9개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)이며, 기본적으로 MCP `tools/list`에서는 숨겨져 있습니다. 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 각 도구의 입출력은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
 
-### 프록시 서버 실행
+## 프록시 서버 실행
 
 프록시 서버 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `mms init --mcp claude`, `mms register`, 또는 `.mcp.json` 항목을 통해 `memtomem-stm`이 등록되면 MCP 클라이언트가 자동으로 기동합니다.
 
@@ -289,7 +295,13 @@ mms add --from-clients
 mms status
 mms health
 
-# 4. (선택) 클라이언트 재설치 후 Claude Code에 재등록
+# 4. (선택) 특정 업스트림의 서피싱만 끄기
+mms surfacing filesystem off
+
+# 5. (선택) 프록시가 마음에 들지 않으면 원본 host 설정으로 복원
+mms eject filesystem
+
+# 6. (선택) 클라이언트 재설치 후 Claude Code에 재등록
 mms register --mcp claude
 ```
 

@@ -3,7 +3,9 @@ title: Context Gateway
 description: Define agents, skills, and commands once, then sync them across AI runtimes.
 ---
 
-Context Gateway keeps runtime-specific agent files in sync from one canonical `.memtomem/` source. It is useful when a project uses more than one AI runtime, or when you want the same skill/command set available in every checkout.
+You wrote a skill in Claude Code and want the same one in Codex and Cursor, or you want the same command set across several projects. Because every runtime stores context in a different place and format, those copies drift fast. Context Gateway solves this by syncing each AI runtime from one canonical `.memtomem/` source.
+
+In LTM 0.3.0 the Context Gateway grew beyond a single-project, one-way model: it is now the central surface for moving and copying artifacts across projects and tiers, bulk-syncing many projects, and authoring a canonical wiki.
 
 ## What It Solves
 
@@ -12,11 +14,11 @@ AI runtimes store context in different places and formats:
 | Runtime | Example runtime files |
 |---|---|
 | Claude Code | `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md` |
-| Codex CLI | `.agents/agents/*.toml`, `.agents/skills/*/SKILL.md` |
-| Antigravity CLI | `.gemini/agents/*.md`, `.gemini/skills/*/SKILL.md`, `.gemini/commands/*.toml` |
+| Codex CLI | `.agents/skills/*/SKILL.md`, `.codex/agents/*` |
+| Antigravity CLI | `.gemini/agents/*`, `.gemini/skills/*`, `.gemini/commands/*` |
 | Other MCP clients / frameworks | Agent definition surfaces vary by runtime |
 
-Without a canonical layer, every runtime copy drifts. With Context Gateway, you edit the canonical file and sync outward.
+Without a canonical layer, every runtime copy drifts. With Context Gateway, you edit the canonical file once and sync it out to each AI runtime path.
 
 ## First Workflow
 
@@ -29,26 +31,30 @@ mm context sync --scope project_shared
 mm context diff --scope project_shared
 ```
 
-What each command does:
-
 | Command | Purpose |
 |---|---|
 | `detect` | Shows existing runtime files memtomem can see |
 | `init` | Creates canonical files under `.memtomem/` |
-| `sync` | Fans canonical files out to runtime-specific paths |
+| `sync` | Syncs canonical files out to each runtime path |
 | `diff` | Shows whether canonical and runtime copies still match |
+
+For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/).
 
 ## Canonical Tiers
 
-Context Gateway uses the same three tier names as memory writes:
+Context Gateway uses the same three tiers as memory writes. The UI shows friendly labels (User / Project (shared) / Project (local)); the scope values below are the CLI flag values:
 
-| Tier | Canonical location | Good for | Runtime fan-out |
+| Tier (CLI scope) | UI label | Canonical location | Good for |
 |---|---|---|---|
-| `user` | `~/.memtomem/<artifact>/...` | Personal agents, skills, commands reused across projects | User-level runtime paths |
-| `project_shared` | `<project>/.memtomem/<artifact>/...` | Team-shared project context committed to git | Project runtime paths |
-| `project_local` | `<project>/.memtomem/<artifact>.local/...` | Private drafts for one checkout | No fan-out for agents, skills, commands |
+| `user` | User | `~/.memtomem/<artifact>/...` | Personal agents, skills, commands reused across projects |
+| `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | Team-shared project context committed to git |
+| `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | Private drafts for one checkout |
 
-`project_shared` means "git-tracked". Do not put secrets, credentials, private scratch notes, or unreviewed prompts there. Use `user` or `project_local` when the content should stay local.
+The `user` tier became an actively managed write path in 0.3.0. Because these paths live outside the project in your home directory, every user-tier write goes through a "Write outside the project?" confirmation: the gateway first shows the exact home-directory files it will touch, and only writes them once you approve. Enable it with the `context_gateway.user_tier_enabled` setting.
+
+`project_local` canonical files are gitignored and do not sync to runtime agent / skill / command paths.
+
+`project_shared` is git-tracked, so do not put secrets there. In 0.3.0 sync and transfer hard-refuse a `project_shared` write when a secret is detected, with no `--force` valve (because git history is permanent). The `user` and `project_local` tiers allow an override after review, but `project_shared` refuses in every case.
 
 ## Common Recipes
 
@@ -68,7 +74,7 @@ mm context init --include skills --scope user
 mm context sync --include skills --scope user
 ```
 
-This writes the canonical skill under `~/.memtomem/skills/` and fans it out to supported user-level runtime paths.
+This writes the canonical skill under `~/.memtomem/skills/` and syncs it out to supported user-level runtime paths (the first write goes through the host-write confirmation).
 
 ### Draft Locally Before Sharing
 
@@ -77,7 +83,7 @@ mm context init --include agents --scope project_local
 mm context diff --include agents --scope project_local
 ```
 
-`project_local` canonical files are gitignored and do not fan out to runtime agent / skill / command paths. Promote the file to `project_shared` when it is ready, then run `mm context sync --scope project_shared`.
+`project_local` canonical files are gitignored and do not sync to runtime paths. When the draft is ready, use `mm context move` to shift it to `project_shared`, then run `mm context sync --scope project_shared`.
 
 ### Seed Canonical Files From Existing Runtime Files
 
@@ -91,22 +97,86 @@ mm context diff --include agents,skills --scope project_shared
 
 Review the generated canonical files before committing.
 
-## How Sync Works
+## Move or Copy Across Projects and Tiers
 
-```
-.memtomem/                  # canonical source
-├── agents/
-├── skills/
-└── commands/
+0.3.0 goes beyond the one-way model with a transfer engine that moves or copies a single canonical artifact (`agents` / `commands` / `skills`) between tiers or between projects:
 
-     mm context sync
+```bash
+# Move one skill to the user tier (source is cleaned up)
+mm context move skills my-skill --to user
 
-.claude/                    # Claude Code runtime files
-.agents/                    # Codex-compatible runtime files
-.gemini/                    # Antigravity runtime files
+# Copy to another project (source untouched, can be renamed)
+mm context copy agents reviewer --to-project <project> --as reviewer-v2
 ```
 
-Conversion is one-way during `sync`: canonical to runtime. Use `mm context init` with `--include` when you intentionally want to seed canonical files from existing runtime files.
+- `move` consumes the source and cleans up its stale runtime copies.
+- `copy` never touches the source and can rename the copy with `--as`.
+- Every transfer is a dry-run preview by default; pass `--apply` to execute.
+- Destination collisions always refuse, with no `--force` valve.
+- A transfer landing in `project_shared` runs the secret scan and requires `--confirm-project-shared`.
+- Every successful transfer prints the follow-up `mm context sync` command to run.
+
+The `mem_context_artifact_transfer` MCP action performs the same operation headlessly.
+
+## Manage Multiple Projects
+
+Register several projects to bulk-sync shared artifacts, or check drift across all of them at once. All multi-project operations target the `project_shared` tier:
+
+```bash
+mm context projects list
+mm context projects add <path>
+mm context projects pause <selector>
+mm context projects resume <selector>
+
+# Bulk-sync every registered project (one lock window)
+mm context sync --all-projects
+
+# Read-only check of which projects drifted
+mm context status --all-projects
+```
+
+Paused projects and projects not enrolled for sync are skipped. In the web UI, opting a project into sync is shown as **Activate** ("Project activated for sync").
+
+## MCP Server Definitions
+
+Beyond agents / skills / commands, the gateway also manages MCP server definitions. Keep canonical definitions in `.memtomem/mcp-servers/<name>.json` and sync them into the project's `.mcp.json`:
+
+```bash
+# Sync canonical MCP server definitions into .mcp.json (opt-in)
+mm context sync --include=mcp-servers
+
+# Copy a definition to another project
+mm context copy mcp-servers <name> --to-project <project>
+```
+
+The `mcp-servers` sync is opt-in (a bare `mm context sync` never touches `.mcp.json`). The same secret-safety checks apply, so put secrets in `${VAR}` references rather than directly in an `env` block. v1 supports only stdio servers on the `project_shared` tier.
+
+## Version Snapshots
+
+Agents and commands can carry a version history with movable labels (production / staging, etc.):
+
+```bash
+mm context version create agents reviewer --note "initial version"
+mm context version promote agents reviewer --label production
+mm context version list agents reviewer
+```
+
+You can configure sync to use the version a label points to. See the [CLI Reference](/ltm/cli/) for the full flag list.
+
+## Canonical Wiki
+
+Author reusable artifacts once in a host-global wiki (`~/.memtomem-wiki/`), then install them into a project with `mm context install`. Each artifact is stored as an isolated git commit, and `remote`/`push`/`pull` back it up and sync it across devices:
+
+```bash
+mm wiki init
+mm wiki skill commit my-skill --canonical
+mm wiki remote <url>
+mm wiki push
+```
+
+You can also edit in the browser; saved-but-uncommitted edits are flagged with a nav badge.
+
+## Conversion Loss Handling
 
 When a target runtime cannot represent a field exactly, memtomem classifies the loss:
 
@@ -116,37 +186,23 @@ When a target runtime cannot represent a field exactly, memtomem classifies the 
 | `warn` | Continue, but print a warning |
 | `error` | Abort conversion |
 
-## Web UI & Context Portal
-
-Run the Web UI dashboard:
+## Web UI
 
 ```bash
 mm web --open
 ```
 
-By default, the Context Gateway lands on the **Context Portal** (Projects Portal). It provides:
-- A unified view of registered MCP clients and active project/tier selection.
-- Clear indicators of client/runtime registration and active files.
-- A **Sync All** flow that syncs canonical configurations to all enrolled runtimes in one pass with phase-by-phase progress tooltips.
+The Context Gateway opens in a comprehension-first **Simple view**. For the active project it shows a one-line verdict ("Everything is in your tools.", "Some items aren't in your tools yet — sync to push them out.", and so on) above a per-type row list (skills / commands / subagents). Each row that needs action carries one button:
 
-## Sync Enrollment
+- **Sync** — push your stored copy out to the tool.
+- **Import** — pull a runtime's copy back in.
 
-Context Gateway decouples project detection from sync. Pre-existing projects are automatically detected, but they will not be synced until you explicitly **enroll** them:
-- **Enroll, Pause, and Resume**: You can manage the sync status of any project in the UI.
-- **Write-Gating**: Paused or non-enrolled projects are gated from writing. Any attempt by a runtime or API to write canonical files will be blocked with a `409 Conflict` response.
+Clean rows show a check. An onboarding layer explains the model: your master copies live in one **Store** (`.memtomem/`), Sync pushes them out to your **Runtimes**, and Import pulls a runtime's copy back in. It is one-way: edit in the Store, then Sync. A **Store ── Sync → Runtimes** diagram makes this visual.
 
-## Artifact Versioning (ADR-0022)
-
-Canonical agents and commands can maintain Git-style version snapshots and label pointers instead of a single flat file.
-
-- **Version snapshots**: Writable canonical files can be frozen as immutable snapshots (e.g. `v1`, `v2`) with notes.
-- **Labels**: Movable pointers (e.g. `production` or `staging`) target specific version snapshots.
-- **Reserved `latest` Label**: The label `latest` is reserved and read-only. It always points to the active working canonical file and cannot be targeted by promote actions.
-- **Versioned Sync**: Pass `--label <name>` to CLI commands (e.g. `mm context sync --label production` or `mm context generate --label production`) to deploy a specific version instead of the active working canonical.
-- **Direct Tools**: Version snapshots and promotions are exposed as the direct MCP tools `mem_context_version` and `mem_context_promote` respectively in `full` mode.
+The full control grid (the artifact / tier / runtime / scope axes) is one **Advanced** toggle away, and the choice persists per browser.
 
 ## Next
 
-- [CLI Reference](/ltm/cli/) — full `mm context` command list
-- [MCP Tools](/ltm/mcp-tools/) — context actions
+- [CLI Reference](/ltm/cli/) — full `mm context` and `mm wiki` command list
+- [MCP Tools](/ltm/mcp-tools/) — context actions through `mem_do`
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — memory namespaces for multiple agents

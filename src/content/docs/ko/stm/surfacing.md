@@ -1,25 +1,23 @@
 ---
 title: 능동적 서피싱
-description: 도구 호출 단위 실시간 서피싱, 5단계 관련성 게이팅, 피드백 기반 자동 튜닝.
+description: 도구 호출 단위 실시간 서피싱, 관련성 게이팅, 피드백 기반 자동 튜닝.
 ---
 
-> 처음이라면 [STM 개요](/ko/stm/overview/)에서 전체 파이프라인을 먼저 확인하세요.
-
-기존 RAG는 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 프록시된 MCP 호출을 관찰하여 현재 작업 맥락을 파악하고, 부합하는 기억을 LTM에서 조회하여 **자동으로** 응답에 주입합니다. v0.1.24의 `mms hook`은 지원되는 Claude Code 네이티브 도구 `PostToolUse` 이벤트에도 `additionalContext` 형태로 서피싱을 확장합니다.
+기존 RAG는 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 프록시된 MCP 호출을 관찰하여 현재 작업 맥락을 파악하고, 부합하는 기억을 LTM에서 조회하여 **자동으로** 응답에 주입합니다. `mms hook`은 지원되는 Claude Code 네이티브 도구 `PostToolUse` 이벤트에도 `additionalContext` 형태로 서피싱을 확장합니다.
 
 ## 동작 원리
 
 에이전트가 MCP 도구를 호출하면, STM 프록시가 다음 파이프라인을 실행합니다:
 
 ```
-도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 판정 → 응답에 주입
+도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 게이팅 → 응답에 주입
 ```
 
 에이전트 코드를 수정할 필요 없이, STM 프록시를 거치는 것만으로 MCP 통신에서 기억이 자동 주입됩니다. Claude Code built-in 도구에는 `mms hook`을 host hook으로 등록합니다. 기본적으로 warm local daemon을 사용하므로 반복 hook 호출에서 LTM cold start 비용을 치르지 않습니다.
 
 ## 5단계 컨텍스트 추출
 
-STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다. 단일 신호에 의존하지 않고, 서로 다른 소스를 시도하는 5단계 파이프라인을 순차 실행합니다. 가장 먼저 사용 가능한 쿼리를 생성한 단계가 채택됩니다. `_context_query` 인자가 명시된 호출은 해당 값을 직접 사용하며, `fs__read_file(path=...)` 같은 단순 호출에도 검색 가능한 쿼리를 생성할 수 있습니다.
+STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다. 단일 신호에 의존하지 않고, 서로 다른 소스를 시도하는 5단계 파이프라인을 순차 실행합니다. 가장 먼저 사용 가능한 쿼리를 생성한 단계가 채택됩니다. `_context_query` 인자가 명시된 호출은 해당 값을 직접 사용하며, `fs__read_file(path=...)` 같은 단순 호출에서도 사용 가능한 검색 쿼리를 생성할 수 있습니다.
 
 | 우선순위 | 추출 방법 | 설명 |
 |---|---|---|
@@ -31,23 +29,21 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 
 ## 관련성 게이팅
 
-서피싱된 기억이 실제로 유용한지 5단계로 필터링합니다:
+쿼리가 추출되면, 서피싱된 기억이 실제로 유용한지 추가로 필터링합니다 (컨텍스트 추출은 [위 단계](#5단계-컨텍스트-추출)에서 이미 수행됩니다):
 
-1. **컨텍스트 추출** — 도구 호출에서 의미 있는 쿼리 생성 가능 여부
-2. **관련성 판정** — 추출된 쿼리가 기억 검색에 적합한지 평가
-3. **LTM 검색** — 하이브리드 검색으로 관련 기억 후보 검색
-4. **점수 필터링** — `min_score` 임계값 이하의 결과 제거
-5. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
+1. **LTM 검색** — 하이브리드 검색으로 관련 기억 후보 검색
+2. **점수 필터링** — `min_score` 임계값 이하의 결과 제거
+3. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
 
 ## 주입 모드
 
-서피싱된 기억이 응답에 엮이는 방식은 `MEMTOMEM_STM_SURFACING__INJECTION_MODE` 로 제어합니다:
+서피싱된 기억이 응답에 엮이는 방식은 `MEMTOMEM_STM_SURFACING__INJECTION_MODE` 로 제어합니다. progressive delivery는 큰 응답을 여러 청크로 나눠 전달하는 방식으로, 후속 `stm_proxy_read_more` 호출이 이어지는 offset에 의존합니다:
 
 | 모드 | 동작 |
 |---|---|
-| `append` (기본값) | 기억을 응답 아래에 덧붙임. progressive delivery offset을 보존하며 적격 continuation 경로에서도 동작. |
+| `append` (기본값) | 기억을 응답 아래에 덧붙임. progressive delivery offset을 보존하며 이어지는 읽기 경로에서도 동작. |
 | `prepend` | 기억을 헤더로 앞에 붙임. `stm_proxy_read_more` offset을 밀어버리므로 progressive delivery에서는 스킵. |
-| `section` | 기억을 전용 섹션에 배치. progressive 연속 호출에서도 서피싱 트리거 (F6). |
+| `section` | 기억을 전용 섹션에 배치. progressive 연속 호출에서도 서피싱을 트리거. |
 
 ## 모델 인식 기본값
 
@@ -61,6 +57,11 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 
 ## 피드백 루프
 
+서피싱된 블록의 각 기억은 원시 점수 대신 관련도 버킷 — `[weak]` / `[related]` / `[strong]` — 으로 표시되며, 활성 `min_score` 임계값과 1.0 사이 구간에 따라 산출됩니다. 각 기억은 고유한 `memory_id`(backtick 토큰)를 함께 노출하므로, 에이전트는 전체 이벤트 단위로 평가하거나 개별 기억을 따로 평가할 수 있습니다:
+
+- 이벤트 전체: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
+- 개별 기억: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`
+
 에이전트가 서피싱 품질을 평가하면, 자동 튜너가 도구별 관련성 임계값을 지속적으로 최적화합니다:
 
 - **helpful** → 해당 도구의 `min_score` 유지 또는 하향
@@ -68,13 +69,31 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 - **not_relevant** → `min_score` 상향 (더 엄격한 필터링)
 - **already_known** → negative feedback으로 집계하고 로컬 demotion / dedup 동작에 반영
 
+개별 기억에 `not_relevant` 또는 `already_known`을 부여하면, 다음 캐시 히트에서 해당 기억만 무효화되어 이벤트 전체가 아닌 정확히 그 기억들만 주입에서 제외됩니다.
+
+## 업스트림 단위 서피싱 스코핑
+
+서피싱은 기본적으로 모든 업스트림에 적용되지만, 특정 업스트림에 대해서만 영구적으로 끄거나 켤 수 있습니다. LTM 기억과 결코 매칭되지 않는 서드파티 서버(순수한 지연 낭비)나, 요청 맥락이 LTM 쿼리로 변환되어서는 안 되는 민감한 업스트림에 유용합니다:
+
+```bash
+mms surfacing <server>          # 현재 상태 확인
+mms surfacing <server> off      # 해당 업스트림 서피싱 비활성화
+mms surfacing <server> on       # 다시 활성화
+```
+
+이 설정은 각 업스트림의 `surfacing_enabled` 플래그(기본값 `true`)로 공유 프록시 설정(`stm_proxy.json`)에 기록되므로, 이 `mms`를 프록시로 사용하는 모든 MCP 클라이언트가 동일한 스코프를 보게 됩니다. 실행 중인 프록시는 재시작 없이 hot-reload하며, `mms status`에 유효 상태가 표시됩니다. 비활성화된 업스트림의 호출은 LTM 검색 이전에 스킵되며 `stm_surfacing_stats`에서 정상 스킵(`upstream_disabled`)으로 집계됩니다.
+
+도구 단위 또는 교차 서버 glob 스코프가 필요하면 `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS`(`server__tool` 패턴 매칭)를 사용합니다.
+
 ## 안전 장치
+
+서피싱은 회복력과 프라이버시를 위한 다음 안전 장치 아래에서 동작합니다:
 
 - **회로 차단기** (3-state: closed / open / half-open) — `circuit_max_failures`(기본 `3`)회 연속 실패 후 open 상태가 되며, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
 - **서피싱 타임아웃** — 호출당 `3s` 하드 제한
 - **레이트 리밋** — 전체 도구 합산 `15 calls / minute` 상한
 - **쓰기 도구 스킵** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
-- **쿼리 쿨다운** — 동일 쿼리의 빈번한 반복 검색 방지
+- **쿼리 쿨다운** — 추출된 쿼리가 최근 5초 내 처리한 쿼리와 Jaccard 유사도 `> 0.95`이면 서피싱 스킵
 - **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
 - **로컬 피드백 demotion** — 같은 기억이 서로 다른 이벤트에서 `not_relevant` 또는 `already_known`으로 반복 평가되면 `feedback_demotion_negative_threshold`(기본 `3`) 이후 주입 전에 필터링
@@ -82,7 +101,7 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 
 ## LTM 전송
 
-STM은 LTM과 MCP 프로토콜로 통신합니다. 기본값은 stdio로 `memtomem-server`를 실행하는 방식이며, v0.1.24부터는 장기 실행 LTM 서비스를 `sse` 또는 `streamable_http`로 연결할 수 있습니다:
+STM은 LTM과 MCP 프로토콜로 통신합니다. 기본값은 stdio로 `memtomem-server`를 실행하는 방식이며, 장기 실행 LTM 서비스를 `sse` 또는 `streamable_http`로 연결할 수도 있습니다:
 
 ```bash
 export MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT=streamable_http
@@ -92,15 +111,4 @@ export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
 
 LTM 응답은 서피싱 엔진이 소비하며, 프록시 압축/캐시 파이프라인을 거치지 않습니다.
 
-## 서피싱 범위 제한하기
-
-특정 도구에서 불필요한 서피싱이 발생하는 것을 방지하기 위해 범위를 제한하거나 끌 수 있습니다:
-
-- **클라이언트별 환경 변수 제외** — `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` 환경 변수(예: `'["context7__*","langfuse-docs__*"]'`)를 설정하여 제외할 도구 이름 패턴을 지정합니다.
-- **공유 프록시 설정 제외** — CLI를 사용하여 `stm_proxy_json` 파일에서 특정 업스트림의 서피싱을 비활성화합니다:
-  ```bash
-  mms surfacing <server> off
-  ```
-  이 설정은 클라이언트와 무관하게 유지되며, 재시작 없이 반영되고 LTM 검색을 미리 건너뛰어 성능을 최적화합니다.
-
-`trace_id`가 서피싱과 점진적 전달 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.
+`trace_id`가 서피싱과 progressive delivery 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.

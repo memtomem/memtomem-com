@@ -7,9 +7,9 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-## LTM (memtomem) — prefix `MEMTOMEM_`
+This public reference tracks the `memtomem` 0.3.0 and `memtomem-stm` 0.1.29 configuration surfaces.
 
-This public reference tracks the `memtomem` 0.2.2 configuration surface.
+## LTM (memtomem) — prefix `MEMTOMEM_`
 
 ### Storage
 
@@ -177,7 +177,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including `mem_do`) / `standard` (37 incl. `mem_do`) / `full` (86) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including the `mem_do` router) / `standard` (38 incl. `mem_do`) / `full` (all 87 exposed individually) | `core` |
 
 ### Web UI
 
@@ -245,6 +245,25 @@ Background loop for periodic health checks, orphan-record cleanup, and automatic
 | `MEMTOMEM_SESSION_SUMMARY__EXPANSION_SCORE_THRESHOLD` | Minimum summary score for rescue expansion | `0.3` |
 | `MEMTOMEM_SESSION_SUMMARY__EXPANSION_RESCUE_WEIGHT` | RRF input weight for rescued source-file hits | `0.5` |
 
+### Session tracing
+
+Traces session command execution to a JSONL file and, optionally, to Langfuse. Off by default. `payload_mode` defaults to `metadata`, which records no payload body; `redacted` keeps a secret-masked body, and `full` keeps the entire body.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_SESSION_TRACE__ENABLED` | Enable session execution tracing | `false` |
+| `MEMTOMEM_SESSION_TRACE__JSONL_ENABLED` | Write to the JSONL sink | `true` |
+| `MEMTOMEM_SESSION_TRACE__JSONL_PATH` | JSONL output file path | `~/.memtomem/traces/session-traces.jsonl` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_ENABLED` | Emit traces to the Langfuse sink | `false` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_PUBLIC_KEY` | Langfuse public key | `""` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_SECRET_KEY` | Langfuse secret key | `""` |
+| `MEMTOMEM_SESSION_TRACE__LANGFUSE_HOST` | Langfuse host URL | `""` |
+| `MEMTOMEM_SESSION_TRACE__SAMPLING_RATE` | 0.0–1.0. Fraction of sessions recorded | `1.0` |
+| `MEMTOMEM_SESSION_TRACE__PAYLOAD_MODE` | `metadata` (no body) / `redacted` (secret-masked body) / `full` (entire body) | `metadata` |
+| `MEMTOMEM_SESSION_TRACE__MAX_PAYLOAD_CHARS` | Char cap on payload retained in a trace | `10000` |
+
+Setting `langfuse_enabled=true` requires the `langfuse` extra installed and both the public and secret keys set; otherwise startup validation fails.
+
 ### Logging
 
 | Variable | Description | Default |
@@ -258,8 +277,9 @@ Background loop for periodic health checks, orphan-record cleanup, and automatic
 |---|---|---|
 | `MEMTOMEM_HOOKS__TARGET_SCOPE` | Scope for memtomem-managed Claude Code settings hooks: `user`, `project_shared`, or `project_local` | `user` |
 | `MEMTOMEM_CONTEXT_GATEWAY__KNOWN_PROJECTS_PATH` | Web UI project registry for Context Gateway | `~/.memtomem/known_projects.json` |
-| `MEMTOMEM_CONTEXT_GATEWAY__EXPERIMENTAL_CLAUDE_PROJECTS_SCAN` | Reverse-decode `~/.claude/projects/<encoded>` directories into project roots | `false` |
-| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED` | Show user-tier canonical artifacts in discovery responses | `false` |
+| `MEMTOMEM_CONTEXT_GATEWAY__EXPERIMENTAL_CLAUDE_PROJECTS_SCAN` | Decode `~/.claude/projects/<encoded>` directory names back into project roots and scan them (includes unverified candidates) | `false` |
+| `MEMTOMEM_CONTEXT_GATEWAY__AUTO_DISPLAY_CONFIGURED_PROJECTS` | Auto-display a scanned project only when its root carries a recognized runtime marker (`.claude`/`.gemini`/`.codex`/`.agents`/`.kimi`/`.memtomem`) | `true` |
+| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED` | Forward-compat field gating writes to the User tier (host-global artifacts). While `false`, the User tier is hidden from discovery responses | `false` |
 
 ### Embedding provider comparison
 
@@ -280,7 +300,7 @@ STM settings are organized into six sections: a flat `LOG_LEVEL`, plus `PROXY__*
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `WARNING` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises the eight observability tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_index_stats`, `stm_tuning_recommendations`) in MCP `tools/list`. When unset/`false`, the four model-facing tools stay advertised and observability tools remain callable from Python. | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises the nine observability/admin tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`) in MCP `tools/list`. When unset/`false`, the four model-facing tools (`stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback`) stay advertised. The observability tools are simply omitted from MCP `tools/list`; they remain importable and callable from Python (tests, CLI paths). | `false` |
 
 ### Proxy
 
@@ -306,12 +326,12 @@ STM settings are organized into six sections: a flat `LOG_LEVEL`, plus `PROXY__*
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__ENABLED` | Index tool responses into LTM | `false` |
-| `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND` | Run Stage 4 off the request path (F4) | `false` |
+| `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND` | Run indexing in the background, off the request path | `false` |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__MIN_CHARS` | Minimum response size to index | — |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__MEMORY_DIR` | Output directory | — |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__NAMESPACE` | Namespace for auto-indexed memories | `proxy-{server}` |
 
-In the standalone `mms` server, `auto_index` and extraction are currently inert because no `FileIndexer` engine is wired at startup. Enabling these fields is valid config, but it does not write back to LTM until the MCP-only adapter is available.
+The bundled `mms` server reads from LTM but, by design, does not write back to it. These `auto_index` and extraction fields are therefore accepted as valid config but have no effect on its behavior.
 
 ### Proxy → Metrics / Extraction / Relevance scorer
 
@@ -324,12 +344,61 @@ In the standalone `mms` server, `auto_index` and extraction are currently inert 
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_progressive_stats`) | `true` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | Internal lock-acquisition ceiling; a timeout signals a deadlock/stuck holder rather than a slow upstream | `30.0` |
 
-### Proxy → Timeouts
+### Proxy → Tool exposure
 
-These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_proxy.json` (set per server, not via env vars). Defaults apply to every registered upstream unless overridden.
+An STM-native filter that decides, at tool-advertisement time, which of an upstream's tools the agent gets to see. Tools that fail consistently, carry credentials, or duplicate another tool's name are kept out of the advertised list. Health signals are evaluated once at proxy startup, so the advertised set stays stable for the session.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__EXPOSURE__PROFILE` | `strict` (signal rules hard-reject) / `review` (demote in ranking instead of rejecting, recorded in telemetry) / `explore` (signal rules off) | `strict` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_WINDOW_HOURS` | Look-back window over the metrics store for per-tool health | `24.0` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_MIN_CALLS` | Minimum calls in the window before health is judged; below this a tool is presumed healthy | `5` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_ERROR_RATE_THRESHOLD` | Upstream-attributable error rate at or above which a tool is flagged unhealthy | `0.95` |
+| `MEMTOMEM_STM_PROXY__EXPOSURE__REVIEW_RISK_PENALTY` | Ranking-demotion multiplier applied to signal-flagged tools under the `review` profile | `0.5` |
+
+### Proxy → Selection telemetry / Tool relevance
+
+Records one selection + execution entry per proxied call as JSONL, and BM25-ranks the advertised tool set against the call's query signal. Ranking is recorded into telemetry only — it never changes exposure.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__ENABLED` | Enable per-call selection/execution JSONL records | `false` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__PATH` | JSONL log path | `~/.memtomem/stm_selection_log.jsonl` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__SAMPLE_RATE` | 0.0–1.0. Fraction of calls recorded | `1.0` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BYTES` | Rotate the log at this size | `50000000` |
+| `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BACKUPS` | Rotated files kept (`0` truncates instead) | `3` |
+| `MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__ENABLED` | Record per-call BM25 tool ranking; only takes effect when `selection_telemetry` is on | `true` |
+| `MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__TOP_N` | Ranked candidates recorded per selection event | `20` |
+
+### Proxy → Tool-graph eligibility (optional)
+
+Consults a separate tool-graph MCP server for cross-server authorization / data-flow eligibility and feeds the verdict into the exposure filter as an extra rule source. Off by default. The graph server is consulted, never proxied — the client never sees its tools.
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENABLED` | Enable the external tool-graph eligibility provider | `false` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__COMMAND` | Launch command for the stdio tool-graph MCP server | `toolgraph` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ARGS` | Command args (JSON list) | `["serve"]` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENV` | Extra environment for the graph server (e.g. `NEO4J_*`, JSON object) | `null` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__AGENT_ID` | Identity (registered in the graph) that eligibility is authorized against | `stm-proxy` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__QUERY_PROFILE` | Profile passed to the graph consult | `strict` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_UNREACHABLE` | Graph unreachable: `open` (advertise per STM-native rules) / `closed` (withhold every tool the graph did not bless) | `open` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_TOOL_NOT_FOUND` | Candidate not in the graph: `open` / `closed` | `open` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_AGENT_NOT_FOUND` | `agent_id` unknown (usually a typo): `fail_start` / `open` / `closed` | `fail_start` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_PROTOCOL_ERROR` | Graph response contract violation: `fail_start` / `open` / `closed` | `fail_start` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__RISK_PENALTY_SCALE` | Ranking-demotion multiplier for eligible-but-risky tools | `1.0` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__TIMEOUT_SECONDS` | Per-consult timeout | `5.0` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_ENABLED` | Disk-cache a successful consult's verdict | `true` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | SQLite path for the consult cache | `~/.memtomem/toolgraph_consult.db` |
+
+### Per-upstream (`UpstreamServerConfig`)
+
+These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_proxy.json` (set per server, not via env vars). The timeout fields fall back to the defaults below for every registered upstream unless overridden.
 
 | Field | Description | Default |
 |---|---|---|
+| `surfacing_enabled` | Opt this upstream's responses in/out of proactive surfacing. `false` suppresses surfacing for every tool on this server. | `true` |
+| `origin` | Import-provenance block. Written by `mms add --import`/`mms init` and used later by `mms eject` to restore the original entry to the host config. | — |
 | `call_timeout_seconds` | Per-attempt timeout for `session.call_tool()`. On timeout the session is force-reset and the retry loop proceeds. | `90.0` |
 | `overall_deadline_seconds` | Total wall-clock budget across all retry attempts. Prevents `call_timeout × (max_retries+1)` worst-case blowout. | `180.0` |
 | `compression.llm.llm_timeout_seconds` | Timeout for `llm_summary` compression; on timeout STM falls back to `truncate`. | `60.0` |
@@ -362,14 +431,14 @@ Injection mode (`append` default, plus `prepend` / `section`) is set via `MEMTOM
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_STM_HOOK__USE_DAEMON` | Route `mms hook` surfacing through the warm local daemon instead of a cold in-process path | `true` |
+| `MEMTOMEM_STM_HOOK__USE_DAEMON` | Route `mms hook` surfacing through a resident local daemon instead of a fresh in-process path each call | `true` |
 | `MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS` | Hook-to-daemon round-trip timeout | `2.5` |
-| `MEMTOMEM_STM_HOOK__FALLBACK` | Behavior when daemon is unavailable: `skip` or `cold` | `skip` |
-| `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | Fire-and-forget spawn a daemon on the first eligible hook call | `true` |
+| `MEMTOMEM_STM_HOOK__FALLBACK` | Behavior when daemon is unavailable: `skip` (skip surfacing) or `cold` (handle via the in-process path) | `skip` |
+| `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | Start a daemon asynchronously on the first eligible hook call (does not wait for it) | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | Persist hook surfacing feedback/query events; default keeps dedup without storing raw query text | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | Enable built-in Bash `updatedToolOutput` compression | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MAX_CHARS` | Target char budget for Bash output replacement | `16000` |
-| `MEMTOMEM_STM_DAEMON__HOST` | Local daemon bind address; keep loopback-only | `127.0.0.1` |
+| `MEMTOMEM_STM_DAEMON__HOST` | Local daemon bind address; keep it loopback-only | `127.0.0.1` |
 | `MEMTOMEM_STM_DAEMON__IDLE_TIMEOUT_SECONDS` | Stop the daemon after this many idle seconds; `0` disables idle shutdown | `900.0` |
 
 ### Langfuse (observability)
@@ -395,7 +464,7 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `extract_fields` | JSON dictionaries |
 | `schema_pruning` | Large JSON arrays |
 | `skeleton` | API docs (schema-only) |
-| `llm_summary` | LLM-based summarization (Ollama / OpenAI) |
+| `llm_summary` | LLM-based summarization (OpenAI / Anthropic / Ollama) |
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 

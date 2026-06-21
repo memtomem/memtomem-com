@@ -3,9 +3,11 @@ title: CLI 레퍼런스
 description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 ---
 
-`mm` 명령어는 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 인덱싱, 세션 추적, 런타임 간 컨텍스트 동기화 기능을 제공합니다. 전체 명령 목록은 `mm --help`, 설치된 버전은 `mm --version`(또는 `mm version` 서브명령)으로 확인할 수 있습니다.
+`mm` 명령어는 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 인덱싱, 세션 추적, 프로젝트 간 컨텍스트 동기화 기능을 제공합니다. 전체 명령 목록은 `mm --help`, 설치된 버전은 `mm --version`(또는 `mm version` 서브명령)으로 확인할 수 있습니다.
 
-## 명령어
+> 이 페이지는 memtomem v0.3.0 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
+
+## 설정
 
 ### `mm init`
 
@@ -19,43 +21,37 @@ mm init -y                           # 자동 수락; `--preset minimal -y`와 �
 mm init --preset korean              # 한국어 프리셋을 비대화 모드로 적용
 mm init --preset english -y          # 영어 프리셋, 프롬프트 없음
 mm init --advanced                   # 피커 생략, 10단계 전체 마법사
+mm init --fresh                      # 누적 설정 일괄 정리 후 마법사 재실행
 ```
 
 재설치 경로에서 `mm init`은 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 프로바이더·모델·차원이 새 프리셋과 일치하는지 검사합니다. 불일치가 감지되면 대화형에서는 벡터 인덱스(`chunks_vec`)의 in-place 재생성을 제안하고, `-y` 비대화 모드에서는 `mm embedding-reset --mode apply-current` 복구 안내를 출력합니다. 청크 테이블은 보존되므로 이후 `mm index <path>`로 재인덱싱하면 작업 집합이 복원됩니다.
+
+`--fresh`는 마법사가 수정하지 않은 필드 중 내장 기본값과 값이 다른 모든 키를 제거한 뒤 마법사를 다시 실행합니다. 이전 버전에서 누적된 설정 항목을 정리하는 안전한 일괄 정리 옵션이며, 기존 `config.json`은 `config.json.bak-<unix-ts>`로 백업된 후 재작성됩니다.
 
 ### MCP 서버 실행
 
 memtomem의 MCP 서버는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 일반적으로 직접 실행하지 않습니다 — MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등)가 자신의 설정 파일에 등록된 항목에 따라 자동으로 기동합니다. 설정 예시는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
-서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`를 지정합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
+서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)를 지정합니다. 기본은 `core`(핵심 도구 8개 + `mem_do` 라우터로 총 9개)이며, `full`은 87개 도구를 개별 노출합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
 
 v0.1.25부터 MCP 핸드셰이크만으로는 `~/.memtomem/memtomem.db`가 생성되지 않습니다 — DB는 첫 도구 호출 시점에 열리며, 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`(플랫폼에 따라 `$TMPDIR/memtomem-$UID/`)로 이동했습니다. 연결만 하고 도구를 호출하지 않는 클라이언트는 홈 디렉토리에 흔적을 남기지 않습니다.
 
-### `mm status`
+### `mm config show / set / unset`
 
-MCP `mem_status` 도구의 터미널 미러. 설치 직후 "바이너리 동작, 설정 파싱, DB 연결, 임베딩 정합성"을 에디터 없이 한 줄로 확인할 때 사용합니다. `mm config show`(설정 전용)와 `mm watchdog status`(주기 체크 스냅샷)의 중간 지점입니다.
-
-```bash
-mm status                            # 인덱싱 통계 + 설정 요약 (mem_status와 동일 출력)
-```
-
-v0.1.25에 추가된 명령입니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 post-install 스모크 테스트에 적합합니다.
-
-### `mm web`
-
-브라우저 기반 검색 및 기억 관리를 위한 Web UI 대시보드를 실행합니다.
-
-`mm web` 을 실행하면 `http://127.0.0.1:8080` 에서 대시보드가 열리며 다음 탭이 제공됩니다: **Home · Search · Sources · Index · Tags · Timeline · More**. **More** 탭에는 Settings, Dedup, Age-out, Export/Import, Reset Database 가 포함됩니다.
-
-`--dev` 를 전달하거나 `MEMTOMEM_WEB__MODE=dev` 를 설정하면 유지보수용 페이지가 추가로 노출됩니다: **Namespaces, Sessions, Working Memory, Health Report**. 대부분의 사용자는 필요하지 않습니다.
+`mm config show` 는 현재 설정을 표시하며 API 키는 자동으로 마스킹됩니다. `--json`(또는 `--format json`)은 전체 설정을 기계 판독용 JSON으로 출력합니다. `mm config set <key> <value>` 는 내장 기본값에 사용자 오버라이드를 덧씌우고, `mm config unset <keys...>` 는 그 오버라이드를 제거해 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다.
 
 ```bash
-mm web                               # 기본: http://localhost:8080 (prod 티어)
-mm web --port 9000
-mm web --open                        # 기본 브라우저에서 URL 자동 실행
-mm web --dev                         # --mode dev 의 단축 플래그
-mm web --mode dev                    # 메인테이너용 페이지 추가 노출
+mm config show                       # 읽기 좋은 테이블
+mm config show --json                # 스크립트용 JSON
+mm config set search.default_top_k 20
+mm config set rerank.model bge-reranker-base
+mm config unset indexing.memory_dirs
+mm config unset rerank.model search.default_top_k
 ```
+
+`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `indexing.memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
+
+## 검색과 회상
 
 ### `mm search <query>`
 
@@ -68,17 +64,19 @@ mm search "deployment config" --namespace project-x --top-k 5
 
 `--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다.
 
-### `mm add`
+### `mm tags list / rename / delete / merge`
 
-새 기억을 추가하고 인덱싱합니다. `--file`을 지정하지 않으면 UTC 기준 오늘 날짜로 `~/.memtomem/memories/YYYY-MM-DD.md`에 append 됩니다.
+청크에 붙은 태그를 일괄 정리합니다 — Web UI의 Tags 탭과 동일한 작업을 CLI에서 수행합니다. 모든 변경 작업은 기본이 dry-run이며, 실제로 쓰려면 `--apply`가 필요합니다.
 
 ```bash
-mm add "hallway-door PR에 tree-sitter AST 파서 적용"
-mm add "API 타임아웃 정책 결정" --title "API timeout" --tags "ops,api"
-mm add "postmortem 요약" --file postmortems/2026-04-auth.md
+mm tags list                                 # 사용 중인 태그와 사용 빈도
+mm tags rename ops infra                      # dry-run 미리보기
+mm tags rename ops infra --apply              # 실제 이름 변경
+mm tags delete deprecated --apply             # 태그 제거 (청크는 그대로 유지)
+mm tags merge py python --into python --apply # 여러 태그를 하나로 통합
 ```
 
-`--tags`로 지정한 태그는 append 후 해당 파일의 청크 메타데이터에 병합됩니다(청커가 본문에서 태그를 파싱하지 않으므로 명시적 머지). `--file`은 `~/.memtomem/memories/` 하위 상대 경로만 허용하며 `..` 컴포넌트를 거부합니다.
+`--apply` 없이 실행하면 영향을 받는 청크 수와 샘플을 먼저 보여줍니다. `delete`는 태그만 떼어내며 청크 자체는 인덱스에 남습니다.
 
 ### `mm recall`
 
@@ -92,6 +90,53 @@ mm recall --namespace project-x --format plain
 ```
 
 `--format`은 `table`(기본, 사람용), `json`(스크립트), `plain`(텍스트 파이프) 중 선택합니다. 날짜 인자는 `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, ISO datetime을 허용합니다.
+
+### `mm web`
+
+브라우저 기반 검색 및 기억 관리를 위한 Web UI 대시보드를 실행합니다.
+
+`mm web` 을 실행하면 `http://127.0.0.1:8080` 에서 대시보드가 열리며 다음 탭이 제공됩니다: **Home · Search · Sources · Index · Tags · Timeline · More**. **More** 탭에는 Settings, Dedup, Age-out, Export/Import, Reset Database 가 포함됩니다.
+
+Context Gateway 탭은 처음 열면 **Simple 뷰**로 시작합니다 — 아티팩트 종류(skills / commands / subagents)별로 "이미 AI 도구에 반영됨" 또는 "아직 내보내야 함"을 한 줄로 보여주고, 조치가 필요한 행마다 버튼 하나(**Sync** 또는 **Import**)만 노출합니다. 전체 제어 그리드는 **Advanced** 한 번으로 펼칠 수 있습니다.
+
+`--dev` 를 전달하거나 `MEMTOMEM_WEB__MODE=dev` 를 설정하면 유지보수용 페이지가 추가로 노출됩니다: **Namespaces, Sessions, Working Memory, Health Report**. 대부분의 사용자는 필요하지 않습니다.
+
+```bash
+mm web                               # 기본: http://localhost:8080 (prod 티어)
+mm web --port 9000
+mm web --open                        # 기본 브라우저에서 URL 자동 실행
+mm web --dev                         # --mode dev 의 단축 플래그
+mm web --mode dev                    # 메인테이너용 페이지 추가 노출
+```
+
+### `mm shell`
+
+대화형 REPL을 시작합니다 — 검색, 추가, recall, 태그 집계, 인덱스 통계를 한 프롬프트에서 돌립니다. MCP 클라이언트 없이 터미널에서 기억을 훑거나, 설치 직후 DB 세팅을 빠르게 감 잡을 때 유용합니다.
+
+```bash
+mm shell
+mm> search deployment checklist
+mm> ask 지난번 migration 롤백 결정 요약
+mm> add "오늘 새로 배운 사실"
+mm> stats
+mm> quit
+```
+
+명령어 없이 텍스트만 입력하면 자동으로 `search`로 해석됩니다. Ctrl+D 또는 `quit` / `exit` / `q`로 종료합니다.
+
+## 기억 추가와 인덱싱
+
+### `mm add`
+
+새 기억을 추가하고 인덱싱합니다. `--file`을 지정하지 않으면 UTC 기준 오늘 날짜로 `~/.memtomem/memories/YYYY-MM-DD.md`에 append 됩니다.
+
+```bash
+mm add "hallway-door PR에 tree-sitter AST 파서 적용"
+mm add "API 타임아웃 정책 결정" --title "API timeout" --tags "ops,api"
+mm add "postmortem 요약" --file postmortems/2026-04-auth.md
+```
+
+`--tags`로 지정한 태그는 append 후 해당 파일의 청크 메타데이터에 병합됩니다(청커가 본문에서 태그를 파싱하지 않으므로 명시적 머지). `--file`은 `~/.memtomem/memories/` 하위 상대 경로만 허용하며 `..` 컴포넌트를 거부합니다.
 
 ### `mm index <path>`
 
@@ -114,6 +159,104 @@ mm ingest claude-memory --source ~/.claude/projects/    # Claude Code 메모리 
 mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # Antigravity CLI GEMINI.md 수집
 mm ingest codex-memory --source ~/.codex/memories/      # Codex CLI 메모리 수집
 ```
+
+## Context Gateway
+
+Context Gateway는 정규(canonical) 형태로 저장한 에이전트 정의·스킬·명령어를 각 AI 런타임에 동기화합니다. 기본 흐름은 한 프로젝트 안에서 detect → init → sync → diff이며, v0.3.0부터 프로젝트·티어 간 이전과 여러 프로젝트 일괄 관리가 추가되었습니다.
+
+티어는 친숙한 라벨로 다룹니다: **User**(`--scope user`, 모든 프로젝트에서 보이는 개인용), **Project (shared)**(`--scope project_shared`, git 추적 대상), **Project (local)**(`--scope project_local`, 로컬 초안).
+
+### `mm context sync`
+
+저장된 정규 파일을 감지된 런타임 파일과 동기화합니다.
+
+```bash
+mm context detect
+mm context init --scope project_shared --confirm-project-shared
+mm context sync --scope project_shared
+mm context diff --scope project_shared
+```
+
+**Project (shared)** 는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다. **User** 티어(`--scope user`)에 동기화하면 정규 파일이 `~/.memtomem/` 아래에 들어가 모든 프로젝트에서 보이게 됩니다 — 프로젝트 바깥(홈 디렉토리)을 건드리는 쓰기이므로, Gateway가 실제로 수정할 파일 경로를 보여주고 확인을 요청합니다. 비대화 환경에서는 `--yes`로 확인을 건너뛸 수 있습니다.
+
+MCP 서버 정의도 같은 흐름으로 옮길 수 있습니다. `mm context sync --include=mcp-servers` 는 정규 MCP 서버 정의를 프로젝트의 `.mcp.json` 으로 동기화하며(secret 안전성 검사 포함), 이는 명시적으로 요청해야 동작하는 opt-in 경로입니다.
+
+### 다른 프로젝트의 스킬 재사용 (`mm context move` / `copy`)
+
+다른 프로젝트에서 이미 만든 스킬·에이전트·명령어를 지금 프로젝트로 가져오거나, 티어 사이로 옮길 때 사용합니다. `copy` 는 원본을 남기고(필요하면 `--as` 로 이름을 바꿔 복사), `move` 는 원본을 정리합니다.
+
+```bash
+# 다른 프로젝트의 스킬을 현재 프로젝트로 복사 (먼저 미리보기)
+mm context copy skills my-skill --to-project ~/work/other-app
+mm context copy skills my-skill --to-project ~/work/other-app --apply
+
+# user 티어로 이름을 바꿔 복사
+mm context copy agents reviewer --to user --as reviewer-strict --apply
+
+# 티어 이동: 로컬 초안을 공유 티어로 승격
+mm context move commands deploy --to project_shared --confirm-project-shared --apply
+
+# MCP 서버 정의를 다른 프로젝트로 복사
+mm context copy mcp-servers github --to-project ~/work/other-app --apply
+```
+
+기본 동작은 dry-run 미리보기이며, 실제 실행하려면 `--apply` 가 필요합니다. 대상에 같은 이름이 이미 있으면 항상 거부합니다(`--force` 우회 없음). **Project (shared)** 로 들어가는 이전은 privacy 검사를 거치고 `--confirm-project-shared` 가 추가로 필요합니다. 이전이 끝나면 대상에서 AI 도구로 내보내는 후속 명령(예: `mm context sync`)을 그대로 출력하므로 이어서 실행하면 됩니다.
+
+### 여러 프로젝트 한 번에 다루기 (`mm context projects`)
+
+자주 작업하는 프로젝트를 등록해 두면, 공유 아티팩트를 한 번에 모든 프로젝트로 내보내거나(`sync --all-projects`), 어느 프로젝트가 어긋났는지 읽기 전용으로 점검할 수 있습니다(`status --all-projects`).
+
+```bash
+mm context projects add ~/work/app-a          # 레지스트리에 등록
+mm context projects list                      # 등록된 프로젝트 + 상태/등록 여부
+mm context projects pause ~/work/app-a        # 일괄 작업에서 제외
+mm context projects resume ~/work/app-a       # 다시 포함
+
+mm context sync --all-projects                # 모든 적격 프로젝트로 일괄 동기화
+mm context status --all-projects              # 읽기 전용: 어떤 프로젝트가 어긋났는가
+```
+
+일괄 동기화는 **Project (shared)** 티어만 대상으로 하며, 한 프로젝트가 실패해도 배치 전체가 중단되지 않습니다. `pause` 된 프로젝트는 모든 `--all-projects` 작업에서 건너뜁니다.
+
+### 기존 런타임 파일에서 시드하기
+
+별도의 `mm context import` 명령은 없습니다. 런타임별 파일에서 정규 파일을 시드하려면 아티팩트 종류와 대상 티어를 지정해 `mm context init`을 실행합니다.
+
+```bash
+mm context detect --include agents,skills
+mm context init --include agents,skills --scope project_shared --confirm-project-shared
+mm context diff --include agents,skills --scope project_shared
+```
+
+이미 Claude Code, Codex CLI, Antigravity CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다. 프로젝트 간 재사용은 위의 `move`/`copy`, 호스트 전역 라이브러리에서의 설치는 `mm wiki` 를 참고하세요.
+
+## Wiki — 정규 아티팩트 라이브러리
+
+호스트 전역 위키(`~/.memtomem-wiki/`)에 스킬·에이전트·명령어의 정규 버전을 모아 두고, 필요할 때 프로젝트에 설치합니다. 위키는 일반 git 저장소이므로 격리된 커밋으로 변경을 기록하고 remote/push/pull로 백업·기기 간 동기화를 합니다 — 별도 동기화 도구가 필요 없습니다.
+
+```bash
+mm wiki init                          # ~/.memtomem-wiki/ 생성 (skills/ agents/ commands/)
+mm wiki init --from git@host:me/wiki  # 기존 위키를 git URL에서 복제
+mm wiki list                          # 보유한 스킬·에이전트·명령어 목록
+mm wiki list --type skills
+
+mm wiki remote git@host:me/wiki       # 백업 remote(origin) 설정
+mm wiki push                          # remote로 백업
+mm wiki pull                          # 다른 기기에서 복원
+```
+
+각 아티팩트 종류(`skill` / `agent` / `command`)는 런타임별 override를 만들고 검증·커밋하는 서브그룹을 가집니다. dev 모드 브라우저의 Commit 버튼으로도 같은 작업을 수행할 수 있어 raw git이 필요 없습니다.
+
+```bash
+mm wiki skill override my-skill --vendor claude --editor   # 정규 내용에서 override 시드
+mm wiki skill diff my-skill --vendor claude                # 정규 렌더와의 차이
+mm wiki skill lint my-skill                                # 설치 가능 여부 검증 (CI 게이트로 사용 가능)
+mm wiki skill commit my-skill --vendor claude              # 격리 커밋으로 기록
+```
+
+위키에 모아 둔 아티팩트는 `mm context install <type> <name>` 으로 프로젝트에 설치합니다.
+
+## 세션과 멀티 에이전트
 
 ### `mm session`
 
@@ -140,65 +283,6 @@ mm activity log --type decision --content "전략 X 채택" --meta '{"k":"v"}' -
 
 `--json` 옵션에서는 성공 시 `{"ok": true, ...}`, 활성 세션이 없거나 쓰기 실패 시 `{"ok": false, "reason": ...}`을 stdout으로 내보냅니다. 종료 코드는 항상 0입니다.
 
-### `mm context sync`
-
-Context Gateway를 통해 에이전트 정의, 스킬, 명령어를 런타임 간에 동기화합니다.
-
-```bash
-mm context detect
-mm context init --scope project_shared --confirm-project-shared
-mm context sync --scope project_shared
-mm context sync --scope project_shared --label production
-mm context diff --scope project_shared
-```
-
-개인용 크로스 프로젝트 컨텍스트는 `--scope user`, 로컬 초안은 `--scope project_local`을 사용합니다. `project_shared`는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다. `--label <이름>` (예: `--label production` 또는 `--label v1`)을 전달하여 작업 중인 정규 파일 대신 특정 버전 스냅샷이나 라벨 포인터를 동기화할 수 있습니다.
-
-### `mm context version`
-
-에이전트와 명령어의 버전 스냅샷 및 라벨 포인터를 관리합니다. 버전은 아티팩트 작업 정규 파일의 불변 스냅샷이고, 라벨(예: `production` 또는 `staging`)은 버전을 가리키는 이동 가능한 포인터입니다.
-
-> [!IMPORTANT]
-> `latest`는 작업 중인 정규 파일을 가리키는 예약된 읽기 전용 라벨로, 수정하거나 promote 명령의 대상으로 지정할 수 없습니다.
-
-```bash
-# my-agent의 현재 작업 정규 파일을 v1 버전으로 스냅샷 생성
-mm context version create agents my-agent --note "stable v1 release"
-
-# my-agent의 모든 버전 스냅샷 및 라벨 포인터 목록 확인
-mm context version list agents my-agent
-
-# 'production' 라벨을 v1 버전으로 승격(또는 롤백)
-mm context version promote agents my-agent --to production --version v1
-```
-
-### 기존 런타임 파일에서 시드하기
-
-별도의 `mm context import` 명령은 없습니다. 런타임별 파일에서 정규 파일을 시드하려면 아티팩트 종류와 대상 티어를 지정해 `mm context init`을 실행합니다.
-
-```bash
-mm context detect --include agents,skills
-mm context init --include agents,skills --scope project_shared --confirm-project-shared
-mm context diff --include agents,skills --scope project_shared
-```
-
-이미 Claude Code, Codex CLI, Antigravity CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다.
-
-### `mm config show / set / unset`
-
-`mm config show` 는 현재 설정을 표시하며 API 키는 자동으로 마스킹됩니다. `--json`(또는 `--format json`)은 전체 설정을 기계 판독용 JSON으로 출력합니다. `mm config set <key> <value>` 는 내장 기본값에 사용자 오버라이드를 덧씌우고, `mm config unset <keys...>` 는 그 오버라이드를 제거해 내장 기본값(또는 `config.d/*.json` 프래그먼트 값)으로 되돌립니다.
-
-```bash
-mm config show                       # 읽기 좋은 테이블
-mm config show --json                # 스크립트용 JSON
-mm config set search.default_top_k 20
-mm config set rerank.model bge-reranker-base
-mm config unset indexing.memory_dirs
-mm config unset rerank.model search.default_top_k
-```
-
-`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `indexing.memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
-
 ### `mm agent register / list / share`
 
 멀티 에이전트 워크플로우의 에이전트 등록·조회·청크 공유를 다룹니다 — MCP `mem_agent_*` 도구의 CLI 미러입니다.
@@ -211,42 +295,34 @@ mm agent share <chunk-id>                          # `shared` 로 복사
 mm agent share <chunk-id> --target agent-runtime:reviewer
 ```
 
-`mm agent register` 는 `agent-runtime:{agent_id}` 네임스페이스를 자동 생성하며, 같은 ID 로 다시 호출하면 메타데이터만 갱신됩니다. `agent_id` 는 `[A-Za-z0-9._-]` 만 허용 — 적대적 형식은 거부됩니다.
+`mm agent register` 는 `agent-runtime:{agent_id}` 네임스페이스를 자동 생성하며, 같은 ID 로 다시 호출하면 메타데이터만 갱신됩니다. `agent_id` 는 `[A-Za-z0-9._-]` 만 허용 — 허용 패턴을 벗어난 ID는 거부됩니다.
 
 `mm agent share` 는 청크를 **복제**합니다 (참조 링크 아님). 새 청크는 별도 UUID를 받고, 원본 변경은 사본에 전파되지 않습니다. 출처는 `shared-from=<원본-uuid>` 태그로만 추적됩니다.
 
-### `mm tags`
+## 진단
 
-전체 청크에 걸쳐 태그를 관리(조회, 이름 변경, 삭제, 병합)합니다.
+### `mm status`
 
-```bash
-# 모든 태그와 각 태그별 청크 개수를 조회 (자주 사용되는 순)
-mm tags list
-
-# OLD_TAG의 이름을 NEW_TAG로 일괄 변경
-mm tags rename OLD_TAG NEW_TAG
-
-# 특정 태그를 모든 청크에서 삭제 (청크 자체는 유지됨)
-mm tags delete DEPRECATED_TAG
-
-# 여러 태그를 하나의 대상 태그로 병합
-mm tags merge source-tag1 source-tag2 --into target-tag
-```
-
-### `mm schedule add / list / run-now / delete`
-
-크론 기반 스케줄 잡(인덱스 압축, 중요도 감쇠, dead-link 정리, 중복 검사 등)을 등록·조회·실행·삭제합니다.
+MCP `mem_status` 도구의 터미널 미러. 설치 직후 "바이너리 동작, 설정 파싱, DB 연결, 임베딩 정합성"을 에디터 없이 한 줄로 확인할 때 사용합니다. `mm config show`(설정 전용)와 `mm watchdog status`(주기 체크 스냅샷)의 중간 지점입니다.
 
 ```bash
-mm schedule add --cron "0 3 * * *" --job dedup_scan
-mm schedule add --cron "0 */6 * * *" --job importance_decay --params '{"max_age_days": 90}'
-mm schedule list
-mm schedule list --json
-mm schedule run-now <sched-id>       # 다음 발화를 기다리지 않고 즉시 실행
-mm schedule delete <sched-id>
+mm status                            # 인덱싱 통계 + 설정 요약 (mem_status와 동일 출력)
 ```
 
-`--cron` 은 5필드 표현식(UTC). `--params` 는 잡별 파라미터의 JSON 딕셔너리. 등록된 잡은 `health_watchdog.enabled` 와는 무관하게 MCP 서버가 살아 있는 동안 백그라운드에서 발화합니다.
+v0.1.25에 추가된 명령입니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 post-install 스모크 테스트에 적합합니다.
+
+### `mm memory doctor`
+
+기억 저장소의 정합성을 읽기 전용으로 점검합니다 — 디스크의 노트 폴더, 인덱스 파일, 검색용 DB 사이의 3-way 드리프트를 보고합니다(예: 서버가 꺼진 사이 추가돼 인덱싱되지 않은 파일, 끊어진 인덱스 링크). 기본은 읽기 전용이며 아무것도 수정하지 않습니다.
+
+```bash
+mm memory doctor                     # 모든 memory_dir 점검 (읽기 전용)
+mm memory doctor ~/notes             # 특정 memory_dir만 점검
+mm memory doctor --fix               # 끊어진 인덱스 링크 제거 미리보기 (dry-run)
+mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
+```
+
+`--fix` 는 대상이 디스크에서 사라진 인덱스 포인터 라인만 제거하며, `--apply` 없이는 dry-run입니다. error 등급 발견이 있으면 종료 코드 1을 반환하므로 CI 점검에도 쓸 수 있습니다.
 
 ### `mm watchdog`
 
@@ -261,28 +337,22 @@ mm watchdog history db_size --hours 48       # 특정 체크 48시간 추이
 
 스케줄러 자체는 `health_watchdog.enabled` 설정이 켜졌을 때만 MCP 서버가 백그라운드에서 돌립니다. 스케줄러 off 상태라도 `mm watchdog run`은 언제든 one-shot 실행이 가능해 오프라인 점검에 쓸 수 있습니다.
 
-### `mm shell`
+### `mm schedule add / list / run-now / delete`
 
-대화형 REPL을 시작합니다 — 검색, 추가, recall, 태그 집계, 인덱스 통계를 한 프롬프트에서 돌립니다. MCP 클라이언트 없이 터미널에서 기억을 훑거나, 설치 직후 DB 세팅을 빠르게 감 잡을 때 유용합니다.
-
-```bash
-mm shell
-mm> search deployment checklist
-mm> ask 지난번 migration 롤백 결정 요약
-mm> add "오늘 새로 배운 사실"
-mm> stats
-mm> quit
-```
-
-명령어 없이 텍스트만 입력하면 자동으로 `search`로 해석됩니다. Ctrl+D 또는 `quit` / `exit` / `q`로 종료합니다.
-
-### `mm init --fresh`
-
-마법사가 수정하지 않은 필드 중 내장 기본값과 값이 다른 모든 키를 제거한 뒤 설정 마법사를 다시 실행합니다. 이전 버전에서 누적된 설정 항목을 정리하는 안전한 일괄 정리 옵션입니다. 이전 `config.json`은 `config.json.bak-<unix-ts>`로 백업된 후 재작성됩니다.
+크론 기반 스케줄 잡(인덱스 압축, 중요도 감쇠, dead-link 정리, 중복 검사 등)을 등록·조회·실행·삭제합니다.
 
 ```bash
-mm init --fresh                      # 일괄 정리 + 마법사 재실행
+mm schedule add --cron "0 3 * * *" --job dedup_scan
+mm schedule add --cron "0 */6 * * *" --job importance_decay --params '{"max_age_days": 90}'
+mm schedule list
+mm schedule list --json
+mm schedule run-now <sched-id>       # 다음 발화를 기다리지 않고 즉시 실행
+mm schedule delete <sched-id>
 ```
+
+`--cron` 은 5필드 표현식(UTC). `--params` 는 잡별 파라미터의 JSON 딕셔너리. 디스패처는 health watchdog 루프 위에서 동작하므로, 등록된 잡이 실제로 발화하려면 `scheduler.enabled` 와 `health_watchdog.enabled` 가 모두 켜져 있어야 합니다.
+
+## 유지보수와 라이프사이클
 
 ### `mm embedding-reset`
 
@@ -316,6 +386,19 @@ mm reset -y                          # 프롬프트 스킵
 
 `mm embedding-reset --mode apply-current`가 벡터만 재생성하는 복구 명령이라면, `mm reset`은 인덱스 전체를 비우는 리셋입니다. 설정 파일은 건드리지 않으므로 설정까지 리셋하려면 `mm init --fresh`나 `mm uninstall`을 함께 고려하세요.
 
+### `mm upgrade`
+
+실행 중인 memtomem-server를 정지한 뒤 `uv tool`로 재설치합니다. `uv tool install --reinstall memtomem` 만으로는 디스크의 바이트만 교체되고, MCP 클라이언트가 이미 임포트한 서버는 이전 버전 그대로 돌아가므로 이 프로세스 정리 단계가 필요합니다.
+
+```bash
+mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
+mm upgrade --version 0.3.0           # 특정 버전 고정
+mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
+mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
+```
+
+extras는 기본적으로 현재 uv-tool 설치 내역에서 자동 감지되므로 `memtomem[all]` 사용자는 `[all]`이 유지됩니다.
+
 ### `mm uninstall`
 
 바이너리 제거와는 별개로 `~/.memtomem/` 상태(설정·DB·프래그먼트·백업·업로드)를 정리합니다. `uv tool uninstall memtomem` 같은 패키지 매니저 명령은 바이너리만 제거하므로, 재설치 시 구 버전 상태가 그대로 남아 문제가 될 수 있습니다 — v0.1.23부터 이 간극을 닫는 전용 명령이 추가되었습니다.
@@ -329,26 +412,5 @@ mm uninstall --force          # 서버 실행 중 안전장치 우회
 ```
 
 이 명령은 기본 경로 바깥의 `storage.sqlite_path` 도 인벤토리에 포함시키고, WAL 손상 위험 때문에 MCP 서버가 살아 있을 때는 실행을 거부합니다. 외부 에디터의 MCP 엔트리(`~/.claude.json`, `~/.codex/config.toml` 등)는 감지해서 경로만 알려주며 수정하지는 않습니다. 실행 후 마지막에 설치 컨텍스트에 맞는 바이너리 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력하므로 그 단계를 이어서 수행하면 됩니다.
-
-## 예제 워크플로우
-
-```bash
-# 1. 초기 설정 (프리셋 피커가 대화형으로 실행됨)
-mm init
-
-# 2. 프로젝트 인덱싱
-mm index ~/projects/my-app
-
-# 3. 기존 AI 도구 메모리 수집
-mm ingest claude-memory --source ~/.claude/projects/
-
-# 4. CLI에서 검색
-mm search "database migration patterns"
-
-# 5. Web UI로 기억 탐색
-mm web --open
-```
-
-MCP 서버는 `memtomem`이 MCP 클라이언트에 등록되면 해당 AI 클라이언트 하위에서 자동 실행됩니다.
 
 > 전체 시작 가이드는 [빠른 시작](/ko/guides/quickstart/)을 참조하세요.

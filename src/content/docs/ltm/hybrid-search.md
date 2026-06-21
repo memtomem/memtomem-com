@@ -31,7 +31,7 @@ When reranking is enabled, the reranker sees a candidate pool of size `max(min_p
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | Floor — reranker never sees fewer candidates |
 | `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | Cap — prevents runaway cost on large `top_k` |
 
-Runtime-tunable via `mm config set rerank.oversample 3.0` etc. `rerank.top_k` is deprecated; use `min_pool` instead.
+Runtime-tunable via `mm config set rerank.oversample 3.0` etc. The remaining `rerank.*` keys, including reranker model selection, are covered in the [configuration reference](/reference/configuration/).
 
 ## Semantic Chunking
 
@@ -57,17 +57,8 @@ Instead of full re-indexing, only changed chunks are updated:
 
 This minimizes indexing cost even for large document sets.
 
-## Namespaces
+## Search Scope and Maintenance
 
-Organize memories into scoped groups:
+Searches can be scoped by namespace. Namespaces are auto-derived from folder names, and you can filter a search to a specific namespace or isolate and share scopes per agent. See [Multi-Agent](/ltm/multi-agent/) for details.
 
-- Namespace auto-derived from folder names
-- Filter by namespace when searching
-- Support agent-level isolation and sharing in multi-agent environments
-
-## Maintenance Features
-
-- **Near-duplicate detection** — automatically identify memories with nearly identical content
-- **Time-based decay** — gradually decrease search weight for older memories
-- **TTL expiration** — automatically delete memories past their configured lifespan
-- **Auto-tagging** — automatically assign tags based on content analysis
+Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/reference/configuration/).

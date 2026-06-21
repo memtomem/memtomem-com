@@ -47,6 +47,8 @@ mem_agent_search(query="인증 모듈 구조", include_shared=true)
 mem_agent_share(chunk_id="...", target="shared")
 ```
 
+공유는 더 넓은 네임스페이스로 복사본을 기록하기 전에 trust-boundary redaction guard로 콘텐츠를 다시 스캔합니다. 비밀처럼 보이는 콘텐츠는 공유 시점에 차단되며(차단 결과는 audit 카운터에 기록됨), 따라서 민감한 청크가 더 넓은 네임스페이스로 조용히 전파되지 않습니다.
+
 ### 5단계: 세션 종료
 
 ```
@@ -79,7 +81,7 @@ await store.start_agent_session(agent_id="analyzer")
 
 멀티 에이전트 그래프에서는 각 노드가 자신의 `agent_id`로 별도 세션을 시작합니다. 공유가 필요한 산출물은 `mem_agent_share`로 `shared` 네임스페이스에 내보냅니다.
 
-### CLI (`mm`)
+### CLI (`mm session`)
 
 서버 프로세스 밖에서 세션을 선등록할 때 사용합니다.
 
@@ -88,6 +90,18 @@ mm session start --agent-id planner
 ```
 
 `mm session`의 전체 서브명령(`start`, `end`, `list`, `events`, `wrap`)은 [CLI 레퍼런스의 `mm session` 섹션](/ko/ltm/cli/#mm-session)을 참조하세요.
+
+### CLI (`mm agent`)
+
+MCP 클라이언트 없이 셸에서 에이전트를 등록·조회하거나 청크를 공유할 때 사용합니다. 각 명령은 위의 `mem_agent_register`·`mem_agent_share` MCP 도구를 그대로 반영합니다.
+
+```bash
+mm agent register analyzer --description "코드 분석 에이전트" --color "#534AB7"
+mm agent list                 # 등록된 agent-runtime: 네임스페이스 + shared 조회 (--json 지원)
+mm agent share <chunk_id> --target shared
+```
+
+`mm agent share`도 복사 전에 redaction guard를 다시 실행하며, 비밀처럼 보이는 콘텐츠는 `--force-unsafe`로 재확인하지 않는 한 차단됩니다. 전체 플래그는 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
 
 ### `mm ingest`와의 차이
 
@@ -101,31 +115,12 @@ mm session start --agent-id planner
 
 ### Agent → Agent
 
-LangGraph/CrewAI 워크플로우에서 에이전트 체인이 동작할 때, "코드 분석 에이전트"가 발견한 코드베이스 구조를 "테스트 생성 에이전트"가 참조합니다. 공유 LTM 저장소를 통해 중간 산출물과 결정 이력이 자동으로 전달됩니다.
+LangGraph/CrewAI 워크플로우에서 에이전트 체인이 동작할 때, "테스트 생성 에이전트"는 "코드 분석 에이전트"가 `mem_agent_share`로 공유 네임스페이스에 게시한 코드베이스 구조를 참조합니다. 공유 LTM 저장소가 에이전트 간 핸드오프 지점이 되며, 게시할 중간 산출물과 결정 이력은 명시적 공유 단계로 전달합니다.
 
 ### Agent → Human
 
 에이전트가 축적한 프로젝트 지식을 웹 UI 대시보드에서 검색·열람할 수 있습니다. 새 팀원 온보딩 시 에이전트가 학습한 아키텍처 결정 이력, 버그 해결 패턴, 코딩 컨벤션을 한눈에 파악할 수 있습니다.
 
-## AI 도구 기억 수집
+## 관련 — AI 도구 기억 수집
 
-각 AI 에디터의 기억 디렉토리를 하나의 검색 가능한 지식 베이스로 통합합니다. 재실행 시 콘텐츠 해시로 변경된 파일만 증분 반영됩니다.
-
-```bash
-mm ingest claude-memory --source ~/.claude/projects/
-mm ingest gemini-memory --source ~/.gemini/GEMINI.md
-mm ingest codex-memory --source ~/.codex/memories/
-```
-
-Claude의 경우 `~/.claude/projects/`를 지정하면 하위 슬러그 디렉토리를 탐색해 `claude-memory:<slug>` 네임스페이스별로 적재합니다. Codex는 `codex-memory:<slug>` 네임스페이스에 단일 디렉토리 단위로 적재됩니다.
-
-## LangGraph 어댑터
-
-`MemtomemStore` 클래스로 LangGraph/CrewAI에서 직접 기억을 검색·저장합니다:
-
-```python
-from memtomem.integrations.langgraph import MemtomemStore
-
-store = MemtomemStore()
-# LangGraph 워크플로우에서 기억 검색/저장/세션 관리
-```
+`mm ingest {claude,gemini,codex}-memory`는 에이전트별 격리와는 별개의 기능으로, 각 AI 에디터의 기억 디렉토리를 고정 네임스페이스(`*-memory:<slug>`)로 통합 인덱싱합니다([위의 `mm ingest`와의 차이](#mm-ingest와의-차이) 참조). 소스 경로·슬러그 동작 등 전체 옵션은 [설치 가이드](/ko/guides/installation/)를 참조하세요.

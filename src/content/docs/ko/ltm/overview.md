@@ -56,7 +56,7 @@ SQLite (FTS5 + sqlite-vec)
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **최신 릴리스** | `0.2.2` |
+| **최신 릴리스** | `0.3.0` |
 | **CLI** | `mm` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |
@@ -67,6 +67,6 @@ SQLite (FTS5 + sqlite-vec)
 - [세션을 넘나드는 기억](/ko/guides/memory-persistence/) — 세션 A에서 저장 → 세션 B에서 불러오기
 - [하이브리드 검색](/ko/ltm/hybrid-search/) — 검색 엔진 작동 원리
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 네임스페이스 설계와 공유 워크플로우
-- [Context Gateway](/ko/ltm/context-gateway/) — 에이전트·스킬·커맨드를 한 번 정의, 모든 런타임에 동기화
+- [Context Gateway](/ko/ltm/context-gateway/) — 에이전트·스킬·커맨드를 한 번 정의하고, 프로젝트와 런타임 전반으로 동기화·이동·복사
 - [MCP 도구](/ko/ltm/mcp-tools/) — 전체 도구 레퍼런스
 - [CLI 레퍼런스](/ko/ltm/cli/) — `mm` 명령어 레퍼런스

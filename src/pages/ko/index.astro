@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
-	<meta name="description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+	<meta name="description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/ko/" />
@@ -17,7 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/ko/" />
 	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta property="og:description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+	<meta property="og:description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image.png" />
 	<meta property="og:image:width" content="1200" />
@@ -28,7 +28,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta name="twitter:description" content="마크다운 노트, 문서, 코드를 인덱싱하여 어떤 AI 에이전트에서든 검색 가능한 지식 베이스로. STM + LTM 분리 아키텍처." />
+	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image.png" />
 
 	<!-- JSON-LD 구조화 데이터 -->
@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </nav>
 
 <section class="hero">
-	<div class="hero-badge">memtomem v0.2.4 · memtomem-stm v0.1.27 · Apache 2.0</div>
+	<div class="hero-badge">memtomem v0.3.0 · memtomem-stm v0.1.29 · Apache 2.0</div>
 	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
 	<p class="hero-sub">
 		매 세션마다 프로젝트를 다시 설명할 필요가 없습니다. memtomem은 노트·문서·코드를
@@ -81,9 +81,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<span class="dollar">$</span> uv tool install 'memtomem[all]'
 	</div>
 	<div class="hero-stats">
-		<div><strong>86</strong>LTM MCP 도구</div>
-		<div><strong>10</strong>압축 전략</div>
-		<div><strong>12</strong>STM 제어 도구</div>
+		<div><strong>87</strong>LTM MCP 도구</div>
+		<div><strong>8</strong>압축 전략</div>
+		<div><strong>13</strong>STM 도구</div>
 	</div>
 </section>
 
@@ -101,7 +101,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="problem-card">
 				<div class="problem-num">02</div>
 				<h3>에이전트 간 기억 단절</h3>
-				<p>Claude Code에서 작업한 내용을 다른 클라이언트로 이어갈 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
+				<p>Claude Code에서 작업한 내용을 Cursor에서 이어받을 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">03</div>
@@ -119,28 +119,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-desc">인지과학의 작업기억/장기기억 모델을 에이전트에 적용. 단기 압축·캐싱과 장기 검색·인덱싱을 독립 MCP 서버로 분리합니다.</div>
 		<div class="feature-grid">
 			<div class="feature-card accent">
-				<h3>능동적 서피싱</h3>
-				<p>에이전트가 직접 검색을 요청하지 않아도 됩니다. STM은 프록시된 MCP 호출을 관찰하고, v0.1.24의 <code>mms hook</code>은 Claude Code 네이티브 도구에도 warm daemon 기반 서피싱을 제공합니다.</p>
+				<h3>한눈에 보는 동기화, 한 번에 처리</h3>
+				<p><code>mm web</code>으로 열리는 Context Gateway는 Simple 화면을 기본 제공합니다. 스킬·커맨드·서브에이전트가 AI 도구에 이미 반영되어 있는지, 아직 내보내야 하는지를 한 줄로 보여주고, 각 항목마다 <strong>Sync</strong> 또는 <strong>Import</strong> 버튼 하나로 처리합니다. 전체 제어판은 Advanced로 한 번에 전환됩니다.</p>
 			</div>
 			<div class="feature-card teal">
-				<h3>MCP 프록시 게이트웨이</h3>
-				<p>STM은 에이전트와 도구 사이에 투명한 프록시로 위치합니다. 기존 MCP 서버는 그대로 동작하고, LTM은 stdio, SSE, streamable HTTP 전송으로 연결할 수 있습니다.</p>
+				<h3>프로젝트 간 재사용</h3>
+				<p>한 프로젝트에서 만든 스킬·에이전트·커맨드를 <code>mm context copy</code>·<code>mm context move</code>로 다른 프로젝트나 다른 계층(사용자 / 프로젝트 공유 / 프로젝트 로컬)으로 옮길 수 있습니다. 기본은 미리보기(dry-run)이며, 공유 계층으로 이동할 때는 개인정보 스캔을 거칩니다.</p>
 			</div>
 			<div class="feature-card coral">
-				<h3>크로스 런타임 동기화</h3>
-				<p>에이전트, 스킬, 커맨드를 한 번만 정의하면 Context Gateway가 Claude Code, Codex CLI, Antigravity CLI 등 각 런타임의 네이티브 포맷으로 동기화합니다.</p>
+				<h3>여러 프로젝트 일괄 관리</h3>
+				<p><code>mm context projects</code>로 프로젝트를 등록·일시중지하고, <code>mm context sync --all-projects</code>로 등록된 모든 프로젝트를 한 번에 동기화합니다. <code>mm context status --all-projects</code>는 어떤 프로젝트가 어긋났는지 읽기 전용으로 점검합니다.</p>
 			</div>
 			<div class="feature-card amber">
-				<h3>스마트 압축</h3>
-				<p>대용량 도구 응답을 컨텍스트 윈도우 크기에 맞춰 자동으로 압축합니다. 10종 전략은 쿼리 인식 랭킹, 더 안전한 JSON 계층, 대용량 무손실 progressive 모드를 제공합니다.</p>
+				<h3>능동적 서피싱</h3>
+				<p>에이전트가 직접 검색을 요청하지 않아도 됩니다. STM은 프록시하는 MCP 호출을 관찰하여 관련 기억을 적시에 표면화합니다. 표면화된 각 기억에는 식별자가 붙어, 에이전트가 개별 항목을 평가하거나 무효화할 수 있습니다.</p>
 			</div>
 			<div class="feature-card blue">
-				<h3>멀티 에이전트 지식 공유</h3>
-				<p>에이전트마다 전용 기억과 공용 기억을 함께 보유합니다. 에이전트 간 지식이 상호 이동하며, 사용자가 작성한 메모 하나를 모든 에이전트가 동시에 참조할 수 있습니다.</p>
+				<h3>되돌릴 수 있는 프록시</h3>
+				<p>STM은 기존 MCP 서버를 가져와 앞단에서 프록시합니다. 언제든 <code>mms eject</code>로 원래 항목을 호스트 MCP 클라이언트 설정에 복원할 수 있습니다. 노출 시점에는 실패·중복 이름·자격증명 포함 도구를 걸러내어 안전한 도구 목록만 에이전트에 전달합니다.</p>
 			</div>
 			<div class="feature-card green">
-				<h3>완전 로컬 구동</h3>
-				<p>내부 구성은 SQLite + ONNX입니다. GPU, 외부 API, 클라우드 의존성이 모두 없으며, 모든 기억은 사용자 머신에만 저장됩니다.</p>
+				<h3>완전 로컬 · 비공개</h3>
+				<p>내부 구성은 SQLite + ONNX입니다. GPU·외부 API·클라우드 의존성이 모두 없으며, SQLite 파일은 0600 권한으로 보호됩니다. 자격증명으로 보이는 응답은 캐시되지 않고, 비밀값은 외부로 내보내지지 않습니다.</p>
 			</div>
 		</div>
 	</div>
@@ -174,8 +174,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="arch-row">
 				<div class="arch-node accent arch-node-half">
 					<div class="arch-node-title">memtomem</div>
-					<div class="arch-node-sub">LTM 서버</div>
-					<div class="arch-node-detail">86 MCP 도구</div>
+					<div class="arch-node-sub">LTM Server</div>
+					<div class="arch-node-detail">87 MCP Tools</div>
 				</div>
 				<div class="arch-node arch-node-half">
 					<div class="arch-node-title">Upstream MCP Servers</div>
@@ -219,7 +219,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ko/stm/compression/`} class="doc-card">
 				<h3>압축 전략 가이드</h3>
-				<p>10종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
+				<p>8종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a href={`${base}/ko/stm/surfacing/`} class="doc-card">
@@ -234,7 +234,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ko/ltm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
-				<p>크로스 런타임 동기화 설정, 포맷 변환, 프레임워크 어댑터.</p>
+				<p>Simple 화면에서 Sync·Import 한 번에, 프로젝트 간 복사·이동, 여러 프로젝트 일괄 동기화.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 		</div>
