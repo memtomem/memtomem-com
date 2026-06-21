@@ -119,28 +119,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-desc">Applying the cognitive science working-memory / long-term memory model to agents. Short-term compression and long-term search as independent MCP servers.</div>
 		<div class="feature-grid">
 			<div class="feature-card accent">
-				<h3>One-Glance Sync, One-Click Fix</h3>
-				<p>Context Gateway opens in a Simple view by default with <code>mm web</code>. Each row shows in plain language whether a skill, command, or subagent is already in your AI tools or still needs to go out — with one button per row: <strong>Sync</strong> to push your copy out, or <strong>Import</strong> to pull a tool's copy back in. The full control grid is one click away as Advanced.</p>
+				<h3>Searchable Long-Term Memory</h3>
+				<p>Index your notes, docs, and code with <code>mm index</code>, then find them with hybrid search — BM25 keyword and dense-vector semantic search fused via RRF, so exact identifiers and meaning-based queries both land. Markdown, code, and structured files are chunked by structure, and re-indexing only re-embeds the chunks that changed.</p>
 			</div>
 			<div class="feature-card teal">
-				<h3>Reuse Across Projects</h3>
-				<p>Move a skill, agent, or command between projects — and between tiers (user / project-shared / project-local) — with <code>mm context copy</code> and <code>mm context move</code>. Every transfer is a dry-run preview by default, and landing in a shared tier runs a privacy scan first.</p>
+				<h3>Memory Across Sessions &amp; Agents</h3>
+				<p>Memory doesn't vanish when a session ends. Namespaces split each agent's private space from a <code>shared</code> space, and the session workflow lets one agent pick up what another already worked out. Claude Code, Cursor, and Codex all share one memory store.</p>
 			</div>
 			<div class="feature-card coral">
-				<h3>Manage Many Projects</h3>
-				<p>Register and pause projects with <code>mm context projects</code>, then sync them all at once with <code>mm context sync --all-projects</code>. <code>mm context status --all-projects</code> is a read-only check of which projects have drifted.</p>
+				<h3>Context Gateway</h3>
+				<p>Sync skills, commands, and subagents from one canonical <code>.memtomem/</code> source out to every AI runtime. Handle per-row <strong>Sync</strong>/<strong>Import</strong> in the <code>mm web</code> Simple view, move artifacts across projects and tiers with <code>mm context copy</code>/<code>move</code>, and bulk-sync many projects with <code>mm context sync --all-projects</code>.</p>
 			</div>
 			<div class="feature-card amber">
 				<h3>Proactive Surfacing</h3>
 				<p>Your agent doesn't have to ask. STM observes the MCP calls it proxies and surfaces relevant memories at the right moment. Each surfaced memory carries an id, so your agent can rate or invalidate individual items.</p>
 			</div>
 			<div class="feature-card blue">
-				<h3>Reversible Proxy</h3>
-				<p>STM imports your existing MCP servers and proxies them — and <code>mms eject</code> restores any server's original entry back to your host MCP client config at any time. At exposure time it curates the tool list, withholding failing, duplicate-named, or credential-bearing tools.</p>
+				<h3>Token-Aware Compression</h3>
+				<p>Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the context budget, one of 8 strategies is auto-selected by content type to cut tokens. The active query shapes the budget — relevant sections get more room, so the information your agent needs is preserved.</p>
 			</div>
 			<div class="feature-card green">
 				<h3>Fully Local &amp; Private</h3>
-				<p>SQLite + ONNX under the hood. No GPU, no external API, no cloud dependency. SQLite files are kept at 0600, secret-looking responses are never cached, and secrets are never pushed out.</p>
+				<p>SQLite + ONNX under the hood — no GPU, no external API, no cloud. SQLite files are kept at 0600, secret-looking responses are never cached, and secrets are never pushed out. The STM proxy is fully reversible with <code>mms eject</code>, so there's no lock-in.</p>
 			</div>
 		</div>
 	</div>

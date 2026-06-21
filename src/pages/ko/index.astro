@@ -119,28 +119,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="section-desc">인지과학의 작업기억/장기기억 모델을 에이전트에 적용. 단기 압축·캐싱과 장기 검색·인덱싱을 독립 MCP 서버로 분리합니다.</div>
 		<div class="feature-grid">
 			<div class="feature-card accent">
-				<h3>한눈에 보는 동기화, 한 번에 처리</h3>
-				<p><code>mm web</code>으로 열리는 Context Gateway는 Simple 화면을 기본 제공합니다. 스킬·커맨드·서브에이전트가 AI 도구에 이미 반영되어 있는지, 아직 내보내야 하는지를 한 줄로 보여주고, 각 항목마다 <strong>Sync</strong> 또는 <strong>Import</strong> 버튼 하나로 처리합니다. 전체 제어판은 Advanced로 한 번에 전환됩니다.</p>
+				<h3>장기 기억 검색</h3>
+				<p>노트·문서·코드를 <code>mm index</code>로 색인하면, BM25 키워드 검색과 벡터 의미 검색을 RRF로 융합해 정확한 식별자와 의미 기반 질의를 한 번에 검색합니다. 마크다운·코드·구조화 문서는 구조 단위로 청킹되고, 재색인 시 변경된 청크만 다시 임베딩합니다.</p>
 			</div>
 			<div class="feature-card teal">
-				<h3>프로젝트 간 재사용</h3>
-				<p>한 프로젝트에서 만든 스킬·에이전트·커맨드를 <code>mm context copy</code>·<code>mm context move</code>로 다른 프로젝트나 다른 계층(사용자 / 프로젝트 공유 / 프로젝트 로컬)으로 옮길 수 있습니다. 기본은 미리보기(dry-run)이며, 공유 계층으로 이동할 때는 개인정보 스캔을 거칩니다.</p>
+				<h3>세션·에이전트 경계를 넘어</h3>
+				<p>기억은 세션이 끝나도 사라지지 않습니다. 네임스페이스로 에이전트별 비공개 공간과 <code>shared</code> 공유 공간을 나누고, 세션 워크플로우로 한 에이전트가 정리한 지식을 다른 에이전트가 이어받습니다. Claude Code·Cursor·Codex가 하나의 기억 저장소를 공유합니다.</p>
 			</div>
 			<div class="feature-card coral">
-				<h3>여러 프로젝트 일괄 관리</h3>
-				<p><code>mm context projects</code>로 프로젝트를 등록·일시중지하고, <code>mm context sync --all-projects</code>로 등록된 모든 프로젝트를 한 번에 동기화합니다. <code>mm context status --all-projects</code>는 어떤 프로젝트가 어긋났는지 읽기 전용으로 점검합니다.</p>
+				<h3>Context Gateway</h3>
+				<p>스킬·커맨드·서브에이전트를 정규 <code>.memtomem/</code> 소스 하나에서 각 AI 런타임으로 동기화합니다. <code>mm web</code>의 Simple 화면에서 항목별 <strong>Sync</strong>·<strong>Import</strong>를 한 번에 처리하고, <code>mm context copy</code>·<code>move</code>로 프로젝트·계층 간 이동하며, <code>mm context sync --all-projects</code>로 여러 프로젝트를 일괄 동기화합니다.</p>
 			</div>
 			<div class="feature-card amber">
 				<h3>능동적 서피싱</h3>
 				<p>에이전트가 직접 검색을 요청하지 않아도 됩니다. STM은 프록시하는 MCP 호출을 관찰하여 관련 기억을 적시에 표면화합니다. 표면화된 각 기억에는 식별자가 붙어, 에이전트가 개별 항목을 평가하거나 무효화할 수 있습니다.</p>
 			</div>
 			<div class="feature-card blue">
-				<h3>되돌릴 수 있는 프록시</h3>
-				<p>STM은 기존 MCP 서버를 가져와 앞단에서 프록시합니다. 언제든 <code>mms eject</code>로 원래 항목을 호스트 MCP 클라이언트 설정에 복원할 수 있습니다. 노출 시점에는 실패·중복 이름·자격증명 포함 도구를 걸러내어 안전한 도구 목록만 에이전트에 전달합니다.</p>
+				<h3>토큰 인식 압축</h3>
+				<p>모든 MCP 도구 응답은 에이전트에 도달하기 전 STM을 거칩니다. 컨텍스트 예산을 초과하면 콘텐츠 유형에 맞춰 8종 전략 중 하나가 자동(<code>auto</code>)으로 선택되어 토큰을 줄입니다. 현재 질의를 반영해 관련 섹션에 더 큰 예산을 배분하므로 꼭 필요한 정보는 보존됩니다.</p>
 			</div>
 			<div class="feature-card green">
 				<h3>완전 로컬 · 비공개</h3>
-				<p>내부 구성은 SQLite + ONNX입니다. GPU·외부 API·클라우드 의존성이 모두 없으며, SQLite 파일은 0600 권한으로 보호됩니다. 자격증명으로 보이는 응답은 캐시되지 않고, 비밀값은 외부로 내보내지지 않습니다.</p>
+				<p>내부 구성은 SQLite + ONNX이며 GPU·외부 API·클라우드 의존성이 없습니다. SQLite 파일은 0600 권한으로 보호되고, 자격증명으로 보이는 응답은 캐시되지 않으며 비밀값은 외부로 내보내지지 않습니다. STM 프록시는 <code>mms eject</code>로 언제든 원래 설정으로 되돌릴 수 있어 잠금(lock-in)이 없습니다.</p>
 			</div>
 		</div>
 	</div>
