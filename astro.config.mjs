@@ -57,12 +57,6 @@ export default defineConfig({
 						{ label: 'Quick Start', slug: 'guides/quickstart' },
 						{ label: 'Memory Persistence', slug: 'guides/memory-persistence', translations: { ko: '세션을 넘나드는 기억' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
-					],
-				},
-				{
-					label: 'Privacy & Local-First',
-					translations: { ko: '프라이버시 · 로컬 우선' },
-					items: [
 						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 프라이버시' } },
 					],
 				},
