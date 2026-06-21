@@ -60,6 +60,13 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Privacy & Local-First',
+					translations: { ko: '프라이버시 · 로컬 우선' },
+					items: [
+						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 프라이버시' } },
+					],
+				},
+				{
 					label: 'LTM (memtomem)',
 					items: [
 						{ label: 'Overview', slug: 'ltm/overview', translations: { ko: '개요' } },
