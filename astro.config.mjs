@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLlmsTxt from 'starlight-llms-txt';
 
 // https://astro.build/config
 export default defineConfig({
@@ -58,6 +59,7 @@ export default defineConfig({
 						{ label: 'Memory Persistence', slug: 'guides/memory-persistence', translations: { ko: '세션을 넘나드는 기억' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
 						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 프라이버시' } },
+						{ label: 'Use These Docs', slug: 'guides/use-these-docs', translations: { ko: '문서를 MCP로 사용하기' } },
 					],
 				},
 				{
@@ -88,6 +90,12 @@ export default defineConfig({
 						{ label: 'Environment Variables', slug: 'reference/configuration', translations: { ko: '환경 변수' } },
 					],
 				},
+			],
+			plugins: [
+				starlightLlmsTxt({
+					projectName: 'memtomem',
+					description: 'MCP-native long and short-term memory infrastructure for AI agents. LTM (memtomem) provides persistent storage and hybrid search; STM (memtomem-stm) adds proxy-time compression and proactive memory surfacing.',
+				}),
 			],
 			customCss: ['./src/styles/custom.css'],
 		}),
