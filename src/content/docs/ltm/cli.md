@@ -5,7 +5,7 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.3.0. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.3.4. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Setup
 
@@ -17,14 +17,14 @@ At startup, the wizard offers a **preset picker** (Minimal / English / Korean) t
 
 ```bash
 mm init                              # interactive setup with preset picker
-mm init -y                           # auto-accept; behaves as `--preset minimal -y`
+mm init --non-interactive            # auto-accept; behaves as `--preset minimal --non-interactive`
 mm init --preset korean              # apply Korean preset non-interactively
-mm init --preset english -y          # English preset, no prompts
+mm init --preset english --non-interactive   # English preset, no prompts
 mm init --advanced                   # skip picker, run full 10-step wizard
 mm init --fresh                      # bulk-clean accumulated config, then re-run wizard
 ```
 
-On a reinstall path, `mm init` compares the embedding provider / model / dimension stored in the existing `~/.memtomem/memtomem.db` against the new preset. On mismatch, the interactive wizard offers an in-place rebuild of the vector index (`chunks_vec`); under `-y`, it prints a recovery hint pointing at `mm embedding-reset --mode apply-current`. The chunks table itself is preserved, so re-running `mm index <path>` afterwards restores the working set.
+On a reinstall path, `mm init` compares the embedding provider / model / dimension stored in the existing `~/.memtomem/memtomem.db` against the new preset. On mismatch, the interactive wizard offers an in-place rebuild of the vector index (`chunks_vec`); under `--non-interactive`, it prints a recovery hint pointing at `mm embedding-reset --mode apply-current`. The chunks table itself is preserved, so re-running `mm index <path>` afterwards restores the working set.
 
 `--fresh` drops every wizard-untouched config key whose value differs from the built-in default, then re-runs the wizard. A safe cleanup option when the config has accumulated leftovers from older versions; the previous `config.json` is backed up to `config.json.bak-<unix-ts>` before rewriting.
 
@@ -307,9 +307,20 @@ Terminal mirror of the MCP `mem_status` tool. Use it as a post-install sanity ch
 
 ```bash
 mm status                            # indexing stats + config summary (same output as mem_status)
+mm status --json                     # machine-readable, for scripts / `jq` pipelines
 ```
 
-Added in v0.1.25. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
+Added in v0.1.25; `--json` / `--format json` added in v0.3.4. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
+
+### `mm warmup`
+
+Preload the local embedder / reranker models so the **first** query doesn't pay the one-time model load. Optional — without it the models load lazily on first use.
+
+```bash
+mm warmup                            # load models now (one-shot)
+```
+
+To warm up automatically when the MCP server starts, set `MEMTOMEM_WARMUP__ENABLED=true`. Remote providers (Ollama / OpenAI / Cohere) are skipped — there's nothing local to preload.
 
 ### `mm memory doctor`
 
@@ -392,7 +403,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.3.0           # pin a specific version
+mm upgrade --version 0.3.4           # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```

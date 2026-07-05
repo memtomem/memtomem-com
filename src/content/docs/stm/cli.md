@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.1.29 package. It manages upstream-server registration, MCP-client registration, and proxy-config lifecycle. Run `mms --help` for the full command list or `mms --version` to print the installed version (the `mms version` subcommand also works).
+The `mms` command is installed with the `memtomem-stm` v0.1.32 package. It manages upstream-server registration, MCP-client registration, and proxy-config lifecycle. Run `mms --help` for the full command list or `mms --version` to print the installed version (the `mms version` subcommand also works).
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -87,25 +87,25 @@ Incompatible with `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--en
 
 ### `mms list`
 
-List all registered upstream servers.
+List all registered upstream servers — the per-server view.
 
 ```bash
 mms list                             # human-readable
 mms list --json                      # scriptable JSON
 ```
 
-The table includes an **ORIGIN** column reporting each upstream's import source. The value is the source-client kind (`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`); manually `mms add`-ed entries show `-`. A trailing `*` marks an entry whose host original was pruned, so it now exists only behind STM — `mms eject <name>` restores it.
+The table includes an **ORIGIN** column reporting each upstream's import source. The value is the source-client kind (`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`); manually `mms add`-ed entries show `-`. A trailing `*` marks an entry whose host original was pruned, so it now exists only behind STM — `mms eject <name>` restores it. As of v0.1.32 the table also carries a **SURFACING** column — the visible home of the per-server `mms surfacing` toggle.
 
 ### `mms status`
 
-Show proxy gateway configuration and the full server list.
+Answer "is the proxy set up and pointed at the right config?" — a config summary, not the per-server view.
 
 ```bash
 mms status
 mms status --json                    # scriptable JSON
 ```
 
-`status` output shows each upstream's compression setting and output-size budget alongside its surfacing state (`surfacing=on/off`).
+As of v0.1.32 `status` is a summary: config path, the `enabled` flag, any schema-validation warning, and `Servers: N (P host-pruned)`. Per-server detail (compression, output budget, surfacing state) moved to `mms list`. `status --json` keeps its full redacted `servers` map and adds `server_count` / `pruned_count`.
 
 ### `mms surfacing <server> [on|off]`
 
@@ -142,6 +142,8 @@ mms health --names                   # also flag tools whose proxied name overfl
 ```
 
 `--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
+
+`health` also renders a per-upstream **circuit breaker** line. As of v0.1.32 the breaker is on by default: after 3 consecutive failed calls an upstream's tools fast-fail with `circuit_open` for ~60s instead of each call burning the full retry/deadline budget; cached responses keep serving and other upstreams are unaffected. Set `circuit_max_failures: 0` on an upstream in `stm_proxy.json` to restore the old always-retry behavior.
 
 ### `mms prune`
 
@@ -275,7 +277,7 @@ First import wins: identical names with different definitions are flagged as con
 
 ## Operational statistics
 
-To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships observability MCP tools — these statistics are exposed as **MCP tools** rather than CLI subcommands. As of 0.1.29 there are nine (`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`), and they are hidden from MCP `tools/list` by default. Set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them to the agent. See the [MCP Tools](/stm/mcp-tools/) page for each tool's inputs and outputs.
+To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships observability MCP tools — these statistics are exposed as **MCP tools** rather than CLI subcommands. As of 0.1.32 there are nine (`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`), and they are hidden from MCP `tools/list` by default. Set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them to the agent. See the [MCP Tools](/stm/mcp-tools/) page for each tool's inputs and outputs.
 
 ## Running the proxy server
 

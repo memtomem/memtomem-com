@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </nav>
 
 <section class="hero">
-	<div class="hero-badge">memtomem v0.3.0 · memtomem-stm v0.1.29 · Apache 2.0</div>
+	<div class="hero-badge">memtomem v0.3.4 · memtomem-stm v0.1.32 · Apache 2.0</div>
 	<h1>AI That Never Forgets —<br /><em>Memory Infrastructure</em> for Agents</h1>
 	<p class="hero-sub">
 		Stop re-explaining your project to your AI every session. memtomem turns your notes,
@@ -82,7 +82,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	</div>
 	<div class="hero-stats">
 		<div><strong>87</strong>LTM MCP Tools</div>
-		<div><strong>8</strong>Compression Strategies</div>
+		<div><strong>10</strong>Compression Strategies</div>
 		<div><strong>13</strong>STM Tools</div>
 	</div>
 </section>
@@ -136,7 +136,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card blue" href={`${base}/stm/compression/`}>
 				<h3>Token-Aware Compression</h3>
-				<p>Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the context budget, one of 8 strategies is auto-selected by content type to cut tokens. The active query shapes the budget — relevant sections get more room, so the information your agent needs is preserved.</p>
+				<p>Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the context budget, one of 10 strategies is auto-selected by content type to cut tokens. The active query shapes the budget — relevant sections get more room, so the information your agent needs is preserved.</p>
 			</a>
 			<a class="feature-card green" href={`${base}/guides/privacy/`}>
 				<h3>Fully Local &amp; Private</h3>
@@ -219,7 +219,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/stm/compression/`} class="doc-card">
 				<h3>Compression Strategies</h3>
-				<p>8 strategies, auto-selection logic, and query-aware budget allocation.</p>
+				<p>10 strategies, auto-selection logic, and query-aware budget allocation.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a href={`${base}/stm/surfacing/`} class="doc-card">

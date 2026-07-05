@@ -70,7 +70,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </nav>
 
 <section class="hero">
-	<div class="hero-badge">memtomem v0.3.0 · memtomem-stm v0.1.29 · Apache 2.0</div>
+	<div class="hero-badge">memtomem v0.3.4 · memtomem-stm v0.1.32 · Apache 2.0</div>
 	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
 	<p class="hero-sub">
 		매 세션마다 프로젝트를 다시 설명할 필요가 없습니다. memtomem은 노트·문서·코드를
@@ -82,7 +82,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	</div>
 	<div class="hero-stats">
 		<div><strong>87</strong>LTM MCP 도구</div>
-		<div><strong>8</strong>압축 전략</div>
+		<div><strong>10</strong>압축 전략</div>
 		<div><strong>13</strong>STM 도구</div>
 	</div>
 </section>
@@ -136,7 +136,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>
-				<p>모든 MCP 도구 응답은 에이전트에 도달하기 전 STM을 거칩니다. 컨텍스트 예산을 초과하면 콘텐츠 유형에 맞춰 8종 전략 중 하나가 자동(<code>auto</code>)으로 선택되어 토큰을 줄입니다. 현재 질의를 반영해 관련 섹션에 더 큰 예산을 배분하므로 꼭 필요한 정보는 보존됩니다.</p>
+				<p>모든 MCP 도구 응답은 에이전트에 도달하기 전 STM을 거칩니다. 컨텍스트 예산을 초과하면 콘텐츠 유형에 맞춰 10종 전략 중 하나가 자동(<code>auto</code>)으로 선택되어 토큰을 줄입니다. 현재 질의를 반영해 관련 섹션에 더 큰 예산을 배분하므로 꼭 필요한 정보는 보존됩니다.</p>
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
 				<h3>완전 로컬 · 비공개</h3>
@@ -219,7 +219,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ko/stm/compression/`} class="doc-card">
 				<h3>압축 전략 가이드</h3>
-				<p>8종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
+				<p>10종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a href={`${base}/ko/stm/surfacing/`} class="doc-card">

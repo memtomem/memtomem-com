@@ -7,7 +7,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 우선순위(높은 순): CLI 플래그 → 환경 변수 → 설정 파일 → 내장 기본값.
 
-이 공개 레퍼런스는 `memtomem` 0.3.0 및 `memtomem-stm` 0.1.29 설정 표면을 기준으로 합니다.
+이 공개 레퍼런스는 `memtomem` 0.3.4 및 `memtomem-stm` 0.1.32 설정 표면을 기준으로 합니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 

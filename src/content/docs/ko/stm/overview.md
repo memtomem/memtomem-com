@@ -27,7 +27,7 @@ mms health                                               # 3. 연결 상태 확�
 ## 핵심 기능
 
 - **능동적 서피싱** — 도구 호출마다 5단계 관련성 게이팅(컨텍스트 추출 → 쿼리 적합성 → LTM 검색 → 점수 임계값 → 중복 제거)을 거친 기억만 응답에 주입됩니다. 서피싱은 업스트림 단위로 켜고 끌 수 있어(`mms surfacing <server> on|off`), 특정 서버의 응답만 서피싱 대상에서 제외할 수 있습니다. 상세는 [능동적 서피싱](/ko/stm/surfacing/) 참조.
-- **응답 압축** — 8가지 전략이 콘텐츠 유형(JSON, 마크다운, API 문서, 자유 텍스트 등)에 따라 자동 선택되며, 쿼리 인식 랭킹과 더 안전한 JSON 출력 계층을 사용합니다. 상세는 [압축 전략](/ko/stm/compression/) 참조.
+- **응답 압축** — 10가지 전략을 제공하며, 콘텐츠 유형(JSON, 마크다운, API 문서, 자유 텍스트 등)에 따라 자동 선택되고, 쿼리 인식 랭킹과 더 안전한 JSON 출력 계층을 사용합니다. 상세는 [압축 전략](/ko/stm/compression/) 참조.
 - **노출 도구 정리** — STM은 단순히 모든 업스트림 도구를 그대로 중계하지 않고, 노출 시점에 advertised 도구 목록을 정리합니다. 응답하지 않는 서버, 자격 증명이 노출되는 설명, 이름이 중복·초과되는 도구는 에이전트에 노출되지 않습니다. 노출 정책은 `exposure.profile`(`strict` 기본 / `review` / `explore`)로 조정하며, `stm_proxy_health`가 "discovered N / advertised M"를 보고합니다.
 - **되돌릴 수 있는 import** — import한 업스트림은 출처(origin)를 기록하므로, `mms list`의 ORIGIN 열에서 직접 등록한 서버와 import한 서버를 구분할 수 있습니다(`*`는 정리(prune)된 host 원본을 표시). `mms eject`는 복원을 검증한 뒤에야 STM 항목을 제거합니다.
 
@@ -45,7 +45,7 @@ memtomem-stm (STM Proxy)
 STM은 모든 MCP 도구 호출을 다음 파이프라인으로 처리합니다:
 
 1. **CLEAN** — 요청 정규화 (노이즈 제거, 형식 통일)
-2. **COMPRESS** — 응답 크기 축소 (8가지 전략 중 자동 선택)
+2. **COMPRESS** — 응답 크기 축소 (10가지 전략 중 자동 선택)
 3. **SURFACE** — LTM에서 관련 기억 조회·주입 (5단계 게이팅)
 
 STM은 런타임에 LTM으로 기억을 다시 기록하지 않습니다. 서피싱은 LTM에서 읽기만 하며, INDEX(자동 축적) 단계는 standalone `mms` 서버에서 설계상 동작하지 않습니다.
@@ -65,7 +65,7 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **최신 릴리스** | `0.1.29` |
+| **최신 릴리스** | `0.1.32` |
 | **CLI** | `mms` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
@@ -74,6 +74,6 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 
 - [빠른 시작](/ko/guides/quickstart/) — 설치부터 에이전트 연결까지
 - [능동적 서피싱](/ko/stm/surfacing/) — 5단계 게이팅과 피드백 자동 조정
-- [압축 전략](/ko/stm/compression/) — 8가지 전략과 자동 선택 로직
+- [압축 전략](/ko/stm/compression/) — 10가지 전략과 자동 선택 로직
 - [MCP 도구](/ko/stm/mcp-tools/) — STM 관리 도구와 관찰성 도구
 - [CLI 레퍼런스](/ko/stm/cli/) — `mms` 명령어 레퍼런스

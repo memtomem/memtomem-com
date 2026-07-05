@@ -1,13 +1,13 @@
 ---
 title: Compression Strategies
-description: 8 compression strategies, auto-selection logic, and query-aware budget allocation.
+description: 10 compression strategies, auto-selection logic, and query-aware budget allocation.
 ---
 
 > New here? Start with the [STM Overview](/stm/overview/) to see the full pipeline in context first.
 
 Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the agent's context budget, STM compresses it — and the compression method depends on the content type.
 
-memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It provides 8 strategies that reduce response size while preserving the information the agent needs, plus an auto-selector (`auto`) that picks the right one per response. If you're not sure which to pick, leave the setting on `auto` — it chooses per response from the immediate-response strategies.
+memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It ships 10 strategies in total — 8 content-type reducers plus the `auto` selector and the `none` passthrough — reducing response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses the right reducer per response from the immediate-response strategies.
 
 ## Compression Strategies
 

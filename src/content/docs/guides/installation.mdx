@@ -76,7 +76,19 @@ After installation, the commands you'll reach for most often:
 
 Full command list (including `ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall`): see the [CLI Reference](/ltm/cli/).
 
-The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config.
+The MCP server itself ships as the `memtomem-server` console script. You don't run it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) launches it automatically once `memtomem` is registered in the client's MCP config. For copy-paste `mcpServers` JSON per client, see [Quick Start → Connect Your MCP Client](/guides/quickstart/#4-connect-your-mcp-client).
+
+### File locations
+
+memtomem keeps everything under your home directory — nothing leaves the machine:
+
+| Path | What |
+|---|---|
+| `~/.memtomem/memtomem.db` | SQLite store (chunks + vectors) |
+| `~/.memtomem/config.json` | LTM configuration written by `mm init` |
+| `~/.memtomem/logs/web.log` | Web UI log (from `mm web -b`) |
+
+Override the config directory with the `MEMTOMEM_*` env vars (see [Configuration](/reference/configuration/)).
 
 ## STM Proxy (memtomem-stm)
 
@@ -123,11 +135,12 @@ After installation, the following commands are available:
 | `mms add <name> --command <cmd>` | Register an upstream MCP server |
 | `mms add --from-clients` | Bulk-import upstreams from existing MCP client configs |
 | `mms eject <name>` | Restore an imported server to its original client and unregister it from STM |
-| `mms list` | List registered servers |
-| `mms health` | Probe upstream connectivity |
+| `mms list` | List registered servers (with a SURFACING column) |
+| `mms status` | Config summary — enabled flag and server count |
+| `mms health` | Probe upstream connectivity + LTM surfacing readiness |
 | `mms --version` | Print installed version |
 
-The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once `memtomem-stm` is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically.
+The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
 
 ## Embedding Providers
 

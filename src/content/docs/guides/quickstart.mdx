@@ -22,6 +22,8 @@ If `mm --version` prints an older version right after install, upgrade with refr
 uv tool install 'memtomem[all]' --refresh
 ```
 
+If the shell can't find `mm` at all (`command not found`), run `uv tool update-shell` and reopen the terminal — see [Troubleshooting](/guides/troubleshooting/).
+
 ## 2. Run Setup
 
 ```bash
@@ -39,10 +41,10 @@ The wizard starts with a preset picker:
 For scripts or CI:
 
 ```bash
-mm init -y                   # minimal preset, no prompts
-mm init --preset english -y  # English preset, no prompts
-mm init --preset korean -y   # Korean preset, no prompts
-mm init --advanced           # full wizard
+mm init --non-interactive                   # minimal preset, no prompts
+mm init --preset english --non-interactive  # English preset, no prompts
+mm init --preset korean --non-interactive   # Korean preset, no prompts
+mm init --advanced                          # full wizard
 ```
 
 During setup you can also register existing AI-agent memory folders for watching, such as Claude Code memories, Claude plans, or Codex CLI memories. Registration only sets them up for future watching; seed existing files once with `mm index`.
@@ -69,17 +71,51 @@ You should see storage, embedding, and chunk-count information. Zero chunks is n
     ```
   </TabItem>
   <TabItem label="Cursor">
-    Register `memtomem-server` as a stdio MCP server in Cursor's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
+    Add the server to `~/.cursor/mcp.json`:
+    ```json
+    {
+      "mcpServers": {
+        "memtomem": {
+          "command": "uvx",
+          "args": ["--from", "memtomem", "memtomem-server"]
+        }
+      }
+    }
+    ```
+    The command must be `memtomem-server` — plain `memtomem` is the CLI and will not start the MCP server.
   </TabItem>
   <TabItem label="Windsurf">
-    Register `memtomem-server` as a stdio MCP server in Windsurf's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
+    Add the server to `~/.codeium/windsurf/mcp_config.json`:
+    ```json
+    {
+      "mcpServers": {
+        "memtomem": {
+          "command": "uvx",
+          "args": ["--from", "memtomem", "memtomem-server"]
+        }
+      }
+    }
+    ```
+    The command must be `memtomem-server` — plain `memtomem` is the CLI and will not start the MCP server.
   </TabItem>
   <TabItem label="Claude Desktop">
-    Register `memtomem-server` as a stdio MCP server in Claude Desktop's MCP settings. See [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
+    Add the server to your config file (macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`), then restart Claude Desktop:
+    ```json
+    {
+      "mcpServers": {
+        "memtomem": {
+          "command": "uvx",
+          "args": ["--from", "memtomem", "memtomem-server"]
+        }
+      }
+    }
+    ```
   </TabItem>
 </Tabs>
 
-Ask your agent to "call `mem_status`" after registration. That verifies the MCP client is launching the same server your terminal sees.
+For other clients and the full option matrix, see [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
+
+Ask your agent to "call `mem_status`" after registration. That verifies the MCP client is launching the same server your terminal sees. If the agent reports no memtomem tools, see [Troubleshooting](/guides/troubleshooting/).
 
 ## 5. Add and Search Memory
 
@@ -122,9 +158,28 @@ The default Web UI is the user-facing surface for search, sources, tags, timelin
 
 ```bash
 uv tool install memtomem-stm
-mms init --mcp claude
-mms health
+mms init --mcp claude   # prompts for one upstream server, then registers STM with Claude Code
 ```
+
+`mms init` walks you through adding one upstream MCP server (name, prefix, command) and then offers a 3-way client registration (Claude Code / write `.mcp.json` / skip). After it finishes, confirm the setup with three read commands:
+
+```bash
+mms list      # the upstreams you've registered (and their SURFACING column)
+mms status    # config summary — is the proxy enabled and pointed at the right file?
+mms health    # probe upstream connectivity and LTM surfacing readiness
+```
+
+For a non–Claude-Code client, register STM manually with a one-line command block:
+
+```json
+{
+  "mcpServers": {
+    "mms": { "command": "mms" }
+  }
+}
+```
+
+STM's proxied tools surface as `<prefix>__<tool>`, and your client composes them into a longer `mcp__<server>__<prefix>__<tool>` name. That name has a 64-char limit, so if a tool goes missing, register STM under a short client name like `mms` (as above) **and** export `MMS_CLIENT_SERVER_NAME=mms` so STM's overflow check agrees — `mms init --mcp claude` registers under the longer name `memtomem-stm` by default. See [Troubleshooting](/guides/troubleshooting/) if tools disappear.
 
 Moving a server behind the proxy is reversible — if STM isn't a fit, `mms eject` restores each server to the host config it came from.
 
@@ -136,3 +191,4 @@ See [STM Overview](/stm/overview/) when you want tool-response compression or au
 - [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion
 - [MCP Tools](/ltm/mcp-tools/) — `core`, `standard`, and `full` tool modes
 - [Context Gateway](/ltm/context-gateway/) — sync agents, skills, and commands across runtimes, move or copy them between projects, and sync many projects at once
+- [Troubleshooting](/guides/troubleshooting/) — fixes for `command not found`, missing tools, and surfacing that isn't firing

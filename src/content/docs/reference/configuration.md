@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the `memtomem` 0.3.0 and `memtomem-stm` 0.1.29 configuration surfaces.
+This public reference tracks the `memtomem` 0.3.4 and `memtomem-stm` 0.1.32 configuration surfaces.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 

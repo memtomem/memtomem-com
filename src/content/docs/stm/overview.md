@@ -27,7 +27,7 @@ mms health                                               # 3. verify connectivit
 ## Core Capabilities
 
 - **Proactive Surfacing** — Every tool call runs candidate memories through 5 relevance checks (context extraction → query suitability → LTM search → score threshold → dedup window) before anything is injected. Surfacing toggles per upstream (`mms surfacing <server> on|off`), so you can exclude a single server's responses from surfacing. See [Proactive Surfacing](/stm/surfacing/).
-- **Response Compression** — 8 strategies pick themselves based on content type (JSON, Markdown, API docs, free text, …), with query-aware ranking and safer JSON output tiers. See [Compression Strategies](/stm/compression/).
+- **Response Compression** — 10 strategies, auto-selected by content type (JSON, Markdown, API docs, free text, …), with query-aware ranking and safer JSON output tiers. See [Compression Strategies](/stm/compression/).
 - **Exposed-Tool Curation** — STM does not just relay every upstream tool as-is; it curates the advertised tool list at exposure time. Tools from unresponsive servers, descriptions that leak credentials, and duplicate or overflowing names are withheld from the agent. Tune the policy with `exposure.profile` (`strict` default / `review` / `explore`); `stm_proxy_health` reports "N discovered / M advertised".
 - **Reversible Import** — Imported upstreams record their origin, so `mms list` distinguishes directly-registered servers from imported ones in an ORIGIN column (`*` marks a pruned host original). `mms eject` verifies the restore before it removes the STM entry.
 
@@ -45,7 +45,7 @@ memtomem-stm (STM Proxy)
 STM runs every MCP tool call through this pipeline:
 
 1. **CLEAN** — normalize the request (strip noise, unify format)
-2. **COMPRESS** — shrink the response (auto-select from 8 strategies)
+2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
 3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
 
 STM does not write memories back to LTM at runtime. Surfacing only reads from LTM, and the INDEX (auto-accumulation) stage is inert by design in the standalone `mms` server.
@@ -65,7 +65,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.1.29` |
+| **Latest release** | `0.1.32` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
@@ -74,6 +74,6 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 
 - [Quick Start](/guides/quickstart/) — from install to agent connection
 - [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
-- [Compression Strategies](/stm/compression/) — 8 strategies and auto-selection logic
+- [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
 - [MCP Tools](/stm/mcp-tools/) — STM management and observability tools
 - [CLI Reference](/stm/cli/) — `mms` command reference

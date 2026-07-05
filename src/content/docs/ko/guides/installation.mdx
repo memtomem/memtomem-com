@@ -76,7 +76,19 @@ uv tool install 'memtomem[all]' --refresh
 
 전체 명령(`ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
 
-MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다.
+MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다. 클라이언트별 복사용 `mcpServers` JSON은 [Quick Start → MCP 클라이언트 연결](/ko/guides/quickstart/#4-mcp-클라이언트-연결)을 참고하세요.
+
+### 파일 위치
+
+memtomem은 모든 데이터를 홈 디렉토리 아래에 보관합니다 — 어떤 것도 머신을 벗어나지 않습니다:
+
+| 경로 | 내용 |
+|---|---|
+| `~/.memtomem/memtomem.db` | SQLite 저장소(청크 + 벡터) |
+| `~/.memtomem/config.json` | `mm init`이 작성하는 LTM 설정 |
+| `~/.memtomem/logs/web.log` | Web UI 로그(`mm web -b`) |
+
+설정 디렉토리는 `MEMTOMEM_*` 환경 변수로 재정의할 수 있습니다([설정](/ko/reference/configuration/) 참고).
 
 ## STM 프록시 (memtomem-stm)
 
@@ -123,11 +135,12 @@ STM은 선택 사항입니다. 능동적 기억 제시(surfacing)나 도구 응�
 | `mms add <name> --command <cmd>` | 업스트림 MCP 서버 등록 |
 | `mms add --from-clients` | 기존 MCP 클라이언트 설정에서 일괄 가져오기 |
 | `mms eject <name>` | 가져온 서버를 원래 클라이언트로 복원하고 STM 등록을 해제 |
-| `mms list` | 등록된 서버 목록 |
-| `mms health` | 업스트림 연결 상태 점검 |
+| `mms list` | 등록된 서버 목록(SURFACING 열 포함) |
+| `mms status` | 설정 요약 — 활성화 플래그와 서버 수 |
+| `mms health` | 업스트림 연결 상태 + LTM 서피싱 준비 상태 점검 |
 | `mms --version` | 설치된 버전 출력 |
 
-STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. `memtomem-stm`이 MCP 클라이언트에 등록되면(`mms init --mcp claude`, `mms register`, `.mcp.json` 등록 중 하나) 클라이언트가 자동으로 기동합니다.
+STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. STM이 MCP 클라이언트에 등록되면(`mms init --mcp claude`, `mms register`, `.mcp.json` 등록 중 하나) 클라이언트가 자동으로 기동합니다. STM은 프록시 설정을 `~/.memtomem/stm_proxy.json`에 기록하며, `mms add` / `mms init`이 이를 관리하므로 직접 편집할 일은 드뭅니다.
 
 ## 임베딩 프로바이더
 

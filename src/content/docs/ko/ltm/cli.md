@@ -5,7 +5,7 @@ description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 
 `mm` 명령어는 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 인덱싱, 세션 추적, 프로젝트 간 컨텍스트 동기화 기능을 제공합니다. 전체 명령 목록은 `mm --help`, 설치된 버전은 `mm --version`(또는 `mm version` 서브명령)으로 확인할 수 있습니다.
 
-> 이 페이지는 memtomem v0.3.0 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
+> 이 페이지는 memtomem v0.3.4 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
 
 ## 설정
 
@@ -17,14 +17,14 @@ description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 
 ```bash
 mm init                              # 대화형 설정 + 프리셋 피커
-mm init -y                           # 자동 수락; `--preset minimal -y`와 동일
+mm init --non-interactive            # 자동 수락; `--preset minimal --non-interactive`와 동일
 mm init --preset korean              # 한국어 프리셋을 비대화 모드로 적용
-mm init --preset english -y          # 영어 프리셋, 프롬프트 없음
+mm init --preset english --non-interactive   # 영어 프리셋, 프롬프트 없음
 mm init --advanced                   # 피커 생략, 10단계 전체 마법사
 mm init --fresh                      # 누적 설정 일괄 정리 후 마법사 재실행
 ```
 
-재설치 경로에서 `mm init`은 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 프로바이더·모델·차원이 새 프리셋과 일치하는지 검사합니다. 불일치가 감지되면 대화형에서는 벡터 인덱스(`chunks_vec`)의 in-place 재생성을 제안하고, `-y` 비대화 모드에서는 `mm embedding-reset --mode apply-current` 복구 안내를 출력합니다. 청크 테이블은 보존되므로 이후 `mm index <path>`로 재인덱싱하면 작업 집합이 복원됩니다.
+재설치 경로에서 `mm init`은 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 프로바이더·모델·차원이 새 프리셋과 일치하는지 검사합니다. 불일치가 감지되면 대화형에서는 벡터 인덱스(`chunks_vec`)의 in-place 재생성을 제안하고, `--non-interactive` 비대화 모드에서는 `mm embedding-reset --mode apply-current` 복구 안내를 출력합니다. 청크 테이블은 보존되므로 이후 `mm index <path>`로 재인덱싱하면 작업 집합이 복원됩니다.
 
 `--fresh`는 마법사가 수정하지 않은 필드 중 내장 기본값과 값이 다른 모든 키를 제거한 뒤 마법사를 다시 실행합니다. 이전 버전에서 누적된 설정 항목을 정리하는 안전한 일괄 정리 옵션이며, 기존 `config.json`은 `config.json.bak-<unix-ts>`로 백업된 후 재작성됩니다.
 
@@ -307,9 +307,20 @@ MCP `mem_status` 도구의 터미널 미러. 설치 직후 "바이너리 동작,
 
 ```bash
 mm status                            # 인덱싱 통계 + 설정 요약 (mem_status와 동일 출력)
+mm status --json                     # 기계 판독용 — 스크립트 / `jq` 파이프라인
 ```
 
-v0.1.25에 추가된 명령입니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 post-install 스모크 테스트에 적합합니다.
+v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.4에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 post-install 스모크 테스트에 적합합니다.
+
+### `mm warmup`
+
+로컬 임베더 / 리랭커 모델을 미리 로드해 **첫** 질의가 일회성 모델 로드 비용을 물지 않도록 합니다. 선택 사항이며, 사용하지 않으면 첫 사용 시점에 지연 로드됩니다.
+
+```bash
+mm warmup                            # 지금 모델 로드 (일회성)
+```
+
+MCP 서버 기동 시 자동으로 예열하려면 `MEMTOMEM_WARMUP__ENABLED=true`를 설정하세요. 원격 프로바이더(Ollama / OpenAI / Cohere)는 미리 로드할 로컬 자원이 없어 건너뜁니다.
 
 ### `mm memory doctor`
 
@@ -392,7 +403,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.3.0           # 특정 버전 고정
+mm upgrade --version 0.3.4           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```

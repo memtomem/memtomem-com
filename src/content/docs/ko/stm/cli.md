@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 ---
 
-`mms` 명령어는 `memtomem-stm` v0.1.29 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
+`mms` 명령어는 `memtomem-stm` v0.1.32 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
 
 STM의 가져오기는 되돌릴 수 있습니다. 업스트림을 STM 프록시 뒤로 들여와도 원래 등록 정보가 보존되므로, 결과가 마음에 들지 않으면 `mms eject` 로 원래 host MCP 클라이언트 설정으로 복원할 수 있습니다.
 
@@ -87,25 +87,25 @@ mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에�
 
 ### `mms list`
 
-등록된 모든 업스트림 서버를 조회합니다.
+등록된 모든 업스트림 서버를 조회하는 서버별 상세 뷰입니다.
 
 ```bash
 mms list                             # 사람이 읽기 좋은 표
 mms list --json                      # 스크립트용 JSON
 ```
 
-표에는 각 업스트림의 가져오기 출처를 알려 주는 **ORIGIN** 열이 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, 수동으로 `mms add` 한 항목은 `-` 로 나타납니다. 값 뒤의 `*` 는 원본 등록이 정리(prune)되어 현재 STM 뒤에만 존재함을 뜻하며, `mms eject <name>` 로 복원할 수 있습니다.
+표에는 각 업스트림의 가져오기 출처를 알려 주는 **ORIGIN** 열이 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, 수동으로 `mms add` 한 항목은 `-` 로 나타납니다. 값 뒤의 `*` 는 원본 등록이 정리(prune)되어 현재 STM 뒤에만 존재함을 뜻하며, `mms eject <name>` 로 복원할 수 있습니다. v0.1.32부터는 **SURFACING** 열도 포함되어, 서버별 `mms surfacing` 토글의 값을 여기서 확인합니다.
 
 ### `mms status`
 
-프록시 게이트웨이 설정과 전체 서버 목록을 표시합니다.
+"프록시가 설정되어 올바른 설정 파일을 가리키는가?"에 답하는 설정 요약입니다 — 서버별 상세 뷰가 아닙니다.
 
 ```bash
 mms status
 mms status --json                    # 스크립트용 JSON
 ```
 
-`status` 출력에는 업스트림별 압축 설정, 출력 크기 예산과 함께 서피싱 활성화 상태(`surfacing=on/off`)도 표시됩니다.
+v0.1.32부터 `status`는 요약입니다: 설정 경로, `enabled` 플래그, 스키마 검증 경고, `Servers: N (P host-pruned)`. 서버별 상세(압축, 출력 예산, 서피싱 상태)는 `mms list`로 이동했습니다. `status --json`은 리댁션된 `servers` 맵 전체를 유지하며 `server_count` / `pruned_count` 키가 추가되었습니다.
 
 ### `mms surfacing <server> [on|off]`
 
@@ -142,6 +142,8 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 ```
 
 `--names` 는 `mcp__<server>__<prefix>__<tool>` 의 합산 길이가 MCP 64자 제한(#261)을 초과해 등록 후 조용히 사라진 업스트림 도구를 가려낼 때 씁니다.
+
+`health`는 업스트림별 **서킷 브레이커** 상태도 렌더링합니다. v0.1.32부터 브레이커는 기본 활성화입니다: 연속 3회 호출 실패 시 해당 업스트림의 도구는 약 60초 동안 `circuit_open`으로 빠르게 실패하며, 매 호출이 전체 재시도/데드라인 예산을 소모하지 않습니다. 캐시된 응답은 계속 제공되고 다른 업스트림은 영향을 받지 않습니다. `stm_proxy.json`에서 해당 업스트림에 `circuit_max_failures: 0`을 지정하면 기존의 항상-재시도 동작으로 되돌릴 수 있습니다.
 
 ### `mms prune`
 
@@ -275,7 +277,7 @@ mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지
 
 ## 운영 통계
 
-프록시·서피싱·선택·압축 동작을 런타임에 점검하려면 STM이 관측용 MCP 도구를 제공합니다 — 이 통계는 CLI 서브명령이 아니라 **MCP 도구**로 노출됩니다. 0.1.29 기준 9개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)이며, 기본적으로 MCP `tools/list`에서는 숨겨져 있습니다. 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 각 도구의 입출력은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
+프록시·서피싱·선택·압축 동작을 런타임에 점검하려면 STM이 관측용 MCP 도구를 제공합니다 — 이 통계는 CLI 서브명령이 아니라 **MCP 도구**로 노출됩니다. 0.1.32 기준 9개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)이며, 기본적으로 MCP `tools/list`에서는 숨겨져 있습니다. 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 각 도구의 입출력은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
 
 ## 프록시 서버 실행
 
