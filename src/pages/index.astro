@@ -140,7 +140,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card green" href={`${base}/guides/privacy/`}>
 				<h3>Fully Local &amp; Private</h3>
-				<p>SQLite + ONNX under the hood — no GPU, no external API, no cloud. SQLite files are kept at 0600, secret-looking responses are never cached, and secrets are never pushed out. The STM proxy is fully reversible with <code>mms eject</code>, so there's no lock-in.</p>
+				<p>SQLite + ONNX under the hood — no GPU, no external API, no cloud. SQLite files are kept at 0600, and credential-shaped responses are filtered out before they're cached or indexed. The STM proxy is fully reversible with <code>mms eject</code>, so there's no lock-in.</p>
 			</a>
 		</div>
 	</div>

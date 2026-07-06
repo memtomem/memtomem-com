@@ -74,8 +74,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
 	<p class="hero-sub">
 		매 세션마다 프로젝트를 다시 설명할 필요가 없습니다. memtomem은 노트·문서·코드를
-		검색 가능한 기억으로 전환하여, MCP 호환 에이전트가 세션과 에이전트 경계를 넘어
-		동일한 기억에 접근할 수 있도록 합니다. 모든 데이터는 로컬에 유지됩니다.
+		검색 가능한 기억으로 바꿉니다. MCP를 지원하는 에이전트라면 세션이 바뀌어도,
+		에이전트가 달라도 같은 기억을 그대로 이어서 씁니다. 모든 데이터는 로컬에 남습니다.
 	</p>
 	<div class="hero-install">
 		<span class="dollar">$</span> uv tool install 'memtomem[all]'
@@ -91,7 +91,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 		<div class="section-label">Problem</div>
 		<div class="section-title">에이전트는 왜 잊을까?</div>
-		<div class="section-desc">도구 통합(MCP), 안전(Guardrails), 관측성(Langfuse)은 성숙했지만 기억 계층은 아직 표준이 없습니다.</div>
+		<div class="section-desc">도구 연동(MCP), 안전장치(Guardrails), 관측(Langfuse)은 이미 자리를 잡았지만, ‘기억’만큼은 아직 표준이 없습니다.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
 				<div class="problem-num">01</div>
@@ -106,7 +106,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="problem-card">
 				<div class="problem-num">03</div>
 				<h3>기존 솔루션의 한계</h3>
-				<p>기존 기억 시스템은 에이전트가 명시적으로 검색해야만 동작하고, 특정 런타임에 종속되며, LTM 단일 계층입니다.</p>
+				<p>기존 기억 시스템은 에이전트가 직접 검색해야만 동작하고, 특정 런타임에 묶여 있으며, 장기 기억 한 계층에 그칩니다.</p>
 			</div>
 		</div>
 	</div>
@@ -116,7 +116,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 		<div class="section-label">Solution</div>
 		<div class="section-title">memtomem이 해결합니다</div>
-		<div class="section-desc">인지과학의 작업기억/장기기억 모델을 에이전트에 적용. 단기 압축·캐싱과 장기 검색·인덱싱을 독립 MCP 서버로 분리합니다.</div>
+		<div class="section-desc">인지과학의 작업기억·장기기억 모델을 에이전트에 적용했습니다. 단기 압축·캐싱과 장기 검색·인덱싱을 별도의 MCP 서버로 분리했습니다.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
@@ -140,7 +140,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
 				<h3>완전 로컬 · 비공개</h3>
-				<p>내부 구성은 SQLite + ONNX이며 GPU·외부 API·클라우드 의존성이 없습니다. SQLite 파일은 0600 권한으로 보호되고, 자격증명으로 보이는 응답은 캐시되지 않으며 비밀값은 외부로 내보내지지 않습니다. STM 프록시는 <code>mms eject</code>로 언제든 원래 설정으로 되돌릴 수 있어 잠금(lock-in)이 없습니다.</p>
+				<p>내부 구성은 SQLite + ONNX이며 GPU·외부 API·클라우드 의존성이 없습니다. SQLite 파일은 0600 권한으로 보호되고, 자격증명처럼 보이는 응답은 캐시나 색인에 저장되기 전에 걸러집니다. STM 프록시는 <code>mms eject</code>로 언제든 원래 설정으로 되돌릴 수 있어 잠금(lock-in)이 없습니다.</p>
 			</a>
 		</div>
 	</div>
@@ -190,7 +190,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 		<div class="section-label">Compatibility</div>
 		<div class="section-title">주요 런타임 & 호환성</div>
-		<div class="section-desc">주요 CLI 런타임에 최적화하고, 나머지는 MCP 네이티브 호환성으로 지원합니다.</div>
+		<div class="section-desc">주요 CLI 런타임에 맞춰 최적화하고, 그 밖의 클라이언트는 MCP 표준으로 지원합니다.</div>
 		<div class="runtime-grid">
 			<div class="runtime-chip">Claude Code</div>
 			<div class="runtime-chip">Codex CLI</div>

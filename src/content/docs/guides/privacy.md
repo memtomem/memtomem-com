@@ -3,7 +3,7 @@ title: Local-First & Privacy
 description: How memtomem keeps your data on your machine and protects secrets — fully local, 0600 file permissions, automatic secret detection, and query privacy.
 ---
 
-memtomem never sends your memory data anywhere. Storage, embedding, search, and reranking all run on your machine, and content that looks like a secret is filtered out automatically at the cache, index, and share boundaries.
+By default, memtomem sends your memory data nowhere. Storage, embedding, search, and reranking all run on your machine, and content that looks like a secret is filtered out automatically at the cache, index, and share boundaries.
 
 ## Fully Local
 
@@ -12,10 +12,11 @@ memtomem never sends your memory data anywhere. Storage, embedding, search, and 
 - **Reranking** — When you enable reranking, the default provider is local ONNX (fastembed) — no external API required.
 - **STM proxy** — STM speaks stdio to your AI client; the proxy server itself opens no network port. Persisted stores — the response cache, metrics, and feedback — are all local-only SQLite files under `~/.memtomem/`, never remote or shared across hosts.
 - **No account** — It works without any login or sign-up.
+- **The one exception** — Content leaves your machine only if you opt into an external provider: OpenAI/Ollama embeddings or reranking, or an external LLM compression/extraction path in STM. On STM's external-LLM path, `privacy_scan_enabled` (default on) scans for credentials before the outbound call and skips it on a hit; turning it off sends raw responses unscanned (the server logs a startup warning).
 
 ## Filesystem Protection
 
-The runtime directory (`~/.memtomem/`) is created with `0o700` permissions, and startup refuses it if group/other access has been left open. Files inside are written with `0o600` (owner read/write only).
+The data directory (`~/.memtomem/`) is created with `0o700` permissions and its files are written `0o600` (owner read/write only). Separately, the runtime directory that holds the server's pid/lock files (`$XDG_RUNTIME_DIR/memtomem`, or `/tmp/memtomem-<uid>`) is created `0o700` and startup refuses it if group/other access has been left open.
 
 ## Secret Protection
 
