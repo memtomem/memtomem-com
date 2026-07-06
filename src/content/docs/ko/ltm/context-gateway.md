@@ -5,7 +5,7 @@ description: 에이전트, 스킬, 커맨드를 한 번 정의하고 여러 AI �
 
 Claude Code에서 작성한 스킬을 Codex나 Cursor에서도 그대로 쓰고 싶거나, 같은 커맨드 세트를 여러 프로젝트에서 재사용하고 싶을 때가 있습니다. 런타임마다 파일 위치와 포맷이 달라 복사본이 금세 어긋납니다. Context Gateway는 하나의 정규 `.memtomem/` 소스에서 각 AI 런타임으로 동기화하여 이 문제를 해결합니다.
 
-LTM 0.3.0에서 Context Gateway는 단일 프로젝트·단방향 모델을 넘어, 프로젝트와 티어 사이의 아티팩트 이동/복사, 다중 프로젝트 일괄 동기화, 정규 wiki를 아우르는 중심 기능이 되었습니다.
+LTM 0.3.0부터 Context Gateway는 한 프로젝트 안에서 한 방향으로만 내보내던 도구를 넘어섰습니다. 이제 프로젝트와 계층(티어) 사이에서 항목(아티팩트: 에이전트·스킬·커맨드)을 옮기거나 복사하고, 여러 프로젝트를 한 번에 동기화하며, 재사용할 항목을 모아 두는 정규 wiki까지 아우르는 중심 기능입니다.
 
 ## 해결하는 문제
 
@@ -42,7 +42,7 @@ mm context diff --scope project_shared
 
 ## 정규 티어
 
-Context Gateway는 기억 쓰기와 같은 세 가지 티어를 사용합니다. UI에는 친숙한 라벨(User / Project (shared) / Project (local))로 표시되며, 아래의 scope 값은 CLI 플래그에서 사용합니다:
+Context Gateway는 기억을 쓸 때와 같은 세 가지 **계층(티어)**을 사용합니다. UI에는 익숙한 라벨(User / Project (shared) / Project (local))로 표시되고, 아래 `scope` 값은 CLI 플래그에서 씁니다:
 
 | 티어 (CLI scope) | UI 라벨 | 정규 위치 | 적합한 용도 |
 |---|---|---|---|
@@ -52,7 +52,7 @@ Context Gateway는 기억 쓰기와 같은 세 가지 티어를 사용합니다.
 
 `user` 티어는 0.3.0에서 능동 관리 대상이 되었습니다. 이 경로는 프로젝트 바깥의 홈 디렉터리에 쓰므로, 모든 user 티어 쓰기는 "프로젝트 외부에 쓸까요?" 확인 단계를 거칩니다. 게이트웨이가 실제로 건드릴 홈 디렉터리 파일 목록을 먼저 보여주고, 승인한 뒤에야 씁니다. 이 기능은 `context_gateway.user_tier_enabled` 설정으로 활성화합니다.
 
-`project_local` 정규 파일은 gitignored이며 에이전트 / 스킬 / 커맨드 런타임 경로로 동기화되지 않습니다.
+`project_local` 정규 파일은 git에 올라가지 않으며(gitignore 처리), 에이전트 / 스킬 / 커맨드 런타임 경로로도 동기화되지 않습니다.
 
 `project_shared`는 git으로 추적되므로 비밀값을 넣어서는 안 됩니다. 0.3.0의 동기화와 전송은 비밀값이 감지되면 `project_shared` 쓰기를 강제로 거부하며, `--force` 우회 밸브가 없습니다(git 히스토리는 영구적이기 때문입니다). `user`나 `project_local` 티어에서는 검토 후 재정의가 가능하지만, `project_shared`는 어떤 경우에도 거부합니다.
 
@@ -111,7 +111,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 
 - `move`는 원본을 소비하고 원본의 오래된 런타임 복사본을 정리합니다.
 - `copy`는 원본을 건드리지 않으며, `--as`로 이름을 바꿔 복사할 수 있습니다.
-- 모든 전송은 기본적으로 dry-run 미리보기이며, 실행하려면 `--apply`를 붙입니다.
+- 모든 전송은 기본적으로 실제로 바꾸지 않는 미리보기(dry-run)이며, 실행하려면 `--apply`를 붙입니다.
 - 대상 충돌은 항상 거부되며 `--force` 밸브가 없습니다.
 - `project_shared`로 들어가는 전송은 비밀값 스캔을 거치고 `--confirm-project-shared`를 요구합니다.
 - 모든 성공한 전송은 이어서 실행할 `mm context sync` 명령을 출력합니다.
@@ -149,7 +149,7 @@ mm context sync --include=mcp-servers
 mm context copy mcp-servers <name> --to-project <project>
 ```
 
-`mcp-servers` 동기화는 opt-in입니다(일반 `mm context sync`는 `.mcp.json`을 건드리지 않습니다). 다른 아티팩트와 동일한 비밀값 안전 검사가 적용되므로, 비밀값은 `env` 블록에 직접 넣지 말고 `${VAR}` 참조를 사용합니다. 현재는 `project_shared` 티어의 stdio 서버만 지원합니다.
+`mcp-servers` 동기화는 명시적으로 켜야 동작합니다(opt-in; 일반 `mm context sync`는 `.mcp.json`을 건드리지 않습니다). 다른 항목과 동일한 비밀값 안전 검사가 적용되므로, 비밀값은 `env` 블록에 직접 넣지 말고 `${VAR}` 참조를 사용합니다. 현재는 `project_shared` 티어의 stdio 서버만 지원합니다.
 
 ## 버전 스냅샷
 
@@ -197,7 +197,7 @@ Context Gateway는 처음 열면 이해하기 쉬운 **Simple view**로 시작�
 - **Sync** — 저장된 복사본을 도구로 내보냅니다.
 - **Import** — 런타임의 복사본을 다시 가져옵니다.
 
-문제없는 행은 체크 표시로 정리됩니다. 도입 안내 레이어에서 이 개념 모델을 설명합니다: 정규 master 복사본은 **Store**(`.memtomem/`) 하나에 두고, 이를 각 **Runtimes**로 Sync하며, Import는 런타임의 복사본을 다시 가져옵니다. 편집은 Store에서 하고 Sync하는 단방향 흐름입니다. **Store ── Sync → Runtimes** 다이어그램이 이를 시각화합니다.
+문제없는 행은 체크 표시로 정리됩니다. 도입 안내 레이어에서 이 개념 모델을 설명합니다: 정규 원본(master)은 **Store**(정규 저장소, `.memtomem/`) 한 곳에 두고, 이를 각 **Runtimes**(런타임)로 **Sync**(내보내기)하며, **Import**는 런타임의 복사본을 다시 가져옵니다. 편집은 항상 Store에서 하고 Sync로 내보내는 한 방향 흐름입니다. **Store ── Sync → Runtimes** 다이어그램이 이를 보여 줍니다.
 
 전체 제어 그리드(아티팩트 / 티어 / 런타임 / scope의 4축)는 **Advanced** 토글 한 번으로 열 수 있으며, 선택은 브라우저별로 유지됩니다.
 

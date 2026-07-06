@@ -17,8 +17,8 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 | **hybrid** | Markdown | 구조 보존 + 불필요 섹션 축약 |
 | **selective** | 대형 구조화 데이터 | 먼저 TOC를 반환하고 필요한 섹션을 후속 호출로 선택 |
 | **progressive** | 대형 콘텐츠 | 커서 기반 순차 전달 (제로 정보손실) |
-| **extract_fields** | JSON 딕셔너리 | top-level 형태와 대표 nested 값을 보존 |
-| **schema_pruning** | JSON 배열 | 재귀적 schema-preserving 샘플링 |
+| **extract_fields** | JSON 딕셔너리 | 최상위 구조와 대표적인 중첩(nested) 값을 보존 |
+| **schema_pruning** | JSON 배열 | 스키마(구조)를 보존하며 재귀적으로 표본 추출 |
 | **skeleton** | API 문서 | 헤딩과 섹션 첫 줄 중심으로 구조 보존 |
 | **llm_summary** | 복잡한 텍스트 | LLM 기반 요약 (OpenAI/Anthropic/Ollama) — 타임아웃 보호(기본 60초) |
 | **auto** | 모든 유형 | 콘텐츠 분석 후 최적 전략 자동 선택 |
@@ -37,7 +37,7 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 | 큰 구조화 Markdown / 코드 비중이 높은 텍스트 | `hybrid` |
 | 기타 텍스트 또는 단순 JSON | `truncate` |
 
-`selective`, `progressive`, `llm_summary`는 opt-in 전용입니다. 상호작용 패턴을 바꾸거나 외부 LLM 지연을 추가하기 때문에 `auto`가 자동 선택하지 않습니다.
+`selective`, `progressive`, `llm_summary`는 직접 지정해야만 쓰이는 전략입니다(opt-in). 에이전트의 상호작용 방식을 바꾸거나 외부 LLM 때문에 지연이 생길 수 있어 `auto`가 자동으로 고르지 않습니다.
 
 ## 쿼리 인식 예산 배분
 
@@ -45,7 +45,7 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 
 ## JSON 안전성
 
-JSON-aware 계층은 압축 후 엄격한 JSON으로 다시 직렬화합니다. `NaN`, `Infinity`, `-Infinity` 같은 non-finite 값은 출력 전에 `null`로 변환되어, 다운스트림 파서가 Python 확장 토큰을 받지 않습니다. JSON 계층은 예산이 줄어들수록 단조롭게 저하됩니다. 문서화된 예외는 단독 `selective`입니다. 먼저 entry preview를 줄이지만, 섹션 수가 매우 많으면 preview가 0이어도 TOC envelope가 예산을 넘을 수 있습니다. entry를 삭제하면 선택 계약이 깨지므로 이 절충안을 유지합니다.
+JSON을 다루는 압축 계층은 압축을 마친 뒤 결과를 다시 올바른(엄격한) JSON으로 만듭니다. `NaN`, `Infinity`, `-Infinity` 같은 값은 표준 JSON이 아니므로 출력 전에 `null`로 바꿔, 이를 받는 파서가 Python 전용 토큰을 만나지 않게 합니다. 예산이 줄어들수록 JSON 계층은 품질이 급격히 무너지지 않고 완만하게 떨어집니다. 다만 `selective` 하나는 예외입니다: 먼저 각 항목의 미리보기를 줄이지만, 섹션이 아주 많으면 미리보기를 0으로 해도 목차(TOC) 뼈대만으로 예산을 넘을 수 있습니다. 이때 항목 자체를 지우면 '선택' 동작의 전제가 깨지므로, 예산을 조금 넘기는 쪽을 택합니다.
 
 ## 제로 정보손실: Progressive Delivery
 
@@ -55,7 +55,7 @@ JSON-aware 계층은 압축 후 엄격한 JSON으로 다시 직렬화합니다. 
 2. 에이전트가 추가 부분을 요청하면 커서 기반으로 다음 청크 전달
 3. 전체 내용을 순차적으로 확인 가능
 
-모든 progressive 청크는 정규 푸터 `\n---\n[progressive: chars=<n>]` 로 끝납니다 — 에이전트는 `memtomem_stm.proxy.progressive` 에서 제공되는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN` 으로 분할해야 합니다. `\n---\n` 만으로 분할하면 본문 안의 Markdown 수평선이나 YAML 펜스에 걸려 바이트가 조용히 누락될 수 있습니다.
+모든 progressive 청크는 정규 푸터 `\n---\n[progressive: chars=<n>]` 로 끝납니다 — 에이전트는 `memtomem_stm.proxy.progressive` 에서 제공되는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN` 으로 분할해야 합니다. `\n---\n` 만으로 분할하면 본문 안의 Markdown 수평선이나 YAML 펜스에 걸려 내용이 조용히 누락될 수 있습니다.
 
 progressive 전달의 후속 요청률·커버리지, 그리고 primary store 장애 시 패스스루로의 저하 지표는 `stm_progressive_stats` 도구로 확인할 수 있습니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
 
@@ -67,7 +67,7 @@ progressive 전달의 후속 요청률·커버리지, 그리고 primary store �
 progressive → hybrid → truncate
 ```
 
-각 단계에서 하한을 충족하면 해당 전략의 결과를 사용합니다. 도구별 `max_result_chars` 가 하한 이상으로 깎으려 할 경우, 절삭 전에 char 예산이 `len(response) * min_result_retention` 까지 상향됩니다.
+각 단계에서 하한을 충족하면 해당 전략의 결과를 사용합니다. 도구별 `max_result_chars` 설정이 이 하한보다 더 많이 깎으려 하면, 절삭하기 전에 글자 수 예산을 `len(response) * min_result_retention` 까지 끌어올립니다.
 
 `llm_summary` 전략에는 별도의 **타임아웃 가드**가 있습니다: 서버·도구별 `llm` 블록의 `llm_timeout_seconds` 필드(기본 `60`초). 느리거나 멈춘 LLM 엔드포인트가 더 이상 프록시 전체를 멈추지 않으며 — 타임아웃 발생 시 STM이 `truncate` 로 폴백해 에이전트에 한정된 길이의 응답이 반환됩니다.
 

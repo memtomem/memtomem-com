@@ -8,7 +8,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
-	<meta name="description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
+	<meta name="description" content="노트·문서·코드를 검색 가능한 기억으로 바꿔, MCP를 지원하는 AI 에이전트라면 세션이 바뀌어도 에이전트가 달라도 그대로 이어서 씁니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/ko/" />
@@ -17,7 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/ko/" />
 	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta property="og:description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
+	<meta property="og:description" content="노트·문서·코드를 검색 가능한 기억으로 바꿔, MCP를 지원하는 AI 에이전트라면 세션이 바뀌어도 에이전트가 달라도 그대로 이어서 씁니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image.png" />
 	<meta property="og:image:width" content="1200" />
@@ -28,7 +28,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 기억으로 전환하여 어떤 MCP 호환 AI 에이전트에서든 세션과 에이전트 경계를 넘어 활용합니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
+	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 기억으로 바꿔, MCP를 지원하는 AI 에이전트라면 세션이 바뀌어도 에이전트가 달라도 그대로 이어서 씁니다. STM + LTM 분리 아키텍처, 완전 로컬 구동." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image.png" />
 
 	<!-- JSON-LD 구조화 데이터 -->
@@ -120,7 +120,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
-				<p>노트·문서·코드를 <code>mm index</code>로 색인하면, BM25 키워드 검색과 벡터 의미 검색을 RRF로 융합해 정확한 식별자와 의미 기반 질의를 한 번에 검색합니다. 마크다운·코드·구조화 문서는 구조 단위로 청킹되고, 재색인 시 변경된 청크만 다시 임베딩합니다.</p>
+				<p>노트·문서·코드를 <code>mm index</code>로 색인하면, BM25 키워드 검색과 벡터 의미 검색을 RRF로 융합해 정확한 식별자와 의미 기반 질의를 한 번에 검색합니다. 마크다운·코드·구조화 문서는 구조 단위로 잘라 색인하고, 다시 색인할 때는 바뀐 조각만 임베딩을 새로 계산합니다.</p>
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
@@ -132,7 +132,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
-				<p>에이전트가 직접 검색을 요청하지 않아도 됩니다. STM은 프록시하는 MCP 호출을 관찰하여 관련 기억을 적시에 표면화합니다. 표면화된 각 기억에는 식별자가 붙어, 에이전트가 개별 항목을 평가하거나 무효화할 수 있습니다.</p>
+				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 오가는 도구 호출을 살펴 관련 기억을 알맞은 순간에 찾아 붙여 줍니다. 붙여 준 기억마다 식별자가 있어, 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>

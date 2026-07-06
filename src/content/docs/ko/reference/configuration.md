@@ -13,7 +13,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 ### Storage
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STORAGE__BACKEND` | 스토리지 백엔드 | `sqlite` |
 | `MEMTOMEM_STORAGE__SQLITE_PATH` | SQLite 데이터베이스 파일 경로 | `~/.memtomem/memtomem.db` |
@@ -21,7 +21,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 ### Embedding
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `none` (`mm init` 실행 전까지 키워드 검색만 사용) |
 | `MEMTOMEM_EMBEDDING__MODEL` | 선택된 프로바이더의 모델명 | `""` |
@@ -35,7 +35,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 ### Indexing
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | `mm server` 파일 워처가 반응형으로 재인덱싱하는 디렉터리 (JSON 리스트). 기존 파일은 자동 스캔되지 않으므로 `mm index <dir>` 로 한 번 시드한 뒤 워처에 맡기세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 경로가 채워집니다. | `["~/.memtomem/memories"]` + 선택한 provider 폴더 |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래의 프로젝트 티어 기억 루트 | `[]` |
@@ -58,7 +58,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 경로 glob → 네임스페이스 매핑 규칙. 인덱싱 시점에 네임스페이스를 자동 할당하므로, `mem_index` 호출마다 `namespace=`를 지정할 필요가 없습니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_NAMESPACE__RULES` | `{path_glob, namespace}` 객체로 구성된 JSON 리스트. `pathspec.GitIgnoreSpec` 패턴, 대소문자 구분 없음. `{parent}`와 `{ancestor:N}` 플레이스홀더는 일치한 파일 경로에서 치환됨. 해석 순서: 명시적 `namespace=` 인자 → 규칙(최초 매칭) → `enable_auto_ns` → `default_namespace`. | `[]` |
 | `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | 새 청크의 기본 네임스페이스 | `default` |
@@ -77,7 +77,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API 호출이 필요하지 않습니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 리랭킹 활성화 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (로컬 ONNX) / `cohere` (외부 API) | `fastembed` |
@@ -90,7 +90,7 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 
 ### Search
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_SEARCH__DEFAULT_TOP_K` | 기본 검색 결과 수 | `10` |
 | `MEMTOMEM_SEARCH__BM25_CANDIDATES` | BM25 후보군 크기 | `50` |
@@ -107,7 +107,7 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 
 반감기 기반 시간 감쇠 가중. 인덱싱된 지 오래된 청크의 검색 점수를 점진적으로 낮춥니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_DECAY__ENABLED` | 시간 감쇠 가중 활성화 | `false` |
 | `MEMTOMEM_DECAY__HALF_LIFE_DAYS` | 반감기 (일). 이 기간이 지나면 기여도가 절반으로 | `30.0` |
@@ -116,7 +116,7 @@ Cross-encoder 리랭킹은 기본적으로 로컬에서 동작하며, 외부 API
 
 Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서로 다른 관점을 섞습니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_MMR__ENABLED` | MMR 다양성 재순위 활성화 | `false` |
 | `MEMTOMEM_MMR__LAMBDA_PARAM` | 0.0–1.0. `0.0`=다양성 최대, `1.0`=관련성 최대 | `0.7` |
@@ -125,7 +125,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 자주 조회된 청크를 상위로 밀어 올리는 빈도 기반 배수.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_ACCESS__ENABLED` | 접근 빈도 기반 가중 활성화 | `false` |
 | `MEMTOMEM_ACCESS__MAX_BOOST` | 점수 배수 상한 (`>= 1.0`) | `1.5` |
@@ -134,7 +134,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 청크 메타데이터(태그 · 크기 · 위치 등)에서 파생된 중요도 점수를 검색 점수에 배수로 적용합니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_IMPORTANCE__ENABLED` | 중요도 가중 활성화 | `false` |
 | `MEMTOMEM_IMPORTANCE__MAX_BOOST` | 점수 배수 상한 (`>= 1.0`) | `1.5` |
@@ -144,7 +144,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 원본 쿼리에 태그·헤딩·LLM 생성 용어를 추가해 재현율을 높입니다. `strategy=llm` 은 아래 LLM 섹션 설정을 사용합니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_QUERY_EXPANSION__ENABLED` | 쿼리 확장 활성화 | `false` |
 | `MEMTOMEM_QUERY_EXPANSION__MAX_TERMS` | 추가 용어 최대 개수 | `3` |
@@ -154,7 +154,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 검색 히트 주변의 ±N 인접 청크를 함께 반환하는 small-to-big retrieval. 파편화된 맥락을 회복할 때 유용합니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_CONTEXT_WINDOW__ENABLED` | 컨텍스트 윈도우 확장 활성화 | `false` |
 | `MEMTOMEM_CONTEXT_WINDOW__WINDOW_SIZE` | 히트당 ±N 인접 청크 (`0`–`10`) | `2` |
@@ -163,7 +163,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 `query_expansion.strategy=llm`, 통합 요약 등 LLM 기반 기능에서 공통으로 사용하는 백엔드 설정.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_LLM__ENABLED` | LLM 기반 기능 활성화 | `false` |
 | `MEMTOMEM_LLM__PROVIDER` | `ollama` / `openai` / `anthropic` / 호환 엔드포인트 | `ollama` |
@@ -175,19 +175,19 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### Tool exposure
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 라우터 포함 총 9개) / `standard` (`mem_do` 포함 38개) / `full` (87개 전체를 개별 노출) | `core` |
 
 ### Web UI
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_WEB__MODE` | `prod` (정돈된 페이지만) / `dev` (Sessions · Namespaces · Health Report 등 메인테이너 페이지 추가). `mm web --mode` · `mm web --dev`가 실행 시 이 값을 덮어씁니다. | `prod` |
 
 ### Lifecycle policies & webhooks
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_POLICY__ENABLED` | PolicyScheduler 실행 (auto_archive / auto_promote / auto_expire / auto_tag) | `false` |
 | `MEMTOMEM_POLICY__SCHEDULER_INTERVAL_MINUTES` | 스케줄러 주기 | `60.0` |
@@ -202,7 +202,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 중복·유사 기억을 주기적으로 묶어 아카이브 요약으로 압축하는 백그라운드 잡.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_CONSOLIDATION_SCHEDULE__ENABLED` | 스케줄 실행 활성화 | `false` |
 | `MEMTOMEM_CONSOLIDATION_SCHEDULE__INTERVAL_HOURS` | 실행 주기 (시간) | `24.0` |
@@ -213,7 +213,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 주기적 헬스 체크, 고아 레코드 정리, 자동 유지보수를 수행하는 백그라운드 루프.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_HEALTH_WATCHDOG__ENABLED` | 상태 모니터 실행 | `false` |
 | `MEMTOMEM_HEALTH_WATCHDOG__HEARTBEAT_INTERVAL_SECONDS` | 하트비트 주기 | `60.0` |
@@ -225,7 +225,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### Scheduler
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_SCHEDULER__ENABLED` | 등록된 유지보수 job의 cron dispatch 활성화 | `false` |
 | `MEMTOMEM_SCHEDULER__MAX_CONCURRENT_JOBS` | 동시에 실행할 scheduled job 상한 | `1` |
@@ -234,7 +234,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### Session summary
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_SESSION_SUMMARY__AUTO` | 충분한 청크가 추가된 상태에서 `mem_session_end` 호출 시 LLM 요약 자동 생성 | `true` |
 | `MEMTOMEM_SESSION_SUMMARY__MIN_CHUNKS` | 자동 요약 실행 최소 청크 수 | `5` |
@@ -249,7 +249,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 세션 명령 실행을 JSONL 파일과 (선택적으로) Langfuse로 추적합니다. 기본적으로 비활성화됩니다. `payload_mode`의 기본값은 `metadata`로, 페이로드 본문을 기록하지 않습니다. `redacted`는 시크릿을 가린 본문을 남기며, `full`은 전체 본문을 남깁니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_SESSION_TRACE__ENABLED` | 세션 실행 추적 활성화 | `false` |
 | `MEMTOMEM_SESSION_TRACE__JSONL_ENABLED` | JSONL 싱크 기록 | `true` |
@@ -266,14 +266,14 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### Logging
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_LOG_LEVEL` | `DEBUG` / `INFO` / `WARNING` / `ERROR` | `INFO` |
 | `MEMTOMEM_LOG_FORMAT` | 로그 포맷 | — |
 
 ### Hooks / Context Gateway
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_HOOKS__TARGET_SCOPE` | memtomem 관리 Claude Code settings hook 대상 스코프: `user`, `project_shared`, `project_local` | `user` |
 | `MEMTOMEM_CONTEXT_GATEWAY__KNOWN_PROJECTS_PATH` | Context Gateway용 Web UI 프로젝트 레지스트리 | `~/.memtomem/known_projects.json` |
@@ -283,7 +283,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 임베딩 프로바이더 비교
 
-| Provider | GPU | 비용 | 비고 |
+| 제공자 | GPU | 비용 | 비고 |
 |---|---|---|---|
 | `onnx` | 불필요 | 무료 | fastembed 기반 내장. 최초 실행 시 약 270MB 다운로드 |
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
@@ -297,14 +297,14 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### General
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `WARNING` |
 | `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰/관리 도구 9개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP `tools/list`에 노출. 미설정/`false`일 때도 모델용 도구 4개(`stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback`)는 계속 노출됩니다. 관찰 도구는 MCP `tools/list`에서 빠질 뿐, Python(테스트·CLI 경로)에서는 그대로 import·호출할 수 있습니다. | `false` |
 
 ### Proxy
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__ENABLED` | 프록시 파이프라인 마스터 스위치 | `false` |
 | `MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION` | 기본 압축 전략 | `auto` |
@@ -314,7 +314,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Proxy → Cache
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | 응답 캐싱 활성화 | `true` |
 | `MEMTOMEM_STM_PROXY__CACHE__DEFAULT_TTL_SECONDS` | 캐시 TTL | `3600` |
@@ -323,7 +323,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Proxy → Auto-Index (Stage 4)
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__ENABLED` | 도구 응답을 LTM으로 인덱싱 | `false` |
 | `MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND` | 인덱싱을 요청 경로 외부의 백그라운드에서 실행 | `false` |
@@ -335,7 +335,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Proxy → Metrics / Extraction / Relevance scorer
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__METRICS__ENABLED` | 호출 메트릭 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | Stage 4b EXTRACT (사실 추출) | `false` |
@@ -348,7 +348,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 업스트림이 제공하는 도구 중 어떤 것을 에이전트에게 광고할지 도구 광고 시점에 결정하는 STM 자체 필터입니다. 실패가 잦거나 자격 증명을 노출하거나 이름이 중복되는 도구를 광고 대상에서 제외합니다. 건강 신호는 프록시 시작 시 한 번 평가되어 세션 동안 광고 집합이 안정적으로 유지됩니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__EXPOSURE__PROFILE` | `strict`(신호 규칙으로 하드 차단) / `review`(차단 대신 랭킹에서 강등하고 telemetry에 기록) / `explore`(신호 규칙 비활성화) | `strict` |
 | `MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_WINDOW_HOURS` | 도구별 건강도 판정에 사용하는 메트릭 조회 윈도우(시간) | `24.0` |
@@ -360,7 +360,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 프록시 호출마다 선택·실행 기록을 JSONL로 남기고, 광고된 도구 집합을 호출 신호 기준으로 BM25 랭킹합니다. 랭킹은 telemetry에만 기록되며 노출 자체는 바꾸지 않습니다.
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__ENABLED` | 호출당 selection/execution JSONL 기록 활성화 | `false` |
 | `MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__PATH` | JSONL 로그 경로 | `~/.memtomem/stm_selection_log.jsonl` |
@@ -374,7 +374,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 별도의 도구 그래프 MCP 서버에 cross-server 권한·데이터 흐름 적격성을 질의해 노출 필터의 추가 규칙으로 사용합니다. 기본적으로 비활성화이며, 그래프 서버는 proxy하지 않고 consult만 합니다(클라이언트는 그래프의 도구를 보지 않음).
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENABLED` | 외부 도구 그래프 적격성 제공자 활성화 | `false` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__COMMAND` | stdio 도구 그래프 MCP 서버 실행 명령어 | `toolgraph` |
@@ -405,7 +405,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Surfacing (Stage 3)
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_SURFACING__ENABLED` | LTM 기반 능동적 서피싱 활성화 | `true` |
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | 관련성 최소 점수 | `0.03` |
@@ -429,7 +429,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Hook / Daemon
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_HOOK__USE_DAEMON` | `mms hook` 서피싱을 매번 새로 띄우는 in-process 경로 대신 상주 로컬 daemon으로 처리 | `true` |
 | `MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS` | hook-to-daemon 왕복 타임아웃 | `2.5` |
@@ -443,7 +443,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### Langfuse (관측성)
 
-| Variable | Description | Default |
+| 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_LANGFUSE__ENABLED` | 스팬 전송 | `false` |
 | `MEMTOMEM_STM_LANGFUSE__PUBLIC_KEY` | Langfuse public key | — |
@@ -455,7 +455,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 
 ### 압축 전략 (`MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION`)
 
-| Strategy | 용도 |
+| 전략 | 용도 |
 |---|---|
 | `auto` | 기본값 — 콘텐츠 유형별 자동 선택 |
 | `hybrid` | Markdown (구조 보존 + 비핵심 섹션 축약) |

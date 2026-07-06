@@ -89,7 +89,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 
 ### `stm_selection_stats`
 
-도구 선택·실행 텔레메트리를 요약합니다. `proxy.selection_telemetry.enabled = true`로 설정하면 프록시가 JSONL 로그를 기록하며, 이 도구는 그 로그를 읽어 이벤트 수, ranker 버전별 선택, 서버·도구별 선택, 실행 ok/error 및 지연 시간 백분위수, 적격성 하드 필터의 reject 사유 집계를 보여 줍니다. 현재 프로세스의 쓰기 경로 카운터(기록·샘플 제외·redaction drop·쓰기 오류)도 함께 표시합니다. 활성 로그만 집계하며, 로테이션된 백업은 존재만 표시하고 파싱하지 않습니다.
+도구 선택·실행 텔레메트리를 요약합니다. `proxy.selection_telemetry.enabled = true`로 설정하면 프록시가 JSONL 로그를 기록하며, 이 도구는 그 로그를 읽어 이벤트 수, 랭커(ranker) 버전별 선택, 서버·도구별 선택, 실행 성공/오류와 지연 시간 분포(백분위수), 적격성 필터가 도구를 제외한 사유별 집계를 보여 줍니다. 현재 프로세스의 쓰기 경로 카운터(기록·샘플 제외·redaction drop·쓰기 오류)도 함께 표시합니다. 활성 로그만 집계하며, 로테이션된 백업은 존재만 표시하고 파싱하지 않습니다.
 
 파라미터 없음. *(관찰 — `advertise_observability_tools=true`일 때만 MCP에 노출.)*
 
@@ -97,7 +97,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 
 ### `stm_index_stats`
 
-자동 인덱싱과 추출 경로(`auto_index_response` = 응답 verbatim 청킹, `extract_and_store` = LLM 사실 추출 후 청킹)를 통한 STM 기반 LTM 쓰기 통계입니다. SURFACE 경로의 `stm_surfacing_stats`와 대칭이지만 INDEX는 의도적으로 품질 시그널을 두지 않으며, 운영자가 보는 값은 `attempts`(경로별 시도 수)와 `outcomes`(`stored` / `error` / `privacy_skip` / `dedup_skip` / `extracted_zero_facts`) 분포뿐입니다.
+자동 인덱싱과 추출 경로(`auto_index_response` = 응답을 그대로(verbatim) 청킹, `extract_and_store` = LLM으로 사실을 추출한 뒤 청킹)를 통한 STM 기반 LTM 쓰기 통계입니다. SURFACE 경로의 `stm_surfacing_stats`와 대칭이지만 INDEX는 의도적으로 품질 시그널을 두지 않으며, 운영자가 보는 값은 `attempts`(경로별 시도 수)와 `outcomes`(`stored` / `error` / `privacy_skip` / `dedup_skip` / `extracted_zero_facts`) 분포뿐입니다.
 
 > 독립 실행형 `mms` 서버에서는 INDEX 쓰기 경로가 설계상 비활성 상태입니다(#288). `stm_proxy.json`에서 `auto_index`를 켜도 독립 실행형 서버는 LTM에 다시 기록하지 않으며, 이 카운터는 라이브러리 통합과 향후 서버 연결을 위해 존재합니다.
 
@@ -135,7 +135,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 
 ### `stm_progressive_stats`
 
-Progressive 압축을 거친 호출의 응답별 후속 읽기 비율과 커버리지를 집계합니다. 초기 청크와 이어지는 각 `stm_proxy_read_more`은 `progressive_reads` 테이블의 한 행으로 기록되며, 캐시 키 단위로 모읍니다 — 후속 5회 응답과 후속 없음 응답의 가중치가 동일합니다. total reads, total responses, follow-up rate, avg chars served, avg total chars, avg coverage, 도구별 분해를 보고합니다. 또한 기본 `PROGRESSIVE` 저장 경로가 실패하여 캐시 없는 전체 응답 패스스루로 강등된 횟수도 함께 보고하므로, 백킹 스토어 장애가 조용히 묻히지 않습니다.
+Progressive 압축을 거친 호출의 응답별 후속 읽기 비율과 커버리지를 집계합니다. 초기 청크와 이어지는 각 `stm_proxy_read_more`은 `progressive_reads` 테이블의 한 행으로 기록되며, 캐시 키 단위로 모읍니다 — 후속 5회 응답과 후속 없음 응답의 가중치가 동일합니다. total reads, total responses, follow-up rate, avg chars served, avg total chars, avg coverage, 도구별 분해를 보고합니다. 또한 기본 `PROGRESSIVE` 저장 경로가 실패해서 캐시 없이 전체 응답을 그대로 흘려보내는 방식으로 내려간 횟수도 함께 보고하므로, 저장소(백킹 스토어) 장애가 조용히 묻히지 않습니다.
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|

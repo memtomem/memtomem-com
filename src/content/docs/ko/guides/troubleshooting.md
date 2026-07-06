@@ -29,7 +29,7 @@ uv tool install 'memtomem[all]' --refresh
 
 ### `mm status`가 무엇을 보여줘야 하나
 
-`mm status`는 설치 후 첫 점검 명령입니다. 스토리지 경로, 임베딩 프로바이더, 청크 수 요약이 나오면 정상입니다. **아직 `mm index`를 실행하기 전이라면 청크가 0개인 것이 정상입니다** — 인덱싱 후 다시 확인하면 늘어납니다. 스크립트에서 다루려면 `mm status --json`으로 기계가 읽을 수 있는 형태를 받을 수 있습니다.
+`mm status`는 설치 후 첫 점검 명령입니다. 저장소 경로, 임베딩 프로바이더, 청크 수 요약이 나오면 정상입니다. **아직 `mm index`를 실행하기 전이라면 청크가 0개인 것이 정상입니다** — 인덱싱 후 다시 확인하면 늘어납니다. 스크립트에서 다루려면 `mm status --json`으로 기계가 읽을 수 있는 형태를 받을 수 있습니다.
 
 ### 에이전트에 memtomem 도구가 보이지 않음
 
@@ -69,7 +69,7 @@ STM은 SURFACE 단계에서 LTM에 질의해 관련 기억을 주입합니다. �
 ## 로그는 어디에 있나
 
 - **MCP 서버 로그**(LTM `memtomem-server`, STM `mms`)는 기본적으로 **stderr**로 나가며, 이를 기동한 MCP 클라이언트가 캡처하거나 버립니다. 상세도는 `MEMTOMEM_LOG_LEVEL`로 조정합니다.
-- **STM 파일 로그**는 opt-in입니다. `MEMTOMEM_STM_LOG_FILE`을 설정하면 회전(rotating) 로그 파일이 생깁니다(0.1.32에서 강화).
+- **STM 파일 로그**는 기본적으로 꺼져 있습니다(opt-in). `MEMTOMEM_STM_LOG_FILE`을 설정하면 일정 크기마다 새로 쓰는(rotating) 로그 파일이 생깁니다(0.1.32에서 강화).
 - **Web UI 로그**는 `~/.memtomem/logs/web.log`에 있습니다(`mm web -b`로 백그라운드 실행 시). 이는 MCP 서버 로그가 아니라 Web UI 전용 로그입니다.
 
 ## 파일 위치 요약

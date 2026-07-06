@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]`은 이 문서의 기본 흐름과 맞는 권장 설치입니다. ONNX 로컬 임베딩, 한국어 토크나이저, Ollama / OpenAI 프로바이더, 코드 청커, Web UI, Langfuse 관측성 트레이싱을 모두 포함합니다(~250 MB). 가볍게 설치하려면 extras 를 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
+`[all]`은 이 문서의 기본 흐름에 맞는 권장 설치입니다. 로컬 임베딩(ONNX), 한국어 토크나이저, Ollama / OpenAI 연동, 코드 분할기, 웹 UI, 관측용 Langfuse 트레이싱을 모두 포함합니다(~250 MB). 더 가볍게 쓰려면 이 확장(extras)을 생략해 BM25 전용(~40 MB)으로 설치할 수 있습니다:
 
 ```bash
 uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
@@ -92,7 +92,7 @@ memtomem은 모든 데이터를 홈 디렉토리 아래에 보관합니다 — �
 
 ## STM 프록시 (memtomem-stm)
 
-STM은 선택 사항입니다. 능동적 기억 제시(surfacing)나 도구 응답 압축이 필요할 때, LTM 빠른 시작 흐름이 동작한 뒤 설치하세요.
+STM은 선택 사항입니다. 관련 기억을 자동으로 찾아 붙여 주는 서피싱이나 도구 응답 압축이 필요할 때, LTM 빠른 시작 흐름이 동작한 뒤 설치하세요.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (권장)">
@@ -150,7 +150,7 @@ STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. S
 | **Ollama** | `ollama pull nomic-embed-text` | 불필요 | 무료 |
 | **OpenAI** | API 키 필요 | — | 유료 |
 
-**어떤 프로바이더를 선택할지 결정하기 어려운 경우**, **ONNX**를 권장합니다. 완전 로컬에서 동작하고 무료이며, 별도 데몬이나 API 키가 필요하지 않습니다. 이후 `mm init`을 다시 실행하거나 `MEMTOMEM_EMBEDDING__PROVIDER` 환경 변수를 설정하여 변경할 수 있습니다(중첩된 pydantic-settings 키에는 `__` 이중 언더스코어를 사용합니다).
+**어떤 프로바이더를 선택할지 결정하기 어려운 경우**, **ONNX**를 권장합니다. 완전 로컬에서 동작하고 무료이며, 별도 데몬이나 API 키가 필요하지 않습니다. 이후 `mm init`을 다시 실행하거나 `MEMTOMEM_EMBEDDING__PROVIDER` 환경 변수를 설정하여 바꿀 수 있습니다(환경 변수에서 중첩된 설정 키는 `__` 이중 언더스코어로 구분합니다).
 
 ## 기술 스택
 

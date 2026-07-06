@@ -24,7 +24,7 @@ mm init --advanced                   # 피커 생략, 10단계 전체 마법사
 mm init --fresh                      # 누적 설정 일괄 정리 후 마법사 재실행
 ```
 
-재설치 경로에서 `mm init`은 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 프로바이더·모델·차원이 새 프리셋과 일치하는지 검사합니다. 불일치가 감지되면 대화형에서는 벡터 인덱스(`chunks_vec`)의 in-place 재생성을 제안하고, `--non-interactive` 비대화 모드에서는 `mm embedding-reset --mode apply-current` 복구 안내를 출력합니다. 청크 테이블은 보존되므로 이후 `mm index <path>`로 재인덱싱하면 작업 집합이 복원됩니다.
+재설치 경로에서 `mm init`은 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 프로바이더·모델·차원이 새 프리셋과 일치하는지 검사합니다. 불일치가 감지되면 대화형에서는 벡터 인덱스(`chunks_vec`)를 그 자리에서 다시 만드는 방법을 제안하고, `--non-interactive` 비대화 모드에서는 `mm embedding-reset --mode apply-current` 복구 안내를 출력합니다. 청크 테이블은 보존되므로 이후 `mm index <path>`로 재인덱싱하면 작업 집합이 복원됩니다.
 
 `--fresh`는 마법사가 수정하지 않은 필드 중 내장 기본값과 값이 다른 모든 키를 제거한 뒤 마법사를 다시 실행합니다. 이전 버전에서 누적된 설정 항목을 정리하는 안전한 일괄 정리 옵션이며, 기존 `config.json`은 `config.json.bak-<unix-ts>`로 백업된 후 재작성됩니다.
 
@@ -49,7 +49,7 @@ mm config unset indexing.memory_dirs
 mm config unset rerank.model search.default_top_k
 ```
 
-`mm config unset` 은 idempotent — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `indexing.memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
+`mm config unset` 은 여러 번 실행해도 결과가 같습니다(idempotent) — 존재하지 않는 키를 제거해도 에러 없이 통과합니다. 다른 머신에서 이전된 `indexing.memory_dirs` 경로, 또는 프래그먼트를 덮고 있는 단일 필드를 정리할 때 유용합니다.
 
 ## 검색과 회상
 
@@ -66,7 +66,7 @@ mm search "deployment config" --namespace project-x --top-k 5
 
 ### `mm tags list / rename / delete / merge`
 
-청크에 붙은 태그를 일괄 정리합니다 — Web UI의 Tags 탭과 동일한 작업을 CLI에서 수행합니다. 모든 변경 작업은 기본이 dry-run이며, 실제로 쓰려면 `--apply`가 필요합니다.
+청크에 붙은 태그를 일괄 정리합니다 — Web UI의 Tags 탭과 동일한 작업을 CLI에서 수행합니다. 모든 변경 작업은 기본이 실제로 바꾸지 않는 미리보기(dry-run)이며, 실제로 쓰려면 `--apply`가 필요합니다.
 
 ```bash
 mm tags list                                 # 사용 중인 태그와 사용 빈도
@@ -148,7 +148,7 @@ mm index ~/docs/architecture         # 특정 디렉토리 인덱싱
 mm index README.md                   # 단일 파일 인덱싱
 ```
 
-`indexing.memory_dirs` 에 등록된 경로는 `mm server` 가 시작하는 파일 워처가 **반응형(reactive)** 으로 감시합니다 — 워처 기동 이후에 발생하는 modify/create/move 이벤트만 재인덱싱하므로, 기동 시점에 **이미 존재하던 파일은 자동 스캔되지 않습니다**. 그래서 `mm index <dir>` (또는 `mem_index(path="<dir>")`) 로 한 번 시드한 뒤 워처에 맡기는 흐름이 기본입니다. `mm init` 마법사의 `Next steps` 가 `mm index {memory_dir}` 를 1단계로 출력하는 이유이기도 합니다.
+`indexing.memory_dirs` 에 등록된 경로는 `mm server` 가 시작하는 파일 워처가 **변경이 생길 때 반응하는 방식**으로 감시합니다 — 워처가 켜진 이후에 발생하는 modify/create/move 이벤트만 재인덱싱하므로, 켜질 때 **이미 있던 파일은 자동으로 스캔되지 않습니다**. 그래서 `mm index <dir>` (또는 `mem_index(path="<dir>")`) 로 한 번 시드한 뒤 워처에 맡기는 흐름이 기본입니다. `mm init` 마법사의 `Next steps` 가 `mm index {memory_dir}` 를 1단계로 출력하는 이유이기도 합니다.
 
 ### `mm ingest`
 
@@ -303,14 +303,14 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 
 ### `mm status`
 
-MCP `mem_status` 도구의 터미널 미러. 설치 직후 "바이너리 동작, 설정 파싱, DB 연결, 임베딩 정합성"을 에디터 없이 한 줄로 확인할 때 사용합니다. `mm config show`(설정 전용)와 `mm watchdog status`(주기 체크 스냅샷)의 중간 지점입니다.
+MCP `mem_status` 도구를 터미널에서 그대로 실행하는 명령입니다. 설치 직후 "실행 파일 동작, 설정 읽기, DB 연결, 임베딩 정합성"을 에디터 없이 한 번에 확인할 때 사용합니다. `mm config show`(설정 전용)와 `mm watchdog status`(주기 체크 스냅샷)의 중간 지점입니다.
 
 ```bash
 mm status                            # 인덱싱 통계 + 설정 요약 (mem_status와 동일 출력)
 mm status --json                     # 기계 판독용 — 스크립트 / `jq` 파이프라인
 ```
 
-v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.4에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 post-install 스모크 테스트에 적합합니다.
+v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.4에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 설치 직후 간단 점검(스모크 테스트)에 적합합니다.
 
 ### `mm warmup`
 

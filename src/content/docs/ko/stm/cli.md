@@ -28,7 +28,7 @@ mms init --lang ko                   # 한국어 토큰-aware 예산 프리셋 (
 mms init --prune-originals           # 가져온 업스트림을 source 클라이언트에서 함께 제거
 ```
 
-`--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, 그리고 서버별 `max_result_tokens=2000` 같은 한국어 / CJK 워크로드용 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
+`--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, 그리고 서버별 `max_result_tokens=2000` 같은 한국어·CJK(한중일) 문자에 맞춘 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
 
 설정 파일이 이미 있으면 `mms init` 는 중단됩니다 — 업스트림을 추가하려면 `mms add`, 등록 프롬프트만 재실행하려면 `mms register` 를 사용하세요.
 
@@ -79,7 +79,7 @@ mms add --import                     # 별칭
 mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에서 직접 등록 제거
 ```
 
-가져오기가 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트 경로 양쪽에 노출되며, 직접 경로는 압축·캐싱·LTM 서피싱을 거치지 않습니다. 가져온 항목에는 출처(provenance)가 함께 기록됩니다 — 원본 클라이언트 종류와 원래 등록 정보 사본이 보존되므로, [`mms eject`](#mms-eject-name) 로 언제든 원래 상태로 복원할 수 있습니다.
+가져오기가 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트 경로 양쪽에 노출되며, 직접 경로는 압축·캐싱·LTM 서피싱을 거치지 않습니다. 가져온 항목에는 출처 정보가 함께 기록됩니다 — 원본 클라이언트 종류와 원래 등록 정보 사본이 보존되므로, [`mms eject`](#mms-eject-name) 로 언제든 원래 상태로 복원할 수 있습니다.
 
 `--prune` 플래그(또는 TTY 환경에서 뜨는 대화형 확인 프롬프트, 기본 **No**)는 Claude Code 스코프별 `claude mcp remove`와 Claude Desktop JSON 파일의 원자적 재작성을 수행해 이중 등록을 정리합니다. 제거 전 각 항목은 `~/.memtomem/pruned_upstreams.json`에 백업되므로 정리 작업도 되돌릴 수 있습니다. 비대화 환경에서 `--prune` 없이 실행하면 안내 경고만 출력하며, 수동 복구 명령도 함께 표시됩니다.
 
@@ -143,7 +143,7 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 
 `--names` 는 `mcp__<server>__<prefix>__<tool>` 의 합산 길이가 MCP 64자 제한(#261)을 초과해 등록 후 조용히 사라진 업스트림 도구를 가려낼 때 씁니다.
 
-`health`는 업스트림별 **서킷 브레이커** 상태도 렌더링합니다. v0.1.32부터 브레이커는 기본 활성화입니다: 연속 3회 호출 실패 시 해당 업스트림의 도구는 약 60초 동안 `circuit_open`으로 빠르게 실패하며, 매 호출이 전체 재시도/데드라인 예산을 소모하지 않습니다. 캐시된 응답은 계속 제공되고 다른 업스트림은 영향을 받지 않습니다. `stm_proxy.json`에서 해당 업스트림에 `circuit_max_failures: 0`을 지정하면 기존의 항상-재시도 동작으로 되돌릴 수 있습니다.
+`health`는 업스트림별 **서킷 브레이커** 상태도 렌더링합니다. v0.1.32부터 브레이커는 기본 활성화입니다: 연속 3회 호출 실패 시 해당 업스트림의 도구는 약 60초 동안 `circuit_open`으로 빠르게 실패하며, 호출마다 재시도·제한 시간을 끝까지 소진하지 않습니다. 캐시된 응답은 계속 제공되고 다른 업스트림은 영향을 받지 않습니다. `stm_proxy.json`에서 해당 업스트림에 `circuit_max_failures: 0`을 지정하면 기존의 항상-재시도 동작으로 되돌릴 수 있습니다.
 
 ### `mms prune`
 
@@ -170,7 +170,7 @@ mms eject filesystem --keep          # host로 복원하되 STM 항목은 유지
 mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 ```
 
-가져오기 시 기록된 원본 등록 정보(provenance)를 그대로 host로 다시 쓰고, host 설정을 재확인해 검증한 다음에야 STM 항목을 삭제합니다. 어느 단계에서 실패하더라도 서버는 최소 한 곳에는 남으므로 — 최악의 경우는 이중 등록이며, 서버가 사라지는 일은 없습니다.
+가져올 때 기록해 둔 원본 등록 정보를 그대로 호스트에 다시 쓰고, 호스트 설정을 재확인해 검증한 다음에야 STM 항목을 삭제합니다. 어느 단계에서 실패하더라도 서버는 최소 한 곳에는 남으므로 — 최악의 경우는 이중 등록이며, 서버가 사라지는 일은 없습니다.
 
 | 플래그 | 설명 |
 |------|-------------|
@@ -213,7 +213,7 @@ mms daemon stop                      # 현재 설정용 daemon 중지
 
 daemon은 활성 설정에 대한 LTM MCP 세션 하나를 미리 연결된(warm) 상태로 유지합니다. 매 호출마다 세션을 새로 여는 기존 경로를 강제하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`, daemon 미가용 시 해당 경로로 대체(fallback)하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
 
-## 프로젝트 관리 (W1)
+## 프로젝트 관리
 
 `.mms/project.toml` 마커로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리 단위로 다른 MCP 세트를 가져갈 때 — 예를 들어 회사 코드 작업 시에만 GitHub MCP, 사이드 프로젝트에서는 filesystem 만 — `~/.mms/projects.toml` 에 기록되어 어디서 호출해도 일관되게 작동합니다.
 
@@ -260,11 +260,11 @@ mms project enable filesystem --project acme
 
 `enable` 은 등록된 MCP 만 받아들이므로 — 비어 있는 registry 에 enable 하면 명확한 에러로 멈춥니다. `disable` 은 registry 와 무관하게 동작합니다.
 
-## 호스트 설정 일괄 가져오기 (W1)
+## 호스트 설정 일괄 가져오기
 
 ### `mms import`
 
-Claude Code, Claude Desktop, Cursor 같은 host MCP 클라이언트의 설정에서 MCP 정의를 발견해 `~/.mms/registry.toml` 로 옮깁니다. 이는 프로젝트 관리(W1)용 레지스트리를 채우는 명령으로, 업스트림을 프록시 설정으로 가져오는 [`mms add --from-clients`](#mcp-클라이언트에서-일괄-가져오기)와는 대상 파일과 용도가 다릅니다. **미리보기(dry-run)가 기본값** — `--apply` 를 줘야 실제로 씁니다.
+Claude Code, Claude Desktop, Cursor 같은 host MCP 클라이언트의 설정에서 MCP 정의를 발견해 `~/.mms/registry.toml` 로 옮깁니다. 이는 프로젝트 관리용 레지스트리를 채우는 명령으로, 업스트림을 프록시 설정으로 가져오는 [`mms add --from-clients`](#mcp-클라이언트에서-일괄-가져오기)와는 대상 파일과 용도가 다릅니다. **미리보기(dry-run)가 기본값** — `--apply` 를 줘야 실제로 씁니다.
 
 ```bash
 mms import --plan                    # 기본: 무엇을 가져올지 계획만 (secret 은 가림)

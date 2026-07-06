@@ -1,11 +1,11 @@
 ---
 title: 개요
-description: memtomem이란 — AI 에이전트를 위한 MCP 네이티브 장기 기억 서버.
+description: memtomem이란 — AI 에이전트에 오래 유지되는 기억을 더해 주는 로컬 MCP 서버.
 ---
 
 ## memtomem이란?
 
-memtomem은 AI 에이전트에 **세션과 에이전트 경계를 넘어 유지되는 기억**을 제공합니다. 로컬에서 동작하는 MCP 서버로, 에이전트는 기존 도구 호출 방식 그대로 과거 정보를 검색·저장할 수 있습니다.
+memtomem은 AI 에이전트에 **세션과 에이전트 경계를 넘어 유지되는 기억**을 제공합니다. 로컬에서 동작하는 MCP 서버(MCP는 AI 에이전트를 외부 도구·데이터에 연결하는 표준 방식입니다)로, 에이전트는 평소 도구를 쓰는 방식 그대로 과거 정보를 검색·저장할 수 있습니다.
 
 ## 이럴 때 씁니다
 
@@ -26,10 +26,12 @@ claude mcp add memtomem -s user -- memtomem-server    # 3. 에이전트 연결
 ## 핵심 개념
 
 - **하이브리드 검색** — BM25 키워드 검색과 벡터 검색을 RRF로 결합하여 정확한 식별자 질의와 의미 기반 질의를 모두 처리합니다. 자세한 내용은 [하이브리드 검색](/ko/ltm/hybrid-search/) 참조.
-- **네임스페이스** — `agent-runtime:{id}` 개인 영역과 `shared` 공용 영역으로 에이전트 간 격리·공유를 제어합니다. [멀티 에이전트 협업](/ko/ltm/multi-agent/) 참조.
-- **수명 주기 정책** — `auto_archive` / `auto_expire` / `auto_promote` / `auto_tag`가 백그라운드 스케줄러로 실행되어 기억의 보관·만료·승격을 자동 관리합니다.
+- **네임스페이스** — 기억을 담아 두는 이름 붙은 공간입니다. 에이전트별 개인 영역(`agent-runtime:{id}`)과 공용 영역(`shared`)으로 나눠 격리와 공유를 조절합니다. [멀티 에이전트 협업](/ko/ltm/multi-agent/) 참조.
+- **수명 주기 정책** — 오래된 기억을 자동으로 보관·만료·승격·태깅합니다. 백그라운드에서 주기적으로 실행되는 정책(`auto_archive` / `auto_expire` / `auto_promote` / `auto_tag`)이 이를 처리합니다.
 
 ## 아키텍처
+
+에이전트와는 MCP로 연결되고, 내부에서는 모든 기억을 로컬 SQLite에 저장합니다:
 
 ```
 AI Agent (Claude Code, Cursor, Antigravity CLI, …)
@@ -39,7 +41,7 @@ memtomem server
 SQLite (FTS5 + sqlite-vec)
 ```
 
-로컬 MCP 서버로 실행되며, 모든 데이터는 사용자의 머신에 저장됩니다. 스토리지는 SQLite, 임베딩은 ONNX. GPU·외부 서비스·계정 없이 동작합니다.
+로컬 MCP 서버로 실행되며, 모든 데이터는 사용자의 컴퓨터에 저장됩니다. 저장은 SQLite, 임베딩은 로컬 ONNX로 처리하며, GPU·외부 서비스·계정 없이 동작합니다.
 
 ## STM과의 관계
 

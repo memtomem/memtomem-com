@@ -3,7 +3,7 @@ title: 능동적 서피싱
 description: 도구 호출 단위 실시간 서피싱, 관련성 게이팅, 피드백 기반 자동 튜닝.
 ---
 
-기존 RAG는 에이전트가 명시적으로 검색을 요청해야만 관련 정보를 제공합니다. memtomem-stm의 능동적 서피싱은 프록시된 MCP 호출을 관찰하여 현재 작업 맥락을 파악하고, 부합하는 기억을 LTM에서 조회하여 **자동으로** 응답에 주입합니다. `mms hook`은 지원되는 Claude Code 네이티브 도구 `PostToolUse` 이벤트에도 `additionalContext` 형태로 서피싱을 확장합니다.
+보통은 에이전트가 직접 검색을 요청해야 관련 정보를 받습니다(RAG 방식). memtomem-stm의 **능동적 서피싱**은 그럴 필요 없이, 프록시를 거치는 MCP 호출을 살펴 지금 하는 작업의 맥락을 파악하고, 관련 기억을 LTM에서 찾아 **자동으로** 응답에 붙여 줍니다. Claude Code의 기본 내장 도구에도 `mms hook`으로 서피싱을 확장할 수 있습니다(`PostToolUse` 이벤트에 `additionalContext` 형태로 덧붙임).
 
 ## 동작 원리
 
@@ -13,7 +13,7 @@ description: 도구 호출 단위 실시간 서피싱, 관련성 게이팅, 피�
 도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 게이팅 → 응답에 주입
 ```
 
-에이전트 코드를 수정할 필요 없이, STM 프록시를 거치는 것만으로 MCP 통신에서 기억이 자동 주입됩니다. Claude Code built-in 도구에는 `mms hook`을 host hook으로 등록합니다. 기본적으로 warm local daemon을 사용하므로 반복 hook 호출에서 LTM cold start 비용을 치르지 않습니다.
+에이전트 코드를 고칠 필요 없이, STM 프록시를 거치는 것만으로 MCP 통신에 기억이 자동으로 실립니다. Claude Code 기본 내장 도구에는 `mms hook`을 호스트 훅으로 등록합니다. 기본적으로 항상 준비된 로컬 데몬(warm local daemon)을 사용하므로, 훅을 반복 호출해도 LTM을 처음부터 띄우는 비용(cold start)이 들지 않습니다.
 
 ## 5단계 컨텍스트 추출
 
@@ -89,11 +89,11 @@ mms surfacing <server> on       # 다시 활성화
 
 서피싱은 회복력과 프라이버시를 위해 다음과 같은 안전 장치를 갖추고 동작합니다:
 
-- **회로 차단기** (3-state: closed / open / half-open) — `circuit_max_failures`(기본 `3`)회 연속 실패 후 open 상태가 되며, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
+- **회로 차단기** — 반복 실패 시 잠시 호출을 멈춰 장애가 번지는 것을 막는 장치입니다(3상태: closed / open / half-open). `circuit_max_failures`(기본 `3`)회 연속 실패하면 open 상태가 되고, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
 - **서피싱 타임아웃** — 호출당 `3s` 하드 제한
 - **레이트 리밋** — 전체 도구 합산 `15 calls / minute` 상한
 - **쓰기 도구 스킵** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
-- **쿼리 쿨다운** — 추출된 쿼리가 최근 5초 내 처리한 쿼리와 Jaccard 유사도 `> 0.95`이면 서피싱 스킵
+- **쿼리 쿨다운** — 방금(최근 5초 내) 처리한 쿼리와 거의 같으면(Jaccard 유사도 `> 0.95`) 서피싱을 건너뜀
 - **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
 - **로컬 피드백 demotion** — 같은 기억이 서로 다른 이벤트에서 `not_relevant` 또는 `already_known`으로 반복 평가되면 `feedback_demotion_negative_threshold`(기본 `3`) 이후 주입 전에 필터링
@@ -111,4 +111,4 @@ export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
 
 LTM 응답은 서피싱 엔진이 소비하며, 프록시 압축/캐시 파이프라인을 거치지 않습니다.
 
-`trace_id`가 서피싱과 progressive delivery 경로에 끼워져, 후속 읽기가 Langfuse(또는 OpenTelemetry 계열 트레이서)에서 초기 청크와 자동으로 묶입니다.
+`trace_id`가 서피싱과 progressive delivery 경로에 함께 실려서, 이어지는 읽기가 Langfuse(또는 OpenTelemetry 계열 추적 도구)에서 처음 청크와 자동으로 묶입니다.
