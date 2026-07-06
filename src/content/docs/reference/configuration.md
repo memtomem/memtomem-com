@@ -23,7 +23,7 @@ This public reference tracks the `memtomem` 0.3.4 and `memtomem-stm` 0.1.32 conf
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `none` (keyword-only until wizard runs) |
+| `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `none` (keyword-only until `mm init` runs) |
 | `MEMTOMEM_EMBEDDING__MODEL` | Model name for the chosen provider | `""` |
 | `MEMTOMEM_EMBEDDING__DIMENSION` | Vector dimension (must match model) | provider-specific |
 | `MEMTOMEM_EMBEDDING__BASE_URL` | Ollama / OpenAI-compatible endpoint | — |

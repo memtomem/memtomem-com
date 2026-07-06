@@ -13,7 +13,7 @@ The `mm` command is installed with the `memtomem` package. It provides setup, se
 
 Run the interactive setup wizard. Configures embedding provider, database path, tokenizer, reranker, and default namespace.
 
-At startup, the wizard offers a **preset picker** (Minimal / English / Korean) that applies a curated bundle of embedding, reranker, tokenizer, and namespace defaults. Pass `--preset <name>` to pick one non-interactively, or `--advanced` to force the full 10-step wizard.
+At startup, the setup wizard offers a **preset picker** (Minimal / English / Korean) that applies a curated bundle of embedding, reranker, tokenizer, and namespace defaults. Pass `--preset <name>` to pick one non-interactively, or `--advanced` to force the full 10-step wizard.
 
 ```bash
 mm init                              # interactive setup with preset picker

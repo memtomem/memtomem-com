@@ -23,7 +23,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `none` (마법사 실행 전까지 키워드 검색만 사용) |
+| `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `none` (`mm init` 실행 전까지 키워드 검색만 사용) |
 | `MEMTOMEM_EMBEDDING__MODEL` | 선택된 프로바이더의 모델명 | `""` |
 | `MEMTOMEM_EMBEDDING__DIMENSION` | 벡터 차원 수 (모델과 일치해야 함) | 프로바이더별 상이 |
 | `MEMTOMEM_EMBEDDING__BASE_URL` | Ollama / OpenAI 호환 엔드포인트 | — |
