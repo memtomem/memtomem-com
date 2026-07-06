@@ -83,7 +83,7 @@ mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name"
 
 MCP 클라이언트가 `mem_do` 라우팅보다 직접 도구 노출을 더 잘 다루면 `standard`를 사용하세요.
 
-테스트, 문서화, 전체 도구 수동 점검이 필요할 때는 `full`을 사용합니다. `full`은 의도적으로 큰 표면을 노출합니다.
+테스트, 문서화, 전체 도구 수동 점검이 필요할 때는 `full`을 사용합니다. `full`은 의도적으로 많은 도구를 한꺼번에 노출합니다.
 
 ## CLI 대응 명령
 

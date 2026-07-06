@@ -87,7 +87,7 @@ mms surfacing <server> on       # 다시 활성화
 
 ## 안전 장치
 
-서피싱은 회복력과 프라이버시를 위한 다음 안전 장치 아래에서 동작합니다:
+서피싱은 회복력과 프라이버시를 위해 다음과 같은 안전 장치를 갖추고 동작합니다:
 
 - **회로 차단기** (3-state: closed / open / half-open) — `circuit_max_failures`(기본 `3`)회 연속 실패 후 open 상태가 되며, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환
 - **서피싱 타임아웃** — 호출당 `3s` 하드 제한

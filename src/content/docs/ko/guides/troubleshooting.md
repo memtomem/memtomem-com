@@ -63,7 +63,7 @@ mms health    # 업스트림에 실제로 연결되는가?
 
 STM은 SURFACE 단계에서 LTM에 질의해 관련 기억을 주입합니다. 이 연결이 준비되어야 하며, `mms health`가 LTM을 `connected`로 보고해야 합니다.
 
-- LTM 서버가 `mem_search`를 광고해야 `connected`로 잡힙니다 — 서피싱 어댑터가 필요로 하는 도구입니다.
+- LTM 서버가 `mem_search`를 광고해야 `connected`로 잡힙니다 — 서피싱 어댑터에 필요한 도구입니다.
 - 기본 LTM 기동 명령은 `ltm_mcp_command=memtomem-server`입니다. LTM을 다른 방식으로 실행한다면 `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND`로 맞추세요.
 
 ## 로그는 어디에 있나

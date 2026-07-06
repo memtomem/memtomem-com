@@ -5,7 +5,7 @@ description: memtomem을 설치하고, MCP 클라이언트에 연결하고, 첫 
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-이 가이드는 먼저 하나의 기본 흐름을 성공시키는 데 집중합니다. LTM 서버를 설치하고, MCP 클라이언트에 등록하고, 폴더를 인덱싱한 뒤 에이전트가 검색하게 만듭니다. STM은 선택 사항이며 기본 기억 루프가 동작한 뒤 추가하면 됩니다.
+이 가이드는 가장 기본이 되는 흐름 하나를 먼저 완성하는 데 초점을 둡니다. LTM 서버를 설치하고, MCP 클라이언트에 등록하고, 폴더를 인덱싱한 다음, 에이전트에서 검색해 봅니다. STM은 선택 사항이므로 기본 기억 흐름이 동작하고 나면 추가하면 됩니다.
 
 ## 1. 설치
 
@@ -47,7 +47,7 @@ mm init --preset korean --non-interactive   # 한국어 프리셋, 프롬프트 
 mm init --advanced                          # 전체 마법사
 ```
 
-설정 중 Claude Code 기억, Claude 플랜, Codex CLI 기억 같은 기존 AI 에이전트 메모리 폴더를 등록해 감시 대상으로 둘 수 있습니다. 등록은 이후 변경 감시를 위한 것이므로, 이미 존재하는 파일은 `mm index`로 한 번 시드하세요.
+설정 중 Claude Code 기억, Claude 플랜, Codex CLI 기억 같은 기존 AI 에이전트 메모리 폴더를 등록해 감시 대상으로 둘 수 있습니다. 등록은 이후 변경 감시를 위한 것이므로, 기존 파일은 `mm index`로 한 번 시드하세요.
 
 ## 3. 로컬 점검
 
@@ -150,7 +150,7 @@ mm index ~/projects/my-app/docs
 mm web --open
 ```
 
-기본 Web UI는 검색, 소스, 태그, 타임라인, 설정, Context Gateway를 다루는 사용자용 화면입니다. `mm web --dev`는 대부분의 사용자가 필요로 하지 않는 유지보수용 페이지를 추가합니다.
+기본 Web UI는 검색, 소스, 태그, 타임라인, 설정, Context Gateway를 다루는 사용자용 화면입니다. `mm web --dev`는 대부분의 사용자에게는 필요 없는 유지보수용 페이지를 추가합니다.
 
 ## 선택 사항: STM은 나중에 추가
 

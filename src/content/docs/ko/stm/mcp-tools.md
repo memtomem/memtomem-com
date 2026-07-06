@@ -71,7 +71,7 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 | `surfacing_id` | string | 예 | 서피싱 푸터에서 얻은 id |
 | `rating` | string | 아니오 | `helpful` / `partially_helpful` / `not_relevant` / `already_known` (단일 평가 경로) |
 | `memory_id` | string | 아니오 | 단일 평가 경로에서 피드백 대상 개별 기억 |
-| `ratings` | object[] | 아니오 | `memory_id`와 `rating`을 가진 per-memory batch 피드백 (단일 평가 필드와 상호 배타) |
+| `ratings` | object[] | 아니오 | `memory_id`와 `rating`으로 구성된 per-memory batch 피드백 (단일 평가 필드와 상호 배타) |
 
 ### `stm_surfacing_stats`
 

@@ -5,7 +5,7 @@ description: 에이전트, 스킬, 커맨드를 한 번 정의하고 여러 AI �
 
 Claude Code에서 작성한 스킬을 Codex나 Cursor에서도 그대로 쓰고 싶거나, 같은 커맨드 세트를 여러 프로젝트에서 재사용하고 싶을 때가 있습니다. 런타임마다 파일 위치와 포맷이 달라 복사본이 금세 어긋납니다. Context Gateway는 하나의 정규 `.memtomem/` 소스에서 각 AI 런타임으로 동기화하여 이 문제를 해결합니다.
 
-LTM 0.3.0에서 Context Gateway는 단일 프로젝트·단방향 모델을 넘어, 프로젝트와 티어 사이의 아티팩트 이동/복사, 다중 프로젝트 일괄 동기화, 정규 wiki를 포함하는 핵심 표면이 되었습니다.
+LTM 0.3.0에서 Context Gateway는 단일 프로젝트·단방향 모델을 넘어, 프로젝트와 티어 사이의 아티팩트 이동/복사, 다중 프로젝트 일괄 동기화, 정규 wiki를 아우르는 중심 기능이 되었습니다.
 
 ## 해결하는 문제
 
@@ -153,7 +153,7 @@ mm context copy mcp-servers <name> --to-project <project>
 
 ## 버전 스냅샷
 
-에이전트와 커맨드는 버전 히스토리와 이동 가능한 라벨(production / staging 등)을 가질 수 있습니다:
+에이전트와 커맨드에는 버전 히스토리와 이동 가능한 라벨(production / staging 등)을 둘 수 있습니다:
 
 ```bash
 mm context version create agents reviewer --note "초기 버전"
@@ -197,7 +197,7 @@ Context Gateway는 처음 열면 이해하기 쉬운 **Simple view**로 시작�
 - **Sync** — 저장된 복사본을 도구로 내보냅니다.
 - **Import** — 런타임의 복사본을 다시 가져옵니다.
 
-문제없는 행은 체크 표시로 정리됩니다. 도입 안내 레이어가 모델을 설명합니다: 정규 master 복사본은 하나의 **Store**(`.memtomem/`)에 두고, 이를 각 **Runtimes**로 Sync하며, Import는 런타임의 복사본을 다시 가져옵니다. 편집은 Store에서 하고 Sync하는 단방향 흐름입니다. **Store ── Sync → Runtimes** 다이어그램이 이를 시각화합니다.
+문제없는 행은 체크 표시로 정리됩니다. 도입 안내 레이어에서 이 개념 모델을 설명합니다: 정규 master 복사본은 **Store**(`.memtomem/`) 하나에 두고, 이를 각 **Runtimes**로 Sync하며, Import는 런타임의 복사본을 다시 가져옵니다. 편집은 Store에서 하고 Sync하는 단방향 흐름입니다. **Store ── Sync → Runtimes** 다이어그램이 이를 시각화합니다.
 
 전체 제어 그리드(아티팩트 / 티어 / 런타임 / scope의 4축)는 **Advanced** 토글 한 번으로 열 수 있으며, 선택은 브라우저별로 유지됩니다.
 

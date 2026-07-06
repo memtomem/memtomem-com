@@ -228,7 +228,7 @@ mm context init --include agents,skills --scope project_shared --confirm-project
 mm context diff --include agents,skills --scope project_shared
 ```
 
-이미 Claude Code, Codex CLI, Antigravity CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하게 만들고 싶을 때 유용합니다. 프로젝트 간 재사용은 위의 `move`/`copy`, 호스트 전역 라이브러리에서의 설치는 `mm wiki` 를 참고하세요.
+이미 Claude Code, Codex CLI, Antigravity CLI 또는 다른 런타임에서 파일을 직접 작성했고, 앞으로는 memtomem이 관리하도록 하고 싶을 때 유용합니다. 프로젝트 간 재사용은 위의 `move`/`copy`, 호스트 전역 라이브러리에서의 설치는 `mm wiki` 를 참고하세요.
 
 ## Wiki — 정규 아티팩트 라이브러리
 
@@ -245,7 +245,7 @@ mm wiki push                          # remote로 백업
 mm wiki pull                          # 다른 기기에서 복원
 ```
 
-각 아티팩트 종류(`skill` / `agent` / `command`)는 런타임별 override를 만들고 검증·커밋하는 서브그룹을 가집니다. dev 모드 브라우저의 Commit 버튼으로도 같은 작업을 수행할 수 있어 raw git이 필요 없습니다.
+각 아티팩트 종류(`skill` / `agent` / `command`)에는 런타임별 override를 만들고 검증·커밋하는 서브그룹이 있습니다. dev 모드 브라우저의 Commit 버튼으로도 같은 작업을 수행할 수 있어 raw git이 필요 없습니다.
 
 ```bash
 mm wiki skill override my-skill --vendor claude --editor   # 정규 내용에서 override 시드
