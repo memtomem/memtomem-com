@@ -422,6 +422,6 @@ mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
 mm uninstall --force          # 서버 실행 중 안전장치 우회
 ```
 
-이 명령은 기본 경로 바깥의 `storage.sqlite_path` 도 인벤토리에 포함시키고, WAL 손상 위험 때문에 MCP 서버가 살아 있을 때는 실행을 거부합니다. 외부 에디터의 MCP 엔트리(`~/.claude.json`, `~/.codex/config.toml` 등)는 감지해서 경로만 알려주며 수정하지는 않습니다. 실행 후 마지막에 설치 컨텍스트에 맞는 바이너리 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력하므로 그 단계를 이어서 수행하면 됩니다.
+이 명령은 기본 경로 바깥의 `storage.sqlite_path` 도 인벤토리에 포함시키고, WAL 손상 위험 때문에 MCP 서버가 살아 있을 때는 실행을 거부합니다 — 서버를 먼저 종료하거나 `--force` 로 우회하세요. 외부 에디터의 MCP 엔트리(`~/.claude.json`, `~/.codex/config.toml` 등)는 감지해서 경로만 알려주며 수정하지는 않습니다. 실행 후 마지막에 설치 컨텍스트에 맞는 바이너리 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력하므로 그 단계를 이어서 수행하면 됩니다.
 
 > 전체 시작 가이드는 [빠른 시작](/ko/guides/quickstart/)을 참조하세요.

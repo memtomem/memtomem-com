@@ -81,7 +81,7 @@ mms surfacing <server> off      # 해당 업스트림 서피싱 비활성화
 mms surfacing <server> on       # 다시 활성화
 ```
 
-이 설정은 각 업스트림의 `surfacing_enabled` 플래그(기본값 `true`)로 공유 프록시 설정(`stm_proxy.json`)에 기록되므로, 이 `mms`를 프록시로 사용하는 모든 MCP 클라이언트가 동일한 스코프를 보게 됩니다. 실행 중인 프록시는 재시작 없이 hot-reload하며, `mms status`에 유효 상태가 표시됩니다. 비활성화된 업스트림의 호출은 LTM 검색 이전에 스킵되며 `stm_surfacing_stats`에서 정상 스킵(`upstream_disabled`)으로 집계됩니다.
+이 설정은 각 업스트림의 `surfacing_enabled` 플래그(기본값 `true`)로 공유 프록시 설정(`stm_proxy.json`)에 기록되므로, 이 `mms`를 프록시로 사용하는 모든 MCP 클라이언트가 동일한 스코프를 보게 됩니다. 실행 중인 프록시는 재시작 없이 hot-reload하며, 유효 상태는 `mms list`의 SURFACING 컬럼에 표시됩니다. 비활성화된 업스트림의 호출은 LTM 검색 이전에 스킵되며 `stm_surfacing_stats`에서 정상 스킵(`upstream_disabled`)으로 집계됩니다.
 
 도구 단위 또는 교차 서버 glob 스코프가 필요하면 `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS`(`server__tool` 패턴 매칭)를 사용합니다.
 

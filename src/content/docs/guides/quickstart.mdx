@@ -5,7 +5,7 @@ description: Install memtomem, connect an MCP client, and make your first search
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This path gets one thing working first: install the LTM server, register it with your MCP client, index a folder, then search it from your agent. STM is optional and can be added after the basic memory loop works.
+This path gets one thing working first: install the LTM server, run setup, register it with your MCP client, index a folder, then search it from your agent. STM is optional and can be added after the basic memory loop works.
 
 ## 1. Install
 
@@ -48,6 +48,8 @@ mm init --advanced                          # full wizard
 ```
 
 During setup you can also register existing AI-agent memory folders for watching, such as Claude Code memories, Claude plans, or Codex CLI memories. Registration only sets them up for future watching; seed existing files once with `mm index`.
+
+At the end, the wizard offers to auto-register memtomem with your MCP client (e.g. Claude Code). Accept it and Step 4 is already done — you'll only need the manual steps below if you skip this prompt.
 
 ## 3. Check Locally
 
@@ -179,7 +181,7 @@ For a non–Claude-Code client, register STM manually with a one-line command bl
 }
 ```
 
-STM's proxied tools surface as `<prefix>__<tool>`, and your client composes them into a longer `mcp__<server>__<prefix>__<tool>` name. That name has a 64-char limit, so if a tool goes missing, register STM under a short client name like `mms` (as above) **and** export `MMS_CLIENT_SERVER_NAME=mms` so STM's overflow check agrees — `mms init --mcp claude` registers under the longer name `memtomem-stm` by default. See [Troubleshooting](/guides/troubleshooting/) if tools disappear.
+STM's proxied tools surface as `<prefix>__<tool>`. If a proxied tool goes missing after registration, it's almost always the composed `mcp__<server>__<prefix>__<tool>` name exceeding MCP's 64-char limit — see [Troubleshooting](/guides/troubleshooting/) for the fix (a shorter prefix, or registering STM under a short client name).
 
 Moving a server behind the proxy is reversible — if STM isn't a fit, `mms eject` restores each server to the host config it came from.
 

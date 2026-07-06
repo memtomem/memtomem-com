@@ -81,7 +81,7 @@ mms surfacing <server> off      # disable surfacing for this upstream
 mms surfacing <server> on       # re-enable
 ```
 
-The setting is written as a per-upstream `surfacing_enabled` flag (default `true`) in the shared proxy config (`stm_proxy.json`), so every MCP client that proxies through this `mms` sees the same scope. A running proxy hot-reloads it without a restart, and `mms status` shows the effective state. A disabled upstream's calls are skipped before the LTM search and counted as a healthy skip (`upstream_disabled`) in `stm_surfacing_stats`.
+The setting is written as a per-upstream `surfacing_enabled` flag (default `true`) in the shared proxy config (`stm_proxy.json`), so every MCP client that proxies through this `mms` sees the same scope. A running proxy hot-reloads it without a restart, and `mms list` shows the effective state in its SURFACING column. A disabled upstream's calls are skipped before the LTM search and counted as a healthy skip (`upstream_disabled`) in `stm_surfacing_stats`.
 
 For tool-grained or cross-server glob scope, set `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` (matches the `server__tool` pattern).
 

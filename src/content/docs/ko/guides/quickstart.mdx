@@ -5,7 +5,7 @@ description: memtomem을 설치하고, MCP 클라이언트에 연결하고, 첫 
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-이 가이드는 가장 기본이 되는 흐름 하나를 먼저 완성하는 데 초점을 둡니다. LTM 서버를 설치하고, MCP 클라이언트에 등록하고, 폴더를 인덱싱한 다음, 에이전트에서 검색해 봅니다. STM은 선택 사항이므로 기본 기억 흐름이 동작하고 나면 추가하면 됩니다.
+이 가이드는 가장 기본이 되는 흐름 하나를 먼저 완성하는 데 초점을 둡니다. LTM 서버를 설치하고, 초기 설정을 마친 뒤, MCP 클라이언트에 등록하고, 폴더를 인덱싱한 다음, 에이전트에서 검색해 봅니다. STM은 선택 사항이므로 기본 기억 흐름이 동작하고 나면 추가하면 됩니다.
 
 ## 1. 설치
 
@@ -48,6 +48,8 @@ mm init --advanced                          # 전체 마법사
 ```
 
 설정 중 Claude Code 기억, Claude 플랜, Codex CLI 기억 같은 기존 AI 에이전트 메모리 폴더를 등록해 감시 대상으로 둘 수 있습니다. 등록은 이후 변경 감시를 위한 것이므로, 기존 파일은 `mm index`로 한 번 시드하세요.
+
+마법사는 마지막에 memtomem을 MCP 클라이언트(예: Claude Code)에 자동 등록할지 물어봅니다. 여기서 수락하면 아래 4단계는 이미 끝난 셈이며, 이 프롬프트를 건너뛴 경우에만 아래 수동 단계가 필요합니다.
 
 ## 3. 로컬 점검
 
@@ -179,7 +181,7 @@ Claude Code가 아닌 클라이언트에서는 한 줄 command 블록으로 STM�
 }
 ```
 
-STM의 프록시 도구는 `<prefix>__<tool>` 형태로 노출되고, 클라이언트가 이를 더 긴 `mcp__<server>__<prefix>__<tool>` 이름으로 합성합니다. 이 이름에는 64자 제한이 있어, 도구가 사라지면 STM을 위처럼 짧은 클라이언트 이름 `mms`로 등록하고 **동시에** `MMS_CLIENT_SERVER_NAME=mms`를 export해 STM의 초과 검사와 일치시키세요 — `mms init --mcp claude`는 기본적으로 더 긴 이름 `memtomem-stm`으로 등록합니다. 도구가 사라지는 경우 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
+STM의 프록시 도구는 `<prefix>__<tool>` 형태로 노출됩니다. 등록 후 프록시 도구가 사라진다면 대부분 합성된 `mcp__<server>__<prefix>__<tool>` 이름이 MCP의 64자 제한을 넘었기 때문입니다 — 해결 방법(더 짧은 prefix, 또는 짧은 클라이언트 이름으로 등록)은 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
 
 STM이 맞지 않으면 `mms eject`로 각 서버를 원래 호스트 설정으로 되돌릴 수 있으므로, 프록시 뒤로 옮기는 작업은 되돌릴 수 있습니다.
 
