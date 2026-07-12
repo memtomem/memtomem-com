@@ -1,11 +1,11 @@
 ---
 title: Quick Start
-description: Install memtomem, connect an MCP client, and make your first searchable memory.
+description: Install memtomem and verify a searchable memory before connecting an MCP client.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This path gets one thing working first: install the LTM server, run setup, register it with your MCP client, index a folder, then search it from your agent. STM is optional and can be added after the basic memory loop works.
+This path gets one thing working first: install the LTM server, run setup, save one memory, and find it again from the CLI. That proof needs neither an existing notes directory nor a connected editor. Connect an MCP client and index existing files only after the basic memory loop works. STM is optional.
 
 ## 1. Install
 
@@ -38,6 +38,8 @@ The `mm init` wizard starts with a preset picker:
 | English | Most English projects | Local ONNX embeddings + English reranker |
 | Korean | Korean or multilingual notes | Multilingual embeddings, reranker, Korean tokenizer |
 
+Choose **Minimal** for the fastest no-model-download first proof. You can rerun `mm init` later to add semantic search.
+
 For scripts or CI:
 
 ```bash
@@ -51,15 +53,23 @@ During setup you can also register existing AI-agent memory folders for watching
 
 At the end, the `mm init` wizard offers to auto-register memtomem with your MCP client (e.g. Claude Code). Accept it and Step 4 is already done — you'll only need the manual steps below if you skip this prompt.
 
-## 3. Check Locally
+<a id="3-check-locally"></a>
+## 3. Verify a Memory Round Trip
 
-Before wiring an editor, confirm the CLI can open the config and database:
+First confirm the CLI can open the config and database:
 
 ```bash
 mm status
 ```
 
-You should see storage, embedding, and chunk-count information. Zero chunks is normal before indexing.
+Zero chunks is normal. Now create and find one controlled memory without depending on an existing folder or agent:
+
+```bash
+mm add "Deployment checklist uses blue-green rollout" --tags ops
+mm search "blue-green"
+```
+
+The search should return the sentence you just added. `mm add` writes to the configured user memory directory and indexes the entry immediately.
 
 ## 4. Connect Your MCP Client
 
@@ -119,23 +129,17 @@ For other clients and the full option matrix, see [MCP Client Setup](https://git
 
 Ask your agent to "call `mem_status`" after registration. That verifies the MCP client is launching the same server your terminal sees. If the agent reports no memtomem tools, see [Troubleshooting](/guides/troubleshooting/).
 
-## 5. Add and Search Memory
+<a id="5-add-and-search-memory"></a>
+## 5. Index Existing Notes
 
-Use the CLI once so you can see the full loop without depending on an agent:
-
-```bash
-mm add \
-  "The staging deploy uses the blue-green checklist in docs/deploy.md" \
-  --tags "deploy,ops"
-mm search "staging deployment checklist"
-```
-
-Then index the notes, docs, or code you want agents to search:
+Once the controlled round trip works, index a directory that actually exists:
 
 ```bash
 mm index ~/notes
 mm index ~/projects/my-app/docs
 ```
+
+Replace these examples with your real paths, then search for a phrase you already know appears in those files.
 
 After that, use natural language in your MCP client:
 
