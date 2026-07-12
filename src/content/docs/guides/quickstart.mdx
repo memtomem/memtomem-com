@@ -5,10 +5,7 @@ description: Install memtomem and verify a searchable memory before connecting a
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-This path gets one thing working first: install the LTM server, run setup, save
-one memory, and find it again from the CLI. That proof needs neither an
-existing notes directory nor a connected editor. Connect an MCP client and
-index existing files only after the basic memory loop works. STM is optional.
+This path gets one thing working first: install the LTM server, run setup, save one memory, and find it again from the CLI. That proof needs neither an existing notes directory nor a connected editor. Connect an MCP client and index existing files only after the basic memory loop works. STM is optional.
 
 ## 1. Install
 
@@ -41,8 +38,7 @@ The `mm init` wizard starts with a preset picker:
 | English | Most English projects | Local ONNX embeddings + English reranker |
 | Korean | Korean or multilingual notes | Multilingual embeddings, reranker, Korean tokenizer |
 
-Choose **Minimal** for the fastest no-model-download first proof. You can
-rerun `mm init` later to add semantic search.
+Choose **Minimal** for the fastest no-model-download first proof. You can rerun `mm init` later to add semantic search.
 
 For scripts or CI:
 
@@ -66,16 +62,14 @@ First confirm the CLI can open the config and database:
 mm status
 ```
 
-Zero chunks is normal. Now create and find one controlled memory without
-depending on an existing folder or agent:
+Zero chunks is normal. Now create and find one controlled memory without depending on an existing folder or agent:
 
 ```bash
 mm add "Deployment checklist uses blue-green rollout" --tags ops
 mm search "blue-green"
 ```
 
-The search should return the sentence you just added. `mm add` writes to the
-configured user memory directory and indexes the entry immediately.
+The search should return the sentence you just added. `mm add` writes to the configured user memory directory and indexes the entry immediately.
 
 ## 4. Connect Your MCP Client
 
@@ -145,8 +139,7 @@ mm index ~/notes
 mm index ~/projects/my-app/docs
 ```
 
-Replace these examples with your real paths, then search for a phrase you
-already know appears in those files.
+Replace these examples with your real paths, then search for a phrase you already know appears in those files.
 
 After that, use natural language in your MCP client:
 
