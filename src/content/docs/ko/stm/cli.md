@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 ---
 
-`mms` 명령어는 `memtomem-stm` v0.1.32 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
+`mms` 명령어는 `memtomem-stm` v0.1.38 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
 
 STM의 가져오기는 되돌릴 수 있습니다. 업스트림을 STM 프록시 뒤로 들여와도 원래 등록 정보가 보존되므로, 결과가 마음에 들지 않으면 `mms eject` 로 원래 host MCP 클라이언트 설정으로 복원할 수 있습니다.
 
@@ -277,7 +277,7 @@ mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지
 
 ## 운영 통계
 
-프록시·서피싱·선택·압축 동작을 런타임에 점검하려면 STM이 관측용 MCP 도구를 제공합니다 — 이 통계는 CLI 서브명령이 아니라 **MCP 도구**로 노출됩니다. 0.1.32 기준 9개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)이며, 기본적으로 MCP `tools/list`에서는 숨겨져 있습니다. 에이전트에 노출하려면 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정합니다. 각 도구의 입출력은 [MCP 도구](/ko/stm/mcp-tools/) 페이지를 참조하세요.
+프록시·서피싱·선택·압축 동작을 런타임에 점검하려면 STM이 관측용 MCP 도구 8개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 제공합니다. 기본적으로 숨겨지며 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 노출합니다. 자세한 입출력은 [MCP 도구](/ko/stm/mcp-tools/)를 참조하세요.
 
 ## 프록시 서버 실행
 

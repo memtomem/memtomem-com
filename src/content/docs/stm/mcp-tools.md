@@ -1,18 +1,19 @@
 ---
 title: MCP Tools
-description: STM proxy exposes 13 control tools for stats, cache, surfacing, compression, progressive delivery, and selection telemetry.
+description: STM proxy exposes 12 control tools for stats, cache, surfacing, compression, progressive delivery, and selection telemetry, plus an opt-in formation tool.
 ---
 
-When you want to see how much the proxy is saving, clear a stale cache, or tune what gets surfaced, memtomem-stm exposes **control tools** over MCP. Alongside proxying upstream MCP tools, it provides **13** such tools; the table below is the source of truth for how they split and when each is advertised.
+When you want to see how much the proxy is saving, clear a stale cache, or tune what gets surfaced, memtomem-stm exposes **control tools** over MCP. Alongside proxying upstream MCP tools, it provides **12** base tools plus the opt-in `stm_memory_propose` formation tool.
 
 ## Advertising observability tools
 
-Of the 13 tools, 4 are **model-facing** and advertised by default; the remaining 9 are **observability / admin** tools that are hidden from the MCP tool list by default to free up agent context. Set the env var `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` in your MCP client config to advertise them — they remain callable from Python tests / direct code paths either way.
+Of the 12 base tools, 4 are **model-facing** and advertised by default; the remaining 8 are **observability / admin** tools hidden from the MCP list by default. Set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to advertise them. Set `MEMTOMEM_STM_FORMATION__ENABLED=true` separately to advertise `stm_memory_propose`. That flag alone controls advertisement; whether the upstream LTM supports review-first proposals is checked at call time — an incompatible core returns `{"ok": false, "reason": "formation_unsupported"}`.
 
-| Category | Always advertised | Advertised when flag on |
+| Category | Advertised by default | Advertised when its flag is on |
 |---|---|---|
 | **Model-facing (4)** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **Observability / admin (9)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
+| **Observability / admin (8)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` (`MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS`) |
+| **Formation (opt-in)** | — | `stm_memory_propose` (`MEMTOMEM_STM_FORMATION__ENABLED`) |
 
 ## Proxy stats & control
 
@@ -92,20 +93,6 @@ Aggregated surfacing metrics and feedback distribution. Reports `events_total`, 
 Summarizes tool-selection and execution telemetry. Set `proxy.selection_telemetry.enabled = true` and the proxy records a JSONL log; this tool reads it back into event counts, selections by ranker version, selections by server and tool, execution ok/error with latency percentiles, and the eligibility hard-filter reject-reason tally. It also shows this process's write-path counters (events written / sampled out / redaction drops / write errors). Only the active log is aggregated; rotated backups are noted but not parsed.
 
 No parameters. *(Observability — advertised only when `advertise_observability_tools=true`.)*
-
-## Index stats
-
-### `stm_index_stats`
-
-STM-driven LTM write statistics across both INDEX paths — `auto_index_response` (verbatim response → markdown chunk) and `extract_and_store` (response → LLM-extracted facts → markdown chunks). It mirrors `stm_surfacing_stats` for the write side, but INDEX intentionally has no quality signal, so operators only see `attempts` (per-path counts) and the `outcomes` distribution (`stored` / `error` / `privacy_skip` / `dedup_skip` / `extracted_zero_facts`).
-
-> In the standalone `mms` server the INDEX write path is inert by design (#288). Enabling `auto_index` in `stm_proxy.json` does not write back to LTM from the standalone server; these counters exist for library integrations and future server wiring.
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `tool` | string | No | Filter by upstream tool name — the `__total__` aggregate row is always included |
-
-*(Observability.)*
 
 ## Compression feedback
 

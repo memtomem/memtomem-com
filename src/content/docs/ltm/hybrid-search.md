@@ -62,3 +62,15 @@ This minimizes indexing cost even for large document sets.
 Searches can be scoped by namespace. Namespaces are auto-derived from folder names, and you can filter a search to a specific namespace or isolate and share scopes per agent. See [Multi-Agent](/ltm/multi-agent/) for details.
 
 Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/reference/configuration/).
+
+## Retrieval benchmark v2
+
+The current holdout evaluates 120 bilingual queries across separate English,
+Korean, and cross-language tracks with portable qrels and pinned corpus/query
+hashes. It complements the original 48-file, 192-chunk, 100-query regression
+portfolio rather than replacing it.
+
+A one-run staged k-sweep retained the product defaults: `top_k=10`, BM25/dense
+candidates `50/50`, `rrf_k=60`, and reranking disabled. Candidate width 100 at
+`top_k=5` is only a follow-up candidate; repeated 5-run/10-run validation is
+required before any default change.

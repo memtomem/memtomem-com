@@ -70,8 +70,10 @@ export default defineConfig({
 						{ label: 'Hybrid Search', slug: 'ltm/hybrid-search', translations: { ko: '하이브리드 검색' } },
 						{ label: 'Multi-Agent Collaboration', slug: 'ltm/multi-agent', translations: { ko: '멀티 에이전트 협업' } },
 						{ label: 'Context Gateway', slug: 'ltm/context-gateway' },
+						{ label: 'Pinned Context', slug: 'ltm/pinned-context', translations: { ko: '고정 컨텍스트' } },
 						{ label: 'MCP Tools', slug: 'ltm/mcp-tools', translations: { ko: 'MCP 도구' } },
 						{ label: 'CLI Reference', slug: 'ltm/cli', translations: { ko: 'CLI 레퍼런스' } },
+						{ label: 'Operations & API', slug: 'ltm/operations', translations: { ko: '운영 및 API' } },
 					],
 				},
 				{
