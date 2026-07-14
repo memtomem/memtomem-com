@@ -301,7 +301,7 @@ STM settings are organized into six sections: a flat `LOG_LEVEL`, plus `PROXY__*
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `WARNING` |
 | `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises eight observability/admin tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`). The four model-facing tools remain visible when false. | `false` |
-| `MEMTOMEM_STM_FORMATION__ENABLED` | Advertise opt-in `stm_memory_propose` when the upstream LTM supports review-first candidate proposals. | `false` |
+| `MEMTOMEM_STM_FORMATION__ENABLED` | Advertise the opt-in `stm_memory_propose` tool. This flag alone controls advertisement; upstream LTM support for review-first proposals is checked at call time (an incompatible core returns `formation_unsupported`). | `false` |
 
 ### Proxy
 

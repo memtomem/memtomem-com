@@ -301,7 +301,7 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `WARNING` |
 | `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰/관리 도구 8개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 노출합니다. `false`에서도 모델용 도구 4개는 계속 보입니다. | `false` |
-| `MEMTOMEM_STM_FORMATION__ENABLED` | upstream LTM이 review-first 후보 제안을 지원할 때 opt-in `stm_memory_propose`를 노출합니다. | `false` |
+| `MEMTOMEM_STM_FORMATION__ENABLED` | opt-in `stm_memory_propose` 도구를 노출합니다. 노출 여부는 이 플래그만으로 결정되며, upstream LTM의 review-first 제안 지원 여부는 호출 시점에 확인합니다(지원하지 않으면 `formation_unsupported` 반환). | `false` |
 
 ### Proxy
 

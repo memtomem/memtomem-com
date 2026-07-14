@@ -7,13 +7,13 @@ description: STM 프록시는 12개 기본 관리 도구와 opt-in 기억 제안
 
 ## 관찰 도구 노출 제어
 
-12개 기본 도구 중 4개는 **모델용 도구**로 기본 노출되고, 나머지 8개는 **관찰·관리(observability)** 도구로 숨겨집니다. `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 관찰 도구를 노출합니다. `stm_memory_propose`는 LTM이 후보 제안 기능을 알릴 때 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도 활성화합니다.
+12개 기본 도구 중 4개는 **모델용 도구**로 기본 노출되고, 나머지 8개는 **관찰·관리(observability)** 도구로 숨겨집니다. `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 관찰 도구를 노출합니다. `stm_memory_propose`는 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도 노출합니다. 노출 여부는 이 플래그만으로 결정되며, upstream LTM이 review-first 제안을 지원하는지는 호출 시점에 확인합니다 — 지원하지 않는 코어는 `{"ok": false, "reason": "formation_unsupported"}`를 반환합니다.
 
-| 범주 | 항상 노출 | 플래그 on일 때 노출 |
+| 범주 | 기본 노출 | 해당 플래그 on일 때 노출 |
 |---|---|---|
 | **모델용 (4)** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **관찰·관리 (8)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
-| **기억 형성 (opt-in)** | formation 활성화 시 `stm_memory_propose` | — |
+| **관찰·관리 (8)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` (`MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS`) |
+| **기억 형성 (opt-in)** | — | `stm_memory_propose` (`MEMTOMEM_STM_FORMATION__ENABLED`) |
 
 ## 프록시 통계 및 제어
 
