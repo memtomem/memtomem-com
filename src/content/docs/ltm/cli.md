@@ -310,7 +310,7 @@ mm status                            # indexing stats + config summary (same out
 mm status --json                     # machine-readable, for scripts / `jq` pipelines
 ```
 
-Added in v0.1.25; `--json` / `--format json` added in v0.3.10. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
+Added in v0.1.25; `--json` / `--format json` added in v0.3.4. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
 
 ### `mm warmup`
 
