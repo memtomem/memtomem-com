@@ -1,18 +1,19 @@
 ---
 title: MCP 도구
-description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전달, 선택 통계를 위한 13개 관리 도구를 제공합니다.
+description: STM 프록시는 12개 기본 관리 도구와 opt-in 기억 제안 도구를 제공합니다.
 ---
 
-프록시가 얼마나 토큰을 절감하는지 확인하거나, 오래된 캐시를 비우거나, 서피싱·압축 동작을 조정하려는 경우 memtomem-stm은 MCP를 통해 **관리 도구**를 노출합니다. 업스트림 MCP 도구를 프록시하는 것 외에 제공되는 이 도구는 모두 **13개**이며, 분류와 노출 정책은 아래 표를 기준으로 합니다.
+프록시가 얼마나 토큰을 절감하는지 확인하거나, 오래된 캐시를 비우거나, 서피싱·압축 동작을 조정하려는 경우 memtomem-stm은 MCP를 통해 **관리 도구**를 노출합니다. 기본 도구는 **12개**이며 opt-in `stm_memory_propose`가 별도로 제공됩니다.
 
 ## 관찰 도구 노출 제어
 
-13개 중 4개는 **모델용 도구**로 기본 노출되며, 나머지 9개는 **관찰·관리(observability)** 도구로 에이전트 컨텍스트를 아끼기 위해 기본적으로 MCP 도구 목록에서 숨겨집니다. MCP 클라이언트 설정의 `env`에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 지정하면 관찰 도구가 `tools/list`에 노출됩니다. 파이썬 테스트나 내부 코드에서는 어느 쪽이든 호출 가능합니다.
+12개 기본 도구 중 4개는 **모델용 도구**로 기본 노출되고, 나머지 8개는 **관찰·관리(observability)** 도구로 숨겨집니다. `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 관찰 도구를 노출합니다. `stm_memory_propose`는 LTM이 후보 제안 기능을 알릴 때 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도 활성화합니다.
 
 | 범주 | 항상 노출 | 플래그 on일 때 노출 |
 |---|---|---|
 | **모델용 (4)** | `stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback` | — |
-| **관찰·관리 (9)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
+| **관찰·관리 (8)** | — | `stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations` |
+| **기억 형성 (opt-in)** | formation 활성화 시 `stm_memory_propose` | — |
 
 ## 프록시 통계 및 제어
 
@@ -92,20 +93,6 @@ description: STM 프록시는 상태, 캐시, 서피싱, 압축, 점진적 전�
 도구 선택·실행 텔레메트리를 요약합니다. `proxy.selection_telemetry.enabled = true`로 설정하면 프록시가 JSONL 로그를 기록하며, 이 도구는 그 로그를 읽어 이벤트 수, 랭커(ranker) 버전별 선택, 서버·도구별 선택, 실행 성공/오류와 지연 시간 분포(백분위수), 적격성 필터가 도구를 제외한 사유별 집계를 보여 줍니다. 현재 프로세스의 쓰기 경로 카운터(기록·샘플 제외·redaction drop·쓰기 오류)도 함께 표시합니다. 활성 로그만 집계하며, 로테이션된 백업은 존재만 표시하고 파싱하지 않습니다.
 
 파라미터 없음. *(관찰 — `advertise_observability_tools=true`일 때만 MCP에 노출.)*
-
-## 인덱싱 통계
-
-### `stm_index_stats`
-
-자동 인덱싱과 추출 경로(`auto_index_response` = 응답을 그대로(verbatim) 청킹, `extract_and_store` = LLM으로 사실을 추출한 뒤 청킹)를 통한 STM 기반 LTM 쓰기 통계입니다. SURFACE 경로의 `stm_surfacing_stats`와 대칭이지만 INDEX는 의도적으로 품질 시그널을 두지 않으며, 운영자가 보는 값은 `attempts`(경로별 시도 수)와 `outcomes`(`stored` / `error` / `privacy_skip` / `dedup_skip` / `extracted_zero_facts`) 분포뿐입니다.
-
-> 독립 실행형 `mms` 서버에서는 INDEX 쓰기 경로가 설계상 비활성 상태입니다(#288). `stm_proxy.json`에서 `auto_index`를 켜도 독립 실행형 서버는 LTM에 다시 기록하지 않으며, 이 카운터는 라이브러리 통합과 향후 서버 연결을 위해 존재합니다.
-
-| 파라미터 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| `tool` | string | 아니오 | 업스트림 도구 이름으로 필터 — `__total__` 행은 항상 포함 |
-
-*(관찰.)*
 
 ## 압축 피드백
 

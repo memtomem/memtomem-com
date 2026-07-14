@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunker, the Web UI, and Langfuse observability tracing (~250 MB). For a leaner footprint, drop the extras for a BM25-only install (~40 MB):
+`[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunking, the Web UI, Langfuse tracing, and LangGraph Store adapters. For a leaner footprint, drop the extras for a BM25-only install:
 
 ```bash
 uv tool install memtomem                      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
@@ -59,6 +59,7 @@ The extras below are what `[all]` bundles — install them individually when you
 | `code` | tree-sitter AST chunking (Python / JS / TS) | `pip install memtomem[code]` |
 | `web` | FastAPI + uvicorn Web UI | `pip install memtomem[web]` |
 | `langfuse` | Langfuse observability tracing | `pip install memtomem[langfuse]` |
+| `langgraph` | `MemtomemStore` and `MemtomemBaseStore` adapters | `pip install memtomem[langgraph]` |
 | `all` | Everything | `pip install memtomem[all]` |
 
 ### `mm` CLI

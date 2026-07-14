@@ -58,7 +58,7 @@ SQLite (FTS5 + sqlite-vec)
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **최신 릴리스** | `0.3.4` |
+| **최신 릴리스** | `0.3.10` |
 | **CLI** | `mm` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |

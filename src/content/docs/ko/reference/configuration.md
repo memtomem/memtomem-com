@@ -7,7 +7,7 @@ memtomem (LTM)과 memtomem-stm (STM)은 모두 [pydantic-settings](https://docs.
 
 우선순위(높은 순): CLI 플래그 → 환경 변수 → 설정 파일 → 내장 기본값.
 
-이 공개 레퍼런스는 `memtomem` 0.3.4 및 `memtomem-stm` 0.1.32 설정 표면을 기준으로 합니다.
+이 공개 레퍼런스는 `memtomem` 0.3.10 및 `memtomem-stm` 0.1.38 설정 표면을 기준으로 합니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -177,7 +177,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 라우터 포함 총 9개) / `standard` (`mem_do` 포함 38개) / `full` (87개 전체를 개별 노출) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (`mem_do` 라우터 포함 총 9개) / `standard` (`mem_do` 포함 38개) / `full` (96개 현행 도구 + deprecated 별칭 1개) | `core` |
 
 ### Web UI
 
@@ -300,7 +300,8 @@ STM 설정은 여섯 영역으로 구성됩니다: flat `LOG_LEVEL`, 그리고 `
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `WARNING` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰/관리 도구 9개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 MCP `tools/list`에 노출. 미설정/`false`일 때도 모델용 도구 4개(`stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback`)는 계속 노출됩니다. 관찰 도구는 MCP `tools/list`에서 빠질 뿐, Python(테스트·CLI 경로)에서는 그대로 import·호출할 수 있습니다. | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`일 때 관찰/관리 도구 8개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 노출합니다. `false`에서도 모델용 도구 4개는 계속 보입니다. | `false` |
+| `MEMTOMEM_STM_FORMATION__ENABLED` | upstream LTM이 review-first 후보 제안을 지원할 때 opt-in `stm_memory_propose`를 노출합니다. | `false` |
 
 ### Proxy
 

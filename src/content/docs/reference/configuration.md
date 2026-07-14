@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the `memtomem` 0.3.4 and `memtomem-stm` 0.1.32 configuration surfaces.
+This public reference tracks the `memtomem` 0.3.10 and `memtomem-stm` 0.1.38 configuration surfaces.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -177,7 +177,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 tools total, including the `mem_do` router) / `standard` (38 incl. `mem_do`) / `full` (all 87 exposed individually) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (38) / `full` (96 current tools + deprecated `mem_context_migrate` alias) | `core` |
 
 ### Web UI
 
@@ -300,7 +300,8 @@ STM settings are organized into six sections: a flat `LOG_LEVEL`, plus `PROXY__*
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `WARNING` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises the nine observability/admin tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`) in MCP `tools/list`. When unset/`false`, the four model-facing tools (`stm_proxy_select_chunks`, `stm_proxy_read_more`, `stm_surfacing_feedback`, `stm_compression_feedback`) stay advertised. The observability tools are simply omitted from MCP `tools/list`; they remain importable and callable from Python (tests, CLI paths). | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises eight observability/admin tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`). The four model-facing tools remain visible when false. | `false` |
+| `MEMTOMEM_STM_FORMATION__ENABLED` | Advertise opt-in `stm_memory_propose` when the upstream LTM supports review-first candidate proposals. | `false` |
 
 ### Proxy
 

@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 38, including `mem_do` | You want common management tools directly visible |
-| `full` | 87 | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 96 current tools + 1 deprecated alias | You are debugging, documenting, or using a client that handles large tool lists well |
 
 Example:
 
@@ -59,6 +59,41 @@ mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name"
 ```
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
+
+The full v0.3.10 registry contains 96 current tools. Full mode also keeps the
+deprecated `mem_context_migrate` alias (97 registered names total) until its
+v0.5.0 removal. Pinned Context adds `mem_pinned_list/get/set/delete` and
+`mem_context_compose`; review-first formation adds
+`mem_formation_scan` and `mem_candidate_propose/list/review/recover`.
+
+`mem_candidate_propose` creates a privacy-scanned pending review item rather
+than durable memory. It requires `content`, `source`, `source_ref`, and an
+`idempotency_key`; approved candidates alone pass through the normal write
+path.
+
+## OpenCode
+
+The npm plugin source exists but is not published. Configure a local MCP server
+in `opencode.json` today:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "memtomem": {
+      "type": "local",
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.10", "memtomem-server"],
+      "enabled": true,
+      "timeout": 60000,
+      "environment": {"MEMTOMEM_TOOL_MODE": "core"}
+    }
+  }
+}
+```
+
+After npm publication, OpenCode uses the singular configuration key
+`{"plugin": ["opencode-memtomem@0.1.0"]}`; there is no `opencode plugin add`
+command.
 
 ## Common Actions
 

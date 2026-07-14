@@ -56,7 +56,7 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **Latest release** | `0.3.4` |
+| **Latest release** | `0.3.10` |
 | **CLI** | `mm` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |

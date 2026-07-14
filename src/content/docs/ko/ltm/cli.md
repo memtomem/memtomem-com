@@ -5,7 +5,7 @@ description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 
 `mm` 명령어는 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 인덱싱, 세션 추적, 프로젝트 간 컨텍스트 동기화 기능을 제공합니다. 전체 명령 목록은 `mm --help`, 설치된 버전은 `mm --version`(또는 `mm version` 서브명령)으로 확인할 수 있습니다.
 
-> 이 페이지는 memtomem v0.3.4 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
+> 이 페이지는 memtomem v0.3.10 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
 
 ## 설정
 
@@ -32,7 +32,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 memtomem의 MCP 서버는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 일반적으로 직접 실행하지 않습니다 — MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등)가 자신의 설정 파일에 등록된 항목에 따라 자동으로 기동합니다. 설정 예시는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
-서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)를 지정합니다. 기본은 `core`(핵심 도구 8개 + `mem_do` 라우터로 총 9개)이며, `full`은 87개 도구를 개별 노출합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
+서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)를 지정합니다. 기본은 `core`(핵심 도구 8개 + `mem_do` 라우터로 총 9개)이며, `full`은 96개 현행 도구와 deprecated `mem_context_migrate` 별칭 1개를 노출합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
 
 v0.1.25부터 MCP 핸드셰이크만으로는 `~/.memtomem/memtomem.db`가 생성되지 않습니다 — DB는 첫 도구 호출 시점에 열리며, 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`(플랫폼에 따라 `$TMPDIR/memtomem-$UID/`)로 이동했습니다. 연결만 하고 도구를 호출하지 않는 클라이언트는 홈 디렉토리에 흔적을 남기지 않습니다.
 
@@ -310,7 +310,7 @@ mm status                            # 인덱싱 통계 + 설정 요약 (mem_sta
 mm status --json                     # 기계 판독용 — 스크립트 / `jq` 파이프라인
 ```
 
-v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.4에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 설치 직후 간단 점검(스모크 테스트)에 적합합니다.
+v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.10에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 설치 직후 간단 점검(스모크 테스트)에 적합합니다.
 
 ### `mm warmup`
 
@@ -403,7 +403,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.3.4           # 특정 버전 고정
+mm upgrade --version 0.3.10           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```

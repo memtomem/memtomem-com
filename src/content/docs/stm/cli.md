@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.1.32 package. It manages upstream-server registration, MCP-client registration, and proxy-config lifecycle. Run `mms --help` for the full command list or `mms --version` to print the installed version (the `mms version` subcommand also works).
+The `mms` command is installed with the `memtomem-stm` v0.1.38 package. It manages upstream-server registration, MCP-client registration, and proxy-config lifecycle. Run `mms --help` for the full command list or `mms --version` to print the installed version (the `mms version` subcommand also works).
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -277,7 +277,7 @@ First import wins: identical names with different definitions are flagged as con
 
 ## Operational statistics
 
-To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships observability MCP tools — these statistics are exposed as **MCP tools** rather than CLI subcommands. As of 0.1.32 there are nine (`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_index_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`), and they are hidden from MCP `tools/list` by default. Set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them to the agent. See the [MCP Tools](/stm/mcp-tools/) page for each tool's inputs and outputs.
+To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships eight observability MCP tools (`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`). They are hidden from `tools/list` by default; set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them. See [MCP Tools](/stm/mcp-tools/).
 
 ## Running the proxy server
 
