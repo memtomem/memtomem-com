@@ -3,7 +3,7 @@ title: 멀티 에이전트 협업
 description: 네임스페이스 기반 격리와 공유로 에이전트 간 지식을 교환하는 방법.
 ---
 
-memtomem은 여러 에이전트가 지식을 주고받도록 **네임스페이스**(기억을 담아 두는 이름 붙은 공간)를 활용합니다. 특정 에이전트에 매이지 않는 공용 기억 계층이어서, 사람에서 에이전트로, 에이전트에서 에이전트로, 다시 에이전트에서 사람으로 지식이 모든 방향으로 흐릅니다.
+memtomem은 **네임스페이스**로 AI 도구마다 기억을 나누고 필요한 내용만 공유합니다. 네임스페이스는 기억을 구분해 담는 이름 있는 공간입니다. 각 AI 도구의 작업 내용은 따로 보관하고, 함께 써야 할 내용은 `shared` 공간에 복사할 수 있습니다.
 
 ## 네임스페이스 구조
 
@@ -16,7 +16,7 @@ shared                       # 공유 — 모든 에이전트에서 접근 가�
 
 ## 5단계 워크플로우
 
-여러 에이전트가 하나의 기억 저장소를 공유하는 표준 흐름입니다. 각 에이전트를 등록하고(1) 세션을 연 뒤(2), 자기 공간과 공유 공간에서 검색하고(3), 유용한 기억을 공유 공간으로 내보내고(4), 작업을 마치며 세션을 닫습니다(5).
+여러 AI 도구가 하나의 저장소를 함께 사용하는 기본 흐름입니다. AI 도구를 등록하고 세션을 시작한 뒤 자기 공간과 공유 공간을 검색합니다. 함께 쓸 기억은 `shared`로 복사하고, 작업이 끝나면 세션을 닫습니다.
 
 ### 1단계: 에이전트 등록
 
@@ -30,10 +30,10 @@ mem_agent_register(agent_id="analyzer", description="코드 분석 에이전트"
 mem_session_start(agent_id="analyzer")
 ```
 
-세션 레코드의 네임스페이스는 `agent-runtime:analyzer`로 자동 파생됩니다. 에이전트에 명시적으로 바인딩한 세션에서는 이후 쓰기가 `agent_id`를 다시 전달하지 않아도 해당 스코프를 상속합니다. 바인딩되지 않은 기본 세션은 쓰기를 에이전트 네임스페이스로 돌리지 않습니다:
+세션의 네임스페이스는 `agent-runtime:analyzer`로 자동 설정됩니다. 세션에 AI 도구를 명시적으로 연결하면 이후 쓰기에서 `agent_id`를 다시 전달하지 않아도 같은 범위를 사용합니다. AI 도구를 연결하지 않은 기본 세션은 전용 네임스페이스를 자동으로 사용하지 않습니다.
 
-- **쓰기** — `mem_add(content="...")` / `mem_batch_add(...)`는 `agent-runtime:analyzer`로 자동 기록됩니다. 다른 스코프(예: 공유)로 보내려면 한 번의 호출에 `namespace="shared"`를 명시하세요.
-- **읽기** — `mem_agent_search` / `mem_agent_share`는 `agent_id=` 없이도 에이전트 스코프로 결정됩니다. (단일 에이전트 환경의 `mem_search`는 변경되지 않으므로, 에이전트 스코프 안에서 검색하려면 `mem_agent_search`를 사용하세요.)
+- **쓰기** — `mem_add(content="...")`와 `mem_batch_add(...)`는 `agent-runtime:analyzer`에 자동으로 기록됩니다. 공유 공간처럼 다른 범위에 쓰려면 해당 호출에 `namespace="shared"`를 지정하세요.
+- **읽기** — `mem_agent_search`와 `mem_agent_share`는 `agent_id=`가 없어도 세션에 연결된 AI 도구의 범위를 사용합니다. 일반 `mem_search`의 동작은 바뀌지 않습니다. AI 도구 전용 공간을 검색하려면 `mem_agent_search`를 사용하세요.
 
 ### 3단계: 지식 검색
 
@@ -49,7 +49,7 @@ mem_agent_search(query="인증 모듈 구조", include_shared=true)
 mem_agent_share(chunk_id="...", target="shared")
 ```
 
-공유할 때는, 더 넓은 공간으로 복사본을 남기기에 앞서 내용을 한 번 더 검사합니다(신뢰 경계 리댁션 가드). 비밀처럼 보이는 내용은 공유 시점에 차단되고 그 사실이 감사 카운터에 집계되므로, 민감한 기억이 넓은 공간으로 조용히 새어 나가지 않습니다.
+기억을 더 넓은 공간으로 복사하기 전에 민감 정보를 다시 검사합니다. 비밀값으로 보이는 내용은 공유하지 않으며 차단 횟수를 감사 기록에 남깁니다.
 
 ### 5단계: 세션 종료
 
@@ -59,7 +59,7 @@ mem_session_end(summary="...")
 
 ## `agent_id` 설정하기
 
-`agent_id`는 자동으로 감지되지 않습니다. 어떤 런타임이든 원칙은 같습니다 — **세션을 시작할 때 명시적으로 전달**하면, 이후 호출에는 세션 정보로 자동 상속됩니다.
+`agent_id`는 자동으로 감지되지 않습니다. **세션을 시작할 때 직접 지정**해야 합니다. 이후 호출은 세션에 저장된 값을 사용합니다.
 
 ### Claude Code · Codex (MCP)
 
@@ -69,7 +69,7 @@ MCP 서버는 호출 클라이언트를 구분하지 않으므로, **에이전�
 
 > 대화 시작 시 `mem_session_start(agent_id="claude-code")`를 먼저 호출하여 세션을 등록하세요. 새 에이전트 역할로 작업할 때는 `mem_agent_register(agent_id="planner", description="...")`를 사용합니다.
 
-세션을 명시적으로 바인딩하면 이후 `mem_add`/`mem_batch_add` 쓰기는 `agent-runtime:{agent-id}`를 상속합니다. 읽기는 자동으로 전환되지 않으므로 에이전트 스코프 검색에는 `mem_agent_search`를 사용하고, 일반 `mem_search`에는 네임스페이스를 명시하세요.
+세션을 AI 도구에 연결하면 이후 `mem_add`와 `mem_batch_add`는 `agent-runtime:{agent-id}`에 기록됩니다. 읽기 범위는 자동으로 바뀌지 않습니다. 전용 공간을 검색할 때는 `mem_agent_search`를 사용하고, 일반 `mem_search`에는 네임스페이스를 직접 지정하세요.
 
 ### LangGraph · CrewAI (Python 어댑터)
 
@@ -91,7 +91,7 @@ await store.start_agent_session(agent_id="analyzer")
 mm session start --agent-id planner
 ```
 
-`mm session`의 전체 서브명령(`start`, `end`, `list`, `events`, `wrap`)은 [CLI 레퍼런스의 `mm session` 섹션](/ko/ltm/cli/#mm-session)을 참조하세요.
+`mm session`의 전체 하위 명령(`start`, `end`, `list`, `events`, `wrap`)은 [CLI 레퍼런스의 `mm session` 섹션](/ko/ltm/cli/#mm-session)을 참고하세요.
 
 ### CLI (`mm agent`)
 
@@ -103,7 +103,7 @@ mm agent list                 # 등록된 agent-runtime: 네임스페이스 + sh
 mm agent share <chunk_id> --target shared
 ```
 
-`mm agent share`도 복사 전에 redaction guard를 다시 실행하며, 비밀처럼 보이는 콘텐츠는 `--force-unsafe`로 재확인하지 않는 한 차단됩니다. 전체 플래그는 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
+`mm agent share`도 복사 전에 민감 정보를 다시 검사합니다. 비밀값으로 보이는 내용은 `--force-unsafe`로 다시 확인하지 않는 한 공유하지 않습니다. 전체 플래그는 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
 
 ### `mm ingest`와의 차이
 
@@ -111,18 +111,21 @@ mm agent share <chunk_id> --target shared
 
 ## 상호작용 패턴
 
-### Human → Agent
+<a id="human--agent"></a>
+### 사람 → AI 도구
 
-MCP로 연결된 클라이언트에서는 저장된 아키텍처 결정·코딩 패턴·디버깅 이력을 명시적으로 검색할 수 있습니다. 자동 서피싱에는 STM 프록시 라우팅 또는 지원되는 호스트 hook 설정이 필요합니다.
+MCP로 연결된 클라이언트에서는 저장해 둔 설계 결정, 코딩 방식, 디버깅 이력을 직접 검색할 수 있습니다. 자동 서피싱을 사용하려면 STM 프록시를 거치거나 지원되는 클라이언트 훅을 설정해야 합니다.
 
-### Agent → Agent
+<a id="agent--agent"></a>
+### AI 도구 → AI 도구
 
-LangGraph/CrewAI 워크플로우에서 에이전트 체인이 동작할 때, "테스트 생성 에이전트"는 "코드 분석 에이전트"가 `mem_agent_share`로 공유 네임스페이스에 게시한 코드베이스 구조를 참조합니다. 공유 LTM 저장소가 에이전트 간 핸드오프 지점이 되며, 게시할 중간 산출물과 결정 이력은 명시적 공유 단계로 전달합니다.
+LangGraph나 CrewAI에서 여러 AI 도구를 연결할 수 있습니다. 예를 들어 코드 분석 도구가 `mem_agent_share`로 코드 구조를 공유하면 테스트 생성 도구가 그 내용을 검색합니다. 중간 결과와 결정 사항은 공유 LTM 저장소를 통해 명시적으로 전달합니다.
 
-### Agent → Human
+<a id="agent--human"></a>
+### AI 도구 → 사람
 
-에이전트가 축적한 프로젝트 지식을 웹 UI 대시보드에서 검색·열람할 수 있습니다. 새 팀원 온보딩 시 에이전트가 학습한 아키텍처 결정 이력, 버그 해결 패턴, 코딩 컨벤션을 한눈에 파악할 수 있습니다.
+AI 도구가 저장한 프로젝트 지식은 Web UI에서 검색하고 읽을 수 있습니다. 새 팀원은 설계 결정, 버그 해결 방법, 코딩 규칙을 한곳에서 확인할 수 있습니다.
 
 ## 관련 — AI 도구 기억 수집
 
-`mm ingest {claude,gemini,codex}-memory`는 에이전트별 격리와는 별개의 기능으로, 각 AI 에디터의 기억 디렉토리를 고정 네임스페이스(`*-memory:<slug>`)로 통합 인덱싱합니다([위의 `mm ingest`와의 차이](#mm-ingest와의-차이) 참조). 소스 경로·슬러그 동작 등 전체 옵션은 [설치 가이드](/ko/guides/installation/)를 참조하세요.
+`mm ingest {claude,gemini,codex}-memory`는 에이전트별 격리와 별개의 기능입니다. 각 AI 도구의 기억 디렉터리를 고정 네임스페이스(`*-memory:<slug>`)에 모아 색인합니다. 자세한 차이는 [위의 `mm ingest`와의 차이](#mm-ingest와의-차이)를, 소스 경로와 슬러그 등 전체 옵션은 [설치 가이드](/ko/guides/installation/)를 참고하세요.

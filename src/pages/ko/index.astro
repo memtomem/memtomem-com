@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
-	<meta name="description" content="노트·문서·코드를 검색 가능한 로컬 우선 기억으로 바꿔, MCP 지원 AI 에이전트가 세션과 에이전트 경계를 넘어 사용합니다." />
+	<meta name="description" content="노트·문서·코드를 내 컴퓨터에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/ko/" />
@@ -18,7 +18,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/ko/" />
 	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta property="og:description" content="노트·문서·코드를 검색 가능한 로컬 우선 기억으로 바꿔, MCP 지원 AI 에이전트가 세션과 에이전트 경계를 넘어 사용합니다." />
+	<meta property="og:description" content="노트·문서·코드를 내 컴퓨터에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image.png" />
 	<meta property="og:image:width" content="1200" />
@@ -29,7 +29,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 로컬 우선 기억으로 바꿔, MCP 지원 AI 에이전트가 세션과 에이전트 경계를 넘어 사용합니다." />
+	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 로컬 우선 기억으로 바꿉니다. MCP 지원 AI 도구라면 세션이나 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image.png" />
 
 	<!-- JSON-LD 구조화 데이터 -->
@@ -38,7 +38,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		"@context": "https://schema.org",
 		"@type": "SoftwareApplication",
 		"name": "memtomem",
-		"description": "MCP-native memory infrastructure for AI agents. STM + LTM separated architecture for cross-session, cross-agent knowledge sharing.",
+		"description": "AI 도구를 위한 MCP 기반 기억 인프라입니다. STM과 LTM을 분리해 세션과 도구가 바뀌어도 기억을 이어서 사용할 수 있습니다.",
 		"url": "https://memtomem.com",
 		"applicationCategory": "DeveloperApplication",
 		"operatingSystem": "Cross-platform",
@@ -60,8 +60,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <nav class="nav">
 	<a href={`${base}/ko/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href={`${base}/ko/guides/quickstart/`}>Docs</a>
-		<a href="#architecture">Architecture</a>
+		<a href={`${base}/ko/guides/quickstart/`}>문서</a>
+		<a href="#architecture">구조</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/`}>EN</a></span>
 	</div>
@@ -74,9 +74,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
 	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
 	<p class="hero-sub">
-		매 세션마다 프로젝트를 다시 설명할 필요가 없습니다. memtomem은 노트·문서·코드를
-		검색 가능한 기억으로 바꿉니다. MCP를 지원하는 에이전트라면 세션이 바뀌어도,
-		에이전트가 달라도 같은 기억을 그대로 이어서 씁니다. 모든 데이터는 로컬에 남습니다.
+			매 세션마다 프로젝트를 다시 설명하지 않아도 됩니다. memtomem은 노트·문서·코드를
+			검색 가능한 기억으로 바꿉니다. MCP를 지원하는 AI 도구라면 세션이나 도구가 바뀌어도
+			같은 기억을 다시 사용할 수 있습니다. 기본 저장소는 로컬이며 외부 서비스 연결은 선택 사항입니다.
 	</p>
 	<div class="hero-install">
 		<span class="dollar">$</span> uv tool install 'memtomem[all]'
@@ -90,24 +90,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Problem</div>
+			<div class="section-label">문제</div>
 		<div class="section-title">에이전트는 왜 잊을까?</div>
 		<div class="section-desc">도구 연동(MCP), 안전장치(Guardrails), 관측(Langfuse)은 이미 자리를 잡았지만, ‘기억’만큼은 아직 표준이 없습니다.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
 				<div class="problem-num">01</div>
-				<h3>세션 간 기억 부재</h3>
-				<p>세션이 끝나면 모든 맥락이 사라집니다. 아키텍처 결정, 코딩 패턴, 디버깅 이력을 매번 다시 설명해야 합니다.</p>
+					<h3>새 세션은 이전 작업을 모릅니다</h3>
+					<p>세션이 끝나면 작업 맥락도 사라집니다. 설계 결정, 코딩 방식, 디버깅 이력을 매번 다시 설명해야 합니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">02</div>
-				<h3>에이전트 간 기억 단절</h3>
-				<p>Claude Code에서 작업한 내용을 Cursor에서 이어받을 수 없습니다. 각 에이전트가 독립된 기억 사일로에 갇혀 있습니다.</p>
+					<h3>도구를 바꾸면 작업이 끊깁니다</h3>
+					<p>Claude Code에서 정리한 내용을 Cursor가 바로 이어받지 못합니다. 기억이 도구마다 따로 흩어져 있기 때문입니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">03</div>
 				<h3>기존 솔루션의 한계</h3>
-				<p>기존 기억 시스템은 에이전트가 직접 검색해야만 동작하고, 특정 런타임에 묶여 있으며, 장기 기억 한 계층에 그칩니다.</p>
+					<p>기존 기억 시스템은 에이전트가 직접 검색해야 동작하거나 특정 실행 환경에 묶여 있습니다. 장기 기억만 다루는 경우도 많습니다.</p>
 			</div>
 		</div>
 	</div>
@@ -115,21 +115,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Solution</div>
+			<div class="section-label">해결 방법</div>
 		<div class="section-title">memtomem이 해결합니다</div>
-		<div class="section-desc">인지과학의 작업기억·장기기억 모델을 에이전트에 적용했습니다. 단기 압축·캐싱과 장기 검색·인덱싱을 별도의 MCP 서버로 분리했습니다.</div>
+			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색을 서로 다른 MCP 서버로 나눴습니다. 필요한 계층만 선택해 사용할 수 있습니다.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
-				<p>노트·문서·코드를 <code>mm index</code>로 색인하면, BM25 키워드 검색과 벡터 의미 검색을 RRF로 융합해 정확한 식별자와 의미 기반 질의를 한 번에 검색합니다. 마크다운·코드·구조화 문서는 구조 단위로 잘라 색인하고, 다시 색인할 때는 바뀐 조각만 임베딩을 새로 계산합니다.</p>
+					<p>노트·문서·코드를 <code>mm index</code>로 색인하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합합니다. 정확한 이름과 의미가 비슷한 표현을 함께 찾을 수 있습니다. 문서는 구조에 맞춰 나누고, 다시 색인할 때는 바뀐 부분만 임베딩을 계산합니다.</p>
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
-				<p>기억은 세션이 끝나도 사라지지 않습니다. 네임스페이스로 에이전트별 비공개 공간과 <code>shared</code> 공유 공간을 나누고, 세션 워크플로우로 한 에이전트가 정리한 지식을 다른 에이전트가 이어받습니다. Claude Code·Cursor·Codex가 하나의 기억 저장소를 공유합니다.</p>
+					<p>기억은 세션이 끝나도 남습니다. 네임스페이스로 에이전트별 공간과 <code>shared</code> 공유 공간을 나눌 수 있습니다. Claude Code·Cursor·Codex는 같은 저장소를 사용해 이전 작업을 이어갑니다.</p>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
-				<p>스킬·커맨드·서브에이전트의 원본을 <code>.memtomem/</code> Store에 둡니다. 런타임 복사본은 미리보기 후 Store로 Pull하고, 검토한 Store 버전은 선택한 런타임으로 Push합니다. 프로젝트·티어 간 복사·이동과 등록 프로젝트 일괄 작업도 지원합니다.</p>
+					<p>스킬·명령·서브에이전트의 기준본을 <code>.memtomem/</code> Store에 보관합니다. Pull은 실행 환경의 파일을 미리 확인한 뒤 Store로 가져오고, Push는 검토한 기준본을 선택한 실행 환경으로 보냅니다. 프로젝트와 계층 사이의 복사·이동도 지원합니다.</p>
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
@@ -137,10 +137,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>
-				<p>STM을 통해 라우팅한 MCP 도구 응답은 에이전트에 도달하기 전에 압축할 수 있습니다. 컨텍스트 예산을 넘으면 콘텐츠 유형에 맞는 10종 전략 중 하나를 선택하며, 실제 절감량은 응답과 보존 설정에 따라 달라집니다.</p>
+				<p>STM을 거치는 MCP 도구 응답은 에이전트에 전달하기 전에 압축할 수 있습니다. 컨텍스트 예산을 넘으면 내용의 형식에 맞는 10가지 전략 중 하나를 선택하며, 실제 절감량은 응답과 보존 설정에 따라 달라집니다.</p>
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
-				<h3>로컬 우선 · 비공개</h3>
+				<h3>로컬 우선 · 정보 보호</h3>
 				<p>SQLite 저장과 로컬 ONNX 추론은 GPU나 클라우드 계정 없이 동작합니다. 선택형 Ollama·OpenAI 호환·Cohere·Langfuse 연동은 설정한 서비스와 통신할 수 있습니다. 로컬 파일에는 제한 권한을 적용하고, 자격 증명 형태의 콘텐츠는 캐시·인덱스·공유 경계에서 걸러냅니다.</p>
 			</a>
 		</div>
@@ -149,11 +149,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section" id="architecture">
 	<div class="section-inner">
-		<div class="section-label">Architecture</div>
-		<div class="section-title">두 계층 아키텍처</div>
-		<div class="section-desc">STM 프록시와 LTM 서버가 MCP로 연결되어, 에이전트에 서피싱과 압축을 투명하게 제공합니다.</div>
+			<div class="section-label">구조</div>
+		<div class="section-title">두 계층 구조</div>
+			<div class="section-desc">STM 프록시와 LTM 서버는 MCP로 연결됩니다. AI 도구의 코드를 바꾸지 않고도 관련 기억 자동 제시와 응답 압축을 추가할 수 있습니다.</div>
 		<div class="arch-diagram">
-			<div class="arch-tier-label">주요 AI 런타임 / 기타</div>
+			<div class="arch-tier-label">주요 AI 도구 / 기타</div>
 			<div class="arch-row">
 				<div class="arch-node">Claude Code</div>
 				<div class="arch-node">Codex CLI</div>
@@ -164,22 +164,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<div class="arch-row">
 				<div class="arch-node teal arch-node-wide">
 					<div class="arch-node-title">memtomem-stm</div>
-					<div class="arch-node-sub">STM Proxy</div>
+					<div class="arch-node-sub">STM 프록시</div>
 					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE</div>
 				</div>
 			</div>
 			<div class="arch-connector-pair">
-				<div class="arch-connector"><span>Surfacing</span></div>
+				<div class="arch-connector"><span>관련 기억 검색</span></div>
 				<div class="arch-connector"><span>MCP</span></div>
 			</div>
 			<div class="arch-row">
 				<div class="arch-node accent arch-node-half">
 					<div class="arch-node-title">memtomem</div>
-					<div class="arch-node-sub">LTM Server</div>
-					<div class="arch-node-detail">9 core MCP Tools</div>
+					<div class="arch-node-sub">LTM 서버</div>
+					<div class="arch-node-detail">Core MCP 도구 9개</div>
 				</div>
 				<div class="arch-node arch-node-half">
-					<div class="arch-node-title">Upstream MCP Servers</div>
+					<div class="arch-node-title">연결한 MCP 서버</div>
 					<div class="arch-node-detail">filesystem, GitHub, …</div>
 				</div>
 			</div>
@@ -189,9 +189,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Compatibility</div>
-		<div class="section-title">주요 런타임 & 호환성</div>
-		<div class="section-desc">주요 CLI 런타임에 맞춰 최적화하고, 그 밖의 클라이언트는 MCP 표준으로 지원합니다.</div>
+			<div class="section-label">호환성</div>
+			<div class="section-title">지원하는 AI 도구와 호환성</div>
+		<div class="section-desc">주요 CLI 도구에 맞춰 최적화했으며, 그 밖의 클라이언트도 MCP 표준으로 연결할 수 있습니다.</div>
 		<div class="runtime-grid">
 			<div class="runtime-chip">Claude Code</div>
 			<div class="runtime-chip">Codex CLI</div>
@@ -204,13 +204,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Documentation</div>
+			<div class="section-label">문서</div>
 		<div class="section-title">문서 & 튜토리얼</div>
-		<div class="section-desc">시작부터 고급 활용까지.</div>
+			<div class="section-desc">설치부터 고급 기능까지 필요한 내용을 순서대로 확인하세요.</div>
 		<div class="docs-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
-				<h3>Quick Start</h3>
-				<p>설치 → <code>mm init</code> → <code>mm status</code> → <code>mm add</code> → <code>mm search</code> 후 Claude Code·Codex·기타 MCP 클라이언트 연결.</p>
+					<h3>빠른 시작</h3>
+					<p>설치 후 기억을 저장하고 검색한 다음 Claude Code·Codex·기타 MCP 클라이언트를 연결합니다.</p>
 				<span class="tag tag-guide">시작 가이드</span>
 			</a>
 			<a href={`${base}/ko/ltm/hybrid-search/`} class="doc-card">
@@ -220,22 +220,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ko/stm/compression/`} class="doc-card">
 				<h3>압축 전략 가이드</h3>
-				<p>10종 전략의 동작 원리, 자동 선택 로직, 쿼리 인식 예산 배분.</p>
+					<p>10가지 압축 방식, 자동 선택 기준, 요청에 따른 예산 배분을 설명합니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a href={`${base}/ko/stm/surfacing/`} class="doc-card">
 				<h3>능동적 서피싱</h3>
-				<p>5단계 게이팅, 피드백 루프, min_score 자동 조정 심층 해설.</p>
+					<p>관련 기억을 고르는 과정, 피드백 반영, <code>min_score</code> 자동 조정을 설명합니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a href={`${base}/ko/ltm/multi-agent/`} class="doc-card">
 				<h3>멀티 에이전트 협업</h3>
-				<p>5단계 세션 워크플로우, 네임스페이스 자동 상속, 에이전트 간 지식 공유.</p>
+					<p>세션 기록, 네임스페이스 상속, 에이전트 간 기억 공유 방법을 설명합니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a href={`${base}/ko/ltm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
-				<p>Store, 미리보기 우선 Pull, 선택적 Push, 프로젝트 간 전송, 다중 프로젝트 작업.</p>
+					<p>Store 기준본 관리, Pull 미리보기, 선택적 Push, 프로젝트 간 복사와 이동을 설명합니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 		</div>
@@ -244,7 +244,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="cta-section">
 	<h2>지금 시작하세요</h2>
-	<p>GPU는 필요 없습니다. 기본 경로는 로컬이며 외부 provider는 선택 사항입니다.</p>
+		<p>GPU 없이 시작할 수 있습니다. 기본 저장소는 로컬이며 외부 서비스 연결은 선택 사항입니다.</p>
 	<div class="cta-buttons">
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">GitHub에서 보기</button>

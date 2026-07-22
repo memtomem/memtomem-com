@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 - **Python 3.12+**
 - **pip**, **uv**, 또는 **pipx**
-- 시맨틱 검색용 임베딩 프로바이더 — `mm init` 단계에서 선택합니다(아래 [임베딩 프로바이더](#임베딩-프로바이더) 섹션). 초기 단계에서는 선택을 유보해도 무방합니다. 선택 이전에는 키워드 검색만으로 동작합니다.
+- 의미 기반 검색에 사용할 임베딩 제공자 — `mm init`에서 선택합니다. 처음에는 고르지 않아도 되며, 이 경우 키워드 검색만 사용합니다. 자세한 내용은 [임베딩 제공자](#임베딩-제공자)를 참고하세요.
 
 ## LTM 서버 (memtomem)
 
@@ -31,7 +31,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
   </TabItem>
 </Tabs>
 
-`[all]`은 이 문서의 기본 흐름에 맞는 권장 설치입니다. 로컬 임베딩(ONNX), 한국어 토크나이저, Ollama / OpenAI 연동, 코드 분할기, 웹 UI, Langfuse 트레이싱, LangGraph Store 어댑터를 포함합니다. 더 가볍게 쓰려면 이 확장(extras)을 생략해 BM25 전용으로 설치할 수 있습니다:
+`[all]`은 이 문서에서 권장하는 설치 방식입니다. 로컬 임베딩(ONNX), 한국어 토크나이저, Ollama / OpenAI 연동, 코드 분할기, 웹 UI, Langfuse 추적, LangGraph Store 어댑터를 포함합니다. 설치 용량을 줄이려면 선택 기능(extras)을 빼고 BM25 전용으로 설치할 수 있습니다.
 
 ```bash
 uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
@@ -48,13 +48,13 @@ uv tool install 'memtomem[all]' --refresh
 
 ### 선택적 확장
 
-아래 extras 는 `[all]`에 포함된 항목입니다. 설치 용량을 줄이려면 필요한 항목만 개별 설치하세요.
+다음 선택 기능은 `[all]`에 모두 포함됩니다. 필요한 기능만 따로 설치해 용량을 줄일 수도 있습니다.
 
 | Extra | 설명 | 명령 |
 |---|---|---|
 | `onnx` | fastembed 로컬 임베딩 (권장 기본값) | `pip install memtomem[onnx]` |
-| `ollama` | Ollama 프로바이더 클라이언트 | `pip install memtomem[ollama]` |
-| `openai` | OpenAI 프로바이더 클라이언트 | `pip install memtomem[openai]` |
+| `ollama` | Ollama 제공자 클라이언트 | `pip install memtomem[ollama]` |
+| `openai` | OpenAI 제공자 클라이언트 | `pip install memtomem[openai]` |
 | `korean` | kiwipiepy 한국어 형태소 분석 | `pip install memtomem[korean]` |
 | `code` | tree-sitter AST 청킹 (Python / JS / TS) | `pip install memtomem[code]` |
 | `web` | FastAPI + uvicorn 기반 Web UI | `pip install memtomem[web]` |
@@ -64,24 +64,24 @@ uv tool install 'memtomem[all]' --refresh
 
 ### `mm` CLI
 
-설치 후 가장 자주 쓰는 명령은 다음과 같습니다:
+설치 후 가장 자주 쓰는 명령은 다음과 같습니다.
 
 | 명령 | 용도 |
 |---|---|
 | `mm init` | 대화형 설정 마법사 |
-| `mm status` | 설치 후 DB·설정·임베딩 정합성 점검 |
+| `mm status` | DB·설정·임베딩 상태 확인 |
 | `mm search <query>` | 지식 베이스 검색 |
 | `mm add <content>` | 기억 항목 추가 |
 | `mm web` | Web UI 대시보드 (http://localhost:8080) |
 | `mm --version` · `mm version` | 설치된 버전 출력 |
 
-전체 명령(`ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참조하세요.
+전체 명령(`ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
 
-MCP 서버 자체는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `memtomem`을 MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등) 설정에 등록하면 클라이언트가 자동으로 기동합니다. 클라이언트별 복사용 `mcpServers` JSON은 [Quick Start → MCP 클라이언트 연결](/ko/guides/quickstart/#4-mcp-클라이언트-연결)을 참고하세요.
+MCP 서버 실행 파일은 `memtomem-server`입니다. 사용자가 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트에 등록하면 클라이언트가 자동으로 실행합니다. 클라이언트별 `mcpServers` JSON은 [빠른 시작 → MCP 클라이언트 연결](/ko/guides/quickstart/#4-mcp-클라이언트-연결)을 참고하세요.
 
 ### 파일 위치
 
-memtomem은 로컬 DB와 설정을 홈 디렉터리 아래에 보관합니다. 기본 ONNX 경로는 머신 안에서 처리하지만, 선택형 원격 임베딩·LLM·리랭커·트레이싱 provider는 설정한 엔드포인트로 요청 데이터를 전송합니다.
+memtomem은 로컬 DB와 설정을 홈 디렉터리 아래에 보관합니다. 기본 ONNX 임베딩은 내 컴퓨터에서 처리합니다. 원격 임베딩·LLM·리랭커·추적 서비스를 선택하면 요청 데이터가 설정한 주소로 전송될 수 있습니다.
 
 | 경로 | 내용 |
 |---|---|
@@ -89,7 +89,7 @@ memtomem은 로컬 DB와 설정을 홈 디렉터리 아래에 보관합니다. �
 | `~/.memtomem/config.json` | `mm init`이 작성하는 LTM 설정 |
 | `~/.memtomem/logs/web.log` | Web UI 로그(`mm web -b`) |
 
-설정 디렉토리는 `MEMTOMEM_*` 환경 변수로 재정의할 수 있습니다([설정](/ko/reference/configuration/) 참고).
+설정 디렉터리는 `MEMTOMEM_*` 환경 변수로 재정의할 수 있습니다([설정](/ko/reference/configuration/) 참고).
 
 ## STM 프록시 (memtomem-stm)
 
@@ -132,29 +132,30 @@ STM은 선택 사항입니다. 관련 기억을 자동으로 찾아 붙여 주�
 
 | 명령 | 용도 |
 |---|---|
-| `mms init --demo --client auto` | 네트워크 없는 첫 demo + 감지된 클라이언트 등록 |
-| `mms doctor` | 설정·클라이언트 등록·업스트림·선택형 LTM 검증 |
+| `mms init --demo --client auto` | 네트워크 없는 데모 실행과 감지된 클라이언트 등록 |
+| `mms doctor` | 설정·클라이언트 등록·연결 서버·선택형 LTM 확인 |
 | `mms register --client claude\|codex\|auto` | 지원 클라이언트에 STM 등록 또는 갱신 |
-| `mms add <name> --command <cmd>` | 업스트림 MCP 서버 등록 |
+| `mms add <name> --command <cmd>` | 연결할 MCP 서버 등록 |
 | `mms add --from-clients` | 기존 MCP 클라이언트 설정에서 일괄 가져오기 |
 | `mms eject <name>` | 가져온 서버를 원래 클라이언트로 복원하고 STM 등록을 해제 |
 | `mms list` | 등록된 서버 목록(SURFACING 열 포함) |
 | `mms status` | 설정 요약 — 활성화 플래그와 서버 수 |
-| `mms health` | 업스트림 연결 상태 + LTM 서피싱 준비 상태 점검 |
+| `mms health` | MCP 서버 연결과 LTM 서피싱 준비 상태 확인 |
 | `mms project route` | 선택한 프로젝트 MCP의 STM 라우팅 미리보기(`--apply`로 쓰기) |
 | `mms --version` | 설치된 버전 출력 |
 
-STM 프록시 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. `mms init --client ...`, `mms register --client ...`, 또는 일반 JSON 등록으로 STM을 MCP 클라이언트에 연결하면 클라이언트가 자동으로 기동합니다. STM은 프록시 설정을 `~/.memtomem/stm_proxy.json`에 기록하며, `mms add` / `mms init`이 이를 관리하므로 직접 편집할 일은 드뭅니다.
+STM 프록시 실행 파일은 `memtomem-stm`입니다. `mms init --client ...`, `mms register --client ...`, 또는 일반 JSON 설정으로 STM을 MCP 클라이언트에 연결하면 클라이언트가 자동으로 실행합니다. 프록시 설정은 `~/.memtomem/stm_proxy.json`에 저장됩니다. `mms add`와 `mms init`이 이 파일을 관리하므로 직접 편집할 일은 드뭅니다.
 
-## 임베딩 프로바이더
+<a id="임베딩-프로바이더"></a>
+## 임베딩 제공자
 
-| 프로바이더 | 설치 | GPU | 비용 |
+| 제공자 | 설치 | GPU | 비용 |
 |---|---|---|---|
 | **ONNX** (fastembed) | 기본 내장 | 불필요 | 무료 |
 | **Ollama** | `ollama pull nomic-embed-text` | 불필요 | 무료 |
 | **OpenAI** | API 키 필요 | — | 유료 |
 
-**어떤 프로바이더를 선택할지 결정하기 어려운 경우**, **ONNX**를 권장합니다. 추론이 로컬에서 동작하고 무료이며, 별도 데몬이나 API 키가 필요하지 않습니다. 이후 `mm init`을 다시 실행하거나 `MEMTOMEM_EMBEDDING__PROVIDER` 환경 변수를 설정하여 바꿀 수 있습니다(환경 변수에서 중첩된 설정 키는 `__` 이중 언더스코어로 구분합니다).
+어떤 제공자를 선택할지 모르겠다면 **ONNX**를 권장합니다. 무료로 로컬에서 실행되며 별도 데몬이나 API 키가 필요하지 않습니다. 나중에 `mm init`을 다시 실행하거나 `MEMTOMEM_EMBEDDING__PROVIDER` 환경 변수를 설정해 바꿀 수 있습니다. 중첩된 환경 변수 키는 이중 언더스코어(`__`)로 구분합니다.
 
 ## 기술 스택
 

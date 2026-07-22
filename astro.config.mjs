@@ -55,11 +55,11 @@ export default defineConfig({
 					label: 'Getting Started',
 					translations: { ko: '시작하기' },
 					items: [
-						{ label: 'Quick Start', slug: 'guides/quickstart' },
+							{ label: 'Quick Start', slug: 'guides/quickstart', translations: { ko: '빠른 시작' } },
 						{ label: 'Memory Persistence', slug: 'guides/memory-persistence', translations: { ko: '세션을 넘나드는 기억' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
 						{ label: 'Troubleshooting', slug: 'guides/troubleshooting', translations: { ko: '문제 해결' } },
-						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 프라이버시' } },
+						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 정보 보호' } },
 						{ label: 'Use These Docs', slug: 'guides/use-these-docs', translations: { ko: '문서를 MCP로 사용하기' } },
 					],
 				},
