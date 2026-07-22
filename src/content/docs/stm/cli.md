@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.1.38 package. It manages upstream-server registration, MCP-client registration, and proxy-config lifecycle. Run `mms --help` for the full command list or `mms --version` to print the installed version (the `mms version` subcommand also works).
+The `mms` command is installed with the `memtomem-stm` v0.1.41 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -11,39 +11,48 @@ STM's import is reversible. Pulling an upstream behind the STM proxy preserves i
 
 ### `mms init`
 
-Run `mms init` with no flags — the wizard asks for one upstream server, optionally probes its connectivity, writes `~/.memtomem/stm_proxy.json`, and then offers a 3-way MCP-client registration prompt:
-
-1. **Add to Claude Code** — runs `claude mcp add` for you.
-2. **Generate `.mcp.json`** — writes a project-scoped config in the current directory.
-3. **Skip** — prints paste hints so you can wire it up by hand later.
-
-Use the `--mcp` flag to pre-answer the prompt in scripted / CI runs:
+For a deterministic first success, create the bundled read-only demo, register a detected client, and run the end-to-end diagnostic:
 
 ```bash
-mms init --mcp claude                # auto-register with Claude Code
-mms init --mcp json                  # write .mcp.json in the current directory
-mms init --mcp skip                  # write config, print paste hints, exit
-mms init --no-validate               # skip the upstream connectivity probe
-mms init --lang ko                   # token-aware budget preset for CJK workloads
-mms init --prune-originals           # also remove imported upstreams from source clients
+mms init --demo --client auto
+mms doctor
 ```
+
+With no selection flags, the wizard asks for one upstream, optionally probes it, writes the proxy config, and offers client registration. Current client choices are `auto`, `claude`, `codex`, `json`, and `skip`; `--mcp claude|json|skip` remains a compatibility spelling.
+
+| Option | Description |
+|---|---|
+| `--config PATH` | Proxy config path (default `~/.memtomem/stm_proxy.json`) |
+| `--no-validate` | Skip the optional connectivity probe |
+| `--client auto\|claude\|codex\|json\|skip` | Select current client registration flow |
+| `--mcp claude\|json\|skip` | Compatibility spelling for the older registration flow |
+| `--resume` | Continue client registration when the proxy config already exists |
+| `--demo` | Configure the bundled deterministic read-only server |
+| `--freshness live\|balanced\|reuse` | Response-cache freshness preset (default `balanced`) |
+| `--allow-project-configs` | Acknowledge discovery of project-local MCP configs |
+| `--replace-registration` | Replace an existing selected-client registration |
+| `--save-unverified` | Save when an optional connection probe fails |
+| `--json` | Emit one JSON result document |
+| `--prune-originals` | Remove imported direct host registrations after successful setup |
+| `--lang en\|ko` | Token-budget language preset; `ko` writes CJK-specific ratios and limits |
 
 `--lang ko` writes Korean / CJK token-equivalent defaults: `chars_per_token=1.85`, `default_max_result_chars=8500`, and a per-server `max_result_tokens=2000`. Non-TTY callers default to `en` when `--lang` is omitted.
 
-`mms init` aborts if the config file already exists — use `mms add` to append more upstream servers, or `mms register` to re-run the registration prompt without touching the config.
+`mms init` normally aborts if the config exists. Use `--resume` for the interrupted registration stage, `mms add` for more upstreams, or `mms register` to register another host without changing the proxy config.
 
 ### `mms register`
 
 Re-run the MCP-client registration flow after `mms init`. Useful if you picked `skip` the first time or want to re-register after reinstalling the client.
 
 ```bash
-mms register                         # interactive prompt
-mms register --mcp claude            # shell out to `claude mcp add`
-mms register --mcp json              # write .mcp.json in cwd
-mms register --mcp skip              # print manual registration hints
+mms register --client auto           # detected supported client
+mms register --client claude         # Claude Code
+mms register --client codex          # Codex
+mms register --client json           # write .mcp.json in cwd
+mms register --client skip           # print manual registration hints
 ```
 
-Safe to re-run. If `memtomem-stm` is already registered with Claude Code, the command defaults to keeping the existing entry.
+The complete options are `--config`, `--client auto|claude|codex|json|skip`, compatibility `--mcp claude|json|skip`, `--replace-registration`, and `--json`. It is safe to re-run; an existing selected-client registration is kept unless replacement is requested.
 
 ### `mms add <name>`
 
@@ -64,10 +73,12 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 | `--transport` | `stdio` (default), `sse`, or `streamable_http` |
 | `--url` | Endpoint URL for `sse` / `streamable_http` |
 | `--env KEY=VALUE` | Environment variable to forward to the upstream process (repeatable) |
+| `--header KEY=VALUE` | Plaintext header for `sse` / `streamable_http` (repeatable; config file is mode `0600`) |
 | `--compression` | `auto` (default), `none`, `truncate`, `selective`, `hybrid` |
 | `--max-chars` | Output-size budget (default `8000`) |
 | `--validate` | Probe the server (MCP initialize + list-tools) before saving |
 | `--timeout` | Probe timeout in seconds when `--validate` is set (default `10`) |
+| `--json` | Emit one JSON result document |
 
 #### Bulk import from MCP clients
 
@@ -201,17 +212,105 @@ Bridge supported host built-in tool calls into STM surfacing. Claude Code and co
 
 The hook always exits 0. If surfacing, the daemon, or compression fails, the host tool output passes through unchanged.
 
+| Option | Description |
+|---|---|
+| `--host claude` | Host payload/response contract (currently Claude Code) |
+| `--use-daemon` / `--no-daemon` | Override daemon routing for this invocation |
+| `--surfacing-timeout-seconds N` | Override the cold-path surfacing timeout |
+| `--daemon-timeout-seconds N` | Override hook-to-daemon round-trip timeout |
+| `--persist-query-text` / `--no-persist-query-text` | Override query-text retention for this portable hook invocation |
+
 ### `mms daemon`
 
 Manage the local surfacing daemon used by `mms hook`. Daemon mode is on by default (`MEMTOMEM_STM_HOOK__USE_DAEMON=1`) and auto-spawns on the first eligible hook call, so manual startup is usually unnecessary.
 
 ```bash
 mms daemon status                    # show whether the warm daemon is running
+mms daemon status --json             # scriptable status
 mms daemon start                     # start it explicitly
 mms daemon stop                      # stop the daemon for this config
+mms daemon stop --all                # include stale-config daemon orphans
+mms daemon restart                   # stop this config, then start it once
+mms daemon run                       # foreground long-lived server loop
 ```
 
 The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable.
+
+### `mms doctor`
+
+Run the status, health, and config checks as one PASS/WARN/FAIL report. The default is passive and never edits state or searches LTM; FAIL exits 1 and WARN-only exits 0.
+
+```bash
+mms doctor
+mms doctor --json --timeout 5
+mms doctor --measure-ltm             # five read-only searches through an already-running daemon
+```
+
+Options: `--config`, `--json`, `--timeout`, and `--measure-ltm`. Measurement never starts a missing daemon.
+
+### `mms config validate`
+
+Strictly lint the JSON file as written, without environment overlay. Missing files, parse/schema errors, and unknown keys exit non-zero.
+
+```bash
+mms config validate
+mms config validate --config ./stm_proxy.json --json
+```
+
+### `mms gateway`
+
+Inspect and configure the optional Toolgraph policy source.
+
+```bash
+mms gateway status [--config PATH] [--json]
+mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
+mms gateway explain server::tool [--config PATH] [--json]
+```
+
+`mode` previews by default. `--apply` enables the bundle source and atomically aligns the Toolgraph query profile with STM exposure; `explain` reports one bundle decision.
+
+### `mms host`
+
+Inspect and reconcile the host MCP configurations that feed the project registry.
+
+```bash
+mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
+mms host status [--json]
+mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
+```
+
+`scan` is a host-anchored, read-only inventory; `status` is a registry-anchored drift comparison. `sync` previews by default, adds new entries, removes entries absent from every host, and backfills sidecar baselines. Changed host shapes require `--force`; mutating JSON runs require `--yes`. `--allow-project-configs` explicitly acknowledges project-local discoveries.
+
+### `mms selection replay`
+
+Replay sanitized selection telemetry and evaluate deterministic risk penalties. Recommendations are previews and never update proxy config.
+
+```bash
+mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
+                     [--active-only] [--no-telemetry]
+                     [--output-dir DIR] [--json]
+```
+
+### `mms stats`
+
+Read all-time persistent compression and surfacing statistics without creating or migrating stores.
+
+```bash
+mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
+```
+
+The CLI sees disk-backed metrics only; process-local live counters remain available through the observability MCP tools.
+
+### `mms tune`
+
+Preview or apply per-tool compression recommendations derived from the existing metrics and feedback stores.
+
+```bash
+mms tune [--config PATH] [--since-hours 24] [--tool TOOL] [--json]
+mms tune --apply [--yes]
+```
+
+Preview is the default. `--apply` takes a timestamped backup and writes accepted `tool_overrides` under the config lock; the running proxy hot-reloads them. Unlike `mms stats`, tune may run idempotent schema migrations on stores that already exist.
 
 ## Project Management (W1)
 
@@ -260,6 +359,18 @@ mms project enable filesystem --project acme
 
 `enable` only accepts MCPs that are already in the registry — it errors clearly when the registry is empty. `disable` works regardless of registry state.
 
+### `mms project route`
+
+Preview or add the detected project's enabled registry MCPs to the STM config.
+
+```bash
+mms project route
+mms project route --project acme --config ~/.memtomem/stm_proxy.json --apply
+mms project route --json
+```
+
+Options are `--project`, `--config`, `--apply`, and `--json`. Routing is additive: existing entries remain, conflicts are reported and skipped, and source host configs are never pruned.
+
 ## Importing host configs (W1)
 
 ### `mms import`
@@ -281,13 +392,13 @@ To inspect proxy, surfacing, selection, and compression behavior at runtime, STM
 
 ## Running the proxy server
 
-The proxy server itself ships as the `memtomem-stm` console script. You don't launch it by hand — your MCP client spawns it automatically once `memtomem-stm` is registered (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry).
+The proxy server accepts `memtomem-stm`, `memtomem-stm-proxy`, or a bare `mms` command over piped stdio. You normally do not launch it by hand: a registered MCP client spawns it. A bare interactive `mms` invocation displays CLI help instead.
 
 ## Example Workflow
 
 ```bash
 # 1. First-time setup — registers one upstream + your MCP client in one go
-mms init --mcp claude
+mms init --demo --client auto
 
 # 2. Add more upstreams (manually, or bulk-import from existing client configs)
 mms add filesystem --command filesystem-server --prefix fs --validate
@@ -304,7 +415,7 @@ mms surfacing filesystem off
 mms eject filesystem
 
 # 6. (Optional) re-register with Claude Code after reinstalling the client
-mms register --mcp claude
+mms register --client claude
 ```
 
 Your MCP client now connects to `memtomem-stm` instead of each individual upstream. All upstream tools are available through the proxy, with automatic memory surfacing, response compression, and progressive delivery.

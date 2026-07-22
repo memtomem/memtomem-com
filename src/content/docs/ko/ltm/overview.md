@@ -41,7 +41,7 @@ memtomem server
 SQLite (FTS5 + sqlite-vec)
 ```
 
-로컬 MCP 서버로 실행되며, 모든 데이터는 사용자의 컴퓨터에 저장됩니다. 저장은 SQLite, 임베딩은 로컬 ONNX로 처리하며, GPU·외부 서비스·계정 없이 동작합니다.
+로컬 우선 MCP 서버로 실행됩니다. SQLite 저장과 ONNX 임베딩은 사용자 컴퓨터 안에서 처리하며 GPU나 계정이 필요하지 않습니다. 선택형 원격 임베딩·리랭커·LLM·관측 provider는 사용자가 설정한 엔드포인트와 통신합니다.
 
 ## STM과의 관계
 
@@ -49,7 +49,7 @@ SQLite (FTS5 + sqlite-vec)
 |---|---|---|
 | **역할** | 영구 저장 및 검색 | 실시간 프록시 및 압축 |
 | **필수 여부** | 예 (핵심) | 선택 사항 |
-| **동작 방식** | 에이전트가 필요 시 `mem_search` 호출 | 모든 도구 응답에 관련 기억 자동 주입 |
+| **동작 방식** | 에이전트가 필요 시 `mem_search` 호출 | STM 프록시나 지원 hook을 거친 호출에 관련 기억 주입 가능 |
 
 기본 구성은 LTM 단독입니다. 토큰 최적화와 능동적 기억 주입이 필요한 경우 [memtomem-stm](/ko/stm/overview/)을 프록시로 앞단에 배치할 수 있습니다.
 
@@ -58,7 +58,7 @@ SQLite (FTS5 + sqlite-vec)
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **최신 릴리스** | `0.3.10` |
+| **최신 릴리스** | `0.3.12` |
 | **CLI** | `mm` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |

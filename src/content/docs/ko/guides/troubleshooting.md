@@ -46,7 +46,7 @@ uv tool install 'memtomem[all]' --refresh
 STM의 프록시 도구는 `<prefix>__<tool>`로 노출되고, 클라이언트가 이를 `mcp__<server>__<prefix>__<tool>`로 합성합니다. 이 합성 이름이 **64자를 넘으면 해당 도구는 조용히 제외됩니다.** 두 가지 해결책이 있습니다:
 
 - 업스트림 `--prefix`를 더 짧게 지정합니다(예: `filesystem` → `fs`).
-- STM을 짧은 클라이언트 이름 `mms`로 등록하고 **동시에** `MMS_CLIENT_SERVER_NAME=mms`를 export합니다. `mms init --mcp claude`는 기본적으로 더 긴 이름 `memtomem-stm`으로 등록하므로, 3자 이름의 여유분을 자동으로 얻지는 못합니다.
+- STM을 짧은 클라이언트 이름 `mms`로 등록하고 **동시에** `MMS_CLIENT_SERVER_NAME=mms`를 export합니다. `mms init --client claude`는 기본적으로 더 긴 이름 `memtomem-stm`으로 등록하므로, 3자 이름의 여유분을 자동으로 얻지는 못합니다.
 
 `mms health`로 discovered / advertised 도구 수를 확인해 무엇이 제외됐는지 진단할 수 있습니다.
 

@@ -5,7 +5,46 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.3.10. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.3.12. Commands are grouped by function, but it's a single reference — scan top to bottom.
+
+## Complete Command Index
+
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.3.12 binary.
+
+| Group | Commands |
+|---|---|
+| Setup / data | `init`, `config`, `add`, `index`, `ingest`, `mem`, `memory` |
+| Retrieval / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
+| Runtime context | `context`, `wiki`, `sync-doctor` |
+| Collaboration | `session`, `activity`, `agent`, `review` |
+| Evaluation / operations | `status`, `quality`, `warmup`, `watchdog`, `schedule` |
+| Lifecycle | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
+
+All command-group subcommands are mirrored below.
+
+| Group | Subcommands |
+|---|---|
+| `activity` | `log` |
+| `agent` | `list`, `migrate`, `register`, `share` |
+| `config` | `set`, `show`, `unset` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
+| `gc` | `orphan-projects`, `orphan-sources` |
+| `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
+| `mem` | `init`, `rescan`, `rescan-files` |
+| `memory` | `doctor` |
+| `pinned` | `compose`, `delete`, `get`, `list`, `set` |
+| `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
+| `review` | `approve`, `list`, `recover`, `reject`, `scan`, `show` |
+| `schedule` | `add`, `delete`, `list`, `run-now` |
+| `session` | `end`, `events`, `list`, `start`, `wrap` |
+| `tags` | `delete`, `list`, `merge`, `rename` |
+| `watchdog` | `history`, `run`, `status` |
+| `web` | `status`, `stop` |
+| `wiki` | `agent`, `command`, `init`, `list`, `pull`, `push`, `remote`, `skill` |
+| `wiki agent/command/skill` | `commit`, `diff`, `lint`, `new`, `override`, `promote` |
+
+Bare `mm web` launches the UI; `status` and `stop` manage it.
 
 ## Setup
 
@@ -32,7 +71,7 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Quick Start](/guides/quickstart/) for the config snippets.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 96 current tools plus one deprecated alias. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 99 current tools plus one deprecated alias. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
 
@@ -95,11 +134,9 @@ mm recall --namespace project-x --format plain
 
 Launch the Web UI dashboard for browser-based search and memory management.
 
-On launch, `mm web` opens the dashboard at `http://127.0.0.1:8080` with these tabs: **Home · Search · Sources · Index · Tags · Timeline · More**. The **More** tab holds Settings, Dedup, Age-out, Export/Import, and Reset Database.
+On launch, `mm web` opens the dashboard at `http://127.0.0.1:8080`. Simple mode shows **Home, Search, Sources, Gateway, Index, and Settings**. Gateway contains Overview, Projects, Skills, Commands, Subagents, MCP Servers, Hooks, and Wiki; rows use **Push** and preview-first **Pull** actions. Settings contains Config, Namespaces, and Reset Database.
 
-The Context Gateway tab opens in a **Simple view** by default — for each artifact kind (skills / commands / subagents) it shows a one-line status ("already in your AI tools" or "still needs to be pushed out") and, on any row that needs action, a single button: **Sync** or **Import**. The full control grid is one click away as **Advanced**.
-
-Pass `--dev` (or set `MEMTOMEM_WEB__MODE=dev`) to unlock maintainer pages: **Namespaces, Sessions, Working Memory, Health Report**. Most users won't need these.
+The header's **Advanced** toggle reveals Tags and Timeline plus Dedup, Age-out, and Export/Import settings. Pass `--dev` (or set `MEMTOMEM_WEB__MODE=dev`) to add maintainer pages: **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction**.
 
 ```bash
 mm web                               # default: http://localhost:8080 (prod tier)
@@ -148,7 +185,7 @@ mm index ~/docs/architecture         # index a specific directory
 mm index README.md                   # index a single file
 ```
 
-Paths listed in `indexing.memory_dirs` are additionally watched by the file watcher that `mm server` starts — but the watcher is **reactive only**. It reindexes on modify/create/move events that fire after it starts, so **pre-existing files at boot time are not auto-scanned**. The normal flow is to seed once with `mm index <dir>` (or `mem_index(path="<dir>")`) and then let the watcher handle further edits. This is why the `mm init` wizard prints `mm index {memory_dir}` as step 1 of its `Next steps`.
+Paths listed in `indexing.memory_dirs` are watched by the long-running `memtomem-server` process, but the watcher is **reactive only**. It reindexes modify/create/move events after startup; pre-existing files are not scanned automatically. Seed once with `mm index <dir>` (or `mem_index(path="<dir>")`), then let the MCP server watcher handle later edits. `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true` is an opt-in one-shot backfill for the Web UI startup path.
 
 ### `mm ingest`
 
@@ -160,9 +197,22 @@ mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # import Antigravity CLI
 mm ingest codex-memory --source ~/.codex/memories/      # import Codex CLI memories
 ```
 
+### `mm mem init / rescan / rescan-files`
+
+Manage the explicit project-memory trust gate and audit already-stored material without writing new memory.
+
+```bash
+mm mem init --scope project_local
+mm mem init --scope project_shared --confirm-project-shared
+mm mem rescan --scope user [--source PATH] [--json] [--quiet]
+mm mem rescan-files --json
+```
+
+`init` requires a real project marker and registers the chosen memory tier atomically. `rescan` is read-only and exits 1 on a privacy finding; the scope is always explicit. `rescan-files` audits historical imported, fetched, and session files.
+
 ## Context Gateway
 
-The Context Gateway syncs the agent definitions, skills, and commands you store in canonical form out to each AI runtime. The basic flow within one project is detect → init → sync → diff; v0.3.0 adds cross-project / cross-tier transfer and fleet-wide operations.
+The Context Gateway keeps canonical agents, skills, and commands in a Store. `sync` Pushes Store copies out to runtimes; `pull` previews and brings a selected runtime copy back into the Store. Cross-project / cross-tier transfer and fleet-wide operations use the same model.
 
 Tiers are addressed by friendly labels: **User** (`--scope user`, personal, visible in every project), **Project (shared)** (`--scope project_shared`, git-tracked), and **Project (local)** (`--scope project_local`, local drafts).
 
@@ -180,6 +230,16 @@ mm context diff --scope project_shared
 **Project (shared)** is git-tracked, so it requires explicit confirmation and should not contain secrets. Syncing to the **User** tier (`--scope user`) places the canonical files under `~/.memtomem/` so they show up in every project — because that writes outside the project (your home directory), the gateway shows exactly which file paths it will touch and asks for confirmation. In non-interactive contexts, `--yes` skips the prompt.
 
 MCP server definitions move through the same flow. `mm context sync --include=mcp-servers` syncs canonical MCP server definitions into a project's `.mcp.json` (with secret-safety checks) — an opt-in path that only runs when you ask for it.
+
+### `mm context pull`
+
+Pull one named runtime artifact into the Store. Preview is the default; `--diff` shows the would-land change, `--from` selects a runtime when candidates diverge, and `--overwrite` snapshots the current Store payload before replacement.
+
+```bash
+mm context pull skills reviewer
+mm context pull skills reviewer --from claude --diff
+mm context pull skills reviewer --from claude --scope project_shared --overwrite --apply
+```
 
 ### Reuse a skill from another project (`mm context move` / `copy`)
 
@@ -258,6 +318,33 @@ Install an artifact you've collected with `mm context install <type> <name>`.
 
 ## Sessions & Multi-Agent
 
+### `mm pinned`
+
+Manage durable Pinned Context blocks that compose ahead of retrieved memory. The complete group is `list`, `get`, `set`, `delete`, and `compose`.
+
+```bash
+mm pinned list
+mm pinned get <key>
+mm pinned set <key> --content "Keep reviews evidence-first"
+mm pinned delete <key>
+mm pinned compose
+```
+
+See [Pinned Context](/ltm/pinned-context/) for exact scope, shadowing, idempotency, and composition rules.
+
+### `mm review`
+
+Generate and adjudicate review-first memory candidates. Nothing becomes durable until approval.
+
+```bash
+mm review scan <session-id>
+mm review list --status pending
+mm review show <candidate-id>
+mm review approve <candidate-id> --reviewer alice
+mm review reject <candidate-id> --reviewer alice --reason "not durable"
+mm review recover --stale-after-minutes 15 --actor alice
+```
+
 ### `mm session`
 
 Manage agent sessions — start, end, list, events, and wrap. Sessions group activity events and tie them to an agent runtime.
@@ -312,6 +399,14 @@ mm status --json                     # machine-readable, for scripts / `jq` pipe
 
 Added in v0.1.25; `--json` / `--format json` added in v0.3.4. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
 
+### `mm sync-doctor`
+
+Run six read-only checks against the current private memory-sync repository. Failures exit non-zero; warnings do not.
+
+```bash
+mm sync-doctor
+```
+
 ### `mm warmup`
 
 Preload the local embedder / reranker models so the **first** query doesn't pay the one-time model load. Optional — without it the models load lazily on first use.
@@ -334,6 +429,19 @@ mm memory doctor --fix --apply       # actually remove broken links
 ```
 
 `--fix` only removes index pointer lines whose target is missing on disk, and it is a dry-run unless `--apply` is also passed. It exits 1 when any error-severity finding exists, so it works as a CI check.
+
+`dangling_wikilink` is informational: it may be a deliberate forward reference or a stale name. It never fails the run and `--fix` never removes it.
+
+### `mm quality`
+
+Manage deterministic retrieval evaluation cases, replay them, compare reports, and enforce a quality gate. Search runs and labels are also available in the dev-mode Web UI's Search Runs and Quality Lab pages.
+
+```bash
+mm quality cases list
+mm quality replay --output report.json
+mm quality compare baseline.json candidate.json
+mm quality gate baseline.json candidate.json
+```
 
 ### `mm watchdog`
 
@@ -364,6 +472,17 @@ mm schedule delete <sched-id>
 `--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters. The dispatcher rides the health-watchdog loop, so registered jobs only fire when both `scheduler.enabled` and `health_watchdog.enabled` are on.
 
 ## Maintenance & Lifecycle
+
+### `mm gc orphan-sources`
+
+Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks.
+
+```bash
+mm gc orphan-sources
+mm gc orphan-sources --apply
+```
+
+`mm gc orphan-projects` handles a separate case: chunks whose recorded `project_root` no longer exists. It previews by default; use `--apply` for per-root confirmation or `--apply --yes` for an explicitly non-interactive deletion. Review removable or temporarily unmounted roots before confirming.
 
 ### `mm embedding-reset`
 
@@ -403,7 +522,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.3.10           # pin a specific version
+mm upgrade --version 0.3.12           # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```

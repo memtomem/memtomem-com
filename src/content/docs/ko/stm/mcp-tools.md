@@ -156,6 +156,6 @@ STM은 업스트림 도구를 1:1로 그대로 노출하지 않고, 노출 시�
 
 MCP 도구 선택 UI(예: Claude Code의 `/mcp`)에서 렌더링되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내도록 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file` 로 표시됩니다. 이는 도구를 호출할 때 사용하는 `{prefix}__{tool}` 이름과는 별개이며, 업스트림 도구가 이미 `annotations.title` 을 제공하는 경우에만 적용됩니다.
 
-에이전트가 `fs__read_file`을 호출하면 프록시는 활성 파이프라인인 **CLEAN → COMPRESS → SURFACE**를 실행하며, **INDEX**는 index engine이 연결된 경우에만 동작합니다. 반환값은 압축된 응답 + 서피싱된 기억입니다.
+에이전트가 `fs__read_file`을 호출하면 기본 제공 프록시는 **CLEAN → COMPRESS → SURFACE**를 실행합니다. 반환값은 압축된 응답과 surfacing된 기억이며 응답을 LTM에 다시 기록하지 않습니다.
 
 > 메커니즘은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참조하세요.

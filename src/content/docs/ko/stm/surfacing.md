@@ -13,7 +13,14 @@ description: 도구 호출 단위 실시간 서피싱, 관련성 게이팅, 피�
 도구 호출 → 컨텍스트 추출 → LTM 검색 → 관련성 게이팅 → 응답에 주입
 ```
 
-에이전트 코드를 고칠 필요 없이, STM 프록시를 거치는 것만으로 MCP 통신에 기억이 자동으로 실립니다. Claude Code 기본 내장 도구에는 `mms hook`을 호스트 훅으로 등록합니다. 기본적으로 항상 준비된 로컬 데몬(warm local daemon)을 사용하므로, 훅을 반복 호출해도 LTM을 처음부터 띄우는 비용(cold start)이 들지 않습니다.
+에이전트 코드를 고칠 필요는 없지만 호출은 STM 또는 지원되는 host hook을 통과해야 합니다. upstream MCP 서버를 직접 호출하면 STM을 우회합니다. Claude Code 기본 내장 도구에는 `mms hook`을 호스트 훅으로 등록합니다. 기본적으로 warm local daemon을 사용하므로 훅을 반복 호출해도 LTM cold start 비용이 들지 않습니다.
+
+| 호출 표면 | Surfacing 경로 |
+|---|---|
+| `memtomem-stm`을 통해 라우팅된 MCP 서버 | 프록시 응답에 주입 |
+| 지원되는 Claude Code `PostToolUse` 이벤트 | `mms hook` → `additionalContext` |
+| upstream MCP 직접 호출 | Surfacing하지 않음 |
+| 위 경로 밖의 provider 자체 memory | 자동 읽기·인덱싱하지 않음 |
 
 ## 5단계 컨텍스트 추출
 
@@ -27,12 +34,14 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 | 4 | 시맨틱 키 | `query` / `search` / `url` / `description` 등 인자 값의 키워드 조합 |
 | 5 | 도구명 | 최후 수단 — 도구 이름 자체를 쿼리로 사용 |
 
+프록시는 `_context_query`를 받을 수 있지만 `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`일 때만 upstream 광고 schema에 이 인자를 추가합니다. 기본값은 `false`이므로 일반 에이전트에 이 private hint 생성을 요구하지 않습니다.
+
 ## 관련성 게이팅
 
 쿼리가 추출되면, 서피싱된 기억이 실제로 유용한지 추가로 필터링합니다 (컨텍스트 추출은 [위 단계](#5단계-컨텍스트-추출)에서 이미 수행됩니다):
 
 1. **LTM 검색** — 하이브리드 검색으로 관련 기억 후보 검색
-2. **점수 필터링** — `min_score` 임계값 이하의 결과 제거
+2. **점수 필터링** — `scale_gated_min_score=true`(기본값)이면 score scale을 정규화한 뒤 `min_score` 미만 결과를 제거합니다. Rerank는 `MEMTOMEM_STM_SURFACING__RERANK` 또는 LTM 설정이 켜지 않는 한 기본적으로 비활성화됩니다.
 3. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
 
 ## 주입 모드
@@ -57,7 +66,7 @@ STM이 LTM에 기억을 조회하려면 먼저 검색 쿼리가 필요합니다.
 
 ## 피드백 루프
 
-서피싱된 블록의 각 기억은 원시 점수 대신 관련도 버킷 — `[weak]` / `[related]` / `[strong]` — 으로 표시되며, 활성 `min_score` 임계값과 1.0 사이 구간에 따라 산출됩니다. 각 기억은 고유한 `memory_id`(backtick 토큰)를 함께 노출하므로, 에이전트는 전체 이벤트 단위로 평가하거나 개별 기억을 따로 평가할 수 있습니다:
+서피싱된 블록의 각 기억은 provider마다 의미가 다른 원시 점수 대신 관련도 버킷 — `[weak]` / `[related]` / `[strong]` — 으로 표시됩니다. 버킷은 score scale 처리 후 활성 임계 구간에서 산출됩니다. 각 기억은 고유한 `memory_id`(backtick 토큰)를 함께 노출하므로, 에이전트는 전체 이벤트 단위로 평가하거나 개별 기억을 따로 평가할 수 있습니다:
 
 - 이벤트 전체: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
 - 개별 기억: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`

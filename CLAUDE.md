@@ -11,13 +11,14 @@ Deployed via **GitHub Pages** using GitHub Actions (`.github/workflows/deploy.ym
 ## Tech Stack
 
 - **Astro + Starlight** — static site generator with docs framework
-- **Node.js 22+**, npm
+- **Node.js 22.12+**, npm
 
 ## Commands
 
 ```bash
 npm install          # install dependencies
 npm run dev          # dev server (localhost:4321)
+npm run check:docs   # versions, CLI/config surface, EN/KO, code fences
 npm run build        # production build → dist/
 npm run preview      # preview production build locally
 ```
@@ -27,6 +28,8 @@ npm run preview      # preview production build locally
 ```
 src/
   pages/index.astro       # Custom landing page (NOT Starlight layout)
+  pages/ko/index.astro    # Korean landing-page mirror
+  data/docs-contract.json # Reviewed upstream versions/counts/hashes
   content/docs/           # Starlight docs pages (Markdown)
     guides/               # Quick Start, Installation
     ltm/                  # memtomem (LTM) docs
@@ -48,4 +51,13 @@ Sidebar structure is configured in `astro.config.mjs` — slugs must match file 
 
 ## Language
 
-Primary content language is **Korean**. UI labels and technical terms are in English. Starlight locale is set to `ko` as root. Maintain this bilingual convention.
+The root locale is **English** and `/ko/` is its Korean mirror. Every English document must keep the same-path Korean document in sync. Landing pages are also paired (`src/pages/index.astro`, `src/pages/ko/index.astro`).
+
+## Documentation Contract
+
+- Keep the site as an exhaustive mirror of supported upstream CLI and configuration options. Do not collapse the reference into a recommended-only subset.
+- Use `src/data/docs-contract.json` as the reviewed snapshot for Core, STM, and OpenCode versions, tool counts, CLI groups, and environment-variable hashes.
+- Update English and Korean together. `npm run check:docs` enforces pairing and critical contract details; `npm run build` also validates generated internal routes and fragments.
+- On a Core or STM version bump, add the superseded version to the explicit stale-version list in `scripts/check-doc-contract.mjs`; do not replace it with a site-wide lower-semver rule that would reject historical notes or independently versioned integrations.
+- Prefer first-success flows in beginner pages (`mm init → mm status → mm add → mm search`; `mms init --demo --client auto → mms doctor`) while retaining the full option surface in reference pages.
+- `.mcp.json` is local tooling state and must remain untracked unless the user explicitly changes that policy.

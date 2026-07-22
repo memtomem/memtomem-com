@@ -13,7 +13,14 @@ When an agent calls an MCP tool, the STM proxy runs this pipeline:
 Tool call → Context extraction → LTM search → Relevance gating → Inject into response
 ```
 
-No agent code changes needed — routing through the STM proxy enables automatic memory injection for MCP communication. For Claude Code built-in tools, install `mms hook` as a host hook; it uses a warm local daemon by default so repeated hook calls do not pay LTM cold-start cost.
+No agent code changes are needed, but the call must pass through STM or a supported host hook. Direct calls to an upstream MCP server bypass STM. For Claude Code built-in tools, install `mms hook` as a host hook; it uses a warm local daemon by default so repeated hook calls do not pay LTM cold-start cost.
+
+| Call surface | Surfacing path |
+|---|---|
+| MCP server routed through `memtomem-stm` | Proxy response injection |
+| Supported Claude Code `PostToolUse` event | `mms hook` → `additionalContext` |
+| Direct upstream MCP call | Not surfaced |
+| Provider-native memory outside these paths | Not read or indexed automatically |
 
 ## 5-Level Context Extraction
 
@@ -27,12 +34,14 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 | 4 | Semantic keys | Keyword combination from `query` / `search` / `url` / `description` and similar argument values |
 | 5 | Tool name | Last resort — use the tool name itself as the query |
 
+`_context_query` is accepted by the proxy, but it is added to advertised upstream schemas only when `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`. The default is `false`, so ordinary agents are not asked to synthesize this private hint.
+
 ## Relevance Gating
 
 Once a query is extracted, surfaced memories are filtered further to ensure usefulness (context extraction already happened in the [step above](#5-level-context-extraction)):
 
 1. **LTM search** — Hybrid search for candidate memories
-2. **Score filtering** — Remove results below the `min_score` threshold
+2. **Score filtering** — Normalize score scales when `scale_gated_min_score=true` (default), then remove results below `min_score`. Reranking is off by default unless `MEMTOMEM_STM_SURFACING__RERANK` or LTM configuration enables it.
 3. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
 
 ## Injection Modes
@@ -57,7 +66,7 @@ Automatically scales based on the agent's context window size:
 
 ## Feedback Loop
 
-Each memory in the surfaced block shows a relevance bucket — `[weak]` / `[related]` / `[strong]` — instead of a raw score, computed across the range between the active `min_score` threshold and 1.0. Each memory also exposes its own `memory_id` (a backticked token), so the agent can rate a whole event or rate individual memories one at a time:
+Each memory in the surfaced block shows a relevance bucket — `[weak]` / `[related]` / `[strong]` — instead of a raw provider-dependent score. Buckets are computed after score-scale handling across the active threshold range. Each memory also exposes its own `memory_id` (a backticked token), so the agent can rate a whole event or rate individual memories one at a time:
 
 - Whole event: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
 - Specific memories: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`

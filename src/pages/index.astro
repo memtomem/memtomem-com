@@ -1,6 +1,7 @@
 ---
 // Custom landing page (English) — bypasses Starlight's docs layout
 import '../styles/landing.css';
+import docsContract from '../data/docs-contract.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <html lang="en">
@@ -8,7 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>memtomem — Long &amp; Short-Term Memory Infrastructure for AI Agents</title>
-	<meta name="description" content="Turn your notes, docs, and code into a searchable memory that any MCP-compatible AI agent can use across sessions and across agents. STM + LTM architecture, fully local." />
+	<meta name="description" content="Turn your notes, docs, and code into searchable, local-first memory that MCP-compatible AI agents can use across sessions and agents." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/" />
@@ -17,7 +18,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/" />
 	<meta property="og:title" content="memtomem — Long &amp; Short-Term Memory Infrastructure for AI Agents" />
-	<meta property="og:description" content="Turn your notes, docs, and code into a searchable memory that any MCP-compatible AI agent can use across sessions and across agents. STM + LTM architecture, fully local." />
+	<meta property="og:description" content="Turn your notes, docs, and code into searchable, local-first memory that MCP-compatible AI agents can use across sessions and agents." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image.png" />
 	<meta property="og:image:width" content="1200" />
@@ -28,7 +29,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="memtomem — Long &amp; Short-Term Memory Infrastructure for AI Agents" />
-	<meta name="twitter:description" content="Turn your notes, docs, and code into a searchable memory that any MCP-compatible AI agent can use across sessions and across agents. STM + LTM architecture, fully local." />
+	<meta name="twitter:description" content="Turn your notes, docs, and code into searchable, local-first memory that MCP-compatible AI agents can use across sessions and agents." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image.png" />
 
 	<!-- JSON-LD -->
@@ -70,7 +71,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </nav>
 
 <section class="hero">
-	<div class="hero-badge">memtomem v0.3.10 · memtomem-stm v0.1.38 · Apache 2.0</div>
+	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
 	<h1>AI That Never Forgets —<br /><em>Memory Infrastructure</em> for Agents</h1>
 	<p class="hero-sub">
 		Stop re-explaining your project to your AI every session. memtomem turns your notes,
@@ -128,7 +129,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card coral" href={`${base}/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
-				<p>Sync skills, commands, and subagents from one canonical <code>.memtomem/</code> source out to every AI runtime. Handle per-row <strong>Sync</strong>/<strong>Import</strong> in the <code>mm web</code> Simple view, move artifacts across projects and tiers with <code>mm context copy</code>/<code>move</code>, and bulk-sync many projects with <code>mm context sync --all-projects</code>.</p>
+				<p>Keep master skills, commands, and subagents in the <code>.memtomem/</code> Store. Preview and Pull runtime copies into the Store, then Push the reviewed Store version to selected runtimes. Copy or move artifacts across projects and tiers, or operate across registered projects in one batch.</p>
 			</a>
 			<a class="feature-card amber" href={`${base}/stm/surfacing/`}>
 				<h3>Proactive Surfacing</h3>
@@ -136,11 +137,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card blue" href={`${base}/stm/compression/`}>
 				<h3>Token-Aware Compression</h3>
-				<p>Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the context budget, one of 10 strategies is auto-selected by content type to cut tokens. The active query shapes the budget — relevant sections get more room, so the information your agent needs is preserved.</p>
+				<p>Responses from MCP tools routed through STM can be compressed before they reach your agent. When a response exceeds the context budget, one of 10 strategies is selected by content type. Actual savings depend on the response and configured retention limits.</p>
 			</a>
 			<a class="feature-card green" href={`${base}/guides/privacy/`}>
-				<h3>Fully Local &amp; Private</h3>
-				<p>SQLite + ONNX under the hood — no GPU, no external API, no cloud. SQLite files are kept at 0600, and credential-shaped responses are filtered out before they're cached or indexed. The STM proxy is fully reversible with <code>mms eject</code>, so there's no lock-in.</p>
+				<h3>Local-First &amp; Private</h3>
+				<p>SQLite storage and local ONNX inference need no GPU or cloud account. Optional Ollama, OpenAI-compatible, Cohere, and Langfuse integrations can contact configured services. Local files use restrictive permissions, and credential-shaped content is filtered at cache, index, and share boundaries.</p>
 			</a>
 		</div>
 	</div>
@@ -164,7 +165,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<div class="arch-node teal arch-node-wide">
 					<div class="arch-node-title">memtomem-stm</div>
 					<div class="arch-node-sub">STM Proxy</div>
-					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE &rarr; (INDEX)</div>
+					<div class="arch-node-detail">CLEAN &rarr; COMPRESS &rarr; SURFACE</div>
 				</div>
 			</div>
 			<div class="arch-connector-pair">
@@ -209,7 +210,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="docs-grid">
 			<a href={`${base}/guides/quickstart/`} class="doc-card">
 				<h3>Quick Start</h3>
-				<p>From install to first memory in under 5 minutes. uv tool install → interactive mm init → ask your agent.</p>
+				<p>Install → <code>mm init</code> → <code>mm status</code> → <code>mm add</code> → <code>mm search</code>, then connect Claude Code, Codex, or another MCP client.</p>
 				<span class="tag tag-guide">Guide</span>
 			</a>
 			<a href={`${base}/ltm/hybrid-search/`} class="doc-card">
@@ -234,7 +235,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a href={`${base}/ltm/context-gateway/`} class="doc-card">
 				<h3>Context Gateway</h3>
-				<p>Sync and Import from the Simple view, copy/move between projects, and bulk-sync many projects at once.</p>
+				<p>Store, preview-first Pull, selective Push, cross-project transfer, and multi-project operations.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 		</div>
@@ -243,7 +244,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="cta-section">
 	<h2>Get Started Now</h2>
-	<p>No GPU. No external services. One uv install is all you need.</p>
+	<p>No GPU is required. The default path stays local; external providers remain optional.</p>
 	<div class="cta-buttons">
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">View on GitHub</button>

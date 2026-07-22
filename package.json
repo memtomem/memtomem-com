@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && pagefind --site dist --force-language en",
+    "check:docs": "node scripts/check-doc-contract.mjs",
+    "check:links": "node scripts/check-built-links.mjs",
+    "build": "npm run check:docs && astro build && pagefind --site dist --force-language en && npm run check:links",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "pagefind": "^1.5.2",
+    "smol-toml": "^1.6.1",
     "starlight-llms-txt": "^0.10.0"
   }
 }

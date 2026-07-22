@@ -59,7 +59,9 @@ This minimizes indexing cost even for large document sets.
 
 ## Search Scope and Maintenance
 
-Searches can be scoped by namespace. Namespaces are auto-derived from folder names, and you can filter a search to a specific namespace or isolate and share scopes per agent. See [Multi-Agent](/ltm/multi-agent/) for details.
+Searches can be scoped by namespace. Folder-based derivation is disabled by default (`namespace.enable_auto_ns=false`); use an explicit namespace, a path rule, or opt into auto derivation. Per-agent namespaces stay out of unscoped search by default. See [Multi-Agent](/ltm/multi-agent/) for details.
+
+Structured search responses identify the active `score_scale` (`rrf`, `bm25`, `dense`, `none`, or `rerank`). Do not compare one fixed threshold across different scales; clients such as STM use this metadata to gate or suspend scale-specific filtering.
 
 Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/reference/configuration/).
 

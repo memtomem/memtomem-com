@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 38, including `mem_do` | You want common management tools directly visible |
-| `full` | 96 current tools + 1 deprecated alias | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 99 current tools + 1 deprecated alias | You are debugging, documenting, or using a client that handles large tool lists well |
 
 Example:
 
@@ -56,25 +56,40 @@ mem_do(action="help", params={"category": "context"})
 mem_do(action="schedule_list")
 mem_do(action="context_diff", params={"scope": "project_shared"})
 mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name": "my-skill", "mode": "copy", "to_scope": "project_shared"})
+mem_do(action="version")
 ```
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The full v0.3.10 registry contains 96 current tools. Full mode also keeps the
-deprecated `mem_context_migrate` alias (97 registered names total) until its
+The full v0.3.12 registry contains 99 current tools. Full mode also keeps the
+deprecated `mem_context_migrate` alias (100 registered names total) until its
 v0.5.0 removal. Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
-`mem_formation_scan` and `mem_candidate_propose/list/review/recover`.
+`mem_formation_scan` and `mem_candidate_propose/list/review/recover`. The new
+full-mode surface also includes `mem_context_pull` for preview-first runtime
+imports and `mem_quality_replay` for deterministic Quality Lab replays.
+
+`mem_do(action="version")` returns the server version, capability map, and a
+secret-free `runtime_profile` describing the effective embedding/rerank runtime
+and missing optional dependencies.
 
 `mem_candidate_propose` creates a privacy-scanned pending review item rather
 than durable memory. It requires `content`, `source`, `source_ref`, and an
 `idempotency_key`; approved candidates alone pass through the normal write
-path.
+path. Reusing a key with identical content returns the original pending
+candidate; reusing it with different content is rejected.
 
 ## OpenCode
 
-The npm plugin source exists but is not published. Configure a local MCP server
-in `opencode.json` today:
+The published `opencode-memtomem@0.1.2` plugin bundles Core 0.3.12. OpenCode
+uses the singular `plugin` key; there is no `opencode plugin add` command:
+
+```json
+{"plugin": ["opencode-memtomem@0.1.2"]}
+```
+
+For MCP tools without the plugin's slash commands and skills, configure a local
+server in `opencode.json`:
 
 ```json
 {
@@ -82,7 +97,7 @@ in `opencode.json` today:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.10", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.12", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}
@@ -90,10 +105,6 @@ in `opencode.json` today:
   }
 }
 ```
-
-After npm publication, OpenCode uses the singular configuration key
-`{"plugin": ["opencode-memtomem@0.1.0"]}`; there is no `opencode plugin add`
-command.
 
 ## Common Actions
 
@@ -103,10 +114,10 @@ command.
 | Tags | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
 | Sessions | `session_start`, `session_end`, `session_list` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
-| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
+| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
 | Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
-| Analytics | `activity`, `timeline`, `eval`, `reflect` |
+| Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
 ## When to Change Modes
 

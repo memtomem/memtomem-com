@@ -23,16 +23,18 @@ Git 추적 공유 티어 쓰기에는 `--confirm-project-shared`가 필요합니
 한 번의 compose에서 고정 블록에 배정되는 예산입니다. 기본 전체 묶음은
 12,000자이며 블록 중간을 자르지 않습니다.
 
-`mem_context_compose` schema 3은 검색 적중 항목의 우선순위를 유지하면서
-인접 context-window 청크를 함께 반환합니다.
+`mem_context_compose` schema 4는 검색 적중 항목의 우선순위를 유지하면서
+인접 context-window 청크를 함께 반환합니다. 검색 결과가 비어 있지 않으면
+`score_scale`(`rrf`, `bm25`, `dense`, `none`, `rerank`)을 표시하고, rerank
+결과에는 사용한 reranker 모델도 포함합니다.
 
 ## 검토 우선 제안
 
 `mem_candidate_propose(content, source, source_ref, idempotency_key)`는
 privacy scan을 거친 검토 대기 후보를 만들며 장기 기억을 바로 쓰지
 않습니다. 후보는 30일 후 만료되고, 같은 idempotency key와 동일한
-내용은 기존 후보를 반환합니다. 명시적 승인만 일반 영구 쓰기 경로를
-실행합니다.
+내용은 기존 후보를 반환합니다. 같은 key를 다른 내용에 재사용하면
+거부됩니다. 명시적 승인만 일반 영구 쓰기 경로를 실행합니다.
 
 ```bash
 mm review list

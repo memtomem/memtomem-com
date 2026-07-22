@@ -28,7 +28,7 @@ mem_agent_register(agent_id="analyzer", description="Code analysis agent")
 mem_session_start(agent_id="analyzer")
 ```
 
-The session record's namespace auto-derives to `agent-runtime:analyzer`. Subsequent calls in this session inherit the agent scope without re-passing `agent_id`:
+The session record's namespace auto-derives to `agent-runtime:analyzer`. A session explicitly bound to an agent lets later writes inherit that scope without re-passing `agent_id`. An unbound/default session does not redirect writes into an agent namespace:
 
 - **Writes** — `mem_add(content="...")` and `mem_batch_add(...)` write to `agent-runtime:analyzer` automatically. Pass `namespace="shared"` explicitly to publish cross-agent on a single call.
 - **Reads** — `mem_agent_search` / `mem_agent_share` resolve to the agent scope without `agent_id=`. (`mem_search` itself stays single-agent — use `mem_agent_search` to read inside the agent scope.)
@@ -67,7 +67,7 @@ Example instruction:
 
 > At the start of a conversation, call `mem_session_start(agent_id="claude-code")` first to register the session. When acting as a new agent role, use `mem_agent_register(agent_id="planner", description="...")`.
 
-Once registered, later calls to `mem_search`, `mem_add`, and so on are routed to the `agent-runtime:{agent-id}` namespace without having to pass `agent_id` again.
+Once the session is explicitly bound, later `mem_add`/`mem_batch_add` writes inherit `agent-runtime:{agent-id}`. Reads are not silently redirected: use `mem_agent_search` for the agent scope or pass an explicit namespace to `mem_search`.
 
 ### LangGraph · CrewAI (Python adapter)
 
@@ -111,7 +111,7 @@ mm agent share <chunk_id> --target shared
 
 ### Human → Agent
 
-When a developer works in Claude Code or Cursor, architecture decisions, coding patterns, and debugging history from previous sessions are automatically surfaced.
+When a developer works in an MCP-connected client, saved architecture decisions, coding patterns, and debugging history can be searched explicitly. Automatic surfacing requires STM proxy routing or a supported, configured host hook.
 
 ### Agent → Agent
 
