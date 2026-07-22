@@ -1,13 +1,13 @@
 ---
-title: Quick Start
+title: 빠른 시작
 description: memtomem을 설치하고 MCP 연결 전에 첫 기억 저장·검색을 확인하세요.
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-memtomem은 AI 에이전트에 **세션이 바뀌어도 사라지지 않는 기억**을 붙여 주는 도구입니다. 에이전트는 **MCP**(AI 에이전트를 외부 도구·데이터에 연결하는 표준 방식)로 memtomem에 연결됩니다.
+memtomem은 **세션이 바뀌어도 남는 기억**을 AI 도구에 연결합니다. 연결에는 AI 도구와 외부 데이터 사이의 표준 규격인 **MCP**를 사용합니다.
 
-이 가이드는 가장 기본이 되는 흐름 하나를 먼저 완성하는 데 초점을 둡니다. 장기 기억을 맡는 **LTM 서버**를 설치하고 초기 설정을 마친 뒤, CLI에서 기억 하나를 저장하고 다시 검색합니다. 이 확인에는 기존 노트 폴더나 연결된 에이전트가 필요하지 않습니다. MCP 클라이언트 연결과 기존 파일 인덱싱은 기본 기억 흐름이 동작한 다음 진행하며, **STM**은 선택 사항입니다.
+이 가이드에서는 가장 기본적인 흐름부터 확인합니다. 장기 기억을 맡는 **LTM 서버**를 설치한 뒤 CLI에서 기억 하나를 저장하고 다시 검색합니다. 기존 노트 폴더나 연결된 AI 도구는 필요하지 않습니다. 이 흐름이 동작하면 MCP 클라이언트를 연결하고 기존 파일을 색인할 수 있습니다. **STM**은 필요할 때 나중에 추가합니다.
 
 ## 1. 설치
 
@@ -24,7 +24,7 @@ mm --version
 uv tool install 'memtomem[all]' --refresh
 ```
 
-셸이 `mm` 자체를 찾지 못하면(`command not found`) `uv tool update-shell`을 실행하고 터미널을 다시 여세요 — [문제 해결](/ko/guides/troubleshooting/) 참고.
+셸에서 `mm` 명령을 찾지 못하면(`command not found`) `uv tool update-shell`을 실행하고 터미널을 다시 여세요. 자세한 해결 방법은 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
 
 ## 2. 초기 설정
 
@@ -32,7 +32,7 @@ uv tool install 'memtomem[all]' --refresh
 mm init
 ```
 
-`mm init` 마법사는 프리셋 피커로 시작합니다:
+`mm init`을 실행하면 먼저 프리셋 선택 화면이 열립니다.
 
 | 프리셋 | 적합한 상황 | 동작 |
 |---|---|---|
@@ -42,7 +42,7 @@ mm init
 
 모델 다운로드 없이 가장 빠르게 확인하려면 **Minimal**을 선택하세요. 첫 검색까지 확인한 뒤 `mm init`을 다시 실행해 시맨틱 검색을 추가할 수 있습니다.
 
-스크립트나 CI에서는 다음을 사용할 수 있습니다:
+스크립트나 CI에서는 다음 명령을 사용하세요.
 
 ```bash
 mm init --non-interactive                   # minimal 프리셋, 프롬프트 없음
@@ -51,20 +51,20 @@ mm init --preset korean --non-interactive   # 한국어 프리셋, 프롬프트 
 mm init --advanced                          # 전체 마법사
 ```
 
-설정 중 Claude Code 기억, Claude 플랜, Codex CLI 기억 같은 기존 AI 에이전트 메모리 폴더를 등록해 감시 대상으로 둘 수 있습니다. 등록은 이후 변경 감시를 위한 것이므로, 기존 파일은 `mm index`로 한 번 시드하세요.
+설정 중에 Claude Code 기억, Claude 플랜, Codex CLI 기억처럼 기존 AI 도구의 기억 폴더를 감시 대상으로 등록할 수 있습니다. 등록 후 생기는 변경은 자동으로 감지하지만 기존 파일은 가져오지 않습니다. 기존 파일은 처음 한 번 `mm index`로 색인하세요.
 
-`mm init` 마법사는 마지막에 memtomem을 MCP 클라이언트(예: Claude Code)에 자동 등록할지 물어봅니다. 여기서 수락하면 아래 4단계는 이미 끝난 셈이며, 이 프롬프트를 건너뛴 경우에만 아래 수동 단계가 필요합니다.
+`mm init`은 마지막에 memtomem을 Claude Code 같은 MCP 클라이언트에 자동으로 등록할지 묻습니다. 등록을 선택했다면 아래 4단계를 건너뛰어도 됩니다. 자동 등록을 사용하지 않았을 때만 수동으로 연결하세요.
 
 <a id="3-로컬-점검"></a>
 ## 3. 기억 저장·검색 확인
 
-먼저 CLI가 설정과 DB를 열 수 있는지 확인합니다:
+먼저 CLI가 설정과 DB를 정상적으로 여는지 확인합니다.
 
 ```bash
 mm status
 ```
 
-청크 수가 0개여도 정상입니다. 이제 기존 폴더나 에이전트에 의존하지 않고 기억 하나를 저장한 뒤 다시 검색합니다:
+청크 수가 0개여도 정상입니다. 이제 다른 폴더나 AI 도구 없이 기억 하나를 저장하고 다시 검색합니다.
 
 ```bash
 mm add "배포 체크리스트는 blue-green 방식을 사용한다" --tags ops
@@ -77,7 +77,7 @@ mm search "blue-green"
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
-    Claude Code 안에서 공식 플러그인을 설치하는 경로를 권장합니다:
+    Claude Code에서는 공식 플러그인 설치를 권장합니다.
 
     ```text
     /plugin marketplace add memtomem/memtomem
@@ -85,9 +85,9 @@ mm search "blue-green"
     /reload-plugins
     ```
 
-    새 대화를 시작한 뒤 `/memtomem-status`를 실행하세요. 플러그인은 MCP 서버와 안내형 커맨드, 읽기 전용 스킬을 설치합니다. 프로젝트 백그라운드 인덱싱이나 대화 자동 저장은 하지 않습니다.
+    새 대화를 시작한 뒤 `/memtomem-status`를 실행하세요. 플러그인은 MCP 서버, 안내 명령, 읽기 전용 스킬을 설치합니다. 프로젝트를 백그라운드에서 색인하거나 대화를 자동으로 저장하지는 않습니다.
 
-    `mm init`에서 "Claude Code에 자동 등록"을 선택했다면 LTM(`memtomem-server`)은 이미 등록되어 있으므로 기존 수동 MCP 구성을 유지해도 됩니다.
+    `mm init`에서 "Claude Code에 자동 등록"을 선택했다면 LTM(`memtomem-server`)이 이미 등록되어 있습니다. 기존 수동 MCP 설정을 그대로 사용해도 됩니다.
 
     플러그인 없이 수동 등록하는 경우:
     ```bash
@@ -95,7 +95,7 @@ mm search "blue-green"
     ```
   </TabItem>
   <TabItem label="Codex">
-    터미널에서 다음 명령을 실행합니다:
+    터미널에서 다음 명령을 실행합니다.
 
     ```bash
     codex plugin marketplace add memtomem/memtomem
@@ -105,7 +105,7 @@ mm search "blue-green"
     새 Codex 스레드를 시작한 뒤 `$memtomem-status`를 실행하세요. 플러그인은 `$CODEX_HOME/memories`, 프로젝트 파일, 대화, 응답을 자동으로 인덱싱하지 않습니다.
   </TabItem>
   <TabItem label="Cursor">
-    `~/.cursor/mcp.json`에 서버를 추가합니다:
+    `~/.cursor/mcp.json`에 서버를 추가합니다.
     ```json
     {
       "mcpServers": {
@@ -115,10 +115,10 @@ mm search "blue-green"
       }
     }
     ```
-    command는 반드시 `memtomem-server`여야 합니다 — `memtomem`은 CLI이며 MCP 서버를 실행하지 않습니다.
+    `command`에는 `memtomem-server`를 사용해야 합니다. `memtomem`은 CLI이므로 MCP 서버를 실행하지 않습니다.
   </TabItem>
   <TabItem label="Windsurf">
-    `~/.codeium/windsurf/mcp_config.json`에 서버를 추가합니다:
+    `~/.codeium/windsurf/mcp_config.json`에 서버를 추가합니다.
     ```json
     {
       "mcpServers": {
@@ -128,10 +128,10 @@ mm search "blue-green"
       }
     }
     ```
-    command는 반드시 `memtomem-server`여야 합니다 — `memtomem`은 CLI이며 MCP 서버를 실행하지 않습니다.
+    `command`에는 `memtomem-server`를 사용해야 합니다. `memtomem`은 CLI이므로 MCP 서버를 실행하지 않습니다.
   </TabItem>
   <TabItem label="Claude Desktop">
-    설정 파일(macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`)에 서버를 추가한 뒤 Claude Desktop을 재시작합니다:
+    설정 파일(macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`)에 서버를 추가한 뒤 Claude Desktop을 재시작합니다.
     ```json
     {
       "mcpServers": {
@@ -144,16 +144,16 @@ mm search "blue-green"
   </TabItem>
 </Tabs>
 
-플러그인이나 MCP 등록은 도구를 연결할 뿐입니다. provider 내장 기억, 프로젝트 파일, 모든 대화·응답을 자동으로 인덱싱하지 않습니다. 해당 소스를 LTM에 넣으려면 `mm index` 또는 검토 가능한 `mm ingest ... --dry-run` 흐름을 명시적으로 실행하세요.
+플러그인이나 MCP를 연결해도 Claude Code·Codex 등에 저장된 기억, 프로젝트 파일, 대화와 응답이 자동으로 색인되지는 않습니다. 이러한 자료를 LTM에 넣으려면 `mm index`를 실행하세요. 가져올 내용을 먼저 확인하려면 `mm ingest ... --dry-run`을 사용합니다.
 
 다른 클라이언트와 전체 옵션 목록은 [MCP 클라이언트 설정](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md)을 참고하세요.
 
-등록 후 에이전트에게 "`mem_status`를 호출해줘"라고 요청하세요. MCP 클라이언트가 터미널에서 확인한 서버를 제대로 실행하는지 검증할 수 있습니다. 에이전트에 memtomem 도구가 보이지 않으면 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
+등록을 마치면 AI 도구에 "`mem_status`를 호출해줘"라고 요청하세요. MCP 클라이언트가 서버를 제대로 실행하는지 확인할 수 있습니다. memtomem 도구가 보이지 않으면 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
 
 <a id="5-기억-추가와-검색"></a>
 ## 5. 기존 노트 인덱싱
 
-기본 기억 왕복을 확인한 다음, 실제로 존재하는 노트·문서·코드 폴더를 인덱싱합니다:
+기억을 저장하고 다시 찾는 기본 흐름을 확인했다면 실제 노트·문서·코드 폴더를 색인합니다.
 
 ```bash
 mm index ~/notes
@@ -162,7 +162,7 @@ mm index ~/projects/my-app/docs
 
 예시 경로를 실제 경로로 바꾸고, 해당 파일에 들어 있는 문구를 검색해 결과를 확인하세요.
 
-이후 MCP 클라이언트에서는 자연어로 지시하면 됩니다:
+이후 MCP 클라이언트에서는 자연어로 지시하면 됩니다.
 
 | 에이전트에 지시 | 보통 호출되는 도구 | 결과 |
 |---|---|---|
@@ -177,11 +177,11 @@ mm index ~/projects/my-app/docs
 mm web --open
 ```
 
-기본 Web UI는 검색, 소스, 태그, 타임라인, 설정, Context Gateway를 다루는 사용자용 화면입니다. `mm web --dev`는 대부분의 사용자에게는 필요 없는 유지보수용 페이지를 추가합니다.
+기본 Web UI에서는 검색, 자료 출처, 태그, 타임라인, 설정, Context Gateway를 관리할 수 있습니다. `mm web --dev`는 개발·유지보수용 페이지를 추가합니다. 일반적인 사용에는 필요하지 않습니다.
 
 ## 선택 사항: STM은 나중에 추가
 
-`memtomem-stm`은 관련 기억을 자동으로 찾아 붙여 주는 **서피싱**과 도구 응답 **압축**을 담당하는 별도 프록시(에이전트와 실제 도구 사이의 중계 계층)입니다. 위 LTM 흐름이 동작한 뒤 추가하세요:
+`memtomem-stm`은 관련 기억을 자동으로 찾아 보여 주는 **서피싱**과 도구 응답 **압축**을 담당합니다. AI 도구와 실제 MCP 서버 사이에서 동작하는 별도 프록시입니다. 위 LTM 흐름을 먼저 확인한 뒤 추가하세요.
 
 ```bash
 uv tool install memtomem-stm
@@ -189,15 +189,15 @@ mms init --demo --client auto   # 내장 읽기 전용 서버 + 감지된 클라
 mms doctor                     # PASS/WARN은 사용 가능, FAIL은 조치 필요
 ```
 
-demo 경로는 Node.js나 네트워크 없이 프록시 도구 하나를 먼저 검증합니다. 실제 업스트림은 `mms add`로 추가하고, `mms register --client claude`, `mms register --client codex`, `mms register --client auto`로 클라이언트를 등록하거나 갱신합니다. 이후 다음 명령으로 상태를 확인하세요:
+데모는 Node.js나 네트워크 없이 읽기 전용 MCP 서버 하나로 프록시 동작을 확인합니다. 실제로 연결할 MCP 서버는 `mms add`로 추가하세요. 클라이언트 등록이나 갱신에는 `mms register --client claude`, `mms register --client codex`, `mms register --client auto`를 사용합니다. 설정 후에는 다음 명령으로 상태를 확인하세요.
 
 ```bash
-mms list      # 등록한 업스트림 목록(및 SURFACING 열)
+mms list      # 등록한 서버 목록(및 SURFACING 열)
 mms status    # 설정 요약 — 프록시가 활성화되어 올바른 파일을 가리키는가?
-mms health    # 업스트림 연결성과 LTM 서피싱 준비 상태 점검
+mms health    # 연결 서버와 LTM 관련 기억 검색의 준비 상태 점검
 ```
 
-Claude Code가 아닌 클라이언트에서는 한 줄 command 블록으로 STM을 수동 등록합니다:
+Claude Code가 아닌 클라이언트에서는 다음처럼 간단한 `command` 항목으로 STM을 직접 등록합니다.
 
 ```json
 {
@@ -207,9 +207,9 @@ Claude Code가 아닌 클라이언트에서는 한 줄 command 블록으로 STM�
 }
 ```
 
-STM의 프록시 도구는 `<prefix>__<tool>` 형태이고, 호스트가 최종 이름을 `mcp__<server>__<prefix>__<tool>`로 합성할 수 있습니다. 이 이름이 MCP의 64자 제한을 넘으면 도구가 사라질 수 있습니다. 해결 방법은 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
+STM 프록시의 도구 이름은 `<prefix>__<tool>` 형식입니다. 클라이언트에 따라 최종 이름이 `mcp__<server>__<prefix>__<tool>`로 조합될 수 있습니다. 이 이름이 MCP의 64자 제한을 넘으면 도구 목록에서 빠질 수 있습니다. 해결 방법은 [문제 해결](/ko/guides/troubleshooting/)을 참고하세요.
 
-STM이 맞지 않으면 `mms eject`로 각 서버를 원래 호스트 설정으로 되돌릴 수 있으므로, 프록시 뒤로 옮기는 작업은 되돌릴 수 있습니다.
+STM을 더 사용하지 않으려면 `mms eject`로 각 서버를 원래 클라이언트 설정에 복원할 수 있습니다.
 
 도구 응답 압축이나 자동 기억 주입이 필요해질 때 [STM 개요](/ko/stm/overview/)를 참고하세요.
 
@@ -218,5 +218,5 @@ STM이 맞지 않으면 `mms eject`로 각 서버를 원래 호스트 설정으�
 - [세션을 넘나드는 기억](/ko/guides/memory-persistence/) — 한 세션에서 저장하고 다른 세션에서 불러오기
 - [하이브리드 검색](/ko/ltm/hybrid-search/) — BM25 + 벡터 + RRF 융합
 - [MCP 도구](/ko/ltm/mcp-tools/) — `core`, `standard`, `full` 도구 모드
-- [Context Gateway](/ko/ltm/context-gateway/) — Store를 유지하고 런타임 복사본을 검토용으로 Pull한 뒤 선택한 항목을 Push
+- [Context Gateway](/ko/ltm/context-gateway/) — Store의 기준본과 각 실행 환경의 복사본 관리
 - [문제 해결](/ko/guides/troubleshooting/) — `command not found`, 도구 누락, 서피싱 미작동 해결
