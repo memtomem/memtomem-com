@@ -39,7 +39,7 @@ memtomem server
 SQLite (FTS5 + sqlite-vec)
 ```
 
-memtomem runs as a local MCP server. All data stays on your machine — SQLite for storage, ONNX for embeddings. No GPU, no external services, no account required.
+memtomem runs as a local-first MCP server. SQLite storage and ONNX embeddings stay on your machine and need no GPU or account. Optional remote embedding, rerank, LLM, and observability providers contact the endpoints you configure.
 
 ## Relationship to STM
 
@@ -47,7 +47,7 @@ memtomem runs as a local MCP server. All data stays on your machine — SQLite f
 |---|---|---|
 | **Role** | Persistent storage & search | Real-time proxy & compression |
 | **Required?** | Yes (core) | Optional |
-| **How it works** | Agent calls `mem_search` when needed | Relevant memories auto-injected into every tool response |
+| **How it works** | Agent calls `mem_search` when needed | Relevant memories can be injected into calls routed through the STM proxy or supported hooks |
 
 The default setup is LTM alone. If you want token-optimized responses with proactive memory injection, add [memtomem-stm](/stm/overview/) as a proxy in front.
 
@@ -56,7 +56,7 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **Latest release** | `0.3.10` |
+| **Latest release** | `0.3.12` |
 | **CLI** | `mm` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |

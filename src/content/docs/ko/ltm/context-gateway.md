@@ -3,7 +3,7 @@ title: Context Gateway
 description: 에이전트, 스킬, 커맨드를 한 번 정의하고 여러 AI 런타임에 동기화합니다.
 ---
 
-Claude Code에서 작성한 스킬을 Codex나 Cursor에서도 그대로 쓰고 싶거나, 같은 커맨드 세트를 여러 프로젝트에서 재사용하고 싶을 때가 있습니다. 런타임마다 파일 위치와 포맷이 달라 복사본이 금세 어긋납니다. Context Gateway는 하나의 정규 `.memtomem/` 소스에서 각 AI 런타임으로 동기화하여 이 문제를 해결합니다.
+Claude Code에서 작성한 스킬을 Codex나 Cursor에서도 그대로 쓰고 싶거나, 같은 커맨드 세트를 여러 프로젝트에서 재사용하고 싶을 때가 있습니다. Context Gateway는 원본을 **Store**(`.memtomem/` 또는 사용자 Store)에 보관하고, Store 아티팩트를 선택한 런타임으로 **Push**하며, 런타임 복사본은 미리보기 우선 흐름으로 Store에 **Pull**합니다.
 
 LTM 0.3.0부터 Context Gateway는 한 프로젝트 안에서 한 방향으로만 내보내던 도구를 넘어섰습니다. 이제 프로젝트와 계층(티어) 사이에서 항목(아티팩트: 에이전트·스킬·커맨드)을 옮기거나 복사하고, 여러 프로젝트를 한 번에 동기화하며, 재사용할 항목을 모아 두는 정규 wiki까지 아우르는 중심 기능입니다.
 
@@ -35,7 +35,7 @@ mm context diff --scope project_shared
 |---|---|
 | `detect` | memtomem이 볼 수 있는 기존 런타임 파일 표시 |
 | `init` | `.memtomem/` 아래 정규 파일 생성 |
-| `sync` | 정규 파일을 각 런타임 경로로 동기화 |
+| `sync` | Store 파일을 각 런타임 경로로 Push. `--runtime`으로 대상 제한 가능 |
 | `diff` | 정규 파일과 런타임 복사본의 동기화 상태 확인 |
 
 이동/복사, 다중 프로젝트, 버전 등 전체 명령 목록은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
@@ -50,7 +50,7 @@ Context Gateway는 기억을 쓸 때와 같은 세 가지 **계층(티어)**을 
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | git에 커밋할 팀 공유 프로젝트 컨텍스트 |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | 한 체크아웃에서만 쓰는 비공개 초안 |
 
-`user` 티어는 0.3.0에서 능동 관리 대상이 되었습니다. 이 경로는 프로젝트 바깥의 홈 디렉터리에 쓰므로, 모든 user 티어 쓰기는 "프로젝트 외부에 쓸까요?" 확인 단계를 거칩니다. 게이트웨이가 실제로 건드릴 홈 디렉터리 파일 목록을 먼저 보여주고, 승인한 뒤에야 씁니다. 이 기능은 `context_gateway.user_tier_enabled` 설정으로 활성화합니다.
+`user` 티어는 능동 관리되는 전역 라이브러리입니다. 이 경로는 프로젝트 바깥의 홈 디렉터리에 쓰므로, 모든 user 티어 쓰기는 "프로젝트 외부에 쓸까요?" 확인 단계를 거칩니다. 게이트웨이가 실제로 건드릴 홈 디렉터리 파일 목록을 먼저 보여주고, 승인한 뒤에야 씁니다. 이 확인은 기능 플래그가 아니라 호스트 쓰기 안전 경계입니다.
 
 `project_local` 정규 파일은 git에 올라가지 않으며(gitignore 처리), 에이전트 / 스킬 / 커맨드 런타임 경로로도 동기화되지 않습니다.
 
@@ -85,17 +85,18 @@ mm context diff --include agents --scope project_local
 
 `project_local` 정규 파일은 gitignored이며 런타임 경로로 동기화되지 않습니다. 준비가 끝나면 `mm context move`로 `project_shared`로 옮긴 뒤 `mm context sync --scope project_shared`를 실행합니다.
 
-### 기존 런타임 파일에서 정규 파일 시드
+### 기존 런타임 파일을 Store로 Pull
 
-이미 특정 런타임에서 직접 작성한 에이전트나 스킬이 있다면 대상 티어를 지정해 `init`을 실행합니다. `init`은 정규 파일을 만들고, 감지된 런타임 파일을 가능한 경우 가져옵니다:
+이미 특정 런타임에서 직접 작성한 에이전트나 스킬이 있다면 Store로 Pull합니다. 단일 아티팩트 Pull은 기본적으로 미리보기이며 소스 런타임을 선택할 수 있습니다:
 
 ```bash
 mm context detect --include agents,skills
-mm context init --include agents,skills --scope project_shared --confirm-project-shared
-mm context diff --include agents,skills --scope project_shared
+mm context pull skills reviewer --from claude
+mm context pull skills reviewer --from claude --diff
+mm context pull skills reviewer --from claude --scope project_shared --apply
 ```
 
-커밋 전에 생성된 정규 파일을 검토하세요.
+Store가 이미 해당 아티팩트를 소유한다면 `--overwrite`를 추가합니다. 교체 전에 현재 Store payload가 버전 이력에 스냅샷됩니다. 커밋 전에 생성된 파일을 검토하세요. 초기 discovery에는 section-level batch Pull과 `mm context init`도 남아 있지만, 여러 런타임에 같은 이름이 있을 때는 이름을 지정한 Pull이 가장 명확합니다.
 
 ## 프로젝트·티어 간 이동과 복사
 
@@ -192,14 +193,12 @@ mm wiki push
 mm web --open
 ```
 
-Context Gateway는 처음 열면 이해하기 쉬운 **Simple view**로 시작합니다. 활성 프로젝트에 대해 한 줄 요약("모든 항목이 도구에 반영되어 있습니다", "아직 반영되지 않은 항목이 있습니다 — sync로 내보내세요" 등)을 보여주고, 그 아래에 아티팩트 유형(skills / commands / subagents)별 행을 나열합니다. 조치가 필요한 각 행에는 버튼이 하나씩 있습니다:
+Web UI에서는 **Gateway** 아래에 Overview, Projects, Skills, Commands, Subagents, MCP Servers, Hooks, Wiki 화면이 있습니다. 각 행은 CLI와 같은 Store 모델을 사용합니다:
 
-- **Sync** — 저장된 복사본을 도구로 내보냅니다.
-- **Import** — 런타임의 복사본을 다시 가져옵니다.
+- **Push** — 확인 후 Store 복사본을 하나 이상의 런타임으로 보냅니다.
+- **Pull** — 런타임 복사본을 Store로 가져오기 전에 미리보기를 보여주며, 후보가 충돌하면 소스를 명시적으로 선택합니다.
 
-문제없는 행은 체크 표시로 정리됩니다. 도입 안내 레이어에서 이 개념 모델을 설명합니다: 정규 원본(master)은 **Store**(정규 저장소, `.memtomem/`) 한 곳에 두고, 이를 각 **Runtimes**(런타임)로 **Sync**(내보내기)하며, **Import**는 런타임의 복사본을 다시 가져옵니다. 편집은 항상 Store에서 하고 Sync로 내보내는 한 방향 흐름입니다. **Store ── Sync → Runtimes** 다이어그램이 이를 보여 줍니다.
-
-전체 제어 그리드(아티팩트 / 티어 / 런타임 / scope의 4축)는 **Advanced** 토글 한 번으로 열 수 있으며, 선택은 브라우저별로 유지됩니다.
+상세 그리드에는 프로젝트·티어 필터, 런타임 대상 선택, 드리프트 상태, 다중 프로젝트 활성화가 표시됩니다. 한 번 Pull한 뒤에는 Store를 정본으로 보고, Store에서 수정한 뒤 검토된 버전을 Push하세요.
 
 ## 다음 단계
 

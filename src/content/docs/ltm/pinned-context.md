@@ -22,8 +22,10 @@ Each block is limited to 2,000 characters. The 6,000-character value is the
 pinned budget for one compose request, not a global storage limit. The default
 complete bundle is 12,000 characters and never cuts a block in half.
 
-`mem_context_compose` schema 3 preserves adjacent context-window chunks while
-keeping matched hits ahead of neighboring context in the shared budget.
+`mem_context_compose` schema 4 preserves adjacent context-window chunks while
+keeping matched hits ahead of neighboring context in the shared budget. A
+non-empty retrieved bundle also names its `score_scale` (`rrf`, `bm25`,
+`dense`, `none`, or `rerank`); reranked output identifies the reranker model.
 
 ## Review-first proposals
 

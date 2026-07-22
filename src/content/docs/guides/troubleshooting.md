@@ -46,7 +46,7 @@ If you ask the agent to "call `mem_status`" and it reports no such tool, it's al
 STM's proxied tools surface as `<prefix>__<tool>`, and your client composes them into `mcp__<server>__<prefix>__<tool>`. If that composed name exceeds **64 characters, the tool is silently dropped.** Two fixes:
 
 - Give the upstream a shorter `--prefix` (e.g. `filesystem` → `fs`).
-- Register STM under the short client name `mms` **and** export `MMS_CLIENT_SERVER_NAME=mms`. `mms init --mcp claude` registers under the longer name `memtomem-stm` by default, so it doesn't give you the 3-char headroom automatically.
+- Register STM under the short client name `mms` **and** export `MMS_CLIENT_SERVER_NAME=mms`. `mms init --client claude` registers under the longer name `memtomem-stm` by default, so it doesn't give you the 3-char headroom automatically.
 
 Run `mms health` to see the discovered / advertised tool counts and diagnose what was withheld.
 

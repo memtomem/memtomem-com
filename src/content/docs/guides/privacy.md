@@ -1,18 +1,18 @@
 ---
 title: Local-First & Privacy
-description: How memtomem keeps your data on your machine and protects secrets — fully local, 0600 file permissions, automatic secret detection, and query privacy.
+description: How memtomem keeps local-first defaults, protects secrets, and makes optional network boundaries explicit.
 ---
 
-By default, memtomem sends your memory data nowhere. Storage, embedding, search, and reranking all run on your machine, and content that looks like a secret is filtered out automatically at the cache, index, and share boundaries.
+memtomem is local-first: its default stores and search indexes live on your machine. Network communication occurs only across boundaries you configure, such as a remote embedding/LLM/rerank provider, remote MCP/LTM transport, webhook, Toolgraph server, or Langfuse tracing.
 
-## Fully Local
+## Local-First Defaults
 
-- **Storage** — The default store is local SQLite (`~/.memtomem/`). No network port is exposed.
-- **Embeddings** — Embeddings run locally via the built-in ONNX (fastembed) provider. No GPU, no external API, no cloud, and no cost. (Ollama and OpenAI providers are optional.)
+- **Storage** — The default store is local SQLite (`~/.memtomem/`). The MCP stdio path exposes no network port; `mm web` binds to loopback by default.
+- **Embeddings** — Keyword-only mode needs no embedding service. The built-in ONNX (fastembed) provider runs locally; Ollama and OpenAI-compatible providers are optional configured boundaries.
 - **Reranking** — When you enable reranking, the default provider is local ONNX (fastembed) — no external API required.
-- **STM proxy** — STM speaks stdio to your AI client; the proxy server itself opens no network port. Persisted stores — the response cache, metrics, and feedback — are all local-only SQLite files under `~/.memtomem/`, never remote or shared across hosts.
+- **STM proxy** — The default client transport is stdio. Persisted response cache, metrics, and feedback are local SQLite files under `~/.memtomem/`; configured upstream MCP servers and remote LTM transports retain their own network boundaries.
 - **No account** — It works without any login or sign-up.
-- **The one exception** — Content leaves your machine only if you opt into an external provider: OpenAI/Ollama embeddings or reranking, or an external LLM compression/extraction path in STM. On STM's external-LLM path, `privacy_scan_enabled` (default on) scans for credentials before the outbound call and skips it on a hit; turning it off sends raw responses unscanned (the server logs a startup warning).
+- **Opt-in external paths** — OpenAI-compatible embeddings, Cohere reranking, non-loopback Ollama, external compression/extraction LLMs, remote MCP/LTM, webhooks, Toolgraph, and Langfuse may transmit data to their configured endpoint. On STM's external-LLM path, `privacy_scan_enabled` (default on) checks credentials before the call and falls back locally on a hit; disabling it sends the upstream response unscanned and triggers a startup warning for external destinations.
 
 ## Filesystem Protection
 
@@ -22,7 +22,7 @@ The data directory (`~/.memtomem/`) is created with `0o700` permissions and its 
 
 memtomem blocks credential-, token-, and key-shaped content from flowing into your stores or wider scopes at several points.
 
-- **STM sensitive-content detection** — Responses containing patterns that look like secrets (e.g. `sk-…`, `ghp_…`, AWS `AKIA…`, JWTs, `BEGIN … PRIVATE KEY`) are excluded from the response cache and from being indexed into LTM.
+- **STM sensitive-content detection** — Responses containing credential patterns (for example `sk-…`, `ghp_…`, AWS `AKIA…`, JWTs, private keys) are excluded from the response cache and selection telemetry. External LLM compression falls back to local truncation when its privacy scan finds a hit. The bundled STM runtime does not write responses into LTM.
 - **Indexing credential exclusion** — LTM indexing applies a built-in credential denylist (`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**`, …). A user `!negation` pattern cannot re-enable these built-in patterns.
 - **Re-scan on share** — When `mem_agent_share` copies a memory into a wider namespace, the redaction guard re-scans it, and secret-looking content is blocked at share time.
 - **Context Gateway** — Writing or moving to the `project_shared` tier (git-tracked) hard-refuses on a detected secret, with no `--force` valve (git history is permanent). The `user` and `project_local` tiers allow an override after review.
@@ -33,7 +33,7 @@ STM surfacing extracts a query from each tool call to search LTM. You control ho
 
 - `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT=false` — Store a `sha256:<16-hex>` digest instead of the raw text.
 - `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` (default `30`) — Clear raw query text retained in the feedback DB after the given number of days.
-- Sensitive content (credentials, PII) is always hashed before persistence, regardless of the setting.
+- Queries matching the persistence-sensitive set (credentials and email addresses) are hashed before persistence regardless of the setting.
 - **Write-tool skip** — Surfacing is automatically disabled for upstream tools that mutate state.
 
 ## No Lock-In

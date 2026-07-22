@@ -5,7 +5,7 @@ description: 10 compression strategies, auto-selection logic, and query-aware bu
 
 > New here? Start with the [STM Overview](/stm/overview/) to see the full pipeline in context first.
 
-Every MCP tool response passes through STM before it reaches your agent. When a response exceeds the agent's context budget, STM compresses it — and the compression method depends on the content type.
+Every MCP tool response routed through STM passes through its compression gate before it reaches your agent. Direct upstream calls bypass STM. When a routed response exceeds its configured budget, STM compresses it — and the method depends on the content type.
 
 memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It ships 10 strategies in total — 8 content-type reducers plus the `auto` selector and the `none` passthrough — reducing response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses the right reducer per response from the immediate-response strategies.
 
@@ -43,6 +43,8 @@ The `auto` strategy (default) analyzes content to pick the optimal strategy:
 
 During compression, the agent's current query is taken into account — relevant sections receive a larger token budget. The `selective` / `hybrid` / `schema_pruning` / `skeleton` strategies also rank table-of-contents entries by BM25 relevance to the active query. The deterministic BM25 score used here is recorded by selection telemetry for offline analysis (see [Configuration](/reference/configuration/)).
 
+Budgets can be expressed as `max_result_chars` or `max_result_tokens`. Token budgets use `chars_per_token` plus `token_estimation_mode` (`static` or Unicode-aware `unicode`), while `consumer_model` and `context_budget_ratio` can cap a result against the receiving model's context window. Per-upstream and per-tool values override proxy defaults.
+
 ## JSON Safety
 
 JSON-aware tiers re-serialize strict JSON after compression. Non-finite values such as `NaN`, `Infinity`, and `-Infinity` are mapped to `null` before JSON output so downstream parsers do not receive Python extension tokens. The JSON tiers degrade monotonically as budgets shrink. The documented exception is standalone `selective`: it shrinks per-entry previews first, but a zero-preview TOC envelope can still exceed budget at very high section counts because dropping entries would break the selection contract.
@@ -58,6 +60,8 @@ The `progressive` strategy delivers large content without any information loss:
 Every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by the `stm_progressive_stats` tool (see [MCP Tools](/stm/mcp-tools/)).
+
+The response cache uses schema 4 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions.
 
 ## Fallback Ladder
 

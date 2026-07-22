@@ -3,7 +3,7 @@ title: Context Gateway
 description: Define agents, skills, and commands once, then sync them across AI runtimes.
 ---
 
-You wrote a skill in Claude Code and want the same one in Codex and Cursor, or you want the same command set across several projects. Because every runtime stores context in a different place and format, those copies drift fast. Context Gateway solves this by syncing each AI runtime from one canonical `.memtomem/` source.
+You wrote a skill in Claude Code and want the same one in Codex and Cursor, or you want the same command set across several projects. Context Gateway keeps master copies in a **Store** (`.memtomem/` or the user Store), **Pushes** Store artifacts to selected runtimes, and **Pulls** runtime copies back into the Store through a preview-first flow.
 
 In LTM 0.3.0 the Context Gateway grew beyond a single-project, one-way model: it is now the central surface for moving and copying artifacts across projects and tiers, bulk-syncing many projects, and authoring a canonical wiki.
 
@@ -35,7 +35,7 @@ mm context diff --scope project_shared
 |---|---|
 | `detect` | Shows existing runtime files memtomem can see |
 | `init` | Creates canonical files under `.memtomem/` |
-| `sync` | Syncs canonical files out to each runtime path |
+| `sync` | Pushes Store files out to each runtime path; use `--runtime` to restrict fan-out |
 | `diff` | Shows whether canonical and runtime copies still match |
 
 For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/).
@@ -50,7 +50,7 @@ Context Gateway uses the same three tiers as memory writes. The UI shows friendl
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | Team-shared project context committed to git |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | Private drafts for one checkout |
 
-The `user` tier became an actively managed write path in 0.3.0. Because these paths live outside the project in your home directory, every user-tier write goes through a "Write outside the project?" confirmation: the gateway first shows the exact home-directory files it will touch, and only writes them once you approve. Enable it with the `context_gateway.user_tier_enabled` setting.
+The `user` tier is an actively managed global library. Because these paths live outside the project in your home directory, every user-tier write goes through a "Write outside the project?" confirmation: the gateway first shows the exact home-directory files it will touch and writes only after approval. This confirmation is a host-write safety boundary, not a feature flag.
 
 `project_local` canonical files are gitignored and do not sync to runtime agent / skill / command paths.
 
@@ -85,17 +85,18 @@ mm context diff --include agents --scope project_local
 
 `project_local` canonical files are gitignored and do not sync to runtime paths. When the draft is ready, use `mm context move` to shift it to `project_shared`, then run `mm context sync --scope project_shared`.
 
-### Seed Canonical Files From Existing Runtime Files
+### Pull Existing Runtime Files Into the Store
 
-If you already authored agents or skills directly in a runtime, run `init` with the destination tier. `init` seeds canonical files and imports detected runtime files when possible:
+If you already authored an agent or skill directly in a runtime, Pull it into the Store. A single-artifact Pull previews by default and lets you select the source runtime:
 
 ```bash
 mm context detect --include agents,skills
-mm context init --include agents,skills --scope project_shared --confirm-project-shared
-mm context diff --include agents,skills --scope project_shared
+mm context pull skills reviewer --from claude
+mm context pull skills reviewer --from claude --diff
+mm context pull skills reviewer --from claude --scope project_shared --apply
 ```
 
-Review the generated canonical files before committing.
+If the Store already owns the artifact, add `--overwrite`; memtomem snapshots the current Store payload under its version history before replacement. Review generated files before committing. Section-level batch Pull and `mm context init` remain available for initial discovery, but a named Pull is the unambiguous path when several runtimes contain the same artifact.
 
 ## Move or Copy Across Projects and Tiers
 
@@ -192,14 +193,12 @@ When a target runtime cannot represent a field exactly, memtomem classifies the 
 mm web --open
 ```
 
-The Context Gateway opens in a comprehension-first **Simple view**. For the active project it shows a one-line verdict ("Everything is in your tools.", "Some items aren't in your tools yet — sync to push them out.", and so on) above a per-type row list (skills / commands / subagents). Each row that needs action carries one button:
+The Web UI exposes Context Gateway under **Gateway**, with Overview, Projects, Skills, Commands, Subagents, MCP Servers, Hooks, and Wiki surfaces. Rows use the same Store model as the CLI:
 
-- **Sync** — push your stored copy out to the tool.
-- **Import** — pull a runtime's copy back in.
+- **Push** sends the Store copy to one or more runtimes after confirmation.
+- **Pull** previews a runtime copy before it enters the Store; source selection is explicit when candidates conflict.
 
-Clean rows show a check. An onboarding layer explains the model: your master copies live in one **Store** (`.memtomem/`), Sync pushes them out to your **Runtimes**, and Import pulls a runtime's copy back in. It is one-way: edit in the Store, then Sync. A **Store ── Sync → Runtimes** diagram makes this visual.
-
-The full control grid (the artifact / tier / runtime / scope axes) is one **Advanced** toggle away, and the choice persists per browser.
+Project and tier filters, runtime targeting, drift status, and multi-project activation remain visible in the detailed grid. Treat the Store as the source of truth after a Pull: edit there, then Push the reviewed version back out.
 
 ## Next
 

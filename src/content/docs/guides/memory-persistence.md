@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-AI agents lose all context the moment you close a session. With memtomem connected, anything you tell your agent to remember is **persisted to disk** and retrievable from any future session — or any other MCP-connected agent. This tutorial walks through that flow end-to-end.
+AI agents start new sessions without the full prior transcript. With memtomem connected, content explicitly written through its tools is **persisted to disk** and can be retrieved by later sessions and agents connected to the same store and namespace. This tutorial walks through that flow end-to-end.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ In your first agent session, say in plain language:
 
 > **"Remember this: our team paused the migration this quarter. Reason: waiting on legal review."**
 
-The agent calls `mem_add` under the hood and returns a confirmation with the namespace and memory ID.
+The agent calls `mem_add` under the hood. The result identifies the Markdown path, namespace, indexed chunk count, and source file so you can verify what was written.
 
 To verify from the CLI:
 
@@ -42,14 +42,15 @@ Guided by the MCP tool descriptions, the agent calls `mem_search` and surfaces t
 ## What Just Happened
 
 ```
-Session A:  agent → mem_add("migration paused, legal review") → SQLite
-            (BM25 FTS5 index + vector index written together)
+Session A:  agent → mem_add("migration paused, legal review") → Markdown source
+                                                               → SQLite indexes
+            (BM25 FTS5 index + optional vector index updated together)
 
 Session B:  agent → mem_search("migration status") → hybrid search
                                                    → same chunk ranked at top
 ```
 
-Storage and retrieval both run against your local SQLite — no cross-session sync step is required. For how the search engine ranks results, see [Hybrid Search](/ltm/hybrid-search/).
+The durable source is Markdown and retrieval runs against the local SQLite indexes — no cross-session sync step is required. For how the search engine ranks results, see [Hybrid Search](/ltm/hybrid-search/).
 
 ## Common Pitfalls
 

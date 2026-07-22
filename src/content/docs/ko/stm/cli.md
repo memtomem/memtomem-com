@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시 관리를 위한 mms CLI 명령어.
 ---
 
-`mms` 명령어는 `memtomem-stm` v0.1.38 패키지와 함께 설치됩니다. 업스트림 서버 등록, MCP 클라이언트 등록, 프록시 설정 라이프사이클을 관리합니다. 전체 명령 목록은 `mms --help`, 설치된 버전은 `mms --version`(또는 `mms version` 서브명령)으로 확인할 수 있습니다.
+`mms` 명령어는 `memtomem-stm` v0.1.41 패키지와 함께 설치됩니다. 이 페이지는 전체 최상위 명령 표면을 복제합니다. 설치된 옵션 철자는 `mms <command> --help`, 런타임 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM의 가져오기는 되돌릴 수 있습니다. 업스트림을 STM 프록시 뒤로 들여와도 원래 등록 정보가 보존되므로, 결과가 마음에 들지 않으면 `mms eject` 로 원래 host MCP 클라이언트 설정으로 복원할 수 있습니다.
 
@@ -11,39 +11,48 @@ STM의 가져오기는 되돌릴 수 있습니다. 업스트림을 STM 프록시
 
 ### `mms init`
 
-플래그 없이 `mms init` 을 실행하면 마법사가 업스트림 서버 한 개를 질의하고, 선택적으로 연결을 점검한 뒤 `~/.memtomem/stm_proxy.json` 을 작성하고, 이어서 MCP 클라이언트 등록용 3지선다 프롬프트를 띄웁니다:
-
-1. **Claude Code 에 추가** — `claude mcp add` 를 자동 실행합니다.
-2. **`.mcp.json` 생성** — 현재 디렉터리에 프로젝트 스코프 설정 파일을 작성합니다.
-3. **건너뛰기** — 수동 등록에 필요한 설정 스니펫을 출력합니다.
-
-스크립트/CI 실행에서 프롬프트를 미리 답하려면 `--mcp` 플래그를 사용합니다:
+결정적인 첫 성공 경로는 내장 read-only demo를 만들고 감지된 클라이언트에 등록한 뒤 전체 진단을 실행하는 것입니다:
 
 ```bash
-mms init --mcp claude                # Claude Code 에 자동 등록
-mms init --mcp json                  # 현재 디렉터리에 .mcp.json 생성
-mms init --mcp skip                  # 설정만 쓰고 등록 스니펫 출력 후 종료
-mms init --no-validate               # 업스트림 연결 점검 생략
-mms init --lang ko                   # 한국어 토큰-aware 예산 프리셋 (CJK 대응)
-mms init --prune-originals           # 가져온 업스트림을 source 클라이언트에서 함께 제거
+mms init --demo --client auto
+mms doctor
 ```
+
+선택 플래그가 없으면 마법사가 upstream을 묻고 선택적 probe, proxy 설정 쓰기, 클라이언트 등록을 진행합니다. 현재 클라이언트 선택지는 `auto`, `claude`, `codex`, `json`, `skip`이며 `--mcp claude|json|skip`은 호환 표기로 유지됩니다.
+
+| 옵션 | 설명 |
+|---|---|
+| `--config PATH` | proxy 설정 경로(기본 `~/.memtomem/stm_proxy.json`) |
+| `--no-validate` | 선택적 연결 probe 생략 |
+| `--client auto\|claude\|codex\|json\|skip` | 현재 클라이언트 등록 흐름 선택 |
+| `--mcp claude\|json\|skip` | 이전 등록 흐름의 호환 표기 |
+| `--resume` | proxy 설정이 있을 때 클라이언트 등록 이어서 진행 |
+| `--demo` | 내장 결정적 read-only 서버 설정 |
+| `--freshness live\|balanced\|reuse` | 응답 캐시 freshness preset(기본 `balanced`) |
+| `--allow-project-configs` | project-local MCP 설정 discovery 승인 |
+| `--replace-registration` | 선택된 클라이언트의 기존 등록 교체 |
+| `--save-unverified` | 선택적 연결 probe 실패에도 저장 |
+| `--json` | JSON 결과 문서 하나 출력 |
+| `--prune-originals` | 성공 후 가져온 direct host 등록 제거 |
+| `--lang en\|ko` | 토큰 예산 언어 preset. `ko`는 CJK 전용 비율과 상한 기록 |
 
 `--lang ko` 는 `chars_per_token=1.85`, `default_max_result_chars=8500`, 그리고 서버별 `max_result_tokens=2000` 같은 한국어·CJK(한중일) 문자에 맞춘 토큰 환산 기본값을 함께 씁니다. 비-TTY 환경에서 `--lang` 을 생략하면 `en` 으로 떨어집니다.
 
-설정 파일이 이미 있으면 `mms init` 는 중단됩니다 — 업스트림을 추가하려면 `mms add`, 등록 프롬프트만 재실행하려면 `mms register` 를 사용하세요.
+설정 파일이 이미 존재하면 보통 `mms init`은 중단합니다. 중단된 등록 단계는 `--resume`, upstream 추가는 `mms add`, proxy 설정을 바꾸지 않는 다른 host 등록은 `mms register`를 사용합니다.
 
 ### `mms register`
 
 `mms init` 이후에 MCP 클라이언트 등록 절차만 다시 실행합니다. 처음 `skip`을 골랐거나 클라이언트를 재설치한 뒤 다시 등록할 때 유용합니다.
 
 ```bash
-mms register                         # 대화형 프롬프트
-mms register --mcp claude            # `claude mcp add` 실행
-mms register --mcp json              # 현재 디렉터리에 .mcp.json 작성
-mms register --mcp skip              # 수동 등록 안내 출력
+mms register --client auto           # 감지된 지원 클라이언트
+mms register --client claude         # Claude Code
+mms register --client codex          # Codex
+mms register --client json           # 현재 디렉터리에 .mcp.json 작성
+mms register --client skip           # 수동 등록 안내 출력
 ```
 
-반복 실행해도 안전합니다. Claude Code에 이미 등록되어 있으면 기존 등록을 유지하는 쪽이 기본값입니다.
+전체 옵션은 `--config`, `--client auto|claude|codex|json|skip`, 호환 `--mcp claude|json|skip`, `--replace-registration`, `--json`입니다. 반복 실행해도 안전하며 교체를 요청하지 않으면 기존 등록을 유지합니다.
 
 ### `mms add <name>`
 
@@ -64,10 +73,12 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 | `--transport` | `stdio` (기본), `sse`, `streamable_http` |
 | `--url` | `sse` / `streamable_http` 엔드포인트 URL |
 | `--env KEY=VALUE` | 업스트림 프로세스에 전달할 환경 변수 (반복 가능) |
+| `--header KEY=VALUE` | `sse` / `streamable_http`용 plaintext 헤더(반복 가능, 설정 파일 권한 `0600`) |
 | `--compression` | `auto` (기본), `none`, `truncate`, `selective`, `hybrid` |
 | `--max-chars` | 출력 크기 예산 (기본 `8000`) |
 | `--validate` | 저장 전 MCP initialize + list-tools로 서버 점검 |
 | `--timeout` | `--validate` 시 서버별 타임아웃 초 (기본 `10`) |
+| `--json` | JSON 결과 문서 하나 출력 |
 
 #### MCP 클라이언트에서 일괄 가져오기
 
@@ -201,17 +212,105 @@ mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 
 hook은 항상 exit 0으로 종료합니다. 서피싱, daemon, 압축 중 어떤 단계가 실패해도 host 도구의 출력은 변경 없이 그대로 통과합니다.
 
+| 옵션 | 설명 |
+|---|---|
+| `--host claude` | host payload/응답 contract(현재 Claude Code) |
+| `--use-daemon` / `--no-daemon` | 이 호출의 daemon 라우팅 재정의 |
+| `--surfacing-timeout-seconds N` | cold-path surfacing 타임아웃 재정의 |
+| `--daemon-timeout-seconds N` | hook-to-daemon 왕복 타임아웃 재정의 |
+| `--persist-query-text` / `--no-persist-query-text` | portable hook 호출의 쿼리 텍스트 보존 재정의 |
+
 ### `mms daemon`
 
 `mms hook`이 사용하는 로컬 서피싱 daemon을 관리합니다. daemon 모드는 기본 활성(`MEMTOMEM_STM_HOOK__USE_DAEMON=1`)이며, 첫 적격 hook 호출에서 자동으로 기동되므로 보통 수동 시작이 필요 없습니다.
 
 ```bash
 mms daemon status                    # daemon 실행 여부 확인
+mms daemon status --json             # 스크립트용 상태
 mms daemon start                     # 명시적으로 시작
 mms daemon stop                      # 현재 설정용 daemon 중지
+mms daemon stop --all                # stale-config daemon orphan도 포함
+mms daemon restart                   # 이 설정을 중지한 뒤 한 번 새로 시작
+mms daemon run                       # foreground 장기 실행 서버 루프
 ```
 
 daemon은 활성 설정에 대한 LTM MCP 세션 하나를 미리 연결된(warm) 상태로 유지합니다. 매 호출마다 세션을 새로 여는 기존 경로를 강제하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`, daemon 미가용 시 해당 경로로 대체(fallback)하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
+
+### `mms doctor`
+
+status, health, config 검사를 하나의 PASS/WARN/FAIL 보고서로 실행합니다. 기본 실행은 상태를 바꾸거나 LTM을 검색하지 않습니다. FAIL이 있으면 exit 1, WARN만 있으면 exit 0입니다.
+
+```bash
+mms doctor
+mms doctor --json --timeout 5
+mms doctor --measure-ltm             # 이미 실행 중인 daemon으로 read-only 검색 5회
+```
+
+옵션은 `--config`, `--json`, `--timeout`, `--measure-ltm`입니다. 측정 모드는 없는 daemon을 시작하지 않습니다.
+
+### `mms config validate`
+
+환경 변수 overlay 없이 JSON 파일 자체를 엄격하게 검사합니다. 파일 없음, parse/schema 오류, 알 수 없는 키는 non-zero로 종료합니다.
+
+```bash
+mms config validate
+mms config validate --config ./stm_proxy.json --json
+```
+
+### `mms gateway`
+
+선택적 Toolgraph 정책 source를 검사하고 설정합니다.
+
+```bash
+mms gateway status [--config PATH] [--json]
+mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
+mms gateway explain server::tool [--config PATH] [--json]
+```
+
+`mode`는 기본적으로 preview입니다. `--apply`는 bundle source를 켜고 Toolgraph query profile과 STM exposure를 원자적으로 맞춥니다. `explain`은 bundle 결정 하나를 설명합니다.
+
+### `mms host`
+
+project registry의 원천인 host MCP 설정을 검사하고 조정합니다.
+
+```bash
+mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
+mms host status [--json]
+mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
+```
+
+`scan`은 host 기준 read-only inventory이고 `status`는 registry 기준 drift 비교입니다. `sync`는 기본 preview이며 새 항목 추가, 모든 host에서 사라진 항목 제거, sidecar baseline 보강을 수행합니다. 변경된 host shape은 `--force`, 변경하는 JSON 실행은 `--yes`가 필요합니다. `--allow-project-configs`는 project-local discovery를 명시적으로 승인합니다.
+
+### `mms selection replay`
+
+정제된 selection telemetry를 replay해 결정적 risk penalty를 평가합니다. 추천은 preview일 뿐 proxy 설정을 바꾸지 않습니다.
+
+```bash
+mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
+                     [--active-only] [--no-telemetry]
+                     [--output-dir DIR] [--json]
+```
+
+### `mms stats`
+
+저장소를 생성하거나 migrate하지 않고 디스크에 기록된 전체 기간 압축·surfacing 통계를 읽습니다.
+
+```bash
+mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
+```
+
+CLI는 디스크 메트릭만 보며 프로세스 로컬 실시간 counter는 observability MCP 도구에서 확인합니다.
+
+### `mms tune`
+
+기존 metrics/feedback 저장소에서 도구별 압축 추천을 preview하거나 적용합니다.
+
+```bash
+mms tune [--config PATH] [--since-hours 24] [--tool TOOL] [--json]
+mms tune --apply [--yes]
+```
+
+기본값은 preview입니다. `--apply`는 타임스탬프 백업을 만든 뒤 config lock 아래에서 선택한 `tool_overrides`를 쓰고 실행 중인 proxy는 이를 hot-reload합니다. `mms stats`와 달리 tune은 이미 존재하는 저장소에 idempotent schema migration을 실행할 수 있습니다.
 
 ## 프로젝트 관리
 
@@ -260,6 +359,18 @@ mms project enable filesystem --project acme
 
 `enable` 은 등록된 MCP 만 받아들이므로 — 비어 있는 registry 에 enable 하면 명확한 에러로 멈춥니다. `disable` 은 registry 와 무관하게 동작합니다.
 
+### `mms project route`
+
+감지된 project에서 활성화한 registry MCP를 STM 설정에 추가할 계획을 보거나 적용합니다.
+
+```bash
+mms project route
+mms project route --project acme --config ~/.memtomem/stm_proxy.json --apply
+mms project route --json
+```
+
+옵션은 `--project`, `--config`, `--apply`, `--json`입니다. 라우팅은 추가형입니다. 기존 항목은 유지하고 충돌은 보고 후 건너뛰며 source host 설정을 prune하지 않습니다.
+
 ## 호스트 설정 일괄 가져오기
 
 ### `mms import`
@@ -281,13 +392,13 @@ mms import --plan --show-imported    # plan 출력에서 secret 값을 가리지
 
 ## 프록시 서버 실행
 
-프록시 서버 자체는 `memtomem-stm` 콘솔 스크립트로 제공됩니다. 직접 실행하지 않습니다 — `mms init --mcp claude`, `mms register`, 또는 `.mcp.json` 항목을 통해 `memtomem-stm`이 등록되면 MCP 클라이언트가 자동으로 기동합니다.
+프록시 서버는 piped stdio에서 `memtomem-stm`, `memtomem-stm-proxy`, bare `mms` 명령을 모두 받습니다. 일반적으로 직접 실행하지 않고 등록된 MCP 클라이언트가 기동합니다. 대화형 터미널에서 인자 없이 `mms`를 실행하면 서버 대신 CLI help를 표시합니다.
 
 ## 예제 워크플로우
 
 ```bash
 # 1. 첫 설치 — 업스트림 한 개 + MCP 클라이언트 등록을 한 번에
-mms init --mcp claude
+mms init --demo --client auto
 
 # 2. 업스트림 추가 (수동 또는 클라이언트 설정에서 일괄 가져오기)
 mms add filesystem --command filesystem-server --prefix fs --validate
@@ -304,7 +415,7 @@ mms surfacing filesystem off
 mms eject filesystem
 
 # 6. (선택) 클라이언트 재설치 후 Claude Code에 재등록
-mms register --mcp claude
+mms register --client claude
 ```
 
 이제 MCP 클라이언트는 개별 업스트림 대신 `memtomem-stm`에 연결됩니다. 모든 업스트림 도구가 프록시를 통해 제공되며, 자동 기억 서피싱·응답 압축·점진적 전달이 적용됩니다.

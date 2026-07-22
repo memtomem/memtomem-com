@@ -5,7 +5,46 @@ description: memtomem LTM 서버 관리를 위한 mm CLI 명령어.
 
 `mm` 명령어는 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 인덱싱, 세션 추적, 프로젝트 간 컨텍스트 동기화 기능을 제공합니다. 전체 명령 목록은 `mm --help`, 설치된 버전은 `mm --version`(또는 `mm version` 서브명령)으로 확인할 수 있습니다.
 
-> 이 페이지는 memtomem v0.3.10 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
+> 이 페이지는 memtomem v0.3.12 기준입니다. 명령은 기능별로 묶여 있으나 단일 레퍼런스이므로 위에서 아래로 훑어보면 됩니다.
+
+## 전체 명령 인덱스
+
+현재 최상위 표면을 빠짐없이 유지합니다. 아래에는 작업별 상세 흐름이 이어지며 설치된 0.3.12 바이너리의 옵션 타입은 `mm <command> --help`로 확인합니다.
+
+| 그룹 | 명령 |
+|---|---|
+| 설정 / 데이터 | `init`, `config`, `add`, `index`, `ingest`, `mem`, `memory` |
+| 검색 / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
+| 런타임 컨텍스트 | `context`, `wiki`, `sync-doctor` |
+| 협업 | `session`, `activity`, `agent`, `review` |
+| 평가 / 운영 | `status`, `quality`, `warmup`, `watchdog`, `schedule` |
+| 라이프사이클 | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
+
+명령 그룹의 모든 하위 명령도 다음과 같이 복제합니다.
+
+| 그룹 | 하위 명령 |
+|---|---|
+| `activity` | `log` |
+| `agent` | `list`, `migrate`, `register`, `share` |
+| `config` | `set`, `show`, `unset` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
+| `gc` | `orphan-projects`, `orphan-sources` |
+| `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
+| `mem` | `init`, `rescan`, `rescan-files` |
+| `memory` | `doctor` |
+| `pinned` | `compose`, `delete`, `get`, `list`, `set` |
+| `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
+| `review` | `approve`, `list`, `recover`, `reject`, `scan`, `show` |
+| `schedule` | `add`, `delete`, `list`, `run-now` |
+| `session` | `end`, `events`, `list`, `start`, `wrap` |
+| `tags` | `delete`, `list`, `merge`, `rename` |
+| `watchdog` | `history`, `run`, `status` |
+| `web` | `status`, `stop` |
+| `wiki` | `agent`, `command`, `init`, `list`, `pull`, `push`, `remote`, `skill` |
+| `wiki agent/command/skill` | `commit`, `diff`, `lint`, `new`, `override`, `promote` |
+
+Bare `mm web`은 UI를 실행하고 `status`, `stop`은 이를 관리합니다.
 
 ## 설정
 
@@ -32,7 +71,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 memtomem의 MCP 서버는 `memtomem-server` 콘솔 스크립트로 제공됩니다. 일반적으로 직접 실행하지 않습니다 — MCP 클라이언트(Claude Desktop, Claude Code, Cursor 등)가 자신의 설정 파일에 등록된 항목에 따라 자동으로 기동합니다. 설정 예시는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
-서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)를 지정합니다. 기본은 `core`(핵심 도구 8개 + `mem_do` 라우터로 총 9개)이며, `full`은 96개 현행 도구와 deprecated `mem_context_migrate` 별칭 1개를 노출합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
+서버가 노출할 도구 범위를 조정하려면 MCP 클라이언트 설정의 `env`에 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)를 지정합니다. 기본은 `core`(핵심 도구 8개 + `mem_do` 라우터로 총 9개)이며, `full`은 99개 현행 도구와 deprecated `mem_context_migrate` 별칭 1개를 노출합니다. 모드와 도구 목록은 [MCP 도구](/ko/ltm/mcp-tools/) 페이지를 참조하세요.
 
 v0.1.25부터 MCP 핸드셰이크만으로는 `~/.memtomem/memtomem.db`가 생성되지 않습니다 — DB는 첫 도구 호출 시점에 열리며, 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`(플랫폼에 따라 `$TMPDIR/memtomem-$UID/`)로 이동했습니다. 연결만 하고 도구를 호출하지 않는 클라이언트는 홈 디렉토리에 흔적을 남기지 않습니다.
 
@@ -95,11 +134,9 @@ mm recall --namespace project-x --format plain
 
 브라우저 기반 검색 및 기억 관리를 위한 Web UI 대시보드를 실행합니다.
 
-`mm web` 을 실행하면 `http://127.0.0.1:8080` 에서 대시보드가 열리며 다음 탭이 제공됩니다: **Home · Search · Sources · Index · Tags · Timeline · More**. **More** 탭에는 Settings, Dedup, Age-out, Export/Import, Reset Database 가 포함됩니다.
+`mm web`을 실행하면 `http://127.0.0.1:8080`에서 대시보드가 열립니다. Simple 모드는 **Home, Search, Sources, Gateway, Index, Settings**를 보여줍니다. Gateway에는 Overview, Projects, Skills, Commands, Subagents, MCP Servers, Hooks, Wiki가 있고 각 행은 **Push**와 미리보기 우선 **Pull**을 사용합니다. Settings에는 Config, Namespaces, Reset Database가 있습니다.
 
-Context Gateway 탭은 처음 열면 **Simple 뷰**로 시작합니다 — 아티팩트 종류(skills / commands / subagents)별로 "이미 AI 도구에 반영됨" 또는 "아직 내보내야 함"을 한 줄로 보여주고, 조치가 필요한 행마다 버튼 하나(**Sync** 또는 **Import**)만 노출합니다. 전체 제어 그리드는 **Advanced** 한 번으로 펼칠 수 있습니다.
-
-`--dev` 를 전달하거나 `MEMTOMEM_WEB__MODE=dev` 를 설정하면 유지보수용 페이지가 추가로 노출됩니다: **Namespaces, Sessions, Working Memory, Health Report**. 대부분의 사용자는 필요하지 않습니다.
+헤더의 **Advanced** 토글은 Tags와 Timeline, Settings의 Dedup·Age-out·Export/Import를 추가합니다. `--dev` 또는 `MEMTOMEM_WEB__MODE=dev`는 **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction** 메인테이너 페이지를 더합니다.
 
 ```bash
 mm web                               # 기본: http://localhost:8080 (prod 티어)
@@ -148,7 +185,7 @@ mm index ~/docs/architecture         # 특정 디렉토리 인덱싱
 mm index README.md                   # 단일 파일 인덱싱
 ```
 
-`indexing.memory_dirs` 에 등록된 경로는 `mm server` 가 시작하는 파일 워처가 **변경이 생길 때 반응하는 방식**으로 감시합니다 — 워처가 켜진 이후에 발생하는 modify/create/move 이벤트만 재인덱싱하므로, 켜질 때 **이미 있던 파일은 자동으로 스캔되지 않습니다**. 그래서 `mm index <dir>` (또는 `mem_index(path="<dir>")`) 로 한 번 시드한 뒤 워처에 맡기는 흐름이 기본입니다. `mm init` 마법사의 `Next steps` 가 `mm index {memory_dir}` 를 1단계로 출력하는 이유이기도 합니다.
+`indexing.memory_dirs`에 등록된 경로는 장기 실행되는 `memtomem-server` 프로세스의 파일 워처가 감시하지만, 워처는 **변경에만 반응**합니다. 시작 이후의 modify/create/move 이벤트만 재인덱싱하므로 기존 파일은 자동 스캔되지 않습니다. `mm index <dir>`(또는 `mem_index(path="<dir>")`)로 한 번 시드한 뒤 MCP 서버 워처가 이후 변경을 처리하게 하세요. Web UI 시작 시 one-shot backfill이 필요하면 `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true`를 명시적으로 켭니다.
 
 ### `mm ingest`
 
@@ -160,9 +197,22 @@ mm ingest gemini-memory --source ~/.gemini/GEMINI.md    # Antigravity CLI GEMINI
 mm ingest codex-memory --source ~/.codex/memories/      # Codex CLI 메모리 수집
 ```
 
+### `mm mem init / rescan / rescan-files`
+
+명시적 project memory trust gate를 관리하고 새 기억을 쓰지 않은 채 기존 저장 자료를 검사합니다.
+
+```bash
+mm mem init --scope project_local
+mm mem init --scope project_shared --confirm-project-shared
+mm mem rescan --scope user [--source PATH] [--json] [--quiet]
+mm mem rescan-files --json
+```
+
+`init`은 실제 project marker를 요구하며 선택한 memory tier를 원자적으로 등록합니다. `rescan`은 read-only이고 privacy finding에서 exit 1이며 scope를 반드시 명시합니다. `rescan-files`는 과거 import, fetch, session 파일을 검사합니다.
+
 ## Context Gateway
 
-Context Gateway는 정규(canonical) 형태로 저장한 에이전트 정의·스킬·명령어를 각 AI 런타임에 동기화합니다. 기본 흐름은 한 프로젝트 안에서 detect → init → sync → diff이며, v0.3.0부터 프로젝트·티어 간 이전과 여러 프로젝트 일괄 관리가 추가되었습니다.
+Context Gateway는 에이전트·스킬·명령어 원본을 Store에 보관합니다. `sync`는 Store 복사본을 런타임으로 Push하고, `pull`은 선택한 런타임 복사본을 미리 본 뒤 Store로 가져옵니다. 프로젝트·티어 간 전송과 다중 프로젝트 작업도 같은 모델을 사용합니다.
 
 티어는 친숙한 라벨로 다룹니다: **User**(`--scope user`, 모든 프로젝트에서 보이는 개인용), **Project (shared)**(`--scope project_shared`, git 추적 대상), **Project (local)**(`--scope project_local`, 로컬 초안).
 
@@ -180,6 +230,16 @@ mm context diff --scope project_shared
 **Project (shared)** 는 git 추적 대상이므로 명시 확인이 필요하고 secret을 넣으면 안 됩니다. **User** 티어(`--scope user`)에 동기화하면 정규 파일이 `~/.memtomem/` 아래에 들어가 모든 프로젝트에서 보이게 됩니다 — 프로젝트 바깥(홈 디렉토리)을 건드리는 쓰기이므로, Gateway가 실제로 수정할 파일 경로를 보여주고 확인을 요청합니다. 비대화 환경에서는 `--yes`로 확인을 건너뛸 수 있습니다.
 
 MCP 서버 정의도 같은 흐름으로 옮길 수 있습니다. `mm context sync --include=mcp-servers` 는 정규 MCP 서버 정의를 프로젝트의 `.mcp.json` 으로 동기화하며(secret 안전성 검사 포함), 이는 명시적으로 요청해야 동작하는 opt-in 경로입니다.
+
+### `mm context pull`
+
+이름을 지정한 런타임 아티팩트 하나를 Store로 가져옵니다. 기본은 미리보기이며, `--diff`는 실제로 들어올 변경을 보여주고, 후보가 다르면 `--from`으로 런타임을 선택합니다. `--overwrite`는 기존 Store payload를 스냅샷한 뒤 교체합니다.
+
+```bash
+mm context pull skills reviewer
+mm context pull skills reviewer --from claude --diff
+mm context pull skills reviewer --from claude --scope project_shared --overwrite --apply
+```
 
 ### 다른 프로젝트의 스킬 재사용 (`mm context move` / `copy`)
 
@@ -258,6 +318,33 @@ mm wiki skill commit my-skill --vendor claude              # 격리 커밋으로
 
 ## 세션과 멀티 에이전트
 
+### `mm pinned`
+
+검색 기억보다 앞에 조합되는 durable Pinned Context 블록을 관리합니다. 전체 그룹은 `list`, `get`, `set`, `delete`, `compose`입니다.
+
+```bash
+mm pinned list
+mm pinned get <key>
+mm pinned set <key> --content "리뷰는 근거부터 제시"
+mm pinned delete <key>
+mm pinned compose
+```
+
+정확한 scope, shadowing, idempotency, composition 규칙은 [Pinned Context](/ko/ltm/pinned-context/)를 참고하세요.
+
+### `mm review`
+
+review-first 기억 후보를 생성하고 판정합니다. 승인 전에는 durable memory가 되지 않습니다.
+
+```bash
+mm review scan <session-id>
+mm review list --status pending
+mm review show <candidate-id>
+mm review approve <candidate-id> --reviewer alice
+mm review reject <candidate-id> --reviewer alice --reason "장기 기억이 아님"
+mm review recover --stale-after-minutes 15 --actor alice
+```
+
 ### `mm session`
 
 에이전트 세션을 관리합니다 — start · end · list · events · wrap. 세션은 활동 이벤트를 묶어 에이전트 런타임에 연결합니다.
@@ -312,6 +399,14 @@ mm status --json                     # 기계 판독용 — 스크립트 / `jq` 
 
 v0.1.25에 추가된 명령이며, `--json` / `--format json`은 v0.3.4에 추가되었습니다. MCP 클라이언트를 띄우지 않은 상태에서 "DB 열리고 몇 건 들어있나"를 점검하는 설치 직후 간단 점검(스모크 테스트)에 적합합니다.
 
+### `mm sync-doctor`
+
+현재 private memory sync 저장소에 대해 여섯 가지 read-only 검사를 실행합니다. 실패는 non-zero로 종료하고 경고만으로는 실패하지 않습니다.
+
+```bash
+mm sync-doctor
+```
+
 ### `mm warmup`
 
 로컬 임베더 / 리랭커 모델을 미리 로드해 **첫** 질의가 일회성 모델 로드 비용을 물지 않도록 합니다. 선택 사항이며, 사용하지 않으면 첫 사용 시점에 지연 로드됩니다.
@@ -334,6 +429,19 @@ mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
 ```
 
 `--fix` 는 대상이 디스크에서 사라진 인덱스 포인터 라인만 제거하며, `--apply` 없이는 dry-run입니다. error 등급 발견이 있으면 종료 코드 1을 반환하므로 CI 점검에도 쓸 수 있습니다.
+
+`dangling_wikilink`는 정보 수준입니다. 의도한 미래 참조일 수도 있고 오래된 이름일 수도 있으므로 실행을 실패시키지 않으며 `--fix`도 제거하지 않습니다.
+
+### `mm quality`
+
+결정론적 검색 평가 case를 관리하고 replay·report 비교·품질 gate를 실행합니다. 검색 실행과 라벨은 dev-mode Web UI의 Search Runs와 Quality Lab에서도 확인할 수 있습니다.
+
+```bash
+mm quality cases list
+mm quality replay --output report.json
+mm quality compare baseline.json candidate.json
+mm quality gate baseline.json candidate.json
+```
 
 ### `mm watchdog`
 
@@ -364,6 +472,17 @@ mm schedule delete <sched-id>
 `--cron` 은 5필드 표현식(UTC). `--params` 는 잡별 파라미터의 JSON 딕셔너리. 디스패처는 health watchdog 루프 위에서 동작하므로, 등록된 잡이 실제로 발화하려면 `scheduler.enabled` 와 `health_watchdog.enabled` 가 모두 켜져 있어야 합니다.
 
 ## 유지보수와 라이프사이클
+
+### `mm gc orphan-sources`
+
+원본 파일이 더 이상 존재하지 않는 인덱스 source record를 찾습니다. 기본은 미리보기이며 `--apply`를 붙이면 orphan source와 해당 청크를 제거합니다.
+
+```bash
+mm gc orphan-sources
+mm gc orphan-sources --apply
+```
+
+`mm gc orphan-projects`는 기록된 `project_root`가 더 이상 존재하지 않는 청크를 처리합니다. 기본값은 preview이며 `--apply`는 root별 확인, `--apply --yes`는 명시적 비대화 삭제입니다. 이동식 또는 잠시 unmount된 경로인지 확인한 뒤 승인하세요.
 
 ### `mm embedding-reset`
 
@@ -403,7 +522,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.3.10           # 특정 버전 고정
+mm upgrade --version 0.3.12           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```

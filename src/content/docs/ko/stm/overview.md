@@ -5,12 +5,12 @@ description: memtomem-stm이란 — 관련 기억을 자동으로 제시하고 �
 
 ## memtomem-stm이란?
 
-memtomem-stm은 AI 에이전트와 기존 MCP 서버 사이에 놓이는 **단기 기억(STM) 프록시**입니다(프록시는 둘 사이에서 오가는 내용을 다듬어 중계하는 계층입니다). 에이전트 코드를 바꾸지 않고도 도구 호출에 **응답 압축**, **관련 기억 자동 주입**, **노출 도구 정리**를 더해, 보통 토큰 사용량을 20~80% 줄입니다.
+memtomem-stm은 AI 에이전트와 기존 MCP 서버 사이에 놓이는 **단기 기억(STM) 프록시**입니다(프록시는 둘 사이에서 오가는 내용을 다듬어 중계하는 계층입니다). 에이전트 코드를 바꾸지 않고도 프록시를 통해 라우팅된 호출에 **응답 압축**, **관련 기억 자동 주입**, **노출 도구 정리**를 더합니다. 토큰 절감률은 응답 형태, 설정한 예산, 워크로드에 따라 달라집니다.
 
 ## 이럴 때 씁니다
 
-- **MCP 도구 응답이 너무 커서 컨텍스트가 금방 찰 때** — filesystem이나 GitHub MCP가 8000 토큰짜리 응답을 반환한다면, STM이 콘텐츠 유형에 맞는 전략으로 이를 2000 토큰대로 축소합니다.
-- **에이전트에 명시 요청 없이 과거 기억을 자동으로 붙여주고 싶을 때** — LTM 단독 구성에서는 에이전트가 `mem_search`를 호출해야 기억을 받지만, STM이 앞단에 있으면 모든 도구 응답에 관련 기억이 자동 주입됩니다.
+- **MCP 도구 응답이 너무 커서 컨텍스트가 금방 찰 때** — STM이 라우팅된 filesystem, GitHub 등의 MCP 응답에 콘텐츠 인식 문자·토큰 예산을 적용합니다.
+- **에이전트에 명시 요청 없이 과거 기억을 자동으로 붙여주고 싶을 때** — LTM 단독 구성에서는 에이전트가 검색 도구를 호출하지만, STM 앞단을 통과한 적격 응답에는 별도 검색 호출 없이 관련 기억을 붙일 수 있습니다.
 - **에이전트에 노출되는 도구 목록을 정리하고 싶을 때** — STM이 응답하지 않는 서버, 자격 증명이 담긴 설명, 이름이 겹치는 도구를 에이전트에 보여 주는 목록에서 걸러 냅니다.
 - **프록시를 부담 없이 먼저 시험해 보고 싶을 때** — STM이 기존 MCP 서버를 가져와(import) 앞단에서 중계하며, 이 과정은 되돌릴 수 있습니다. `mms eject`로 가져온 서버를 원래 호스트 설정으로 복원하면 STM 도입 이전 상태로 돌아갑니다.
 
@@ -18,11 +18,11 @@ memtomem-stm은 AI 에이전트와 기존 MCP 서버 사이에 놓이는 **단�
 
 ```bash
 uv tool install memtomem-stm                             # 1. 설치
-mms init --mcp claude                                    # 2. 업스트림 + Claude Code 등록 한 번에
-mms health                                               # 3. 연결 상태 확인
+mms init --demo --client auto                            # 2. 실행 가능한 demo + 감지된 클라이언트 등록
+mms doctor                                               # 3. 전체 설정 진단
 ```
 
-`mms init`은 업스트림 서버를 묻고 이어서 `memtomem-stm`을 MCP 클라이언트에 등록합니다 (`--mcp claude`, `--mcp json`, `--mcp skip` 중 선택). 전체 설정 절차는 [빠른 시작](/ko/guides/quickstart/) 참조.
+`mms init --demo`는 결정적인 demo upstream을 만듭니다. `--client auto`는 감지된 지원 host에 등록하며, 이후에는 `mms register --client claude`, `--client codex`, `--client auto`로 등록을 바꿀 수 있습니다. 전체 설정 절차는 [빠른 시작](/ko/guides/quickstart/) 참조.
 
 ## 핵심 기능
 
@@ -48,7 +48,7 @@ STM은 모든 MCP 도구 호출을 다음 파이프라인으로 처리합니다:
 2. **COMPRESS** — 응답 크기 축소 (10가지 전략 중 자동 선택)
 3. **SURFACE** — LTM에서 관련 기억 조회·주입 (5단계 관련성 검사)
 
-STM은 런타임에 LTM으로 기억을 다시 기록하지 않습니다. 서피싱은 LTM에서 읽기만 하며, INDEX(자동 축적) 단계는 단독 실행하는 `mms` 서버에서는 설계상 동작하지 않습니다.
+기본 제공 `mms` 런타임은 LTM으로 기억을 다시 기록하지 않습니다. 활성 응답 파이프라인은 **CLEAN → COMPRESS → SURFACE**이며, surfacing은 MCP를 통해 LTM에서 읽습니다.
 
 ## LTM과의 관계
 
@@ -65,7 +65,7 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **최신 릴리스** | `0.1.38` |
+| **최신 릴리스** | `0.1.41` |
 | **CLI** | `mms` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

@@ -30,7 +30,7 @@ mem_agent_register(agent_id="analyzer", description="코드 분석 에이전트"
 mem_session_start(agent_id="analyzer")
 ```
 
-세션 레코드의 네임스페이스는 `agent-runtime:analyzer`로 자동 파생됩니다. 같은 세션 안에서 호출되는 다음 명령들은 `agent_id`를 다시 전달하지 않아도 에이전트 스코프를 자동 상속합니다:
+세션 레코드의 네임스페이스는 `agent-runtime:analyzer`로 자동 파생됩니다. 에이전트에 명시적으로 바인딩한 세션에서는 이후 쓰기가 `agent_id`를 다시 전달하지 않아도 해당 스코프를 상속합니다. 바인딩되지 않은 기본 세션은 쓰기를 에이전트 네임스페이스로 돌리지 않습니다:
 
 - **쓰기** — `mem_add(content="...")` / `mem_batch_add(...)`는 `agent-runtime:analyzer`로 자동 기록됩니다. 다른 스코프(예: 공유)로 보내려면 한 번의 호출에 `namespace="shared"`를 명시하세요.
 - **읽기** — `mem_agent_search` / `mem_agent_share`는 `agent_id=` 없이도 에이전트 스코프로 결정됩니다. (단일 에이전트 환경의 `mem_search`는 변경되지 않으므로, 에이전트 스코프 안에서 검색하려면 `mem_agent_search`를 사용하세요.)
@@ -49,7 +49,7 @@ mem_agent_search(query="인증 모듈 구조", include_shared=true)
 mem_agent_share(chunk_id="...", target="shared")
 ```
 
-공유할 때는, 더 넓은 공간으로 복사본을 남기기에 앞서 내용을 한 번 더 검사합니다(신뢰 경계 리댁션 가드). 비밀처럼 보이는 내용은 공유 시점에 차단되고 그 사실이 감사 로그에 기록되므로, 민감한 기억이 넓은 공간으로 조용히 새어 나가지 않습니다.
+공유할 때는, 더 넓은 공간으로 복사본을 남기기에 앞서 내용을 한 번 더 검사합니다(신뢰 경계 리댁션 가드). 비밀처럼 보이는 내용은 공유 시점에 차단되고 그 사실이 감사 카운터에 집계되므로, 민감한 기억이 넓은 공간으로 조용히 새어 나가지 않습니다.
 
 ### 5단계: 세션 종료
 
@@ -69,7 +69,7 @@ MCP 서버는 호출 클라이언트를 구분하지 않으므로, **에이전�
 
 > 대화 시작 시 `mem_session_start(agent_id="claude-code")`를 먼저 호출하여 세션을 등록하세요. 새 에이전트 역할로 작업할 때는 `mem_agent_register(agent_id="planner", description="...")`를 사용합니다.
 
-한 번 등록하면 이후의 `mem_search`, `mem_add` 등은 `agent_id`를 재전달하지 않아도 해당 에이전트 네임스페이스(`agent-runtime:{agent-id}`)에 기록됩니다.
+세션을 명시적으로 바인딩하면 이후 `mem_add`/`mem_batch_add` 쓰기는 `agent-runtime:{agent-id}`를 상속합니다. 읽기는 자동으로 전환되지 않으므로 에이전트 스코프 검색에는 `mem_agent_search`를 사용하고, 일반 `mem_search`에는 네임스페이스를 명시하세요.
 
 ### LangGraph · CrewAI (Python 어댑터)
 
@@ -113,7 +113,7 @@ mm agent share <chunk_id> --target shared
 
 ### Human → Agent
 
-개발자가 Claude Code, Cursor에서 작업할 때, 이전 세션의 아키텍처 결정·코딩 패턴·디버깅 이력이 자동으로 서피싱됩니다.
+MCP로 연결된 클라이언트에서는 저장된 아키텍처 결정·코딩 패턴·디버깅 이력을 명시적으로 검색할 수 있습니다. 자동 서피싱에는 STM 프록시 라우팅 또는 지원되는 호스트 hook 설정이 필요합니다.
 
 ### Agent → Agent
 

@@ -81,7 +81,7 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 
 ### File locations
 
-memtomem keeps everything under your home directory — nothing leaves the machine:
+memtomem keeps its local database and configuration under your home directory. The default ONNX path stays on the machine; optional remote embedding, LLM, rerank, and tracing providers send the configured request data to their endpoints.
 
 | Path | What |
 |---|---|
@@ -132,16 +132,19 @@ After installation, the following commands are available:
 
 | Command | Purpose |
 |---|---|
-| `mms init --mcp claude` | First-time setup + auto-register with Claude Code |
+| `mms init --demo --client auto` | First-time, no-network demo + detected-client registration |
+| `mms doctor` | Validate config, client registration, upstreams, and optional LTM |
+| `mms register --client claude\|codex\|auto` | Register or refresh STM in a supported client |
 | `mms add <name> --command <cmd>` | Register an upstream MCP server |
 | `mms add --from-clients` | Bulk-import upstreams from existing MCP client configs |
 | `mms eject <name>` | Restore an imported server to its original client and unregister it from STM |
 | `mms list` | List registered servers (with a SURFACING column) |
 | `mms status` | Config summary — enabled flag and server count |
 | `mms health` | Probe upstream connectivity + LTM surfacing readiness |
+| `mms project route` | Preview routing selected project MCPs through STM (`--apply` writes) |
 | `mms --version` | Print installed version |
 
-The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client (via `mms init --mcp claude`, `mms register`, or a `.mcp.json` entry), the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
+The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client via `mms init --client ...`, `mms register --client ...`, or a generic JSON entry, the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
 
 ## Embedding Providers
 
@@ -151,7 +154,7 @@ The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, yo
 | **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
 | **OpenAI** | API key required | — | Paid |
 
-**Not sure which to pick?** Start with **ONNX** — it's fully local, free, and needs no extra daemon or API key. You can always switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
+**Not sure which to pick?** Start with **ONNX** — inference is local, free, and needs no extra daemon or API key. You can switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
 
 ## Tech Stack
 

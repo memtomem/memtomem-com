@@ -5,7 +5,7 @@ description: 10종 압축 전략의 동작 원리, 자동 선택 로직, 쿼리 
 
 > 처음이라면 [STM 개요](/ko/stm/overview/)에서 전체 파이프라인을 먼저 확인하세요.
 
-모든 MCP 도구 응답은 에이전트에 전달되기 전에 STM을 거칩니다. 응답이 에이전트의 컨텍스트 예산을 초과할 경우 STM이 압축을 수행하며, 압축 방식은 콘텐츠 유형에 따라 달라집니다.
+STM을 통해 라우팅된 MCP 도구 응답은 에이전트에 전달되기 전에 압축 gate를 거칩니다. upstream을 직접 호출하면 STM을 우회합니다. 라우팅된 응답이 설정 예산을 초과하면 STM이 압축하며, 방식은 콘텐츠 유형에 따라 달라집니다.
 
 memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압축하여 토큰을 절감합니다. 총 10종 전략을 제공하며 — 콘텐츠 유형별 축소 전략 8종에 더해 자동 선택자 `auto`와 무압축 통과 `none`을 포함합니다 — 에이전트에 필요한 정보를 유지하면서 응답 크기를 축소합니다. 전략 선택이 어려운 경우 `auto` 설정을 유지하면 즉시 응답형 전략 중에서 응답별로 적절한 축소 전략이 자동 선택됩니다.
 
@@ -43,6 +43,8 @@ memtomem-stm은 MCP 도구 응답을 콘텐츠 유형에 따라 자동으로 압
 
 압축 시 에이전트의 현재 쿼리를 인식하여, 관련 섹션에 더 많은 토큰 예산을 할당합니다. 예를 들어, "인증 모듈"에 대해 질문한 상태에서 API 문서를 압축하면, 인증 관련 엔드포인트에 더 많은 공간을 배분합니다. `selective` / `hybrid` / `schema_pruning` / `skeleton`의 TOC 항목도 활성 쿼리와의 BM25 관련성으로 정렬됩니다. 이때 사용되는 결정적 BM25 점수는 selection telemetry로 기록되어 오프라인 분석에 활용할 수 있습니다([설정](/ko/reference/configuration/) 참고).
 
+예산은 `max_result_chars` 또는 `max_result_tokens`로 지정할 수 있습니다. 토큰 예산은 `chars_per_token`과 `token_estimation_mode`(`static` 또는 유니코드 인식 `unicode`)를 사용하며, `consumer_model`과 `context_budget_ratio`로 수신 모델의 컨텍스트 윈도우에 맞춘 상한을 적용할 수 있습니다. upstream별·도구별 값이 proxy 기본값보다 우선합니다.
+
 ## JSON 안전성
 
 JSON을 다루는 압축 계층은 압축을 마친 뒤 결과를 다시 올바른(엄격한) JSON으로 만듭니다. `NaN`, `Infinity`, `-Infinity` 같은 값은 표준 JSON이 아니므로 출력 전에 `null`로 바꿔, 이를 받는 파서가 Python 전용 토큰을 만나지 않게 합니다. 예산이 줄어들수록 JSON 계층은 품질이 급격히 무너지지 않고 완만하게 떨어집니다. 다만 `selective` 하나는 예외입니다: 먼저 각 항목의 미리보기를 줄이지만, 섹션이 아주 많으면 미리보기를 0으로 해도 목차(TOC) 뼈대만으로 예산을 넘을 수 있습니다. 이때 항목 자체를 지우면 '선택' 동작의 전제가 깨지므로, 예산을 조금 넘기는 쪽을 택합니다.
@@ -52,12 +54,14 @@ JSON을 다루는 압축 계층은 압축을 마친 뒤 결과를 다시 올바�
 `progressive` 전략은 대형 콘텐츠를 정보 손실 없이 전달합니다:
 
 1. 첫 응답에서 목차(TOC)와 첫 번째 청크 전달
-2. 에이전트가 추가 부분을 요청하면 커서 기반으로 다음 청크 전달
+2. 에이전트가 `stm_proxy_read_more(key, offset)`을 호출하면 커서 기반으로 다음 청크 전달
 3. 전체 내용을 순차적으로 확인 가능
 
 모든 progressive 청크는 정규 푸터 `\n---\n[progressive: chars=<n>]` 로 끝납니다 — 에이전트는 `memtomem_stm.proxy.progressive` 에서 제공되는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN` 으로 분할해야 합니다. `\n---\n` 만으로 분할하면 본문 안의 Markdown 수평선이나 YAML 펜스에 걸려 내용이 조용히 누락될 수 있습니다.
 
 progressive 전달의 후속 요청률·커버리지, 그리고 primary store 장애 시 패스스루로의 저하 지표는 `stm_progressive_stats` 도구로 확인할 수 있습니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
+
+응답 캐시는 schema 4를 사용하며 `content`, `structuredContent`, `_meta`를 포함한 정규 MCP envelope을 보존합니다. 호환되지 않는 구 cache는 envelope 버전을 섞지 않고 한 번 초기화합니다.
 
 ## 폴백 래더
 

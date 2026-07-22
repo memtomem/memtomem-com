@@ -75,12 +75,32 @@ The search should return the sentence you just added. `mm add` writes to the con
 
 <Tabs syncKey="mcp-client">
   <TabItem label="Claude Code">
-    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered — no extra LTM command needed.
+    The recommended path installs the official plugin from inside Claude Code:
 
-    For a manual registration (skipped the wizard prompt, or moved to a new machine):
+    ```text
+    /plugin marketplace add memtomem/memtomem
+    /plugin install memtomem@memtomem
+    /reload-plugins
+    ```
+
+    Start a new conversation and run `/memtomem-status`. The plugin installs the MCP server plus guided commands and read-only skills. It does not background-index the project or save conversations automatically.
+
+    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered and you can keep that manual-MCP setup instead.
+
+    Manual registration without the plugin:
     ```bash
     claude mcp add memtomem -s user -- memtomem-server
     ```
+  </TabItem>
+  <TabItem label="Codex">
+    Run these commands in a terminal:
+
+    ```bash
+    codex plugin marketplace add memtomem/memtomem
+    codex plugin add memtomem@memtomem
+    ```
+
+    Start a new Codex thread, then run `$memtomem-status`. The plugin does not automatically index `$CODEX_HOME/memories`, project files, conversations, or responses.
   </TabItem>
   <TabItem label="Cursor">
     Add the server to `~/.cursor/mcp.json`:
@@ -88,8 +108,7 @@ The search should return the sentence you just added. `mm add` writes to the con
     {
       "mcpServers": {
         "memtomem": {
-          "command": "uvx",
-          "args": ["--from", "memtomem", "memtomem-server"]
+          "command": "memtomem-server"
         }
       }
     }
@@ -102,8 +121,7 @@ The search should return the sentence you just added. `mm add` writes to the con
     {
       "mcpServers": {
         "memtomem": {
-          "command": "uvx",
-          "args": ["--from", "memtomem", "memtomem-server"]
+          "command": "memtomem-server"
         }
       }
     }
@@ -116,14 +134,15 @@ The search should return the sentence you just added. `mm add` writes to the con
     {
       "mcpServers": {
         "memtomem": {
-          "command": "uvx",
-          "args": ["--from", "memtomem", "memtomem-server"]
+          "command": "memtomem-server"
         }
       }
     }
     ```
   </TabItem>
 </Tabs>
+
+Plugin or MCP registration only connects tools. It does **not** automatically index provider-managed memories, project files, or every conversation/response. Use an explicit `mm index` or reviewed `mm ingest ... --dry-run` flow when you want those sources in LTM.
 
 For other clients and the full option matrix, see [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
 
@@ -164,10 +183,11 @@ The default Web UI is the user-facing surface for search, sources, tags, timelin
 
 ```bash
 uv tool install memtomem-stm
-mms init --mcp claude   # prompts for one upstream server, then registers STM with Claude Code
+mms init --demo --client auto   # bundled read-only first-success server + detected client
+mms doctor                     # PASS/WARN is usable; FAIL needs attention
 ```
 
-`mms init` walks you through adding one upstream MCP server (name, prefix, command) and then offers a 3-way client registration (Claude Code / write `.mcp.json` / skip). After it finishes, confirm the setup with three read commands:
+The demo path needs no Node.js or network and verifies one proxied tool first. For a real upstream, use `mms add`; register or refresh a client explicitly with `mms register --client claude`, `mms register --client codex`, or `mms register --client auto`. Then inspect the setup with:
 
 ```bash
 mms list      # the upstreams you've registered (and their SURFACING column)
@@ -185,7 +205,7 @@ For a non–Claude-Code client, register STM manually with a one-line command bl
 }
 ```
 
-STM's proxied tools surface as `<prefix>__<tool>`. If a proxied tool goes missing after registration, it's almost always the composed `mcp__<server>__<prefix>__<tool>` name exceeding MCP's 64-char limit — see [Troubleshooting](/guides/troubleshooting/) for the fix (a shorter prefix, or registering STM under a short client name).
+STM's proxied tools surface as `<prefix>__<tool>`. A host may compose the final name as `mcp__<server>__<prefix>__<tool>`. If that name exceeds MCP's 64-char limit, the tool can disappear — see [Troubleshooting](/guides/troubleshooting/) for the fix.
 
 Moving a server behind the proxy is reversible — if STM isn't a fit, `mms eject` restores each server to the host config it came from.
 
@@ -196,5 +216,5 @@ See [STM Overview](/stm/overview/) when you want tool-response compression or au
 - [Memory Persistence](/guides/memory-persistence/) — save in one session, recall in another
 - [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion
 - [MCP Tools](/ltm/mcp-tools/) — `core`, `standard`, and `full` tool modes
-- [Context Gateway](/ltm/context-gateway/) — sync agents, skills, and commands across runtimes, move or copy them between projects, and sync many projects at once
+- [Context Gateway](/ltm/context-gateway/) — keep a Store, Pull runtime copies for review, and Push selected artifacts across runtimes
 - [Troubleshooting](/guides/troubleshooting/) — fixes for `command not found`, missing tools, and surfacing that isn't firing

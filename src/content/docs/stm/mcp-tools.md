@@ -156,6 +156,6 @@ STM does not advertise every upstream tool 1:1 — it applies an eligibility fil
 
 Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
 
-When the agent calls `fs__read_file`, the proxy runs the active pipeline: **CLEAN → COMPRESS → SURFACE**, with **INDEX** available only when an index engine is wired. It returns the compressed response plus any surfaced memories.
+When the agent calls `fs__read_file`, the bundled proxy runs **CLEAN → COMPRESS → SURFACE**. It returns the compressed response plus any surfaced memories and does not write the response back into LTM.
 
 > See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.
