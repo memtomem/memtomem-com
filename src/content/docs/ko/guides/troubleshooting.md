@@ -99,9 +99,9 @@ mm search "원본에_실제로_있는_단어"
 
 ### 에이전트에 memtomem 도구가 보이지 않음
 
-- MCP `command`는 `memtomem-server`여야 합니다. `memtomem`과 `mm`은 CLI입니다.
+- MCP 서버만 수동으로 등록한 항목은 `memtomem-server`를 사용해야 합니다. `memtomem`과 `mm`은 CLI입니다. 공식 플러그인은 자체적으로 고정한 실행 명령을 사용할 수 있습니다.
 - 설정 변경 뒤 클라이언트를 재시작하거나 새 세션을 엽니다.
-- Claude Code는 `claude mcp list`, Codex는 `codex mcp list`를 확인합니다.
+- Claude Code 세션에서는 `/mcp`, Codex에서는 `codex mcp list`를 확인합니다. OpenCode에서는 정확한 `mcp.memtomem` 키를 확인합니다.
 - 클라이언트에 `mem_status`를 명시적으로 호출하도록 요청합니다.
 
 ### GUI 클라이언트가 `memtomem-server`를 찾지 못함
@@ -114,9 +114,17 @@ command -v memtomem-server
 
 설정의 `command`에 이 절대 경로를 넣고 앱을 완전히 재시작합니다. Windows에서는 `where memtomem-server`를 사용하세요.
 
-### 플러그인 명령이나 도구가 두 번 보임
+<a id="플러그인-명령이나-도구가-두-번-보임"></a>
 
-플러그인이 이미 MCP 서버를 제공할 수 있습니다. 중복된 수동 항목을 제거하고 새 세션에서 목록을 다시 확인하세요. 검색이 잘 보이게 하려고 같은 서버를 두 번 등록하지 마세요.
+### MCP 서버나 도구가 두 번 보임
+
+중복되는 것은 MCP 서버 네임스페이스와 도구이며, 플러그인의 슬래시 명령이나 스킬까지 반드시 중복되는 것은 아닙니다. 클라이언트에 맞게 정리하세요.
+
+- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem==0.3.12 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
+- **Codex:** `codex mcp list`를 실행합니다. `[mcp_servers.memtomem]`은 플러그인보다 우선하며 서버 하나만 실행합니다. `[mcp_servers.memtomem-local]`처럼 다른 이름을 쓰면 서버 두 개가 실행되므로 이름을 `memtomem`으로 바꾸거나 플러그인 서버를 쓰기 위해 수동 항목을 제거합니다.
+- **OpenCode:** 수동 항목을 정확한 `mcp.memtomem` 키로 유지하거나, 플러그인 서버를 쓰기 위해 제거합니다. `mcp."memtomem-local"`처럼 다른 키를 쓰면 서버 두 개가 실행됩니다.
+
+등록을 바꾼 뒤 새 세션을 시작하세요. 가능한 구성은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 모두 확인할 수 있습니다.
 
 ### 클라이언트마다 기억이 다름
 

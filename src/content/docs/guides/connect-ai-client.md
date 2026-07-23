@@ -17,13 +17,19 @@ mm status
 
 Keep the displayed database path. You will compare it with the client result.
 
-The MCP server command is `memtomem-server`. `memtomem` and `mm` are terminal CLIs and must not be used as the MCP server command.
+Manual MCP-only entries use the `memtomem-server` command. `memtomem` and `mm` are terminal CLIs and must not be used as MCP server commands. Official plugins may supply their own pinned launch command.
 
-Pick **one** client below. Registering the same server through both a plugin and a manual MCP entry can expose duplicate tools.
+Pick **one** client below. If that client already has both a plugin and a manual MCP entry, use its matching rule instead of assuming that one copy is always removed:
+
+| Client | How entries are matched | Result |
+|---|---|---|
+| Claude Code | exact command and arguments | the same signature runs one server; a different signature runs both |
+| Codex CLI | server name | manual `memtomem` wins; a different name runs both |
+| OpenCode | `mcp` key | manual `mcp.memtomem` wins; a different key runs both |
 
 ## Claude Code
 
-The official plugin is the recommended path:
+The official plugin is the recommended path. The current marketplace plugin is version 0.3.3 and bundles Core 0.3.12:
 
 ```text
 /plugin marketplace add memtomem/memtomem
@@ -41,7 +47,25 @@ If `/reload-plugins` is unavailable, start a new Claude Code session. Then run:
 
 The status should show the same database path as `mm status`, and search should return the saved sentence with a source path.
 
-For MCP-only setup, choose one Claude Code registration scope:
+If you previously registered a manual server, run `/mcp` before continuing. Claude Code 2.1.218 matches the exact command and arguments; environment variables are not compared. The plugin signature is:
+
+```text
+uvx --from memtomem==0.3.12 memtomem-server
+```
+
+With that same signature, the manual registration wins and only one server runs under `mcp__memtomem__mem_*`. The bare `memtomem-server` entries below have a different signature, so both servers run and tools appear under both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`.
+
+`/memtomem:setup` reports this doubled namespace and shows the available remedies, but it never removes a registration automatically. Choose the setup you want:
+
+- **Keep the plugin (recommended):** remove the manual entry with `claude mcp remove memtomem`. Add `-s user` when removing a user-scope entry; remove the project entry from `.mcp.json`.
+- **Keep only the manual server:** run `/plugin uninstall memtomem@memtomem`.
+- **Keep the plugin commands with the manual server:** keep the plugin installed and register the manual entry with the exact plugin signature. For example:
+
+  ```bash
+  claude mcp add memtomem -- uvx --from memtomem==0.3.12 memtomem-server
+  ```
+
+For MCP-only setup without the plugin's commands and skills, choose one Claude Code registration scope:
 
 | Scope | Command | Visibility |
 |---|---|---|
@@ -87,6 +111,8 @@ supports_parallel_tool_calls = true
 ```
 
 Restart Codex after changing the file.
+
+Codex resolves MCP servers by name. If the plugin is also installed, the manual `[mcp_servers.memtomem]` section wins and only one server runs. Remove that section to switch to the plugin's pinned server. Do not rename the manual section to `[mcp_servers.memtomem-local]`: a different name is not deduplicated, so both servers run. Confirm the resolved entry with `codex mcp list`.
 
 ## JSON-Based MCP Clients
 
@@ -145,6 +171,8 @@ For MCP tools only:
 }
 ```
 
+OpenCode applies the same-name rule to the `mcp` key. An existing `mcp.memtomem` entry wins over the plugin's default and only one server runs. Remove that entry to use the plugin server. A differently named key such as `mcp."memtomem-local"` is not deduplicated, so both servers run.
+
 ## Antigravity
 
 Antigravity IDE and Antigravity CLI (`agy`) use separate files.
@@ -177,18 +205,21 @@ Call mem_status and show the database path, embedding provider, and chunk count.
 
 The setup is complete when:
 
+- exactly one memtomem server or tool namespace is active;
 - the client exposes the nine default Core tools or the plugin's guided workflows;
 - `mem_status` succeeds;
 - its database path matches `mm status`;
 - a saved memory can be found with its source path in a new session.
 
+`mem_status` and a matching database path can succeed even when two servers are active. Use `/mcp` in Claude Code, `codex mcp list` in Codex, or the exact `mcp.memtomem` key in OpenCode to verify the first condition.
+
 ## If It Does Not Work
 
 1. Run `mm status` to separate an installation problem from a client problem.
-2. Confirm the configured command is `memtomem-server`.
-3. Restart the client or open a new session after plugin installation.
-4. If a GUI-launched client cannot resolve the command, run `command -v memtomem-server` and use that absolute executable path in its configuration.
-5. Remove a duplicate manual MCP entry when the same server is already supplied by a plugin.
+2. For a manual MCP-only entry, confirm the configured command is `memtomem-server`; an official plugin may use its own pinned command.
+3. Apply the Claude Code, Codex, or OpenCode matching rule above and leave exactly one active server.
+4. Restart the client or open a new session after plugin installation.
+5. If a GUI-launched client cannot resolve a manual command, run `command -v memtomem-server` and use that absolute executable path in its configuration.
 6. Continue with [Troubleshooting](/guides/troubleshooting/) if the database path or namespace differs.
 
 Installing a client plugin does not index the project, import built-in memory, watch files, or save entire conversations. Use [Index and Import Existing Content](/guides/index-and-import/) for those explicit operations.
