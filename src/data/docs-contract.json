@@ -26,7 +26,7 @@
     "bundledCore": "0.3.12"
   },
   "sourceSnapshots": {
-    "coreMain": "e3a13aa4",
+    "coreMain": "57431301",
     "stmMain": "bf06283"
   },
   "configuration": {
@@ -106,17 +106,17 @@
             "mcp.memtomem",
             "mcp.\"memtomem-local\""
           ]
-        },
-        "outcomeTokens": {
-          "en": [
-            "only one server runs",
-            "both servers run"
-          ],
-          "ko": [
-            "서버 하나만 실행",
-            "서버 두 개가 실행"
-          ]
         }
+      },
+      "coexistenceOutcomeTokens": {
+        "en": [
+          "only one server runs",
+          "both servers run"
+        ],
+        "ko": [
+          "서버 하나만 실행",
+          "서버 두 개가 실행"
+        ]
       }
     },
     "troubleshootingCoexistence": {

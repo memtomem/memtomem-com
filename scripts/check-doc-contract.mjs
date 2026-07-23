@@ -40,12 +40,39 @@ function assertContains(file, needle, label = needle) {
 }
 
 function markdownSection(text, heading, level) {
-  const marker = `${'#'.repeat(level)} ${heading}`;
-  const start = text.indexOf(marker);
-  if (start < 0) return null;
-  const tail = text.slice(start + marker.length);
-  const nextHeading = tail.search(new RegExp(`\\n#{1,${level}}\\s`));
-  return nextHeading < 0 ? tail : tail.slice(0, nextHeading);
+  const lines = text.split('\n');
+  const target = `${'#'.repeat(level)} ${heading}`;
+  let start = -1;
+  let openFence;
+
+  for (const [index, line] of lines.entries()) {
+    const fence = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (fence) {
+      if (!openFence) {
+        openFence = { marker: fence[1][0], length: fence[1].length };
+      } else if (
+        fence[1][0] === openFence.marker
+        && fence[1].length >= openFence.length
+        && fence[2].trim() === ''
+      ) {
+        openFence = undefined;
+      }
+      continue;
+    }
+    if (openFence) continue;
+
+    if (start < 0) {
+      if (line === target) start = index + 1;
+      continue;
+    }
+
+    const nextHeading = line.match(/^(#{1,6})\s/);
+    if (nextHeading && nextHeading[1].length <= level) {
+      return lines.slice(start, index).join('\n');
+    }
+  }
+
+  return start < 0 ? null : lines.slice(start).join('\n');
 }
 
 function assertSectionContains(file, section, needle, label = needle) {
@@ -179,8 +206,7 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
     `OpenCode plugin version ${contract.opencode.version}`
   );
 
-  for (const [client, spec] of Object.entries(contract.guides.clientGuide.coexistence)) {
-    if (client === 'outcomeTokens') continue;
+  for (const spec of Object.values(contract.guides.clientGuide.coexistence)) {
     const section = markdownSection(text, spec.heading, 2);
     if (!section) {
       errors.push(`${relative(file)}: missing client section ${spec.heading}`);
@@ -189,7 +215,7 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
     for (const token of spec.requiredTokens) {
       assertSectionContains(file, section, token, `${spec.heading} coexistence token ${token}`);
     }
-    for (const token of contract.guides.clientGuide.coexistence.outcomeTokens[locale]) {
+    for (const token of contract.guides.clientGuide.coexistenceOutcomeTokens[locale]) {
       assertSectionContains(file, section, token, `${spec.heading} coexistence outcome ${token}`);
     }
   }
@@ -210,6 +236,12 @@ for (const file of troubleshootingPairs) {
   for (const token of contract.guides.troubleshootingCoexistence.requiredTokens) {
     assertSectionContains(file, section, token, `troubleshooting coexistence token ${token}`);
   }
+  assertSectionContains(
+    file,
+    section,
+    `uvx --from memtomem==${contract.claudePlugin.bundledCore} memtomem-server`,
+    'troubleshooting Claude exact plugin signature'
+  );
 }
 
 for (const file of pairedGuideFiles('guides/index-and-import')) {
