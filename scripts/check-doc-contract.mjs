@@ -21,10 +21,13 @@ async function walk(directory) {
 const allFiles = await walk(docsRoot);
 const docs = allFiles.filter((file) => /\.mdx?$/.test(file));
 const englishDocs = docs.filter((file) => !file.includes(`${path.sep}ko${path.sep}`));
+const koreanDocs = docs.filter((file) => file.includes(`${path.sep}ko${path.sep}`));
+const sidebarFile = path.join(root, 'astro.config.mjs');
 const siteSources = [
   ...docs,
   path.join(root, 'src/pages/index.astro'),
-  path.join(root, 'src/pages/ko/index.astro')
+  path.join(root, 'src/pages/ko/index.astro'),
+  sidebarFile
 ];
 const sourceText = new Map(await Promise.all(siteSources.map(async (file) => [file, await readFile(file, 'utf8')])));
 
@@ -40,6 +43,18 @@ for (const file of englishDocs) {
   const rel = path.relative(docsRoot, file);
   const koFile = path.join(docsRoot, 'ko', rel);
   if (!sourceText.has(koFile)) errors.push(`${relative(file)}: missing Korean mirror ${relative(koFile)}`);
+}
+
+for (const file of koreanDocs) {
+  const rel = path.relative(path.join(docsRoot, 'ko'), file);
+  const enFile = path.join(docsRoot, rel);
+  if (!sourceText.has(enFile)) errors.push(`${relative(file)}: missing English mirror ${relative(enFile)}`);
+}
+
+const sidebar = sourceText.get(sidebarFile);
+for (const file of englishDocs) {
+  const slug = path.relative(docsRoot, file).replace(/\.mdx?$/, '').split(path.sep).join('/');
+  if (!sidebar.includes(`slug: '${slug}'`)) errors.push(`${relative(file)}: missing sidebar entry for ${slug}`);
 }
 
 const combined = [...sourceText.values()].join('\n');
@@ -91,23 +106,86 @@ const quickstartPairs = [
 ];
 for (const file of quickstartPairs) {
   const text = sourceText.get(file);
-  const sequence = ['mm init', 'mm status', 'mm add', 'mm search'];
   let position = -1;
-  for (const command of sequence) {
+  for (const command of contract.guides.quickstartSequence) {
     position = text.indexOf(command, position + 1);
     if (position < 0) {
       errors.push(`${relative(file)}: first-success sequence missing or out of order at ${command}`);
       break;
     }
   }
-  for (const required of [
-    '/plugin marketplace add memtomem/memtomem',
-    'codex plugin marketplace add memtomem/memtomem',
-    'mms init --demo --client auto',
-    'mms doctor',
-    'mcp__<server>__<prefix>__<tool>'
-  ]) {
-    if (!text.includes(required)) errors.push(`${relative(file)}: missing ${required}`);
+}
+
+function pairedGuideFiles(slug) {
+  return [
+    path.join(docsRoot, `${slug}.md`),
+    path.join(docsRoot, 'ko', `${slug}.md`)
+  ];
+}
+
+for (const slug of contract.guides.pairedTaskSlugs) {
+  for (const file of pairedGuideFiles(slug)) {
+    if (!sourceText.has(file)) errors.push(`missing task guide: ${relative(file)}`);
+  }
+}
+
+for (const file of pairedGuideFiles('guides/connect-ai-client')) {
+  for (const required of contract.guides.clientGuide.requiredCommands) {
+    assertContains(file, required, `client-guide command ${required}`);
+  }
+  for (const client of contract.guides.clientGuide.clients) {
+    assertContains(file, client, `client-guide coverage ${client}`);
+  }
+}
+
+for (const file of pairedGuideFiles('guides/index-and-import')) {
+  for (const command of contract.guides.indexGuideCommands) {
+    assertContains(file, command, `index-guide command ${command}`);
+  }
+}
+
+for (const file of pairedGuideFiles('guides/stm-first-proxy')) {
+  for (const command of contract.guides.stmGuideCommands) {
+    assertContains(file, command, `STM-guide command ${command}`);
+  }
+}
+
+const multiAgentPairs = [path.join(docsRoot, 'ltm/multi-agent.md'), path.join(docsRoot, 'ko/ltm/multi-agent.md')];
+for (const file of multiAgentPairs) {
+  const text = sourceText.get(file);
+  for (const action of contract.guides.coreMultiAgentActions) {
+    assertContains(file, action, `Core multi-agent action ${action}`);
+  }
+  const modeBoundary = text.indexOf(file.includes(`${path.sep}ko${path.sep}`) ? '## 도구 모드에 따른 차이' : '## Tool-Mode Differences');
+  const defaultWorkflow = modeBoundary < 0 ? text : text.slice(0, modeBoundary);
+  for (const directTool of ['mem_session_start(', 'mem_agent_search(', 'mem_agent_share(', 'mem_session_end(']) {
+    if (defaultWorkflow.includes(directTool)) {
+      errors.push(`${relative(file)}: default Core workflow exposes hidden direct tool ${directTool}`);
+    }
+  }
+}
+
+function internalRoutes(text) {
+  return [...new Set([...text.matchAll(/\]\((\/(?:ko\/)?[^)\s#?]+)(?:#[^)]*)?\)/g)]
+    .map((match) => match[1].replace(/^\/ko\//, '/').replace(/\/$/, '')))].sort();
+}
+
+for (const slug of [...contract.guides.pairedTaskSlugs, 'guides/quickstart']) {
+  const extension = slug === 'guides/quickstart' ? 'mdx' : 'md';
+  const enFile = path.join(docsRoot, `${slug}.${extension}`);
+  const koFile = path.join(docsRoot, 'ko', `${slug}.${extension}`);
+  const enRoutes = internalRoutes(sourceText.get(enFile));
+  const koRoutes = internalRoutes(sourceText.get(koFile));
+  if (JSON.stringify(enRoutes) !== JSON.stringify(koRoutes)) {
+    errors.push(`${slug}: EN/KO internal route targets drifted; en=${enRoutes.join(',')}; ko=${koRoutes.join(',')}`);
+  }
+}
+
+const landingPages = [path.join(root, 'src/pages/index.astro'), path.join(root, 'src/pages/ko/index.astro')];
+for (const [index, file] of landingPages.entries()) {
+  for (const slug of contract.guides.landingTaskSlugs) {
+    const route = index === 0 ? `/${slug}/` : `/ko/${slug}/`;
+    assertContains(file, route, `landing task route ${route}`);
   }
 }
 

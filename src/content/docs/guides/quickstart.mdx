@@ -1,220 +1,108 @@
 ---
 title: Quick Start
-description: Install memtomem and verify a searchable memory before connecting an MCP client.
+description: Install memtomem and verify one durable memory round trip in 10 minutes, before connecting an AI client.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+**Estimated time:** 10 minutes
 
-This path gets one thing working first: install the LTM server, run setup, save one memory, and find it again from the CLI. That proof needs neither an existing notes directory nor a connected editor. Connect an MCP client and index existing files only after the basic memory loop works. STM is optional.
+**Goal:** initialize local storage, add one memory, and find it again from the terminal.
 
-## 1. Install
+This path uses LTM only. You do not need an existing notes folder, embedding model, cloud account, MCP client, or STM proxy.
+
+<a id="1-install"></a>
+## 1. Check the Prerequisites
+
+memtomem requires Python 3.12 or later. This guide recommends `uv` for a persistent CLI installation.
 
 ```bash
-uv tool install 'memtomem[all]'       # or: pipx install 'memtomem[all]'
-mm --version
+python --version
+uv --version
 ```
 
-`[all]` includes the Web UI, local ONNX embeddings, code chunking, Korean tokenizer support, Ollama / OpenAI clients, Langfuse, and LangGraph adapters. For a smaller BM25-only install, see [Installation](/guides/installation/#ltm-server-memtomem).
+On Windows, use `py --version` if `python` is not available. If `uv` is missing, install it from the [official uv installation guide](https://docs.astral.sh/uv/getting-started/installation/), reopen the terminal, and rerun `uv --version`.
 
-If `mm --version` prints an older version right after install, upgrade with refreshed package metadata:
+<a id="2-run-setup"></a>
+## 2. Install and Initialize
+
+```bash
+uv tool install 'memtomem[all]'
+mm --version
+mm init --preset minimal --non-interactive --mcp skip
+```
+
+The Minimal preset uses keyword search and does not download an embedding model. `--mcp skip` keeps the first test independent of any client configuration.
+
+If the shell cannot find `mm`, run `uv tool update-shell` and reopen the terminal. If the reported version is stale, refresh the package metadata:
 
 ```bash
 uv tool install 'memtomem[all]' --refresh
 ```
 
-If the shell can't find `mm` at all (`command not found`), run `uv tool update-shell` and reopen the terminal — see [Troubleshooting](/guides/troubleshooting/).
-
-## 2. Run Setup
-
-```bash
-mm init
-```
-
-The `mm init` wizard starts with a preset picker:
-
-| Preset | Best for | What it does |
-|---|---|---|
-| Minimal | First smoke test, smallest install | BM25 keyword search only |
-| English | Most English projects | Local ONNX embeddings + English reranker |
-| Korean | Korean or multilingual notes | Multilingual embeddings, reranker, Korean tokenizer |
-
-Choose **Minimal** for the fastest no-model-download first proof. You can rerun `mm init` later to add semantic search.
-
-For scripts or CI:
-
-```bash
-mm init --non-interactive                   # minimal preset, no prompts
-mm init --preset english --non-interactive  # English preset, no prompts
-mm init --preset korean --non-interactive   # Korean preset, no prompts
-mm init --advanced                          # full wizard
-```
-
-During setup you can also register existing AI-agent memory folders for watching, such as Claude Code memories, Claude plans, or Codex CLI memories. Registration only sets them up for future watching; seed existing files once with `mm index`.
-
-At the end, the `mm init` wizard offers to auto-register memtomem with your MCP client (e.g. Claude Code). Accept it and Step 4 is already done — you'll only need the manual steps below if you skip this prompt.
-
-<a id="3-check-locally"></a>
 ## 3. Verify a Memory Round Trip
 
-First confirm the CLI can open the config and database:
+<a id="3-local-check"></a>
+
+Check the new store before adding anything:
 
 ```bash
 mm status
 ```
 
-Zero chunks is normal. Now create and find one controlled memory without depending on an existing folder or agent:
+Storage and database paths should be visible. A zero chunk count is normal in a new store. Now add and search one memory:
 
 ```bash
-mm add "Deployment checklist uses blue-green rollout" --tags ops
-mm search "blue-green"
+mm add "Release smoke tests run before traffic cutover" --tags release,decision
+mm search "release smoke tests"
 ```
 
-The search should return the sentence you just added. `mm add` writes to the configured user memory directory and indexes the entry immediately.
+The result should contain the saved sentence and its Markdown source path. This proves that the local store, write path, index, and keyword search all work.
+
+:::tip[First success complete]
+You can stop here. MCP and STM are separate follow-up choices; they are not required for durable storage and search.
+:::
+
+### Add Semantic Search Later
+
+The interactive preset picker uses these released names:
+
+| Preset | Use it for | Downloads |
+|---|---|---|
+| Minimal | fastest smoke test and exact-keyword search | none |
+| English (Recommended) | mostly English projects | local embedding and reranker models |
+| Korean-optimized | Korean or multilingual notes | multilingual embedding, reranker, and Korean tokenizer |
+
+Rerun `mm init` after the first success when you want to change the provider. See [Installation](/guides/installation/) before changing an existing index's embedding model.
 
 ## 4. Connect Your MCP Client
 
-<Tabs syncKey="mcp-client">
-  <TabItem label="Claude Code">
-    The recommended path installs the official plugin from inside Claude Code:
+Use [Connect an AI Client](/guides/connect-ai-client/) to choose one supported client, register the server, and verify `mem_status`. Claude Code and Codex users should prefer the official plugin path; other clients use their released MCP configuration format.
 
-    ```text
-    /plugin marketplace add memtomem/memtomem
-    /plugin install memtomem@memtomem
-    /reload-plugins
-    ```
+Installing a plugin or registering MCP does not index the whole project, watch files, import built-in memory, or save conversations automatically.
 
-    Start a new conversation and run `/memtomem-status`. The plugin installs the MCP server plus guided commands and read-only skills. It does not background-index the project or save conversations automatically.
-
-    If you picked "auto-register with Claude Code" in the `mm init` wizard, LTM (`memtomem-server`) is already registered and you can keep that manual-MCP setup instead.
-
-    Manual registration without the plugin:
-    ```bash
-    claude mcp add memtomem -s user -- memtomem-server
-    ```
-  </TabItem>
-  <TabItem label="Codex">
-    Run these commands in a terminal:
-
-    ```bash
-    codex plugin marketplace add memtomem/memtomem
-    codex plugin add memtomem@memtomem
-    ```
-
-    Start a new Codex thread, then run `$memtomem-status`. The plugin does not automatically index `$CODEX_HOME/memories`, project files, conversations, or responses.
-  </TabItem>
-  <TabItem label="Cursor">
-    Add the server to `~/.cursor/mcp.json`:
-    ```json
-    {
-      "mcpServers": {
-        "memtomem": {
-          "command": "memtomem-server"
-        }
-      }
-    }
-    ```
-    The command must be `memtomem-server` — plain `memtomem` is the CLI and will not start the MCP server.
-  </TabItem>
-  <TabItem label="Windsurf">
-    Add the server to `~/.codeium/windsurf/mcp_config.json`:
-    ```json
-    {
-      "mcpServers": {
-        "memtomem": {
-          "command": "memtomem-server"
-        }
-      }
-    }
-    ```
-    The command must be `memtomem-server` — plain `memtomem` is the CLI and will not start the MCP server.
-  </TabItem>
-  <TabItem label="Claude Desktop">
-    Add the server to your config file (macOS `~/Library/Application Support/Claude/claude_desktop_config.json`, Windows `%APPDATA%\Claude\claude_desktop_config.json`), then restart Claude Desktop:
-    ```json
-    {
-      "mcpServers": {
-        "memtomem": {
-          "command": "memtomem-server"
-        }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
-Plugin or MCP registration only connects tools. It does **not** automatically index provider-managed memories, project files, or every conversation/response. Use an explicit `mm index` or reviewed `mm ingest ... --dry-run` flow when you want those sources in LTM.
-
-For other clients and the full option matrix, see [MCP Client Setup](https://github.com/memtomem/memtomem/blob/main/docs/guides/mcp-clients.md).
-
-Ask your agent to "call `mem_status`" after registration. That verifies the MCP client is launching the same server your terminal sees. If the agent reports no memtomem tools, see [Troubleshooting](/guides/troubleshooting/).
-
-<a id="5-add-and-search-memory"></a>
+<a id="5-add-and-search"></a>
 ## 5. Index Existing Notes
 
-Once the controlled round trip works, index a directory that actually exists:
-
-```bash
-mm index ~/notes
-mm index ~/projects/my-app/docs
-```
-
-Replace these examples with your real paths, then search for a phrase you already know appears in those files.
-
-After that, use natural language in your MCP client:
-
-| Tell your agent | Tool usually called | Result |
-|---|---|---|
-| "Check memtomem status" | `mem_status` | Connection and index summary |
-| "Remember this decision..." | `mem_add` | New memory stored in markdown |
-| "Index this docs folder" | `mem_index` | Existing files become searchable |
-| "Search for the deploy checklist" | `mem_search` | Ranked snippets from your memory |
+Follow [Index and Import Existing Content](/guides/index-and-import/) for a complete `mm index` or `mm ingest` workflow with a dry run, source-backed search, and repeat-run check.
 
 ## 6. Open the Web UI
+
+The CLI round trip is sufficient for the first success. To browse search results, sources, tags, settings, and Context Gateway in a browser:
 
 ```bash
 mm web --open
 ```
 
-The default Web UI is the user-facing surface for search, sources, tags, timeline, settings, and Context Gateway. `mm web --dev` adds maintainer-oriented pages that most users do not need.
+Developer and maintainer pages require `mm web --dev`; normal use does not.
 
 ## Optional: Add STM Later
 
-`memtomem-stm` is a separate proxy for proactive memory surfacing and response compression. Add it after the LTM flow above works:
-
-```bash
-uv tool install memtomem-stm
-mms init --demo --client auto   # bundled read-only first-success server + detected client
-mms doctor                     # PASS/WARN is usable; FAIL needs attention
-```
-
-The demo path needs no Node.js or network and verifies one proxied tool first. For a real upstream, use `mms add`; register or refresh a client explicitly with `mms register --client claude`, `mms register --client codex`, or `mms register --client auto`. Then inspect the setup with:
-
-```bash
-mms list      # the upstreams you've registered (and their SURFACING column)
-mms status    # config summary — is the proxy enabled and pointed at the right file?
-mms health    # probe upstream connectivity and LTM surfacing readiness
-```
-
-For a non–Claude-Code client, register STM manually with a one-line command block:
-
-```json
-{
-  "mcpServers": {
-    "mms": { "command": "mms" }
-  }
-}
-```
-
-STM's proxied tools surface as `<prefix>__<tool>`. A host may compose the final name as `mcp__<server>__<prefix>__<tool>`. If that name exceeds MCP's 64-char limit, the tool can disappear — see [Troubleshooting](/guides/troubleshooting/) for the fix.
-
-Moving a server behind the proxy is reversible — if STM isn't a fit, `mms eject` restores each server to the host config it came from.
-
-See [STM Overview](/stm/overview/) when you want tool-response compression or automatic memory injection.
+Add STM only when an existing MCP workflow needs response compression, caching, or proactive LTM surfacing. [Add STM to an MCP Server](/guides/stm-first-proxy/) takes you from the bundled demo to a real proxied call and a reversible `mms eject` workflow.
 
 ## Next
 
-- [Memory Persistence](/guides/memory-persistence/) — save in one session, recall in another
-- [Hybrid Search](/ltm/hybrid-search/) — BM25 + vector + RRF fusion
-- [MCP Tools](/ltm/mcp-tools/) — `core`, `standard`, and `full` tool modes
-- [Context Gateway](/ltm/context-gateway/) — keep a Store, Pull runtime copies for review, and Push selected artifacts across runtimes
-- [Troubleshooting](/guides/troubleshooting/) — fixes for `command not found`, missing tools, and surfacing that isn't firing
+- [Choose Your Path](/guides/choose-your-path/) — pick the next task by outcome
+- [Memory Across Sessions](/guides/memory-persistence/) — retrieve a saved decision in a new session
+- [Connect an AI Client](/guides/connect-ai-client/) — Claude Code, Codex, and other MCP clients
+- [Index and Import Existing Content](/guides/index-and-import/) — notes, code, and built-in AI memory
+- [Local-First & Privacy](/guides/privacy/) — local defaults and opt-in network boundaries
+- [Troubleshooting](/guides/troubleshooting/) — return to the failed step with a concrete fix

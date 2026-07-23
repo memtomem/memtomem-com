@@ -35,6 +35,74 @@
       "sha256": "399b9d8e07c62b9fe765e2d833205b659a1959ee2cb23cf9fed42cb4a3f7ac4d"
     }
   },
+  "guides": {
+    "pairedTaskSlugs": [
+      "guides/choose-your-path",
+      "guides/connect-ai-client",
+      "guides/index-and-import",
+      "guides/stm-first-proxy"
+    ],
+    "landingTaskSlugs": [
+      "guides/choose-your-path",
+      "guides/quickstart",
+      "guides/connect-ai-client",
+      "guides/index-and-import",
+      "guides/memory-persistence",
+      "guides/stm-first-proxy",
+      "guides/troubleshooting"
+    ],
+    "quickstartSequence": [
+      "mm init",
+      "mm status",
+      "mm add",
+      "mm search"
+    ],
+    "clientGuide": {
+      "requiredCommands": [
+        "/plugin marketplace add memtomem/memtomem",
+        "/memtomem:status",
+        "codex plugin marketplace add memtomem/memtomem",
+        "codex plugin add memtomem@memtomem",
+        "memtomem-server",
+        "opencode-memtomem@0.1.2"
+      ],
+      "clients": [
+        "Claude Code",
+        "Codex CLI",
+        "Cursor",
+        "Windsurf",
+        "Claude Desktop",
+        "Gemini CLI",
+        "Kimi CLI",
+        "OpenCode",
+        "Antigravity"
+      ]
+    },
+    "indexGuideCommands": [
+      "mm index",
+      "mm ingest claude-memory",
+      "mm ingest codex-memory",
+      "mm ingest gemini-memory",
+      "--dry-run"
+    ],
+    "stmGuideCommands": [
+      "mms init --demo --client auto",
+      "mms doctor",
+      "demo__demo_search",
+      "mms add --from-clients",
+      "mms stats --source mcp",
+      "mms prune --all --dry-run",
+      "mms eject SERVER_NAME --dry-run",
+      "mcp__<server>__<prefix>__<tool>"
+    ],
+    "coreMultiAgentActions": [
+      "action=\"help\"",
+      "action=\"session_start\"",
+      "action=\"agent_search\"",
+      "action=\"agent_share\"",
+      "action=\"session_end\""
+    ]
+  },
   "coreTopLevelCommands": [
     "activity",
     "add",

@@ -3,7 +3,13 @@ title: Use These Docs
 description: How to make memtomem's docs readable by AI agents — via llms.txt and a local MCP server (mcpdoc).
 ---
 
-memtomem's docs can be read directly by AI agents in two ways. Both work with no hosted server.
+There are three practical ways to let an AI agent use these docs. Pick one based on whether you want a one-time read, reusable MCP tools, or local memtomem search.
+
+| Need | Use | Success check |
+|---|---|---|
+| Give an agent one page or the full corpus | `llms.txt` URL | the client fetches the requested text |
+| Let an agent search docs through MCP | local `mcpdoc` server | `list_doc_sources` then `fetch_docs` returns a page |
+| Search the docs from your local memory index | `mm index` | `mem_search` returns a memtomem.com source |
 
 ## llms.txt
 
@@ -63,6 +69,8 @@ Codex CLI and other stdio MCP clients register the same `command` / `args`.
 If your agent doesn't reach for the tools automatically, add a line to its rules / system prompt:
 
 > For memtomem questions, use the `memtomem-docs` MCP server — call `list_doc_sources` first, then `fetch_docs` to read the relevant pages.
+
+The connection is verified only after both tools succeed. Seeing `memtomem-docs` in a client list without fetching a page is not an end-to-end check.
 
 :::note[Allowed domains]
 When you point mcpdoc at a remote llms.txt URL, it auto-allows only that domain (`memtomem.com`). To use local files, specify domains explicitly with `--allowed-domains`.

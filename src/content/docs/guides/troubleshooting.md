@@ -1,84 +1,184 @@
 ---
 title: Troubleshooting
-description: Fixes for the common install, MCP-connection, and STM proxy/surfacing problems.
+description: Diagnose setup problems in journey order, from Python and init through search, MCP clients, Web UI, and STM.
 ---
 
-The symptoms first-time users hit most often, with the fix for each — ordered roughly by how common they are.
+Start at the failed step. Each fix ends with the command or guide section to retry.
 
-## Installation
+## 1. Environment and Installation
+
+### Python is too old or missing
+
+```bash
+python --version
+```
+
+memtomem requires Python 3.12 or later. On Windows, try `py --version`. Install or select a supported Python before retrying [Quick Start → Install and Initialize](/guides/quickstart/#2-run-setup).
+
+### `uv: command not found`
+
+Install `uv` from its [official installation guide](https://docs.astral.sh/uv/getting-started/installation/), reopen the terminal, and verify:
+
+```bash
+uv --version
+```
 
 ### `mm: command not found` / `mms: command not found`
 
-The install succeeded but your shell can't find the command, because `~/.local/bin` — where `uv` puts the executable shim — isn't on your `PATH`. Run this, then reopen your terminal:
+The executable directory may not be on `PATH`. Run the command for your installer and reopen the terminal:
 
 ```bash
 uv tool update-shell
 ```
 
-If you installed with `pipx`, `pipx ensurepath` does the same thing.
+For pipx, use `pipx ensurepath`. Then retry `mm --version` or `mms --version`.
 
 ### `mm --version` prints an old version
 
-Right after install, cached package metadata can pin an older release. Reinstall with refreshed metadata:
-
 ```bash
 uv tool install 'memtomem[all]' --refresh
+mm --version
 ```
 
-## LTM connection check
+## 2. Initialization
+
+### The setup wizard is unclear or a model download fails
+
+Return to a deterministic no-download baseline:
+
+```bash
+mm init --preset minimal --non-interactive --mcp skip
+mm status
+```
+
+Minimal is BM25-only and does not download an embedding model. Add English (Recommended) or Korean-optimized semantic search only after this path works.
+
+### Configuration or database is not created
+
+Run `mm status` and read the configuration and database paths it reports. Confirm the current user can write to the parent directory and that `~/.memtomem/` is not owned by another account. Retry initialization; do not delete the directory or database as a first recovery step.
+
+## 3. LTM Write and Search
 
 ### What `mm status` should show
 
-`mm status` is the first post-install check. Storage path, embedding provider, and a chunk-count summary mean it's healthy. **Zero chunks is normal before you run `mm index`** — index a folder and check again to see the count rise. For scripting, `mm status --json` returns machine-readable output.
+Healthy output includes storage and database paths, an embedding provider, and index counts. Zero chunks are normal before the first add or index.
 
-### The agent can't see memtomem tools
+```bash
+mm status
+mm status --json
+```
 
-If you ask the agent to "call `mem_status`" and it reports no such tool, it's almost always the command in the MCP config.
+### `mm add` cannot write
 
-- The command must be `memtomem-server` — plain `memtomem` is the CLI and does not start the MCP server.
-- On Claude Code, check registration with `claude mcp list`; on other clients, check the `mcpServers` block in the config file (see [Quick Start → Connect Your MCP Client](/guides/quickstart/#4-connect-your-mcp-client)).
-- Restart the client after editing the config so the new server launches.
+1. Read the database and memory paths from `mm status`.
+2. Confirm the current user owns and can write to those directories.
+3. Retry with a short, non-sensitive sentence.
+4. If a project-local tier is involved, run from the intended Git project root.
 
-## STM proxy
+Return to [Quick Start → Verify a Memory Round Trip](/guides/quickstart/#3-verify-a-memory-round-trip).
 
-### Proxied tools go missing (64-char name limit)
+### `mm search` returns no results
 
-STM's proxied tools surface as `<prefix>__<tool>`, and your client composes them into `mcp__<server>__<prefix>__<tool>`. If that composed name exceeds **64 characters, the tool is silently dropped.** Two fixes:
+- Confirm `mm status` shows at least one chunk after add or index.
+- With Minimal preset, search words that appear exactly in the saved source.
+- If a namespace was used, pass the same namespace or use the agent-specific search flow.
+- For external files, confirm the returned source count changed after `mm index` or import.
 
-- Give the upstream a shorter `--prefix` (e.g. `filesystem` → `fs`).
-- Register STM under the short client name `mms` **and** export `MMS_CLIENT_SERVER_NAME=mms`. `mms init --client claude` registers under the longer name `memtomem-stm` by default, so it doesn't give you the 3-char headroom automatically.
+```bash
+mm search "EXACT_WORDS_FROM_THE_SOURCE"
+```
 
-Run `mms health` to see the discovered / advertised tool counts and diagnose what was withheld.
+See [Index and Import Existing Content](/guides/index-and-import/) for source and repeat-run checks.
+
+## 4. Plugin and MCP Connection
+
+### The client does not support plugin commands
+
+Claude Code and Codex have the official plugin paths documented on this site. Other clients may not recognize `/plugin` or `codex plugin`; use their MCP-only configuration from [Connect an AI Client](/guides/connect-ai-client/) instead.
+
+### The agent cannot see memtomem tools
+
+- The MCP command must be `memtomem-server`; `memtomem` and `mm` are CLIs.
+- Restart the client or open a new session after changing configuration.
+- In Claude Code, run `claude mcp list`; in Codex, run `codex mcp list`.
+- Ask the client to call `mem_status` explicitly.
+
+### A GUI client cannot find `memtomem-server`
+
+GUI apps may start with a different `PATH` from the terminal. Find the installed executable:
+
+```bash
+command -v memtomem-server
+```
+
+Use that absolute path as the configured `command`, then fully restart the app. On Windows, use `where memtomem-server`.
+
+### Plugin commands or tools appear twice
+
+The plugin may already provide the MCP server. Remove the duplicate manual entry, start a new session, and check the client list again. Do not register both paths merely to make discovery more reliable.
+
+### Two clients return different memories
+
+Call `mem_status` in both clients and compare database paths. Project-local memory also requires the same project root and scope. Matching package versions alone does not make different databases share content.
+
+## 5. Web UI
+
+### The browser does not open or the page is unavailable
+
+```bash
+mm web --open
+mm web status
+```
+
+The default server binds to loopback. Background Web UI logs are in `~/.memtomem/logs/web.log`. Do not bind it to a public interface without the controls described in [Operations & API](/ltm/operations/).
+
+## 6. STM Proxy
 
 ### The proxy does nothing
 
-STM's `proxy.enabled` defaults to `false`; it's turned on when `mms add` or `mms init` writes the config. Check:
-
 ```bash
-mms status    # is the proxy enabled and pointed at the right config file?
-mms health    # does it actually reach the upstreams?
+mms status
+mms health
+mms doctor
 ```
 
-### Surfacing (auto memory injection) isn't firing
+`mms add` or `mms init` must have enabled the proxy and added an upstream. `mms doctor` exits 0 when there are no FAIL checks; WARNs are allowed.
 
-STM injects relevant memories in its SURFACE stage by querying LTM. That link has to be ready, and `mms health` must report LTM as `connected`.
+### Proxied tools go missing (64-character limit)
 
-- The LTM server must advertise `mem_search` to count as `connected` — it's the tool the surfacing adapter needs.
-- The default LTM launch command is `ltm_mcp_command=memtomem-server`. If you run LTM another way, match it with `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND`.
+The final client name may be `mcp__<server>__<prefix>__<tool>`. If it exceeds 64 characters, the tool can be withheld. Use a shorter STM server name and upstream `--prefix`, then compare discovered and advertised tool counts in `mms health`.
 
-## Where the logs are
+### `mms stats --source mcp` stays empty
 
-- **MCP server logs** (LTM `memtomem-server`, STM `mms`) go to **stderr** by default, captured or dropped by the MCP client that launched them. Tune verbosity with `MEMTOMEM_LOG_LEVEL`.
-- **STM file logging** is opt-in: set `MEMTOMEM_STM_LOG_FILE` for a rotating log file (hardened in 0.1.32).
-- **Web UI logs** live at `~/.memtomem/logs/web.log` (when run in the background via `mm web -b`) — that's the Web UI log, not the MCP-server log.
+The client probably used a built-in tool instead of an STM MCP alias. Ask it to call the visible `<prefix>__<tool>` name explicitly and check stats again.
 
-## File locations at a glance
+### Surfacing is not firing
+
+`mms health` must report the optional LTM link as connected and the LTM server must expose `mem_search`. If only LTM is unavailable, proxying, compression, and caching can still work.
+
+### Restore the original MCP registration
+
+Preview first:
+
+```bash
+mms eject SERVER_NAME --dry-run
+mms eject SERVER_NAME
+```
+
+See [Add STM to an MCP Server](/guides/stm-first-proxy/) for verification before and after restoration.
+
+## 7. Logs and Files
+
+- LTM and STM MCP logs go to stderr by default and are captured or discarded by the launching client.
+- Set `MEMTOMEM_LOG_LEVEL` to adjust LTM verbosity.
+- Set `MEMTOMEM_STM_LOG_FILE` to opt into an STM rotating file log.
+- Background Web UI logs live at `~/.memtomem/logs/web.log`.
 
 | Path | What |
 |---|---|
-| `~/.memtomem/memtomem.db` | LTM SQLite store (chunks + vectors) |
+| `~/.memtomem/memtomem.db` | LTM SQLite store |
 | `~/.memtomem/config.json` | LTM configuration |
 | `~/.memtomem/stm_proxy.json` | STM proxy configuration |
-| `~/.memtomem/logs/web.log` | Web UI log |
+| `~/.memtomem/logs/web.log` | background Web UI log |
 
-For the full set of configuration keys, see [Environment Variables](/reference/configuration/).
+For every released setting, see [Environment Variables](/reference/configuration/).

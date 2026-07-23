@@ -60,7 +60,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <nav class="nav">
 	<a href={`${base}/ko/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href={`${base}/ko/guides/quickstart/`}>문서</a>
+		<a href={`${base}/ko/guides/choose-your-path/`}>문서</a>
 		<a href="#architecture">구조</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/`}>EN</a></span>
@@ -85,6 +85,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div><strong>9</strong>Core MCP 도구</div>
 		<div><strong>10</strong>압축 전략</div>
 		<div><strong>4</strong>기본 STM 도구</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">10분 첫 성공</div>
+		<div class="section-title">기본 흐름을 확인한 뒤 다음 과업 하나를 고르세요</div>
+		<div class="section-desc">먼저 로컬 LTM만 사용합니다. 기억 저장·검색이 동작한 뒤 AI 클라이언트를 연결하거나 STM을 추가하면 됩니다.</div>
+		<div class="feature-grid">
+			<a class="feature-card accent" href={`${base}/ko/guides/quickstart/#2-초기-설정`}>
+				<h3>1. 설치·초기화</h3>
+				<p>Python과 uv를 확인하고 memtomem을 설치한 뒤 모델 다운로드가 없는 Minimal 프리셋으로 초기화합니다.</p>
+			</a>
+			<a class="feature-card teal" href={`${base}/ko/guides/quickstart/#3-기억-저장검색-확인`}>
+				<h3>2. 기억 하나 저장·검색</h3>
+				<p><code>mm status</code>, <code>mm add</code>, <code>mm search</code>를 실행합니다. 출처가 표시된 결과가 완료 기준입니다.</p>
+			</a>
+			<a class="feature-card coral" href={`${base}/ko/guides/choose-your-path/`}>
+				<h3>3. 다음 결과 선택</h3>
+				<p>AI 클라이언트 연결, 기존 자료 색인, 새 세션 검증, MCP 서버에 STM 추가 중 하나를 고릅니다.</p>
+			</a>
+		</div>
 	</div>
 </section>
 
@@ -125,7 +147,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
-					<p>기억은 세션이 끝나도 남습니다. 네임스페이스로 에이전트별 공간과 <code>shared</code> 공유 공간을 나눌 수 있습니다. Claude Code·Cursor·Codex는 같은 저장소를 사용해 이전 작업을 이어갑니다.</p>
+					<p>기억은 세션이 끝나도 남습니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다. Claude Code·Cursor·Codex는 같은 저장소에서 이전 작업을 이어갑니다.</p>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
@@ -204,39 +226,39 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-			<div class="section-label">문서</div>
-		<div class="section-title">문서 & 튜토리얼</div>
-			<div class="section-desc">설치부터 고급 기능까지 필요한 내용을 순서대로 확인하세요.</div>
+		<div class="section-label">과업 가이드</div>
+		<div class="section-title">원하는 결과부터 이어서 진행하세요</div>
+		<div class="section-desc">각 가이드는 확인할 결과, 검증 단계, 복구 또는 원복 절차까지 안내합니다.</div>
 		<div class="docs-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
-					<h3>빠른 시작</h3>
-					<p>설치 후 기억을 저장하고 검색한 다음 Claude Code·Codex·기타 MCP 클라이언트를 연결합니다.</p>
-				<span class="tag tag-guide">시작 가이드</span>
+				<h3>빠른 시작</h3>
+				<p>클라이언트를 연결하기 전에 LTM을 설치하고 기억 저장·검색을 확인합니다.</p>
+				<span class="tag tag-guide">처음 시작</span>
 			</a>
-			<a href={`${base}/ko/ltm/hybrid-search/`} class="doc-card">
-				<h3>하이브리드 검색</h3>
-				<p>BM25 + 벡터 + RRF 융합 검색의 원리와 튜닝 방법.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/ko/guides/connect-ai-client/`} class="doc-card">
+				<h3>AI 클라이언트 연결</h3>
+				<p>Claude Code, Codex 또는 다른 지원 MCP 클라이언트를 연결하고 <code>mem_status</code>를 확인합니다.</p>
+				<span class="tag tag-guide">연결</span>
 			</a>
-			<a href={`${base}/ko/stm/compression/`} class="doc-card">
-				<h3>압축 전략 가이드</h3>
-					<p>10가지 압축 방식, 자동 선택 기준, 요청에 따른 예산 배분을 설명합니다.</p>
-				<span class="tag tag-stm">STM</span>
+			<a href={`${base}/ko/guides/index-and-import/`} class="doc-card">
+				<h3>기존 자료 색인</h3>
+				<p>노트·코드를 색인하거나 AI 도구 내장 기억을 미리보기와 출처 확인을 거쳐 가져옵니다.</p>
+				<span class="tag tag-ltm">자료</span>
 			</a>
-			<a href={`${base}/ko/stm/surfacing/`} class="doc-card">
-				<h3>능동적 서피싱</h3>
-					<p>관련 기억을 고르는 과정, 피드백 반영, <code>min_score</code> 자동 조정을 설명합니다.</p>
-				<span class="tag tag-stm">STM</span>
+			<a href={`${base}/ko/guides/memory-persistence/`} class="doc-card">
+				<h3>세션을 넘나드는 기억</h3>
+				<p>검증된 결정을 저장하고 새 세션에서 이유와 출처까지 다시 찾습니다.</p>
+				<span class="tag tag-ltm">워크플로</span>
 			</a>
-			<a href={`${base}/ko/ltm/multi-agent/`} class="doc-card">
-				<h3>멀티 에이전트 협업</h3>
-					<p>세션 기록, 네임스페이스 상속, 에이전트 간 기억 공유 방법을 설명합니다.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/ko/guides/stm-first-proxy/`} class="doc-card">
+				<h3>MCP 서버에 STM 추가</h3>
+				<p>로컬 데모, 실제 프록시 호출, 지표 확인, 원래 경로 복원까지 진행합니다.</p>
+				<span class="tag tag-stm">선택형 STM</span>
 			</a>
-			<a href={`${base}/ko/ltm/context-gateway/`} class="doc-card">
-				<h3>Context Gateway</h3>
-					<p>Store 기준본 관리, Pull 미리보기, 선택적 Push, 프로젝트 간 복사와 이동을 설명합니다.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/ko/guides/troubleshooting/`} class="doc-card">
+				<h3>문제 해결</h3>
+				<p>설치, 검색, MCP, Web UI, STM에서 실패한 단계로 돌아가 구체적으로 점검합니다.</p>
+				<span class="tag tag-guide">복구</span>
 			</a>
 		</div>
 	</div>
@@ -249,7 +271,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">GitHub에서 보기</button>
 		</a>
-		<a href={`${base}/ko/guides/quickstart/`}>
+		<a href={`${base}/ko/guides/choose-your-path/`}>
 			<button class="btn-secondary">문서 읽기</button>
 		</a>
 	</div>
