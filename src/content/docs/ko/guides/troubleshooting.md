@@ -147,7 +147,7 @@ mms doctor
 
 ### 프록시 도구가 사라짐(64자 제한)
 
-최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 만들어질 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄이고 `mms health`에서 발견한 도구와 실제 표시한 도구 수를 비교하세요.
+최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 만들어질 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄인 뒤 `mms health --names`를 실행해 해당 최종 이름이 더 이상 보고되지 않는지 확인하세요.
 
 ### `mms stats --source mcp`가 비어 있음
 

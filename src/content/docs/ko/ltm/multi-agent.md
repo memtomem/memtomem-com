@@ -71,8 +71,8 @@ mem_do(action="session_end", params={"summary": "인증 분석 완료"})
 
 | `MEMTOMEM_TOOL_MODE` | 세션 작업 | 에이전트 검색·공유 |
 |---|---|---|
-| `core`(기본) | `mem_do(action="session_start" | "session_end")` | `mem_do(action="agent_search" | "agent_share")` |
-| `standard` | 개별 `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search" | "agent_share")` |
+| `core`(기본) | `mem_do(action="session_start")` / `mem_do(action="session_end")` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
+| `standard` | 개별 `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | 개별 세션 도구 | 개별 `mem_agent_search` / `mem_agent_share` |
 
 클라이언트가 더 큰 도구 목록을 꼭 필요로 하지 않는다면 `core`를 유지하세요. dispatcher는 모델에 99개 개별 도구를 모두 보여 주지 않으면서 현재 릴리스의 전체 작업을 제공합니다.

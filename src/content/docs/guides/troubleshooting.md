@@ -146,7 +146,7 @@ mms doctor
 
 ### Proxied tools go missing (64-character limit)
 
-The final client name may be `mcp__<server>__<prefix>__<tool>`. If it exceeds 64 characters, the tool can be withheld. Use a shorter STM server name and upstream `--prefix`, then compare discovered and advertised tool counts in `mms health`.
+The final client name may be `mcp__<server>__<prefix>__<tool>`. If it exceeds 64 characters, the tool can be withheld. Use a shorter STM server name and upstream `--prefix`, then run `mms health --names` and confirm it no longer reports the composed name.
 
 ### `mms stats --source mcp` stays empty
 

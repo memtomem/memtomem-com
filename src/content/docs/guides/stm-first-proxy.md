@@ -127,7 +127,7 @@ mms remove demo
 ## If Verification Fails
 
 - **STM is missing in the client:** rerun `mms register --client ...`, then restart the client.
-- **No proxied tools are listed:** run `mms health` and compare discovered and advertised counts.
+- **No proxied tools are listed:** run `mms health --names`. It reports connectivity and lists tools omitted because their composed names exceed 64 characters.
 - **A tool disappears:** shorten both the STM server name and upstream prefix; the final composed name must stay within 64 characters.
 - **Metrics stay empty:** confirm the client called the MCP alias, not a built-in tool.
 - **Only LTM surfacing fails:** run `mms health`; proxying can remain healthy while the optional LTM link is unavailable.
