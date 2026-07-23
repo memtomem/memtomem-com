@@ -22,7 +22,7 @@ mms init --demo --client auto                            # 2. create a runnable 
 mms doctor                                               # 3. diagnose the complete setup
 ```
 
-`mms init --demo` creates a deterministic demo upstream. `--client auto` registers a supported detected host; use `mms register --client claude`, `--client codex`, or `--client auto` later to change registration. Full setup walkthrough in [Quick Start](/guides/quickstart/).
+`mms init --demo` creates a deterministic demo upstream. `--client auto` registers a supported detected host; use `mms register --client claude`, `--client codex`, or `--client auto` later to change registration. The completed call, metrics, prune, and rollback workflow is in [Add STM to an MCP Server](/guides/stm-first-proxy/).
 
 ## Core Capabilities
 
@@ -72,7 +72,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 
 ## Next Steps
 
-- [Quick Start](/guides/quickstart/) — from install to agent connection
+- [Add STM to an MCP Server](/guides/stm-first-proxy/) — demo, real proxied call, metrics, and rollback
 - [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
 - [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
 - [MCP Tools](/stm/mcp-tools/) — STM management and observability tools

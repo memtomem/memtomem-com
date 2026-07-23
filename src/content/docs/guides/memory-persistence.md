@@ -19,6 +19,20 @@ In your first agent session, say in plain language:
 
 The agent calls `mem_add` under the hood. The result identifies the Markdown path, namespace, indexed chunk count, and source file so you can verify what was written.
 
+If the agent does not choose the write tool, use the explicit path for your client:
+
+```text
+Claude Code: /memtomem:remember Our team paused the migration this quarter because legal review is pending.
+Codex CLI: Use $memtomem-remember to save: our team paused the migration this quarter because legal review is pending.
+Other MCP clients: Call mem_add with that content and show the written source path.
+```
+
+The CLI fallback is also deterministic:
+
+```bash
+mm add "Our team paused the migration this quarter because legal review is pending" --tags migration,decision
+```
+
 To verify from the CLI:
 
 ```bash
@@ -39,6 +53,16 @@ Start a fresh session and ask:
 
 Guided by the MCP tool descriptions, the agent calls `mem_search` and surfaces the entry from Session A — including the "waiting on legal review" reason.
 
+If it answers from the conversation or does not call memory search, ask explicitly:
+
+```text
+Claude Code: /memtomem:search migration legal review
+Codex CLI: Use $memtomem-search to find "migration legal review" and show the source.
+Other MCP clients: Call mem_search for "migration legal review" and show the source path.
+```
+
+Success means the new session returns both the decision and its reason from a memtomem source. A plausible answer without a source is not enough for this verification.
+
 ## What Just Happened
 
 ```
@@ -54,8 +78,9 @@ The durable source is Markdown and retrieval runs against the local SQLite index
 
 ## Common Pitfalls
 
-- **Agent doesn't call `mem_search`.** Phrase the question so it's clearly about past context — "earlier", "previously saved", "you remembered that ..." — to nudge the tool call.
+- **Agent doesn't call `mem_search`.** Use the explicit Claude, Codex, or MCP instruction above instead of relying on automatic tool selection.
 - **Empty results.** Run `mm status` to confirm the server connection and namespace list. Session A and Session B may be using different namespaces; the default is whatever `mm init` set.
+- **Different clients disagree.** Compare the database path from each client's `mem_status`. For project-local memory, also confirm that both sessions opened the same project root.
 
 ## Next Steps
 

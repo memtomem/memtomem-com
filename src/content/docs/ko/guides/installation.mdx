@@ -11,6 +11,16 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 - **pip**, **uv**, 또는 **pipx**
 - 의미 기반 검색에 사용할 임베딩 제공자 — `mm init`에서 선택합니다. 처음에는 고르지 않아도 되며, 이 경우 키워드 검색만 사용합니다. 자세한 내용은 [임베딩 제공자](#임베딩-제공자)를 참고하세요.
 
+### 어떤 설치 방식을 고를까?
+
+| 상황 | 권장 방식 | 이유 |
+|---|---|---|
+| 처음 설치 | `uv tool install 'memtomem[all]'` | 격리된 영구 CLI와 사이트에서 안내하는 전체 기능 설치 |
+| 이미 pipx로 CLI를 관리 | `pipx install 'memtomem[all]'` | 기존 도구 관리 방식 유지 |
+| 프로젝트 의존성 또는 별도 가상 환경 | `pip install 'memtomem[all]'` | 해당 환경에서 패키지 버전 관리 |
+
+설치 전에 `python --version`과 `uv --version`을 확인하세요. Windows에서 `python`을 찾지 못하면 `py --version`을 사용합니다. 모델 다운로드 없이 가장 짧게 확인하려면 먼저 [빠른 시작](/ko/guides/quickstart/)에서 Minimal 프리셋을 사용하세요.
+
 ## LTM 서버 (memtomem)
 
 <Tabs syncKey="pkg-manager">
@@ -77,7 +87,17 @@ uv tool install 'memtomem[all]' --refresh
 
 전체 명령(`ingest`, `session`, `context`, `wiki`, `watchdog`, `schedule`, `tags`, `upgrade`, `uninstall` 등)은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
 
-MCP 서버 실행 파일은 `memtomem-server`입니다. 사용자가 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트에 등록하면 클라이언트가 자동으로 실행합니다. 클라이언트별 `mcpServers` JSON은 [빠른 시작 → MCP 클라이언트 연결](/ko/guides/quickstart/#4-mcp-클라이언트-연결)을 참고하세요.
+MCP 서버 실행 파일은 `memtomem-server`입니다. 사용자가 직접 실행할 필요는 없습니다. 클라이언트에 등록하면 필요할 때 자동으로 실행합니다. 현재 지원 클라이언트의 플러그인, 등록 범위, 설정 파일, 재시작, 검증 절차는 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
+
+### 프리셋 선택
+
+| 마법사 표시 이름 | 제공자 경로 | 다운로드·네트워크 경계 | 권장 대상 |
+|---|---|---|---|
+| Minimal | BM25 키워드 검색만 사용 | 모델 다운로드 없음 | 첫 점검과 정확한 식별자 검색 |
+| English (Recommended) | 로컬 ONNX 임베딩 + 영어 리랭커 | 로컬 모델 최초 1회 다운로드 | 영어 프로젝트 대부분 |
+| Korean-optimized | 다국어 임베딩 + 리랭커 + 한국어 토크나이저 | 로컬 모델 최초 1회 다운로드 | 한국어·다국어 노트 |
+
+CLI 토큰은 각각 `--preset minimal`, `--preset english`, `--preset korean`입니다. 원격 Ollama 또는 OpenAI 호환 제공자는 이후에 명시적으로 선택하며, 설정한 서비스로 요청 데이터가 전송될 수 있습니다.
 
 ### 파일 위치
 

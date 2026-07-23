@@ -5,6 +5,17 @@ description: How memtomem keeps local-first defaults, protects secrets, and make
 
 memtomem is local-first: its default stores and search indexes live on your machine. Network communication occurs only across boundaries you configure, such as a remote embedding/LLM/rerank provider, remote MCP/LTM transport, webhook, Toolgraph server, or Langfuse tracing.
 
+## 30-Second Boundary Check
+
+| Path | Default state | Can content leave this machine? |
+|---|---|---|
+| SQLite storage, BM25 search, local ONNX embedding/reranking | local | No, unless you separately synchronize or expose the files |
+| MCP `stdio`, STM cache/metrics, loopback Web UI | local | No, except for traffic to an upstream MCP server you chose |
+| Remote Ollama, OpenAI-compatible embedding/LLM, Cohere reranking | opt-in | Yes, to the configured endpoint |
+| Remote MCP/LTM, webhooks, Toolgraph, Langfuse | opt-in | Yes, according to that integration's configuration |
+
+For an all-local setup, use the Minimal or local ONNX path, keep Web UI and daemons on loopback, and do not configure optional remote providers.
+
 ## Local-First Defaults
 
 - **Storage** — The default store is local SQLite (`~/.memtomem/`). The MCP stdio path exposes no network port; `mm web` binds to loopback by default.

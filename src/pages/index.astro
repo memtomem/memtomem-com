@@ -60,7 +60,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <nav class="nav">
 	<a href={`${base}/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href={`${base}/guides/quickstart/`}>Docs</a>
+		<a href={`${base}/guides/choose-your-path/`}>Docs</a>
 		<a href="#architecture">Architecture</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/ko/`}>KO</a></span>
@@ -85,6 +85,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div><strong>9</strong>Core MCP Tools</div>
 		<div><strong>10</strong>Compression Strategies</div>
 		<div><strong>4</strong>Default STM Tools</div>
+	</div>
+</section>
+
+<section class="section">
+	<div class="section-inner">
+		<div class="section-label">10-minute first success</div>
+		<div class="section-title">Prove the basics, then choose one next task</div>
+		<div class="section-desc">Start with local LTM only. Connect an AI client or add STM after storage and search work.</div>
+		<div class="feature-grid">
+			<a class="feature-card accent" href={`${base}/guides/quickstart/#2-run-setup`}>
+				<h3>1. Install and initialize</h3>
+				<p>Check Python and uv, install memtomem, then initialize the no-download Minimal preset.</p>
+			</a>
+			<a class="feature-card teal" href={`${base}/guides/quickstart/#3-verify-a-memory-round-trip`}>
+				<h3>2. Add and find one memory</h3>
+				<p>Run <code>mm status</code>, <code>mm add</code>, and <code>mm search</code>. A source-backed result is the success gate.</p>
+			</a>
+			<a class="feature-card coral" href={`${base}/guides/choose-your-path/`}>
+				<h3>3. Pick the next outcome</h3>
+				<p>Connect one AI client, index existing content, verify a new session, or add STM to an MCP server.</p>
+			</a>
+		</div>
 	</div>
 </section>
 
@@ -125,7 +147,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card teal" href={`${base}/ltm/multi-agent/`}>
 				<h3>Memory Across Sessions &amp; Agents</h3>
-				<p>Memory doesn't vanish when a session ends. Namespaces split each agent's private space from a <code>shared</code> space, and the session workflow lets one agent pick up what another already worked out. Claude Code, Cursor, and Codex all share one memory store.</p>
+				<p>Memory doesn't vanish when a session ends. Namespaces route searches between agent-specific and <code>shared</code> scopes; they are not access-control boundaries. The session workflow lets Claude Code, Cursor, and Codex continue from one memory store.</p>
 			</a>
 			<a class="feature-card coral" href={`${base}/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
@@ -204,39 +226,39 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Documentation</div>
-		<div class="section-title">Docs & Tutorials</div>
-		<div class="section-desc">From getting started to advanced usage.</div>
+		<div class="section-label">Task guides</div>
+		<div class="section-title">Continue by outcome</div>
+		<div class="section-desc">Each guide ends with a visible result, a verification step, and a recovery or rollback path.</div>
 		<div class="docs-grid">
 			<a href={`${base}/guides/quickstart/`} class="doc-card">
 				<h3>Quick Start</h3>
-				<p>Install → <code>mm init</code> → <code>mm status</code> → <code>mm add</code> → <code>mm search</code>, then connect Claude Code, Codex, or another MCP client.</p>
-				<span class="tag tag-guide">Guide</span>
+				<p>Install LTM and verify a durable memory round trip before connecting a client.</p>
+				<span class="tag tag-guide">Getting Started</span>
 			</a>
-			<a href={`${base}/ltm/hybrid-search/`} class="doc-card">
-				<h3>Hybrid Search</h3>
-				<p>How BM25 + vector + RRF fusion search works and how to tune it.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/guides/connect-ai-client/`} class="doc-card">
+				<h3>Connect an AI Client</h3>
+				<p>Connect Claude Code, Codex, or another released MCP client and verify <code>mem_status</code>.</p>
+				<span class="tag tag-guide">Connection</span>
 			</a>
-			<a href={`${base}/stm/compression/`} class="doc-card">
-				<h3>Compression Strategies</h3>
-				<p>10 strategies, auto-selection logic, and query-aware budget allocation.</p>
-				<span class="tag tag-stm">STM</span>
+			<a href={`${base}/guides/index-and-import/`} class="doc-card">
+				<h3>Index Existing Content</h3>
+				<p>Index notes and code or import built-in AI memory with a preview and source check.</p>
+				<span class="tag tag-ltm">Content</span>
 			</a>
-			<a href={`${base}/stm/surfacing/`} class="doc-card">
-				<h3>Proactive Surfacing</h3>
-				<p>5-level gating, feedback loop, min_score auto-tuning deep dive.</p>
-				<span class="tag tag-stm">STM</span>
+			<a href={`${base}/guides/memory-persistence/`} class="doc-card">
+				<h3>Memory Across Sessions</h3>
+				<p>Save a confirmed decision, start a new session, and retrieve its reason and source.</p>
+				<span class="tag tag-ltm">Workflow</span>
 			</a>
-			<a href={`${base}/ltm/multi-agent/`} class="doc-card">
-				<h3>Multi-Agent Collaboration</h3>
-				<p>5-step session workflow, namespace inheritance, cross-agent sharing.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/guides/stm-first-proxy/`} class="doc-card">
+				<h3>Add STM to an MCP Server</h3>
+				<p>Run the local demo, make a real proxied call, inspect metrics, and restore the original path.</p>
+				<span class="tag tag-stm">Optional STM</span>
 			</a>
-			<a href={`${base}/ltm/context-gateway/`} class="doc-card">
-				<h3>Context Gateway</h3>
-				<p>Store, preview-first Pull, selective Push, cross-project transfer, and multi-project operations.</p>
-				<span class="tag tag-ltm">LTM</span>
+			<a href={`${base}/guides/troubleshooting/`} class="doc-card">
+				<h3>Troubleshooting</h3>
+				<p>Return to the failed install, search, MCP, Web UI, or STM step with a concrete check.</p>
+				<span class="tag tag-guide">Recovery</span>
 			</a>
 		</div>
 	</div>
@@ -249,7 +271,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<a href="https://github.com/memtomem/memtomem">
 			<button class="btn-primary">View on GitHub</button>
 		</a>
-		<a href={`${base}/guides/quickstart/`}>
+		<a href={`${base}/guides/choose-your-path/`}>
 			<button class="btn-secondary">Read the Docs</button>
 		</a>
 	</div>

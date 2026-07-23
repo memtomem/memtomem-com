@@ -1,126 +1,150 @@
 ---
 title: Multi-Agent Collaboration
-description: Namespace-based isolation and sharing for cross-agent knowledge exchange.
+description: Use namespaces, sessions, and explicit sharing to pass reviewed memory between agents.
 ---
 
-memtomem supports knowledge sharing between agents through namespace-based isolation and sharing. As a runtime-agnostic memory layer, it enables Human→Agent, Agent→Agent, and Agent→Human knowledge flows.
+memtomem can route each agent's writes to a named namespace and copy selected memories into `shared`. This is useful when several AI clients or agent roles use the same local store but should not publish every intermediate result to one common space.
 
 ## Namespace Structure
 
-```
-agent-runtime:{agent-id}     # Agent-private — only that agent can access
-shared                       # Shared — accessible by all agents
-```
-
-Each agent works in its own private namespace but can export useful knowledge to the shared namespace.
-
-## 5-Step Workflow
-
-### Step 1: Register an Agent
-
-```
-mem_agent_register(agent_id="analyzer", description="Code analysis agent")
+```text
+agent-runtime:{agent-id}     # per-agent routing scope
+shared                       # cross-agent shared scope
 ```
 
-### Step 2: Start a Session
+Namespaces organize retrieval and write routing. They are **not an authentication or access-control boundary**. Processes that can open the same database should be treated as trusted local participants.
 
-```
-mem_session_start(agent_id="analyzer")
-```
+## Default Core-Mode Workflow
 
-The session record's namespace auto-derives to `agent-runtime:analyzer`. A session explicitly bound to an agent lets later writes inherit that scope without re-passing `agent_id`. An unbound/default session does not redirect writes into an agent namespace:
+The default MCP surface exposes nine Core tools. Multi-agent operations run through `mem_do`; direct `mem_agent_*` tools are not visible in this mode.
 
-- **Writes** — `mem_add(content="...")` and `mem_batch_add(...)` write to `agent-runtime:analyzer` automatically. Pass `namespace="shared"` explicitly to publish cross-agent on a single call.
-- **Reads** — `mem_agent_search` / `mem_agent_share` resolve to the agent scope without `agent_id=`. (`mem_search` itself stays single-agent — use `mem_agent_search` to read inside the agent scope.)
+### Step 1: Inspect the Available Actions
 
-### Step 3: Search Knowledge
-
-```
-mem_agent_search(query="auth module structure", include_shared=true)
+```text
+mem_do(action="help", params={"category": "multi_agent"})
 ```
 
-With `include_shared=true`, searches both the agent's own namespace and the shared namespace.
+This returns the released action names and parameters before any state changes.
 
-### Step 4: Share Knowledge
+### Step 2: Start an Agent Session
 
+```text
+mem_do(action="session_start", params={"agent_id": "analyzer"})
 ```
-mem_agent_share(chunk_id="...", target="shared")
+
+The session namespace derives to `agent-runtime:analyzer`. Writes through `mem_add` or `mem_batch_add` inherit that scope while the session is bound. An unbound session does not redirect writes automatically.
+
+### Step 3: Save and Search Agent Memory
+
+```text
+mem_add(content="The auth module uses short-lived access tokens.")
+mem_do(
+  action="agent_search",
+  params={"query": "auth module tokens", "include_shared": true}
+)
 ```
 
-Before the copy is written into a wider namespace, share re-scans the content with the trust-boundary redaction guard. Secret-looking content is blocked at share time (the block is recorded in the audit counters), so a sensitive chunk does not silently propagate into a wider namespace.
+`include_shared=true` searches the agent namespace and `shared`. General `mem_search` keeps its normal behavior and is not silently redirected.
+
+### Step 4: Share a Reviewed Memory
+
+Use the chunk id returned by add or search:
+
+```text
+mem_do(
+  action="agent_share",
+  params={"chunk_id": "CHUNK_ID", "target": "shared"}
+)
+```
+
+Before copying into the wider namespace, memtomem scans the content again for secret-like values. A blocked share is recorded and does not publish the chunk.
 
 ### Step 5: End the Session
 
+```text
+mem_do(action="session_end", params={"summary": "Auth analysis complete"})
 ```
-mem_session_end(summary="...")
-```
+
+Success means Agent A can find the item in its own scope, the item is not cross-agent by default, and Agent B can retrieve it only after the explicit share to `shared`.
+
+## Tool-Mode Differences
+
+| `MEMTOMEM_TOOL_MODE` | Session operations | Agent search and share |
+|---|---|---|
+| `core` (default) | `mem_do(action="session_start")` / `mem_do(action="session_end")` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
+| `standard` | direct `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
+| `full` | direct session tools | direct `mem_agent_search` / `mem_agent_share` |
+
+Use `core` unless a client genuinely benefits from a larger exposed tool list. The dispatcher preserves the full released action surface without forcing the model to choose among 99 direct tools.
 
 ## Setting `agent_id`
 
-`agent_id` is not auto-detected. The principle is the same across runtimes — **pass it explicitly when a session starts**, and it is inherited by subsequent calls through session context.
+`agent_id` is not inferred from the MCP client. Pass it explicitly when the session begins. Later session-aware calls inherit it.
 
-### Claude Code · Codex (MCP)
+### Claude Code · Codex
 
-The MCP server does not identify which client is calling, so **fix the session-start rule in the agent's instructions** (CLAUDE.md · AGENTS.md · system prompt).
+Put a rule like this in `CLAUDE.md`, `AGENTS.md`, or the relevant system instructions:
 
-Example instruction:
+> When I ask for per-agent memory isolation, first call `mem_do(action="help", params={"category":"multi_agent"})`, then start the named session through `mem_do(action="session_start", ...)`. Share only reviewed outputs.
 
-> At the start of a conversation, call `mem_session_start(agent_id="claude-code")` first to register the session. When acting as a new agent role, use `mem_agent_register(agent_id="planner", description="...")`.
+Do not start an agent session for every normal search. Use this flow only when the task needs per-agent routing or explicit cross-agent sharing.
 
-Once the session is explicitly bound, later `mem_add`/`mem_batch_add` writes inherit `agent-runtime:{agent-id}`. Reads are not silently redirected: use `mem_agent_search` for the agent scope or pass an explicit namespace to `mem_search`.
-
-### LangGraph · CrewAI (Python adapter)
+### LangGraph · CrewAI
 
 ```python
 from memtomem.integrations.langgraph import MemtomemStore
 
 store = MemtomemStore()
 await store.start_agent_session(agent_id="analyzer")
-# Subsequent store.search / store.add calls are isolated to the analyzer namespace
+# Subsequent store.search / store.add calls use the analyzer session scope.
 ```
 
-In multi-agent graphs, each node starts its own session with its own `agent_id`. Use `mem_agent_share` to publish outputs that need to cross agents to the `shared` namespace.
+Each graph node can start a session with its own `agent_id`. Publish only the output that another node needs.
 
-### CLI (`mm session`)
-
-Use this to pre-register a session outside the server process.
+### CLI Sessions
 
 ```bash
 mm session start --agent-id planner
+mm session list
+mm session end --summary "Planning complete"
 ```
 
-See [`mm session`](/ltm/cli/#mm-session) for the full subcommand surface (`start`, `end`, `list`, `events`, `wrap`).
+See [`mm session`](/ltm/cli/#mm-session) for `start`, `end`, `list`, `events`, and `wrap` options.
 
-### CLI (`mm agent`)
-
-Use this to register or list agents and share chunks from a shell without an MCP client. Each command mirrors the `mem_agent_register` / `mem_agent_share` MCP tools above.
+### CLI Agent Management
 
 ```bash
 mm agent register analyzer --description "Code analysis agent" --color "#534AB7"
-mm agent list                 # lists registered agent-runtime: namespaces + shared (--json supported)
-mm agent share <chunk_id> --target shared
+mm agent list
+mm agent share CHUNK_ID --target shared
 ```
 
-`mm agent share` also re-runs the redaction guard before copying; secret-looking content is blocked unless re-confirmed with `--force-unsafe`. See the [CLI reference](/ltm/cli/) for the full flag surface.
+`mm agent share` also runs the secret scan. The [CLI Reference](/ltm/cli/) retains every registration, listing, migration, and sharing option.
 
-### Difference from `mm ingest`
+## Difference from Built-In Memory Import
 
-`mm ingest claude-memory`, `mm ingest gemini-memory`, and `mm ingest codex-memory` **do not** assign an `agent_id`. They load memories into fixed namespaces — `claude-memory:<slug>`, `gemini-memory:<slug>`, and `codex-memory:<slug>` — to consolidate per-editor memories into one searchable index. For per-agent isolation, use the MCP/adapter/CLI paths above to set `agent_id` explicitly.
+`mm ingest claude-memory`, `mm ingest codex-memory`, and `mm ingest gemini-memory` load external files into fixed source namespaces. They do not assign an `agent_id` or start a session. See [Index and Import Existing Content](/guides/index-and-import/).
 
 ## Interaction Patterns
 
+<a id="human--agent"></a>
 ### Human → Agent
 
-When a developer works in an MCP-connected client, saved architecture decisions, coding patterns, and debugging history can be searched explicitly. Automatic surfacing requires STM proxy routing or a supported, configured host hook.
+Ask an MCP-connected client to search confirmed decisions or explicitly save a durable result. Automatic surfacing requires STM proxy routing or a supported host hook.
 
+<a id="agent--agent"></a>
 ### Agent → Agent
 
-In LangGraph/CrewAI workflows, when an agent chain runs, the "test generation agent" reads the codebase structure that the "code analysis agent" published to the shared namespace via `mem_agent_share`. The shared LTM store is the cross-agent handoff point; intermediate outputs and decision history cross agents through that explicit share step.
+Agent A works in its routed namespace, reviews a useful result, and shares that chunk to `shared`. Agent B searches its own scope plus `shared`. Intermediate reasoning stays unshared unless explicitly published.
 
+<a id="agent--human"></a>
 ### Agent → Human
 
-Knowledge accumulated by agents can be searched and browsed through the Web UI dashboard. When onboarding new team members, they can review architecture decisions, bug resolution patterns, and coding conventions at a glance.
+Use the Web UI or CLI search to inspect shared decisions, their sources, and their namespaces. Treat the source as the verification point rather than trusting a model summary alone.
 
-## Related — AI Tool Memory Ingestion
+## Next
 
-`mm ingest {claude,gemini,codex}-memory` is a separate feature from per-agent isolation: it consolidates each AI editor's memory directory into fixed namespaces (`*-memory:<slug>`) for unified indexing (see [Difference from `mm ingest`](#difference-from-mm-ingest) above). For the full options — source paths and slug behavior — see the [installation guide](/guides/installation/).
+- [Memory Across Sessions](/guides/memory-persistence/)
+- [Index and Import Existing Content](/guides/index-and-import/)
+- [Context Gateway](/ltm/context-gateway/)
+- [LTM MCP Tools](/ltm/mcp-tools/)

@@ -3,7 +3,13 @@ title: 문서를 MCP로 사용하기
 description: memtomem 문서를 AI 에이전트가 직접 읽게 하는 방법 — llms.txt와 로컬 MCP 서버(mcpdoc).
 ---
 
-AI 도구가 memtomem 문서를 직접 읽게 하는 방법은 두 가지입니다. 별도의 문서 서버를 운영하지 않아도 됩니다.
+AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 읽게 할지, MCP 검색 도구를 계속 제공할지, 로컬 memtomem 검색에 넣을지에 따라 고르세요.
+
+| 필요한 결과 | 사용할 방법 | 성공 확인 |
+|---|---|---|
+| 한 페이지 또는 전체 문서를 한 번 읽기 | `llms.txt` URL | 클라이언트가 요청한 내용을 가져옴 |
+| MCP로 문서를 반복 검색 | 로컬 `mcpdoc` 서버 | `list_doc_sources` 다음 `fetch_docs`로 페이지를 가져옴 |
+| 로컬 기억 인덱스에서 문서 검색 | `mm index` | `mem_search` 결과에 memtomem.com 출처가 표시됨 |
 
 ## llms.txt
 
@@ -63,6 +69,8 @@ Codex CLI 등 stdio 기반 MCP 클라이언트도 동일한 `command`/`args`로 
 AI 도구가 문서 검색 도구를 자동으로 사용하지 않으면 규칙이나 시스템 프롬프트에 다음 문장을 추가하세요.
 
 > memtomem 관련 질문에는 `memtomem-docs` MCP 서버를 사용해. 먼저 `list_doc_sources`를 호출하고 `fetch_docs`로 관련 문서를 읽어.
+
+두 도구가 모두 성공해야 연결을 확인한 것입니다. 클라이언트 목록에 `memtomem-docs`가 보이는 것만으로는 전체 흐름을 검증한 것이 아닙니다.
 
 :::note[도메인 허용 범위]
 원격 llms.txt URL을 지정하면 mcpdoc은 해당 도메인(`memtomem.com`)만 자동으로 허용합니다. 로컬 파일을 쓰려면 `--allowed-domains`로 도메인을 명시해야 합니다.

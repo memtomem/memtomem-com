@@ -22,7 +22,7 @@ mms init --demo --client auto                            # 2. 실행 가능한 �
 mms doctor                                               # 3. 전체 설정 진단
 ```
 
-`mms init --demo`는 실행 결과가 일정한 내장 읽기 전용 MCP 서버를 구성합니다. `--client auto`는 감지한 지원 클라이언트에 STM을 등록합니다. 이후에는 `mms register --client claude`, `--client codex`, `--client auto`로 등록 대상을 바꿀 수 있습니다. 전체 설정 절차는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
+`mms init --demo`는 실행 결과가 일정한 내장 읽기 전용 MCP 서버를 구성합니다. `--client auto`는 감지한 지원 클라이언트에 STM을 등록합니다. 이후에는 `mms register --client claude`, `--client codex`, `--client auto`로 등록 대상을 바꿀 수 있습니다. 실제 호출, 지표, 중복 경로 정리, 원복까지는 [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/)를 참고하세요.
 
 ## 핵심 기능
 
@@ -72,7 +72,7 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 
 ## 다음 단계
 
-- [빠른 시작](/ko/guides/quickstart/) — 설치부터 에이전트 연결까지
+- [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/) — 데모, 실제 프록시 호출, 지표, 원복
 - [능동적 서피싱](/ko/stm/surfacing/) — 5단계 관련성 검사와 피드백 기반 자동 조정
 - [압축 전략](/ko/stm/compression/) — 10가지 전략과 자동 선택 과정
 - [MCP 도구](/ko/stm/mcp-tools/) — STM 관리 도구와 관찰성 도구
