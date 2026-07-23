@@ -39,6 +39,19 @@ function assertContains(file, needle, label = needle) {
   if (!sourceText.get(file)?.includes(needle)) errors.push(`${relative(file)}: missing ${label}`);
 }
 
+function markdownSection(text, heading, level) {
+  const marker = `${'#'.repeat(level)} ${heading}`;
+  const start = text.indexOf(marker);
+  if (start < 0) return null;
+  const tail = text.slice(start + marker.length);
+  const nextHeading = tail.search(new RegExp(`\\n#{1,${level}}\\s`));
+  return nextHeading < 0 ? tail : tail.slice(0, nextHeading);
+}
+
+function assertSectionContains(file, section, needle, label = needle) {
+  if (!section?.includes(needle)) errors.push(`${relative(file)}: section missing ${label}`);
+}
+
 for (const file of englishDocs) {
   const rel = path.relative(docsRoot, file);
   const koFile = path.join(docsRoot, 'ko', rel);
@@ -61,12 +74,23 @@ const combined = [...sourceText.values()].join('\n');
 for (const stale of ['0.3.10', '0.3.11', '0.1.38', '0.1.39', '0.1.40']) {
   if (combined.includes(stale)) errors.push(`stale upstream version remains: ${stale}`);
 }
+for (const staleClaim of ['nothing runs twice', '아무것도 두 번 실행되지']) {
+  if (combined.toLowerCase().includes(staleClaim)) {
+    errors.push(`unconditional MCP coexistence claim remains: ${staleClaim}`);
+  }
+}
 if (/\bmm server\b/.test(combined)) errors.push('removed CLI command remains: mm server');
 if (/^\| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED`/m.test(combined)) {
   errors.push('removed Context Gateway environment variable remains in a table');
 }
 if (/uvx\s+--from\s+memtomem(?:\s|["'])/.test(combined)) {
   errors.push('floating uvx memtomem registration remains; use memtomem-server or an exact pin');
+}
+if (contract.claudePlugin.bundledCore !== contract.core.version) {
+  errors.push(`Claude plugin bundles Core ${contract.claudePlugin.bundledCore}; expected ${contract.core.version}`);
+}
+if (contract.opencode.bundledCore !== contract.core.version) {
+  errors.push(`OpenCode plugin bundles Core ${contract.opencode.bundledCore}; expected ${contract.core.version}`);
 }
 
 function tableEnvironment(text, kind) {
@@ -135,6 +159,56 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   }
   for (const client of contract.guides.clientGuide.clients) {
     assertContains(file, client, `client-guide coverage ${client}`);
+  }
+
+  const locale = file.includes(`${path.sep}ko${path.sep}`) ? 'ko' : 'en';
+  const text = sourceText.get(file);
+  const claudeSection = markdownSection(text, contract.guides.clientGuide.coexistence.claude.heading, 2);
+  assertSectionContains(file, claudeSection, contract.claudePlugin.version, `Claude plugin version ${contract.claudePlugin.version}`);
+  assertSectionContains(
+    file,
+    claudeSection,
+    `uvx --from memtomem==${contract.claudePlugin.bundledCore} memtomem-server`,
+    'Claude exact plugin signature'
+  );
+  const opencodeSection = markdownSection(text, contract.guides.clientGuide.coexistence.opencode.heading, 2);
+  assertSectionContains(
+    file,
+    opencodeSection,
+    `opencode-memtomem@${contract.opencode.version}`,
+    `OpenCode plugin version ${contract.opencode.version}`
+  );
+
+  for (const [client, spec] of Object.entries(contract.guides.clientGuide.coexistence)) {
+    if (client === 'outcomeTokens') continue;
+    const section = markdownSection(text, spec.heading, 2);
+    if (!section) {
+      errors.push(`${relative(file)}: missing client section ${spec.heading}`);
+      continue;
+    }
+    for (const token of spec.requiredTokens) {
+      assertSectionContains(file, section, token, `${spec.heading} coexistence token ${token}`);
+    }
+    for (const token of contract.guides.clientGuide.coexistence.outcomeTokens[locale]) {
+      assertSectionContains(file, section, token, `${spec.heading} coexistence outcome ${token}`);
+    }
+  }
+}
+
+const troubleshootingPairs = [
+  path.join(docsRoot, 'guides/troubleshooting.md'),
+  path.join(docsRoot, 'ko/guides/troubleshooting.md')
+];
+for (const file of troubleshootingPairs) {
+  const locale = file.includes(`${path.sep}ko${path.sep}`) ? 'ko' : 'en';
+  const heading = contract.guides.troubleshootingCoexistence.headings[locale];
+  const section = markdownSection(sourceText.get(file), heading, 3);
+  if (!section) {
+    errors.push(`${relative(file)}: missing troubleshooting section ${heading}`);
+    continue;
+  }
+  for (const token of contract.guides.troubleshootingCoexistence.requiredTokens) {
+    assertSectionContains(file, section, token, `troubleshooting coexistence token ${token}`);
   }
 }
 
@@ -222,6 +296,9 @@ for (const file of coreCliPairs) {
 for (const file of [path.join(docsRoot, 'ltm/mcp-tools.md'), path.join(docsRoot, 'ko/ltm/mcp-tools.md')]) {
   for (const token of ['content', 'source', 'source_ref', 'idempotency_key']) {
     assertContains(file, token, `proposal argument ${token}`);
+  }
+  for (const token of ['mcp.memtomem', 'mcp."memtomem-local"']) {
+    assertContains(file, token, `OpenCode coexistence token ${token}`);
   }
 }
 

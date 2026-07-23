@@ -15,6 +15,10 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 | `standard` | 38, including `mem_do` | You want common management tools directly visible |
 | `full` | 99 current tools + 1 deprecated alias | You are debugging, documenting, or using a client that handles large tool lists well |
 
+The following example is for a manual MCP-only connection. If a client plugin
+already supplies memtomem, check that client's coexistence rule in
+[Connect an AI Client](/guides/connect-ai-client/) before adding it.
+
 Example:
 
 ```json
@@ -105,6 +109,13 @@ server in `opencode.json`:
   }
 }
 ```
+
+An existing manual `mcp.memtomem` entry takes precedence over the plugin's
+default, so only one server runs. Keep that exact key for a manual server, or
+remove the entry to use the plugin server. A different key such as
+`mcp."memtomem-local"` is not deduplicated and runs both. See the
+[OpenCode connection guide](/guides/connect-ai-client/#opencode) for the full
+set of choices.
 
 ## Common Actions
 

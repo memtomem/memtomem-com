@@ -17,12 +17,16 @@
       "observability": 8
     }
   },
+  "claudePlugin": {
+    "version": "0.3.3",
+    "bundledCore": "0.3.12"
+  },
   "opencode": {
     "version": "0.1.2",
     "bundledCore": "0.3.12"
   },
   "sourceSnapshots": {
-    "coreMain": "4598305a",
+    "coreMain": "e3a13aa4",
     "stmMain": "bf06283"
   },
   "configuration": {
@@ -63,8 +67,7 @@
         "/memtomem:status",
         "codex plugin marketplace add memtomem/memtomem",
         "codex plugin add memtomem@memtomem",
-        "memtomem-server",
-        "opencode-memtomem@0.1.2"
+        "memtomem-server"
       ],
       "clients": [
         "Claude Code",
@@ -76,6 +79,60 @@
         "Kimi CLI",
         "OpenCode",
         "Antigravity"
+      ],
+      "coexistence": {
+        "claude": {
+          "heading": "Claude Code",
+          "requiredTokens": [
+            "/mcp",
+            "/memtomem:setup",
+            "mcp__memtomem__mem_*",
+            "mcp__plugin_memtomem_memtomem__mem_*",
+            "claude mcp remove memtomem",
+            "/plugin uninstall memtomem@memtomem"
+          ]
+        },
+        "codex": {
+          "heading": "Codex CLI",
+          "requiredTokens": [
+            "codex mcp list",
+            "[mcp_servers.memtomem]",
+            "[mcp_servers.memtomem-local]"
+          ]
+        },
+        "opencode": {
+          "heading": "OpenCode",
+          "requiredTokens": [
+            "mcp.memtomem",
+            "mcp.\"memtomem-local\""
+          ]
+        },
+        "outcomeTokens": {
+          "en": [
+            "only one server runs",
+            "both servers run"
+          ],
+          "ko": [
+            "서버 하나만 실행",
+            "서버 두 개가 실행"
+          ]
+        }
+      }
+    },
+    "troubleshootingCoexistence": {
+      "headings": {
+        "en": "MCP servers or tools appear twice",
+        "ko": "MCP 서버나 도구가 두 번 보임"
+      },
+      "requiredTokens": [
+        "/mcp",
+        "claude mcp remove memtomem",
+        "/plugin uninstall memtomem@memtomem",
+        "codex mcp list",
+        "[mcp_servers.memtomem]",
+        "[mcp_servers.memtomem-local]",
+        "mcp.memtomem",
+        "mcp.\"memtomem-local\""
       ]
     },
     "indexGuideCommands": [
