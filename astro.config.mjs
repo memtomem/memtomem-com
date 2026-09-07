@@ -56,6 +56,8 @@ export default defineConfig({
 					translations: { ko: '여기서 시작' },
 					items: [
 						{ label: 'Choose Your Path', slug: 'guides/choose-your-path', translations: { ko: '목적에 맞는 시작 경로' } },
+						{ label: 'Coding Agent Use Case', slug: 'use-cases/vibe-coding', translations: { ko: '코딩 에이전트 활용 사례' } },
+						{ label: 'LangGraph Beginner Labs', slug: 'use-cases/langgraph', translations: { ko: 'LangGraph 입문 실습' } },
 						{ label: 'Quick Start', slug: 'guides/quickstart', translations: { ko: '빠른 시작' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
 						{ label: 'Local-First & Privacy', slug: 'guides/privacy', translations: { ko: '로컬 우선 · 정보 보호' } },

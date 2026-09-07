@@ -9,6 +9,8 @@ description: 첫 기억 저장부터 기존 자료 가져오기, STM 프록시, 
 
 | 하고 싶은 일 | 시작 문서 | 완료 기준 |
 |---|---|---|
+| 코딩 에이전트 예제를 실행하고 싶다 | [코딩 결정과 근거 문서 검색](/ko/use-cases/vibe-coding/) | 저장한 이유와 ADR 출처를 다시 찾음 |
+| LangGraph에 기억을 추가하고 싶다 | [모델 없는 입문 노트북](/ko/use-cases/langgraph/) | 한국어 노트북 두 개에서 API 키 없이 각각 PASS 6개 확인 |
 | 기억 저장과 검색이 되는지 확인 | [빠른 시작](/ko/guides/quickstart/) | 방금 추가한 기억이 `mm search` 결과에 표시됨 |
 | 새 AI 세션에서 이전 결정을 다시 찾기 | [세션을 넘나드는 기억](/ko/guides/memory-persistence/) | 새 세션에서 저장한 이유와 출처까지 확인 |
 | Claude Code·Codex·다른 MCP 클라이언트 연결 | [AI 클라이언트 연결](/ko/guides/connect-ai-client/) | 클라이언트에서 `mem_status` 호출 성공 |

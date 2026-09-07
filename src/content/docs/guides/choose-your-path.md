@@ -9,6 +9,8 @@ You do not need every memtomem feature at once. Pick the outcome you need now, f
 
 | I want to… | Start with | You are done when… |
 |---|---|---|
+| Try a coding-agent scenario | [Coding decisions and source recall](/use-cases/vibe-coding/) | a saved reason and ADR source are retrieved |
+| Add memory to LangGraph | [Model-free beginner notebooks](/use-cases/langgraph/) | both Korean notebooks print six PASS checks without an API key |
 | Prove that memory storage and search work | [Quick Start](/guides/quickstart/) | `mm search` returns the memory you just added |
 | Recall a decision in a new AI session | [Memory Across Sessions](/guides/memory-persistence/) | a new session returns the saved reason and source |
 | Connect Claude Code, Codex, or another MCP client | [Connect an AI Client](/guides/connect-ai-client/) | the client can call `mem_status` |

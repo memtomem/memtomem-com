@@ -9,7 +9,7 @@ AI 도구는 새 세션을 시작할 때 이전 대화 전체를 기억하지 �
 
 ## 전제 조건
 
-[빠른 시작](/ko/guides/quickstart/)을 완료하여 `memtomem`이 설치·초기화되고 MCP 클라이언트(Claude Code, Cursor, Claude Desktop 등)에 연결된 상태여야 합니다.
+[빠른 시작](/ko/guides/quickstart/)으로 로컬 기억을 설치·초기화한 다음 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 `mem_status`까지 확인하세요. 빠른 시작만으로 MCP 클라이언트가 등록되지는 않습니다. 코딩 예제는 [재시도 정책 활용 사례](/ko/use-cases/vibe-coding/)를 참고하세요.
 
 ## 세션 A: 기억 저장
 
