@@ -121,3 +121,9 @@ export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
 LTM responses are consumed by the surfacing engine and bypass the proxy compression/cache pipeline.
 
 A `trace_id` is threaded through the surfacing and progressive-delivery path so follow-up reads correlate with the initial chunk in Langfuse (or any OpenTelemetry-style tracer).
+
+## Eligibility and observability
+
+The automatic length gate uses the cleaned source before compression: by default, fewer than 5,000 characters skips surfacing. An explicit `_context_query` bypasses that length gate only, not disabled surfacing, relevance thresholds, or backend availability. The query parameter itself requires schema opt-in.
+
+Observability tools are hidden by default. Set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` in the child MCP process environment and reconnect. Persistent aggregate statistics do not prove that per-call traces were exported; Langfuse and OTLP are separate opt-in sinks.

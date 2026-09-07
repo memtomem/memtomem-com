@@ -3,6 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { parse as parseToml } from 'smol-toml';
+import { validateUpstream, STALE_VERSIONS, staleVersionPattern } from './upstream-contract.mjs';
 
 const root = process.cwd();
 const docsRoot = path.join(root, 'src/content/docs');
@@ -98,8 +99,10 @@ for (const file of englishDocs) {
 }
 
 const combined = [...sourceText.values()].join('\n');
-for (const stale of ['0.3.10', '0.3.11', '0.1.38', '0.1.39', '0.1.40']) {
-  if (combined.includes(stale)) errors.push(`stale upstream version remains: ${stale}`);
+for (const stale of STALE_VERSIONS) {
+  if (staleVersionPattern(stale).test(combined)) {
+    errors.push(`stale upstream version remains: ${stale}`);
+  }
 }
 for (const staleClaim of ['nothing runs twice', '아무것도 두 번 실행되지']) {
   if (combined.toLowerCase().includes(staleClaim)) {
@@ -386,6 +389,11 @@ for (const file of docs) {
 for (const file of [path.join(root, 'src/pages/index.astro'), path.join(root, 'src/pages/ko/index.astro')]) {
   assertContains(file, 'docs-contract.json', 'shared docs contract import');
 }
+
+const snapshot = JSON.parse(await readFile(path.join(root, 'src/data/upstream-snapshot.json'), 'utf8'));
+errors.push(...validateUpstream(snapshot, contract, Object.fromEntries(
+  [...sourceText].map(([file, text]) => [relative(file), text])
+)));
 
 if (errors.length) {
   console.error(`Documentation contract failed (${errors.length}):`);

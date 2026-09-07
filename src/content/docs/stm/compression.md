@@ -16,7 +16,7 @@ memtomem-stm automatically compresses MCP tool responses by content type to save
 | **truncate** | Small text | Length-limited truncation (default fallback) |
 | **hybrid** | Markdown | Preserve structure + abbreviate non-essential sections |
 | **selective** | Large structured data | Two-phase TOC first, then retrieve selected sections on demand |
-| **progressive** | Large content | Cursor-based sequential delivery (zero information loss) |
+| **progressive** | Large content | Cursor-based sequential delivery of the retained source |
 | **extract_fields** | JSON dictionaries | Preserve top-level shape with representative nested values |
 | **schema_pruning** | JSON arrays | Recursive schema-preserving sampling |
 | **skeleton** | API docs | Preserve headings and first content lines |
@@ -49,9 +49,11 @@ Budgets can be expressed as `max_result_chars` or `max_result_tokens`. Token bud
 
 JSON-aware tiers re-serialize strict JSON after compression. Non-finite values such as `NaN`, `Infinity`, and `-Infinity` are mapped to `null` before JSON output so downstream parsers do not receive Python extension tokens. The JSON tiers degrade monotonically as budgets shrink. The documented exception is standalone `selective`: it shrinks per-entry previews first, but a zero-preview TOC envelope can still exceed budget at very high section counts because dropping entries would break the selection contract.
 
-## Zero Information Loss: Progressive Delivery
+<a id="zero-information-loss-progressive-delivery"></a>
 
-The `progressive` strategy delivers large content without any information loss:
+## Progressive Delivery
+
+The `progressive` strategy delivers retained content sequentially, subject to the recovery boundaries below:
 
 1. First response delivers a table of contents (TOC) and the first chunk
 2. Agent calls `stm_proxy_read_more(key, offset)` → cursor-based delivery of subsequent chunks
@@ -61,7 +63,7 @@ Every progressive chunk ends with the canonical footer `\n---\n[progressive: cha
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by the `stm_progressive_stats` tool (see [MCP Tools](/stm/mcp-tools/)).
 
-The response cache uses schema 4 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions.
+The response cache uses schema 5 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions.
 
 ## Fallback Ladder
 
@@ -83,3 +85,9 @@ Agent feedback automatically adjusts per-tool compression budgets:
 - Agent reports **response too long** → Decrease preservation ratio
 
 This feedback loop is driven by the `stm_compression_feedback` tool; accumulated feedback and per-tool adjustments are visible via `stm_compression_stats` (see [MCP Tools](/stm/mcp-tools/)).
+
+## Recovery boundaries
+
+Progressive delivery retains the cleaned source after upstream limits, not an unlimited byte-for-byte copy of the original response. Pending selections are memory-backed by default; SQLite persistence is opt-in. Entries expire under their TTL. An expired ID returns an error, not an automatic upstream refetch. Repeating an original read-only call is a separate, explicit action; do not replay a write just to recover content.
+
+Cache schema 5 uses length-prefixed key framing and Unicode serialization. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.

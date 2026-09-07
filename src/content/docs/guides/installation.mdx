@@ -62,15 +62,15 @@ The extras below are what `[all]` bundles — install them individually when you
 
 | Extra | Description | Command |
 |---|---|---|
-| `onnx` | fastembed local embeddings (recommended default) | `pip install memtomem[onnx]` |
-| `ollama` | Ollama provider client | `pip install memtomem[ollama]` |
-| `openai` | OpenAI provider client | `pip install memtomem[openai]` |
-| `korean` | kiwipiepy Korean morphological analysis | `pip install memtomem[korean]` |
-| `code` | tree-sitter AST chunking (Python / JS / TS) | `pip install memtomem[code]` |
-| `web` | FastAPI + uvicorn Web UI | `pip install memtomem[web]` |
-| `langfuse` | Langfuse observability tracing | `pip install memtomem[langfuse]` |
-| `langgraph` | `MemtomemStore` and `MemtomemBaseStore` adapters | `pip install memtomem[langgraph]` |
-| `all` | Everything | `pip install memtomem[all]` |
+| `onnx` | fastembed local embeddings (recommended default) | `pip install "memtomem[onnx]"` |
+| `ollama` | Ollama provider client | `pip install "memtomem[ollama]"` |
+| `openai` | OpenAI provider client | `pip install "memtomem[openai]"` |
+| `korean` | kiwipiepy Korean morphological analysis | `pip install "memtomem[korean]"` |
+| `code` | tree-sitter AST chunking (Python / JS / TS) | `pip install "memtomem[code]"` |
+| `web` | FastAPI + uvicorn Web UI | `pip install "memtomem[web]"` |
+| `langfuse` | Langfuse observability tracing | `pip install "memtomem[langfuse]"` |
+| `langgraph` | `MemtomemStore` and `MemtomemBaseStore` adapters | `pip install "memtomem[langgraph]"` |
+| `all` | Everything | `pip install "memtomem[all]"` |
 
 ### `mm` CLI
 
@@ -143,8 +143,8 @@ STM is optional. Install it after the LTM quick-start flow works if you want pro
 
 | Extra | Description | Command |
 |---|---|---|
-| `langfuse` | Langfuse observability tracing | `pip install memtomem-stm[langfuse]` |
-| `langchain` | LangChain agent integration | `pip install memtomem-stm[langchain]` |
+| `langfuse` | Langfuse observability tracing | `pip install "memtomem-stm[langfuse]"` |
+| `langchain` | Optional LangChain integration; verify adapter/MCP dependency compatibility | `pip install "memtomem-stm[langchain]"` |
 
 ### `mms` CLI
 

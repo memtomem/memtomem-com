@@ -76,7 +76,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<p class="hero-sub">
 		Stop re-explaining your project to your AI every session. memtomem turns your notes,
 		docs, and code into a searchable memory that any MCP-compatible agent can use —
-		across sessions, across agents, all on your machine.
+		across sessions, across agents, with local storage by default.
 	</p>
 	<div class="hero-install">
 		<span class="dollar">$</span> uv tool install 'memtomem[all]'
@@ -143,7 +143,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ltm/hybrid-search/`}>
 				<h3>Searchable Long-Term Memory</h3>
-				<p>Index your notes, docs, and code with <code>mm index</code>, then find them with hybrid search — BM25 keyword and dense-vector semantic search fused via RRF, so exact identifiers and meaning-based queries both land. Markdown, code, and structured files are chunked by structure, and re-indexing only re-embeds the chunks that changed.</p>
+				<p>Index your notes, docs, and code with <code>mm index</code>, then search by keyword with the minimal preset. Enable embeddings for hybrid search — BM25 keyword and dense-vector semantic search fused via RRF, so exact identifiers and meaning-based queries both land. Markdown, code, and structured files are chunked by structure, and re-indexing only re-embeds the chunks that changed.</p>
 			</a>
 			<a class="feature-card teal" href={`${base}/ltm/multi-agent/`}>
 				<h3>Memory Across Sessions &amp; Agents</h3>
@@ -159,7 +159,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card blue" href={`${base}/stm/compression/`}>
 				<h3>Token-Aware Compression</h3>
-				<p>Responses from MCP tools routed through STM can be compressed before they reach your agent. When a response exceeds the context budget, one of 10 strategies is selected by content type. Actual savings depend on the response and configured retention limits.</p>
+				<p>Responses from MCP tools routed through STM can be compressed before they reach your agent. Configured response budgets and gates control compression. Ten modes are supported, including auto-selection and passthrough. Actual savings depend on the response and configured retention limits.</p>
 			</a>
 			<a class="feature-card green" href={`${base}/guides/privacy/`}>
 				<h3>Local-First &amp; Private</h3>

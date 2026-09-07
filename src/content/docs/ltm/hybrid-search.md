@@ -13,7 +13,7 @@ Keyword search finds exact names like `mem_search` or `FastAPI` — things a vec
 
 ## Search Architecture
 
-Hybrid search runs three search engines in parallel:
+With an embedding provider enabled, BM25 and vector retrieval run in parallel, followed by RRF fusion. With `embedding.provider=none` (including the minimal preset), search is keyword-only:
 
 | Engine | Based on | Strength |
 |---|---|---|
@@ -76,3 +76,9 @@ A one-run staged k-sweep retained the product defaults: `top_k=10`, BM25/dense
 candidates `50/50`, `rrf_k=60`, and reranking disabled. Candidate width 100 at
 `top_k=5` is only a follow-up candidate; repeated 5-run/10-run validation is
 required before any default change.
+
+## Filter boundaries
+
+Project scope is enforced at retrieval. Tag filters are applied in BM25/recall SQL, while dense retrieval checks tags after its bounded nearest-neighbor pool and may miss a rare tagged match outside that pool. BM25 tag filtering still requires a lexical query match: tag text is not itself indexed by FTS.
+
+The source substring/glob filter and temporal validity filter run after reranking. Do not treat every filter as an identical SQL prefilter or assume that filtering guarantees a full `top_k` result set.

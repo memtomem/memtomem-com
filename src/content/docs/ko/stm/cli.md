@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.1.41 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.4.0 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -425,3 +425,66 @@ mms register --client claude
 이제 MCP 클라이언트는 개별 서버 대신 `memtomem-stm`에 연결됩니다. 등록한 서버의 도구는 프록시를 통해 제공되며 관련 기억 자동 제시, 응답 압축, 점진적 전달이 적용됩니다.
 
 > 설정 방법은 [설치 가이드](/ko/guides/installation/), 관련 기억을 붙이는 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
+
+### `mms selection feedback`
+
+선택 텔레메트리에 운영자의 정정을 기록합니다. 피드백을 쓰며 프록시 설정은 변경하지 않습니다.
+
+```bash
+mms selection feedback --selection-id SELECTION_ID --operator-override --yes
+mms selection feedback --last --user-corrected --yes
+```
+
+필터·출력 옵션은 `--config`, `--log`, `--active-only`, `--server`, `--tool`, `--json`입니다. 명시적 해제 플래그는 `--no-operator-override`, `--no-user-corrected`입니다.
+
+## 명령별 전체 옵션 인덱스
+
+고정 소스의 공개 긴 옵션 목록입니다. 짧은 별칭과 공통 `--help`는 생략합니다. 인수·기본값·제약은 해당 명령의 `--help`로 확인하세요.
+
+| 명령 | 옵션 |
+|---|---|
+| `mms` | `--version` |
+| `mms add` | `--all`, `--allow-project-configs`, `--args`, `--command`, `--compression`, `--config`, `--env`, `--from-clients`, `--header`, `--import`, `--json`, `--max-chars`, `--prefix`, `--prune`, `--save-unverified`, `--select`, `--timeout`, `--transport`, `--url`, `--validate` |
+| `mms config` | — |
+| `mms config validate` | `--config`, `--json` |
+| `mms daemon` | — |
+| `mms daemon restart` | — |
+| `mms daemon run` | `--detached`, `--foreground` |
+| `mms daemon start` | — |
+| `mms daemon status` | `--json` |
+| `mms daemon stop` | `--all` |
+| `mms doctor` | `--config`, `--json`, `--measure-ltm`, `--timeout` |
+| `mms eject` | `--accept-schema-loss`, `--allow-argv-secrets`, `--config`, `--dry-run`, `--force`, `--json`, `--keep`, `--to`, `--yes` |
+| `mms gateway` | — |
+| `mms gateway explain` | `--config`, `--json` |
+| `mms gateway mode` | `--apply`, `--bundle`, `--config`, `--dry-run` |
+| `mms gateway status` | `--config`, `--json` |
+| `mms health` | `--config`, `--json`, `--names`, `--timeout` |
+| `mms hook` | `--daemon-timeout-seconds`, `--host`, `--no-daemon`, `--no-persist-query-text`, `--persist-query-text`, `--surfacing-timeout-seconds`, `--use-daemon` |
+| `mms hook install` | `--apply`, `--daemon`, `--host`, `--inherit-runtime-env`, `--no-daemon`, `--surfacing-timeout` |
+| `mms hook uninstall` | `--apply`, `--host` |
+| `mms host` | — |
+| `mms host scan` | `--from`, `--json` |
+| `mms host status` | `--json` |
+| `mms host sync` | `--allow-project-configs`, `--apply`, `--force`, `--json`, `--plan`, `--yes` |
+| `mms import` | `--allow-project-configs`, `--apply`, `--from`, `--plan`, `--show-imported` |
+| `mms init` | `--allow-project-configs`, `--client`, `--config`, `--demo`, `--freshness`, `--json`, `--lang`, `--mcp`, `--no-validate`, `--prune-originals`, `--replace-registration`, `--resume`, `--save-unverified` |
+| `mms list` | `--config`, `--json` |
+| `mms project` | — |
+| `mms project disable` | `--project` |
+| `mms project enable` | `--project` |
+| `mms project init` | `--force`, `--name` |
+| `mms project list` | `--json`, `--prune` |
+| `mms project route` | `--apply`, `--config`, `--json`, `--project` |
+| `mms project show` | `--json` |
+| `mms prune` | `--all`, `--config`, `--dry-run`, `--json`, `--yes` |
+| `mms register` | `--client`, `--config`, `--json`, `--mcp`, `--replace-registration` |
+| `mms remove` | `--config`, `--json`, `--yes` |
+| `mms selection` | — |
+| `mms selection feedback` | `--active-only`, `--config`, `--json`, `--last`, `--log`, `--no-operator-override`, `--no-user-corrected`, `--operator-override`, `--selection-id`, `--server`, `--tool`, `--user-corrected`, `--yes` |
+| `mms selection replay` | `--active-only`, `--config`, `--dataset`, `--json`, `--log`, `--no-telemetry`, `--output-dir` |
+| `mms stats` | `--config`, `--json`, `--source`, `--tool` |
+| `mms status` | `--config`, `--json` |
+| `mms surfacing` | `--config` |
+| `mms tune` | `--apply`, `--config`, `--json`, `--since-hours`, `--tool`, `--yes` |
+| `mms version` | — |

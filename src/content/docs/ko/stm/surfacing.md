@@ -129,3 +129,9 @@ export MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS='{"Authorization":"Bearer ..."}'
 LTM 응답은 관련 기억을 고르는 데만 사용하며 프록시의 압축·캐시 처리를 거치지 않습니다.
 
 `trace_id`는 관련 기억 검색과 `progressive` 전달에 함께 포함됩니다. 따라서 이어 읽은 내용도 Langfuse나 OpenTelemetry 계열 추적 도구에서 첫 번째 조각과 자동으로 묶입니다.
+
+## 실행 조건과 관측
+
+자동 길이 판단은 압축 전 정리된 소스를 기준으로 하며, 기본적으로 5,000자보다 짧으면 서페이싱을 생략합니다. 명시적 `_context_query`는 길이 조건만 우회합니다. 서페이싱 비활성화, 관련도 임계값, 백엔드 가용성 조건은 우회하지 않습니다. 이 질의 매개변수도 스키마 옵트인이 필요합니다.
+
+관측 도구는 기본적으로 숨겨집니다. 자식 MCP 프로세스 환경에 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 전달한 뒤 다시 연결하세요. 영속 집계 통계만으로 호출별 추적 내보내기를 확인할 수는 없습니다. Langfuse와 OTLP는 각각 별도 옵트인입니다.

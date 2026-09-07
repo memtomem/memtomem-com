@@ -65,7 +65,7 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **최신 릴리스** | `0.1.41` |
+| **최신 릴리스** | `0.4.0` |
 | **CLI** | `mms` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
@@ -77,3 +77,9 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 - [압축 전략](/ko/stm/compression/) — 10가지 전략과 자동 선택 과정
 - [MCP 도구](/ko/stm/mcp-tools/) — STM 관리 도구와 관찰성 도구
 - [CLI 레퍼런스](/ko/stm/cli/) — `mms` 명령 전체 목록
+
+## 제한과 안전한 재시도
+
+기본 `proxy.max_upstream_bytes`는 디코딩 후 compact JSON 기준 40 MiB(41,943,040바이트)입니다. 메타데이터·비텍스트 블록·오류 콘텐츠를 포함하며, 전송 바이트나 최대 메모리 사용량을 보장하는 제한은 아닙니다.
+
+시간 초과나 연결 끊김이 발생해도 업스트림에서는 실행되었을 수 있습니다. 결과가 불명확한 실패의 재시도는 재실행 안전 정책과 남은 재시도·시간 예산을 모두 충족해야 합니다. 주석 없는 도구를 자동으로 안전하다고 간주하지 않습니다. 세션 재시작은 부작용을 되돌리지 않습니다. 종료 감시와 부모 프로세스 생존 확인 설정은 [환경 변수 레퍼런스](/ko/reference/configuration/)에서 확인하세요.

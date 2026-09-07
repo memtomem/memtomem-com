@@ -58,6 +58,6 @@ The root locale is **English** and `/ko/` is its Korean mirror. Every English do
 - Keep the site as an exhaustive mirror of supported upstream CLI and configuration options. Do not collapse the reference into a recommended-only subset.
 - Use `src/data/docs-contract.json` as the reviewed snapshot for Core, STM, and OpenCode versions, tool counts, CLI groups, and environment-variable hashes.
 - Update English and Korean together. `npm run check:docs` enforces pairing and critical contract details; `npm run build` also validates generated internal routes and fragments.
-- On a Core or STM version bump, add the superseded version to the explicit stale-version list in `scripts/check-doc-contract.mjs`; do not replace it with a site-wide lower-semver rule that would reject historical notes or independently versioned integrations.
+- On a Core or STM version bump, add the superseded version to the explicit `STALE_VERSIONS` list in `scripts/upstream-contract.mjs` (both checkers import it); do not replace it with a site-wide lower-semver rule that would reject historical notes or independently versioned integrations. Entries match on a version boundary, so a prefix such as `0.1.2` does not flag historical `v0.1.23` notes.
 - Prefer first-success flows in beginner pages (`mm init → mm status → mm add → mm search`; `mms init --demo --client auto → mms doctor`) while retaining the full option surface in reference pages.
 - `.mcp.json` is local tooling state and must remain untracked unless the user explicitly changes that policy.

@@ -65,7 +65,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.1.41` |
+| **Latest release** | `0.4.0` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
@@ -77,3 +77,9 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 - [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
 - [MCP Tools](/stm/mcp-tools/) — STM management and observability tools
 - [CLI Reference](/stm/cli/) — `mms` command reference
+
+## Limits and retry safety
+
+The default `proxy.max_upstream_bytes` limit is 40 MiB (41,943,040 bytes) of decoded compact JSON, including metadata, non-text blocks and error content. It is not a wire-byte or peak-memory guarantee.
+
+A timed-out or disconnected call can have executed upstream. Retrying an ambiguous failure requires a replay-safe policy and remaining retry/deadline budget; an unannotated tool is not automatically safe. Restarting a session does not roll back side effects. Shutdown watchdog and parent-liveness settings are listed in the [configuration reference](/reference/configuration/).

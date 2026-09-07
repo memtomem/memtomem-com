@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 38, including `mem_do` | You want common management tools directly visible |
-| `full` | 99 current tools + 1 deprecated alias | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 100 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
 
 The following example is for a manual MCP-only connection. If a client plugin
 already supplies memtomem, check that client's coexistence rule in
@@ -65,11 +65,11 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The full v0.3.12 registry contains 99 current tools. Full mode also keeps the
-deprecated `mem_context_migrate` alias (100 registered names total) until its
-v0.5.0 removal. Pinned Context adds `mem_pinned_list/get/set/delete` and
+The v0.5.0 registry has 100 current tools and 94 `mem_do` actions.
+`mem_context_migrate` was removed and `mem_candidate_evidence` was added;
+the unchanged total does not imply unchanged membership. Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
-`mem_formation_scan` and `mem_candidate_propose/list/review/recover`. The new
+`mem_formation_scan` and `mem_candidate_propose/list/review/recover/evidence`. The new
 full-mode surface also includes `mem_context_pull` for preview-first runtime
 imports and `mem_quality_replay` for deterministic Quality Lab replays.
 
@@ -83,13 +83,16 @@ than durable memory. It requires `content`, `source`, `source_ref`, and an
 path. Reusing a key with identical content returns the original pending
 candidate; reusing it with different content is rejected.
 
+
+`mem_candidate_evidence` compares a candidate with indexed memories in the caller's scope, not other pending candidates or pinned context. A potential-conflict label is advisory, not a factual verdict or an automatic approval/rejection.
+
 ## OpenCode
 
-The published `opencode-memtomem@0.1.2` plugin bundles Core 0.3.12. OpenCode
+The published `opencode-memtomem@0.3.0` plugin bundles Core 0.5.0. OpenCode
 uses the singular `plugin` key; there is no `opencode plugin add` command:
 
 ```json
-{"plugin": ["opencode-memtomem@0.1.2"]}
+{"plugin": ["opencode-memtomem@0.3.0"]}
 ```
 
 For MCP tools without the plugin's slash commands and skills, configure a local
@@ -101,7 +104,7 @@ server in `opencode.json`:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.12", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}
@@ -156,3 +159,110 @@ Most common MCP operations have CLI equivalents:
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 If an agent is struggling to call the right tool, run the CLI command once yourself and then ask the agent to follow the same operation.
+
+## Full-mode tool names
+
+These are the 100 current names in full mode, distinct from the nine tools exposed by default in core mode.
+
+<!-- upstream-tool-names:start -->
+- `mem_activity`
+- `mem_add`
+- `mem_add_redaction_stats`
+- `mem_agent_register`
+- `mem_agent_search`
+- `mem_agent_share`
+- `mem_ask`
+- `mem_auto_tag`
+- `mem_batch_add`
+- `mem_candidate_evidence`
+- `mem_candidate_list`
+- `mem_candidate_propose`
+- `mem_candidate_recover`
+- `mem_candidate_review`
+- `mem_cleanup_orphans`
+- `mem_config`
+- `mem_conflict_check`
+- `mem_consolidate`
+- `mem_consolidate_apply`
+- `mem_context_artifact_migrate`
+- `mem_context_artifact_transfer`
+- `mem_context_compose`
+- `mem_context_detect`
+- `mem_context_diff`
+- `mem_context_generate`
+- `mem_context_init`
+- `mem_context_memory_migrate`
+- `mem_context_promote`
+- `mem_context_pull`
+- `mem_context_sync`
+- `mem_context_version`
+- `mem_decay_expire`
+- `mem_decay_scan`
+- `mem_dedup_merge`
+- `mem_dedup_scan`
+- `mem_delete`
+- `mem_do`
+- `mem_edit`
+- `mem_embedding_reset`
+- `mem_entity_scan`
+- `mem_entity_search`
+- `mem_eval`
+- `mem_expand`
+- `mem_export`
+- `mem_fetch`
+- `mem_formation_scan`
+- `mem_import`
+- `mem_import_notion`
+- `mem_import_obsidian`
+- `mem_importance_scan`
+- `mem_index`
+- `mem_link`
+- `mem_list`
+- `mem_ns_assign`
+- `mem_ns_delete`
+- `mem_ns_get`
+- `mem_ns_list`
+- `mem_ns_rename`
+- `mem_ns_set`
+- `mem_ns_update`
+- `mem_pinned_delete`
+- `mem_pinned_get`
+- `mem_pinned_list`
+- `mem_pinned_set`
+- `mem_policy_add`
+- `mem_policy_delete`
+- `mem_policy_list`
+- `mem_policy_run`
+- `mem_procedure_list`
+- `mem_procedure_save`
+- `mem_quality_replay`
+- `mem_read`
+- `mem_recall`
+- `mem_reflect`
+- `mem_reflect_save`
+- `mem_related`
+- `mem_reset`
+- `mem_schedule_delete`
+- `mem_schedule_list`
+- `mem_schedule_register`
+- `mem_schedule_run_now`
+- `mem_scratch_get`
+- `mem_scratch_promote`
+- `mem_scratch_set`
+- `mem_search`
+- `mem_search_feedback`
+- `mem_search_history`
+- `mem_search_suggest`
+- `mem_session_end`
+- `mem_session_list`
+- `mem_session_start`
+- `mem_stats`
+- `mem_status`
+- `mem_tag_delete`
+- `mem_tag_list`
+- `mem_tag_merge`
+- `mem_tag_rename`
+- `mem_timeline`
+- `mem_unlink`
+- `mem_watchdog`
+<!-- upstream-tool-names:end -->

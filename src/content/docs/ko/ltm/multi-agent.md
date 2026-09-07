@@ -75,7 +75,7 @@ mem_do(action="session_end", params={"summary": "인증 분석 완료"})
 | `standard` | 개별 `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | 개별 세션 도구 | 개별 `mem_agent_search` / `mem_agent_share` |
 
-클라이언트가 더 큰 도구 목록을 꼭 필요로 하지 않는다면 `core`를 유지하세요. dispatcher는 모델에 99개 개별 도구를 모두 보여 주지 않으면서 현재 릴리스의 전체 작업을 제공합니다.
+클라이언트가 더 큰 도구 목록을 꼭 필요로 하지 않는다면 `core`를 유지하세요. dispatcher는 full 모드의 도구 100개를 모두 노출하지 않으면서 현재 릴리스의 전체 작업을 제공합니다.
 
 ## `agent_id` 설정
 

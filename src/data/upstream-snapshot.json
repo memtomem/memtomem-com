@@ -1,0 +1,1646 @@
+{
+  "core": {
+    "commands": {
+      "": [
+        "activity",
+        "add",
+        "agent",
+        "config",
+        "context",
+        "doctor",
+        "embedding-reset",
+        "gc",
+        "index",
+        "ingest",
+        "init",
+        "mem",
+        "memory",
+        "pinned",
+        "purge",
+        "quality",
+        "recall",
+        "reset",
+        "review",
+        "schedule",
+        "search",
+        "session",
+        "shell",
+        "status",
+        "sync-doctor",
+        "tags",
+        "uninstall",
+        "upgrade",
+        "version",
+        "warmup",
+        "watchdog",
+        "web",
+        "wiki"
+      ],
+      "activity": [
+        "log"
+      ],
+      "agent": [
+        "debug-resolve",
+        "list",
+        "migrate",
+        "register",
+        "share"
+      ],
+      "config": [
+        "set",
+        "show",
+        "unset"
+      ],
+      "context": [
+        "adopt",
+        "copy",
+        "detect",
+        "diff",
+        "generate",
+        "init",
+        "install",
+        "memory-migrate",
+        "migrate",
+        "move",
+        "projects",
+        "pull",
+        "rescan",
+        "seed-validation",
+        "settings-copy",
+        "settings-doctor",
+        "settings-migrate",
+        "status",
+        "sync",
+        "update",
+        "version"
+      ],
+      "context projects": [
+        "add",
+        "list",
+        "pause",
+        "remove",
+        "resume"
+      ],
+      "context version": [
+        "create",
+        "delete-label",
+        "enable",
+        "list",
+        "promote"
+      ],
+      "gc": [
+        "orphan-projects",
+        "orphan-sources"
+      ],
+      "ingest": [
+        "claude-memory",
+        "codex-memory",
+        "gemini-memory"
+      ],
+      "mem": [
+        "init",
+        "rescan",
+        "rescan-files"
+      ],
+      "memory": [
+        "doctor"
+      ],
+      "pinned": [
+        "compose",
+        "delete",
+        "get",
+        "list",
+        "set"
+      ],
+      "quality": [
+        "cases",
+        "compare",
+        "experiment",
+        "export",
+        "gate",
+        "import",
+        "promote",
+        "replay",
+        "show",
+        "status"
+      ],
+      "review": [
+        "approve",
+        "evidence",
+        "list",
+        "recover",
+        "reject",
+        "scan",
+        "show"
+      ],
+      "schedule": [
+        "add",
+        "delete",
+        "list",
+        "run-now"
+      ],
+      "session": [
+        "end",
+        "events",
+        "list",
+        "start",
+        "wrap"
+      ],
+      "tags": [
+        "delete",
+        "list",
+        "merge",
+        "rename"
+      ],
+      "watchdog": [
+        "history",
+        "run",
+        "status"
+      ],
+      "web": [
+        "status",
+        "stop"
+      ],
+      "wiki": [
+        "agent",
+        "command",
+        "init",
+        "list",
+        "pull",
+        "push",
+        "remote",
+        "skill"
+      ],
+      "wiki agent": [
+        "commit",
+        "diff",
+        "lint",
+        "new",
+        "override",
+        "promote"
+      ],
+      "wiki command": [
+        "commit",
+        "diff",
+        "lint",
+        "new",
+        "override",
+        "promote"
+      ],
+      "wiki skill": [
+        "commit",
+        "diff",
+        "lint",
+        "new",
+        "override",
+        "promote"
+      ]
+    },
+    "commit": "bb111b811389f9bb274ae8cfdc77e4c61b3622e2",
+    "environment": {
+      "MEMTOMEM_ACCESS__ENABLED": false,
+      "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
+      "MEMTOMEM_CONSOLIDATION_SCHEDULE__ENABLED": false,
+      "MEMTOMEM_CONSOLIDATION_SCHEDULE__INTERVAL_HOURS": 24,
+      "MEMTOMEM_CONSOLIDATION_SCHEDULE__MAX_GROUPS": 10,
+      "MEMTOMEM_CONSOLIDATION_SCHEDULE__MIN_GROUP_SIZE": 3,
+      "MEMTOMEM_CONTEXT_GATEWAY__AUTO_DISPLAY_CONFIGURED_PROJECTS": true,
+      "MEMTOMEM_CONTEXT_GATEWAY__EXPERIMENTAL_CLAUDE_PROJECTS_SCAN": false,
+      "MEMTOMEM_CONTEXT_GATEWAY__KNOWN_PROJECTS_PATH": "~/.memtomem/known_projects.json",
+      "MEMTOMEM_CONTEXT_WINDOW__ENABLED": false,
+      "MEMTOMEM_CONTEXT_WINDOW__WINDOW_SIZE": 2,
+      "MEMTOMEM_DECAY__ENABLED": false,
+      "MEMTOMEM_DECAY__HALF_LIFE_DAYS": 30,
+      "MEMTOMEM_EMBEDDING__API_KEY": "",
+      "MEMTOMEM_EMBEDDING__BASE_URL": "",
+      "MEMTOMEM_EMBEDDING__BATCH_SIZE": 64,
+      "MEMTOMEM_EMBEDDING__DIMENSION": 0,
+      "MEMTOMEM_EMBEDDING__MAX_CONCURRENT_BATCHES": 4,
+      "MEMTOMEM_EMBEDDING__MAX_SEQUENCE_TOKENS": 1024,
+      "MEMTOMEM_EMBEDDING__MODEL": "",
+      "MEMTOMEM_EMBEDDING__ONNX_BATCH_SIZE": 8,
+      "MEMTOMEM_EMBEDDING__ONNX_CPU_MEM_ARENA": false,
+      "MEMTOMEM_EMBEDDING__PROGRESS_THRESHOLD": 32,
+      "MEMTOMEM_EMBEDDING__PROVIDER": "none",
+      "MEMTOMEM_EMBEDDING__THREADS": 4,
+      "MEMTOMEM_ENTITY_BOOST__ENABLED": false,
+      "MEMTOMEM_ENTITY_BOOST__MAX_BOOST": 1.5,
+      "MEMTOMEM_ENTITY_BOOST__MIN_CONFIDENCE": 0,
+      "MEMTOMEM_ENTITY_BOOST__QUERY_ENTITY_TYPES": [
+        "date",
+        "person",
+        "technology"
+      ],
+      "MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE": true,
+      "MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS": 3600,
+      "MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS": 300,
+      "MEMTOMEM_HEALTH_WATCHDOG__ENABLED": false,
+      "MEMTOMEM_HEALTH_WATCHDOG__HEARTBEAT_INTERVAL_SECONDS": 60,
+      "MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS": 1000,
+      "MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD": 10,
+      "MEMTOMEM_HOOKS__TARGET_SCOPE": "user",
+      "MEMTOMEM_IMPORTANCE__ENABLED": false,
+      "MEMTOMEM_IMPORTANCE__MAX_BOOST": 1.5,
+      "MEMTOMEM_IMPORTANCE__WEIGHTS": [
+        0.3,
+        0.2,
+        0.3,
+        0.2
+      ],
+      "MEMTOMEM_INDEXING__AUTO_DISCOVER": true,
+      "MEMTOMEM_INDEXING__AUTO_SUMMARIZE": false,
+      "MEMTOMEM_INDEXING__CHUNK_OVERLAP_TOKENS": 0,
+      "MEMTOMEM_INDEXING__EXCLUDE_PATTERNS": [],
+      "MEMTOMEM_INDEXING__EXTRACT_ENTITIES": true,
+      "MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS": 512,
+      "MEMTOMEM_INDEXING__MEMORY_DIRS": [
+        "~/.memtomem/memories"
+      ],
+      "MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS": 128,
+      "MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD": 800,
+      "MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS": [],
+      "MEMTOMEM_INDEXING__STARTUP_BACKFILL": false,
+      "MEMTOMEM_INDEXING__STRUCTURED_CHUNK_MODE": "original",
+      "MEMTOMEM_INDEXING__SUMMARY_LANGUAGE": "en",
+      "MEMTOMEM_INDEXING__SUMMARY_MAX_INPUT_CHARS": 3000,
+      "MEMTOMEM_INDEXING__SUMMARY_MAX_TOKENS": 256,
+      "MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS": [
+        ".js",
+        ".json",
+        ".jsx",
+        ".md",
+        ".py",
+        ".toml",
+        ".ts",
+        ".tsx",
+        ".yaml",
+        ".yml"
+      ],
+      "MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS": 384,
+      "MEMTOMEM_LLM__API_KEY": "",
+      "MEMTOMEM_LLM__BASE_URL": "http://localhost:11434",
+      "MEMTOMEM_LLM__ENABLED": false,
+      "MEMTOMEM_LLM__MAX_TOKENS": 1024,
+      "MEMTOMEM_LLM__MODEL": "",
+      "MEMTOMEM_LLM__PROVIDER": "ollama",
+      "MEMTOMEM_LLM__TIMEOUT": 60,
+      "MEMTOMEM_MMR__ENABLED": false,
+      "MEMTOMEM_MMR__LAMBDA_PARAM": 0.7,
+      "MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE": "default",
+      "MEMTOMEM_NAMESPACE__ENABLE_AUTO_NS": false,
+      "MEMTOMEM_NAMESPACE__RULES": [],
+      "MEMTOMEM_POLICY__ENABLED": false,
+      "MEMTOMEM_POLICY__MAX_ACTIONS_PER_RUN": 100,
+      "MEMTOMEM_POLICY__SCHEDULER_INTERVAL_MINUTES": 60,
+      "MEMTOMEM_QUERY_EXPANSION__ENABLED": false,
+      "MEMTOMEM_QUERY_EXPANSION__MAX_TERMS": 3,
+      "MEMTOMEM_QUERY_EXPANSION__STRATEGY": "tags",
+      "MEMTOMEM_RERANK__API_KEY": "",
+      "MEMTOMEM_RERANK__ENABLED": false,
+      "MEMTOMEM_RERANK__MAX_POOL": 200,
+      "MEMTOMEM_RERANK__MIN_POOL": 20,
+      "MEMTOMEM_RERANK__MODEL": "Xenova/ms-marco-MiniLM-L-6-v2",
+      "MEMTOMEM_RERANK__OVERSAMPLE": 2,
+      "MEMTOMEM_RERANK__PROVIDER": "fastembed",
+      "MEMTOMEM_RERANK__TIMEOUT_S": 30,
+      "MEMTOMEM_RERANK__TOP_K": 20,
+      "MEMTOMEM_SCHEDULER__DEFAULT_TIMEZONE": "utc",
+      "MEMTOMEM_SCHEDULER__ENABLED": false,
+      "MEMTOMEM_SCHEDULER__MAX_CONCURRENT_JOBS": 1,
+      "MEMTOMEM_SCHEDULER__RUNNER_TIMEOUT_SECONDS": 300,
+      "MEMTOMEM_SEARCH__BM25_CANDIDATES": 50,
+      "MEMTOMEM_SEARCH__CACHE_TTL": 30,
+      "MEMTOMEM_SEARCH__DEFAULT_TOP_K": 10,
+      "MEMTOMEM_SEARCH__DENSE_CANDIDATES": 50,
+      "MEMTOMEM_SEARCH__ENABLE_BM25": true,
+      "MEMTOMEM_SEARCH__ENABLE_DENSE": true,
+      "MEMTOMEM_SEARCH__RRF_K": 60,
+      "MEMTOMEM_SEARCH__RRF_WEIGHTS": [
+        1,
+        1
+      ],
+      "MEMTOMEM_SEARCH__SYSTEM_NAMESPACE_PREFIXES": [
+        "archive:",
+        "agent-runtime:"
+      ],
+      "MEMTOMEM_SEARCH__TOKENIZER": "unicode61",
+      "MEMTOMEM_SESSION_SUMMARY__AUTO": true,
+      "MEMTOMEM_SESSION_SUMMARY__EXPANSION_LOOKUP_TOP_K": 3,
+      "MEMTOMEM_SESSION_SUMMARY__EXPANSION_RESCUE_WEIGHT": 0.5,
+      "MEMTOMEM_SESSION_SUMMARY__EXPANSION_SCORE_THRESHOLD": 0.3,
+      "MEMTOMEM_SESSION_SUMMARY__MAX_INPUT_CHARS": 60000,
+      "MEMTOMEM_SESSION_SUMMARY__MAX_SUMMARY_LINKS": 50,
+      "MEMTOMEM_SESSION_SUMMARY__MAX_SUMMARY_TOKENS": 500,
+      "MEMTOMEM_SESSION_SUMMARY__MIN_CHUNKS": 5,
+      "MEMTOMEM_SESSION_TRACE__ENABLED": false,
+      "MEMTOMEM_SESSION_TRACE__JSONL_ENABLED": true,
+      "MEMTOMEM_SESSION_TRACE__JSONL_PATH": "~/.memtomem/traces/session-traces.jsonl",
+      "MEMTOMEM_SESSION_TRACE__LANGFUSE_ENABLED": false,
+      "MEMTOMEM_SESSION_TRACE__LANGFUSE_HOST": "",
+      "MEMTOMEM_SESSION_TRACE__LANGFUSE_PUBLIC_KEY": "",
+      "MEMTOMEM_SESSION_TRACE__LANGFUSE_SECRET_KEY": "",
+      "MEMTOMEM_SESSION_TRACE__MAX_PAYLOAD_CHARS": 10000,
+      "MEMTOMEM_SESSION_TRACE__PAYLOAD_MODE": "metadata",
+      "MEMTOMEM_SESSION_TRACE__SAMPLING_RATE": 1,
+      "MEMTOMEM_STORAGE__BACKEND": "sqlite",
+      "MEMTOMEM_STORAGE__COLLECTION_NAME": "memories",
+      "MEMTOMEM_STORAGE__SQLITE_PATH": "~/.memtomem/memtomem.db",
+      "MEMTOMEM_WARMUP__ENABLED": false,
+      "MEMTOMEM_WEBHOOK__ENABLED": false,
+      "MEMTOMEM_WEBHOOK__EVENTS": [
+        "add",
+        "delete",
+        "search"
+      ],
+      "MEMTOMEM_WEBHOOK__SECRET": "",
+      "MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS": 10,
+      "MEMTOMEM_WEBHOOK__URL": ""
+    },
+    "options": {
+      "": [
+        "--version"
+      ],
+      "activity": [],
+      "activity log": [
+        "--content",
+        "--json",
+        "--meta",
+        "--type"
+      ],
+      "add": [
+        "--allow-namespace-mix",
+        "--confirm-project-shared",
+        "--file",
+        "--force-unsafe",
+        "--json",
+        "--namespace",
+        "--scope",
+        "--tags",
+        "--title",
+        "--yes"
+      ],
+      "agent": [],
+      "agent debug-resolve": [
+        "--agent-id",
+        "--current-agent-id",
+        "--current-namespace",
+        "--include-shared",
+        "--no-include-shared"
+      ],
+      "agent list": [
+        "--json"
+      ],
+      "agent migrate": [
+        "--dry-run",
+        "--yes"
+      ],
+      "agent register": [
+        "--color",
+        "--description"
+      ],
+      "agent share": [
+        "--force-unsafe",
+        "--target"
+      ],
+      "config": [],
+      "config set": [],
+      "config show": [
+        "--format",
+        "--json"
+      ],
+      "config unset": [],
+      "context": [],
+      "context adopt": [],
+      "context copy": [
+        "--apply",
+        "--as",
+        "--confirm-project-shared",
+        "--from",
+        "--to",
+        "--to-project",
+        "--yes"
+      ],
+      "context detect": [
+        "--include"
+      ],
+      "context diff": [
+        "--include",
+        "--scope"
+      ],
+      "context generate": [
+        "--agent",
+        "--include",
+        "--label",
+        "--on-drop",
+        "--scope",
+        "--strict",
+        "--yes"
+      ],
+      "context init": [
+        "--confirm-project-shared",
+        "--force-unsafe-import",
+        "--include",
+        "--only",
+        "--overwrite",
+        "--scope"
+      ],
+      "context install": [
+        "--all",
+        "--force",
+        "--yes"
+      ],
+      "context memory-migrate": [
+        "--apply",
+        "--confirm-project-shared",
+        "--from",
+        "--to",
+        "--yes"
+      ],
+      "context migrate": [
+        "--apply",
+        "--confirm-project-shared",
+        "--force",
+        "--from",
+        "--to",
+        "--yes"
+      ],
+      "context move": [
+        "--apply",
+        "--confirm-project-shared",
+        "--from",
+        "--to",
+        "--to-project",
+        "--yes"
+      ],
+      "context projects": [],
+      "context projects add": [
+        "--label"
+      ],
+      "context projects list": [
+        "--json"
+      ],
+      "context projects pause": [],
+      "context projects remove": [],
+      "context projects resume": [],
+      "context pull": [
+        "--apply",
+        "--diff",
+        "--force-unsafe-import",
+        "--from",
+        "--json",
+        "--overwrite",
+        "--scope",
+        "--yes"
+      ],
+      "context rescan": [
+        "--json",
+        "--quiet",
+        "--scope"
+      ],
+      "context seed-validation": [
+        "--force",
+        "--json"
+      ],
+      "context settings-copy": [
+        "--apply",
+        "--confirm-project-shared",
+        "--event",
+        "--hook-command",
+        "--json",
+        "--matcher",
+        "--to",
+        "--to-project",
+        "--yes"
+      ],
+      "context settings-doctor": [
+        "--json",
+        "--scope"
+      ],
+      "context settings-migrate": [
+        "--apply",
+        "--from",
+        "--json",
+        "--to",
+        "--yes"
+      ],
+      "context status": [
+        "--all-projects",
+        "--scope"
+      ],
+      "context sync": [
+        "--all-projects",
+        "--force-unsafe",
+        "--include",
+        "--label",
+        "--on-drop",
+        "--runtime",
+        "--scope",
+        "--strict",
+        "--yes"
+      ],
+      "context update": [
+        "--all",
+        "--dry-run",
+        "--force",
+        "--force-head",
+        "--yes"
+      ],
+      "context version": [],
+      "context version create": [
+        "--note",
+        "--scope"
+      ],
+      "context version delete-label": [
+        "--scope"
+      ],
+      "context version enable": [
+        "--scope"
+      ],
+      "context version list": [
+        "--scope"
+      ],
+      "context version promote": [
+        "--scope",
+        "--to",
+        "--version"
+      ],
+      "doctor": [
+        "--json"
+      ],
+      "embedding-reset": [
+        "--mode",
+        "--yes"
+      ],
+      "gc": [],
+      "gc orphan-projects": [
+        "--apply",
+        "--yes"
+      ],
+      "gc orphan-sources": [
+        "--apply",
+        "--yes"
+      ],
+      "index": [
+        "--debounce-window",
+        "--flush",
+        "--force",
+        "--force-unsafe",
+        "--json",
+        "--namespace",
+        "--no-recursive",
+        "--reassign-namespaces",
+        "--recursive",
+        "--status"
+      ],
+      "ingest": [],
+      "ingest claude-memory": [
+        "--dry-run",
+        "--source"
+      ],
+      "ingest codex-memory": [
+        "--dry-run",
+        "--source"
+      ],
+      "ingest gemini-memory": [
+        "--dry-run",
+        "--source"
+      ],
+      "init": [
+        "--advanced",
+        "--api-key",
+        "--auto-ns",
+        "--db-path",
+        "--decay",
+        "--fresh",
+        "--include-provider",
+        "--mcp",
+        "--memory-dir",
+        "--model",
+        "--namespace",
+        "--non-interactive",
+        "--preset",
+        "--provider",
+        "--tokenizer",
+        "--top-k"
+      ],
+      "mem": [],
+      "mem init": [
+        "--confirm-project-shared",
+        "--scope"
+      ],
+      "mem rescan": [
+        "--json",
+        "--quiet",
+        "--scope",
+        "--source"
+      ],
+      "mem rescan-files": [
+        "--json"
+      ],
+      "memory": [],
+      "memory doctor": [
+        "--apply",
+        "--fix",
+        "--json"
+      ],
+      "pinned": [],
+      "pinned compose": [
+        "--agent",
+        "--agent-id",
+        "--max-chars",
+        "--no-rerank",
+        "--top-k"
+      ],
+      "pinned delete": [
+        "--agent",
+        "--agent-id",
+        "--confirm-project-shared",
+        "--scope"
+      ],
+      "pinned get": [
+        "--agent",
+        "--agent-id",
+        "--scope"
+      ],
+      "pinned list": [
+        "--agent",
+        "--agent-id",
+        "--json"
+      ],
+      "pinned set": [
+        "--agent",
+        "--agent-id",
+        "--confirm-project-shared",
+        "--content",
+        "--description",
+        "--file",
+        "--force-unsafe",
+        "--priority",
+        "--scope"
+      ],
+      "purge": [
+        "--apply",
+        "--json",
+        "--matching-excluded",
+        "--sample"
+      ],
+      "quality": [],
+      "quality cases": [
+        "--format",
+        "--status"
+      ],
+      "quality compare": [
+        "--fail-on-regression",
+        "--format",
+        "--out"
+      ],
+      "quality experiment": [
+        "--as-of",
+        "--baseline",
+        "--case",
+        "--format",
+        "--out",
+        "--policy",
+        "--profile"
+      ],
+      "quality export": [
+        "--case",
+        "--out"
+      ],
+      "quality gate": [
+        "--comparison-out",
+        "--format",
+        "--out",
+        "--policy"
+      ],
+      "quality import": [
+        "--replace"
+      ],
+      "quality promote": [
+        "--allow-unreplayable-filters",
+        "--name"
+      ],
+      "quality replay": [
+        "--as-of",
+        "--case",
+        "--format",
+        "--out"
+      ],
+      "quality show": [],
+      "quality status": [],
+      "recall": [
+        "--format",
+        "--limit",
+        "--namespace",
+        "--scope",
+        "--since",
+        "--source-filter",
+        "--tag-filter",
+        "--until"
+      ],
+      "reset": [
+        "--backup",
+        "--force",
+        "--json",
+        "--yes"
+      ],
+      "review": [],
+      "review approve": [
+        "--reason",
+        "--reviewer"
+      ],
+      "review evidence": [
+        "--top-k"
+      ],
+      "review list": [
+        "--limit",
+        "--status"
+      ],
+      "review recover": [
+        "--actor",
+        "--limit",
+        "--stale-after-minutes"
+      ],
+      "review reject": [
+        "--reason",
+        "--reviewer"
+      ],
+      "review scan": [],
+      "review show": [],
+      "schedule": [],
+      "schedule add": [
+        "--cron",
+        "--job",
+        "--params"
+      ],
+      "schedule delete": [],
+      "schedule list": [
+        "--json"
+      ],
+      "schedule run-now": [],
+      "search": [
+        "--as-of",
+        "--format",
+        "--namespace",
+        "--no-rerank",
+        "--scope",
+        "--source-filter",
+        "--tag-filter",
+        "--top-k"
+      ],
+      "session": [],
+      "session end": [
+        "--auto",
+        "--summary"
+      ],
+      "session events": [
+        "--json"
+      ],
+      "session list": [
+        "--agent-id",
+        "--json",
+        "--limit",
+        "--since"
+      ],
+      "session start": [
+        "--agent-id",
+        "--auto-end-stale",
+        "--idempotent",
+        "--json",
+        "--namespace",
+        "--title"
+      ],
+      "session wrap": [
+        "--agent-id",
+        "--title"
+      ],
+      "shell": [],
+      "status": [
+        "--format",
+        "--json"
+      ],
+      "sync-doctor": [],
+      "tags": [],
+      "tags delete": [
+        "--apply",
+        "--yes"
+      ],
+      "tags list": [],
+      "tags merge": [
+        "--apply",
+        "--into",
+        "--yes"
+      ],
+      "tags rename": [
+        "--apply",
+        "--yes"
+      ],
+      "uninstall": [
+        "--force",
+        "--keep-config",
+        "--keep-data",
+        "--yes"
+      ],
+      "upgrade": [
+        "--dry-run",
+        "--extras",
+        "--grace",
+        "--json",
+        "--version",
+        "--yes"
+      ],
+      "version": [],
+      "warmup": [],
+      "watchdog": [],
+      "watchdog history": [
+        "--hours"
+      ],
+      "watchdog run": [
+        "--json"
+      ],
+      "watchdog status": [
+        "--json"
+      ],
+      "web": [
+        "--allow-remote-ui",
+        "--background",
+        "--dev",
+        "--host",
+        "--log-file",
+        "--mode",
+        "--open",
+        "--port",
+        "--timeout",
+        "--trusted-host",
+        "--trusted-origin"
+      ],
+      "web status": [],
+      "web stop": [],
+      "wiki": [],
+      "wiki agent": [],
+      "wiki agent commit": [
+        "--canonical",
+        "--message",
+        "--vendor"
+      ],
+      "wiki agent diff": [
+        "--vendor"
+      ],
+      "wiki agent lint": [
+        "--vendor"
+      ],
+      "wiki agent new": [
+        "--editor"
+      ],
+      "wiki agent override": [
+        "--editor",
+        "--force",
+        "--vendor"
+      ],
+      "wiki agent promote": [
+        "--message",
+        "--project"
+      ],
+      "wiki command": [],
+      "wiki command commit": [
+        "--canonical",
+        "--message",
+        "--vendor"
+      ],
+      "wiki command diff": [
+        "--vendor"
+      ],
+      "wiki command lint": [
+        "--vendor"
+      ],
+      "wiki command new": [
+        "--editor"
+      ],
+      "wiki command override": [
+        "--editor",
+        "--force",
+        "--vendor"
+      ],
+      "wiki command promote": [
+        "--message",
+        "--project"
+      ],
+      "wiki init": [
+        "--from"
+      ],
+      "wiki list": [
+        "--type"
+      ],
+      "wiki pull": [],
+      "wiki push": [],
+      "wiki remote": [],
+      "wiki skill": [],
+      "wiki skill commit": [
+        "--canonical",
+        "--message",
+        "--vendor"
+      ],
+      "wiki skill diff": [
+        "--vendor"
+      ],
+      "wiki skill lint": [
+        "--vendor"
+      ],
+      "wiki skill new": [
+        "--editor"
+      ],
+      "wiki skill override": [
+        "--editor",
+        "--force",
+        "--vendor"
+      ],
+      "wiki skill promote": [
+        "--message",
+        "--project"
+      ]
+    },
+    "registeredFunctions": [
+      "mem_activity",
+      "mem_add_redaction_stats",
+      "mem_agent_register",
+      "mem_agent_search",
+      "mem_agent_share",
+      "mem_ask",
+      "mem_auto_tag",
+      "mem_batch_add",
+      "mem_candidate_evidence",
+      "mem_candidate_list",
+      "mem_candidate_propose",
+      "mem_candidate_recover",
+      "mem_candidate_review",
+      "mem_cleanup_orphans",
+      "mem_config",
+      "mem_conflict_check",
+      "mem_consolidate",
+      "mem_consolidate_apply",
+      "mem_context_artifact_migrate",
+      "mem_context_artifact_transfer",
+      "mem_context_compose",
+      "mem_context_detect",
+      "mem_context_diff",
+      "mem_context_generate",
+      "mem_context_init",
+      "mem_context_memory_migrate",
+      "mem_context_promote",
+      "mem_context_pull",
+      "mem_context_sync",
+      "mem_context_version",
+      "mem_decay_expire",
+      "mem_decay_scan",
+      "mem_dedup_merge",
+      "mem_dedup_scan",
+      "mem_delete",
+      "mem_edit",
+      "mem_embedding_reset",
+      "mem_entity_scan",
+      "mem_entity_search",
+      "mem_eval",
+      "mem_expand",
+      "mem_export",
+      "mem_fetch",
+      "mem_formation_scan",
+      "mem_import",
+      "mem_import_notion",
+      "mem_import_obsidian",
+      "mem_importance_scan",
+      "mem_increment_access",
+      "mem_ingest",
+      "mem_link",
+      "mem_ns_assign",
+      "mem_ns_delete",
+      "mem_ns_get",
+      "mem_ns_list",
+      "mem_ns_rename",
+      "mem_ns_set",
+      "mem_ns_update",
+      "mem_pinned_delete",
+      "mem_pinned_get",
+      "mem_pinned_list",
+      "mem_pinned_set",
+      "mem_policy_add",
+      "mem_policy_delete",
+      "mem_policy_list",
+      "mem_policy_run",
+      "mem_procedure_list",
+      "mem_procedure_save",
+      "mem_quality_replay",
+      "mem_reflect",
+      "mem_reflect_save",
+      "mem_related",
+      "mem_reset",
+      "mem_schedule_delete",
+      "mem_schedule_list",
+      "mem_schedule_register",
+      "mem_schedule_run_now",
+      "mem_scratch_get",
+      "mem_scratch_promote",
+      "mem_scratch_set",
+      "mem_search_feedback",
+      "mem_search_history",
+      "mem_search_suggest",
+      "mem_session_end",
+      "mem_session_list",
+      "mem_session_start",
+      "mem_tag_delete",
+      "mem_tag_list",
+      "mem_tag_merge",
+      "mem_tag_rename",
+      "mem_timeline",
+      "mem_unlink",
+      "mem_version",
+      "mem_watchdog"
+    ],
+    "tools": [
+      "mem_activity",
+      "mem_add",
+      "mem_add_redaction_stats",
+      "mem_agent_register",
+      "mem_agent_search",
+      "mem_agent_share",
+      "mem_ask",
+      "mem_auto_tag",
+      "mem_batch_add",
+      "mem_candidate_evidence",
+      "mem_candidate_list",
+      "mem_candidate_propose",
+      "mem_candidate_recover",
+      "mem_candidate_review",
+      "mem_cleanup_orphans",
+      "mem_config",
+      "mem_conflict_check",
+      "mem_consolidate",
+      "mem_consolidate_apply",
+      "mem_context_artifact_migrate",
+      "mem_context_artifact_transfer",
+      "mem_context_compose",
+      "mem_context_detect",
+      "mem_context_diff",
+      "mem_context_generate",
+      "mem_context_init",
+      "mem_context_memory_migrate",
+      "mem_context_promote",
+      "mem_context_pull",
+      "mem_context_sync",
+      "mem_context_version",
+      "mem_decay_expire",
+      "mem_decay_scan",
+      "mem_dedup_merge",
+      "mem_dedup_scan",
+      "mem_delete",
+      "mem_do",
+      "mem_edit",
+      "mem_embedding_reset",
+      "mem_entity_scan",
+      "mem_entity_search",
+      "mem_eval",
+      "mem_expand",
+      "mem_export",
+      "mem_fetch",
+      "mem_formation_scan",
+      "mem_import",
+      "mem_import_notion",
+      "mem_import_obsidian",
+      "mem_importance_scan",
+      "mem_index",
+      "mem_link",
+      "mem_list",
+      "mem_ns_assign",
+      "mem_ns_delete",
+      "mem_ns_get",
+      "mem_ns_list",
+      "mem_ns_rename",
+      "mem_ns_set",
+      "mem_ns_update",
+      "mem_pinned_delete",
+      "mem_pinned_get",
+      "mem_pinned_list",
+      "mem_pinned_set",
+      "mem_policy_add",
+      "mem_policy_delete",
+      "mem_policy_list",
+      "mem_policy_run",
+      "mem_procedure_list",
+      "mem_procedure_save",
+      "mem_quality_replay",
+      "mem_read",
+      "mem_recall",
+      "mem_reflect",
+      "mem_reflect_save",
+      "mem_related",
+      "mem_reset",
+      "mem_schedule_delete",
+      "mem_schedule_list",
+      "mem_schedule_register",
+      "mem_schedule_run_now",
+      "mem_scratch_get",
+      "mem_scratch_promote",
+      "mem_scratch_set",
+      "mem_search",
+      "mem_search_feedback",
+      "mem_search_history",
+      "mem_search_suggest",
+      "mem_session_end",
+      "mem_session_list",
+      "mem_session_start",
+      "mem_stats",
+      "mem_status",
+      "mem_tag_delete",
+      "mem_tag_list",
+      "mem_tag_merge",
+      "mem_tag_rename",
+      "mem_timeline",
+      "mem_unlink",
+      "mem_watchdog"
+    ]
+  },
+  "stm": {
+    "commands": {
+      "": [
+        "add",
+        "config",
+        "daemon",
+        "doctor",
+        "eject",
+        "gateway",
+        "health",
+        "hook",
+        "host",
+        "import",
+        "init",
+        "list",
+        "project",
+        "prune",
+        "register",
+        "remove",
+        "selection",
+        "stats",
+        "status",
+        "surfacing",
+        "tune",
+        "version"
+      ],
+      "config": [
+        "validate"
+      ],
+      "daemon": [
+        "restart",
+        "run",
+        "start",
+        "status",
+        "stop"
+      ],
+      "gateway": [
+        "explain",
+        "mode",
+        "status"
+      ],
+      "hook": [
+        "install",
+        "uninstall"
+      ],
+      "host": [
+        "scan",
+        "status",
+        "sync"
+      ],
+      "project": [
+        "disable",
+        "enable",
+        "init",
+        "list",
+        "route",
+        "show"
+      ],
+      "selection": [
+        "feedback",
+        "replay"
+      ]
+    },
+    "commit": "6f8cb9c49655766e16381ecaed3598961a827df9",
+    "environment": {
+      "MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS": false,
+      "MEMTOMEM_STM_DAEMON__ALLOW_NON_LOOPBACK": false,
+      "MEMTOMEM_STM_DAEMON__HOST": "127.0.0.1",
+      "MEMTOMEM_STM_DAEMON__IDLE_TIMEOUT_SECONDS": 900,
+      "MEMTOMEM_STM_DAEMON__MAX_CONCURRENT_LTM_OPS": 4,
+      "MEMTOMEM_STM_DAEMON__MAX_PENDING_REQUESTS": 32,
+      "MEMTOMEM_STM_DATA_DIR": "~/.memtomem",
+      "MEMTOMEM_STM_FORMATION__ENABLED": false,
+      "MEMTOMEM_STM_FORMATION__MAX_CONTENT_CHARS": 2000,
+      "MEMTOMEM_STM_HOOK__AUTO_SPAWN": true,
+      "MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED": false,
+      "MEMTOMEM_STM_HOOK__COMPRESSION__MAX_CHARS": 16000,
+      "MEMTOMEM_STM_HOOK__COMPRESSION__MIN_RETENTION": 0.65,
+      "MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS": 2.5,
+      "MEMTOMEM_STM_HOOK__FALLBACK": "skip",
+      "MEMTOMEM_STM_HOOK__METRICS_ENABLED": true,
+      "MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS": false,
+      "MEMTOMEM_STM_HOOK__USE_DAEMON": true,
+      "MEMTOMEM_STM_LANGFUSE__ENABLED": false,
+      "MEMTOMEM_STM_LANGFUSE__HOST": "",
+      "MEMTOMEM_STM_LANGFUSE__PUBLIC_KEY": "",
+      "MEMTOMEM_STM_LANGFUSE__SAMPLING_RATE": 1,
+      "MEMTOMEM_STM_LANGFUSE__SECRET_KEY": "",
+      "MEMTOMEM_STM_LOG_FILE": null,
+      "MEMTOMEM_STM_LOG_LEVEL": "WARNING",
+      "MEMTOMEM_STM_OTLP__ENABLED": false,
+      "MEMTOMEM_STM_OTLP__ENDPOINT": "",
+      "MEMTOMEM_STM_OTLP__FLUSH_TIMEOUT_SECONDS": 5,
+      "MEMTOMEM_STM_OTLP__HEADERS": {},
+      "MEMTOMEM_STM_OTLP__MAX_EXPORT_BATCH_SIZE": 512,
+      "MEMTOMEM_STM_OTLP__MAX_QUEUE_SIZE": 2048,
+      "MEMTOMEM_STM_OTLP__SAMPLING_RATE": 1,
+      "MEMTOMEM_STM_OTLP__SCHEDULE_DELAY_MS": 5000,
+      "MEMTOMEM_STM_OTLP__TIMEOUT_SECONDS": 10,
+      "MEMTOMEM_STM_PARENT_LIVENESS_GRACE_SECONDS": 900,
+      "MEMTOMEM_STM_PARENT_LIVENESS_POLL_SECONDS": 0,
+      "MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY": false,
+      "MEMTOMEM_STM_PROXY__AUTO_INDEX__BACKGROUND": false,
+      "MEMTOMEM_STM_PROXY__AUTO_INDEX__ENABLED": false,
+      "MEMTOMEM_STM_PROXY__AUTO_INDEX__MEMORY_DIR": "~/.memtomem/proxy_index",
+      "MEMTOMEM_STM_PROXY__AUTO_INDEX__MIN_CHARS": 2000,
+      "MEMTOMEM_STM_PROXY__AUTO_INDEX__NAMESPACE": "proxy-{server}",
+      "MEMTOMEM_STM_PROXY__CACHE__DB_PATH": "~/.memtomem/proxy_cache.db",
+      "MEMTOMEM_STM_PROXY__CACHE__DEFAULT_TTL_SECONDS": 3600,
+      "MEMTOMEM_STM_PROXY__CACHE__ENABLED": true,
+      "MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES": 10000,
+      "MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY": "conservative",
+      "MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN": 3.5,
+      "MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH": "~/.memtomem/stm_feedback.db",
+      "MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED": true,
+      "MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS": 90,
+      "MEMTOMEM_STM_PROXY__CONFIG_PATH": "~/.memtomem/stm_proxy.json",
+      "MEMTOMEM_STM_PROXY__CONSUMER_MODEL": "",
+      "MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO": 0.05,
+      "MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION": "auto",
+      "MEMTOMEM_STM_PROXY__DEFAULT_MAX_RESULT_CHARS": 16000,
+      "MEMTOMEM_STM_PROXY__ENABLED": false,
+      "MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_ERROR_RATE_THRESHOLD": 0.95,
+      "MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_MIN_CALLS": 5,
+      "MEMTOMEM_STM_PROXY__EXPOSURE__HEALTH_WINDOW_HOURS": 24,
+      "MEMTOMEM_STM_PROXY__EXPOSURE__PROFILE": "strict",
+      "MEMTOMEM_STM_PROXY__EXPOSURE__REVIEW_RISK_PENALTY": 0.5,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__BACKGROUND": true,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__DEDUP_THRESHOLD": 0.92,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED": false,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__LLM": null,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__MAX_FACTS": 10,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__MAX_INPUT_CHARS": 20000,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__MEMORY_DIR": "~/.memtomem/extracted_facts",
+      "MEMTOMEM_STM_PROXY__EXTRACTION__MIN_RESPONSE_CHARS": 500,
+      "MEMTOMEM_STM_PROXY__EXTRACTION__NAMESPACE": "facts-{server}",
+      "MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY": "llm",
+      "MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS": 30,
+      "MEMTOMEM_STM_PROXY__MAX_DESCRIPTION_CHARS": 200,
+      "MEMTOMEM_STM_PROXY__MAX_UPSTREAM_BYTES": 41943040,
+      "MEMTOMEM_STM_PROXY__MAX_UPSTREAM_CHARS": 10000000,
+      "MEMTOMEM_STM_PROXY__METRICS__DB_PATH": "~/.memtomem/proxy_metrics.db",
+      "MEMTOMEM_STM_PROXY__METRICS__ENABLED": true,
+      "MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY": 10000,
+      "MEMTOMEM_STM_PROXY__MIN_RESULT_RETENTION": 0.65,
+      "MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__DB_PATH": "~/.memtomem/stm_feedback.db",
+      "MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED": true,
+      "MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__RETENTION_DAYS": 90,
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_BASE_URL": "http://localhost:11434",
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE": 256,
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL": "nomic-embed-text",
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_PROVIDER": "ollama",
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_TIMEOUT": 10,
+      "MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER": "bm25",
+      "MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__ENABLED": false,
+      "MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BACKUPS": 3,
+      "MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__MAX_BYTES": 50000000,
+      "MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__PATH": "~/.memtomem/stm_selection_log.jsonl",
+      "MEMTOMEM_STM_PROXY__SELECTION_TELEMETRY__SAMPLE_RATE": 1,
+      "MEMTOMEM_STM_PROXY__STRIP_SCHEMA_DESCRIPTIONS": false,
+      "MEMTOMEM_STM_PROXY__TOKEN_ESTIMATION_MODE": "static",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__AGENT_ID": "stm-proxy",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ARGS": [
+        "serve"
+      ],
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__BUNDLE_PATH": "~/.memtomem/toolgraph/policy-bundle.json",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__COMMAND": "toolgraph",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_ENABLED": true,
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_MAX_SCOPES": 64,
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH": "~/.memtomem/toolgraph_consult.db",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ENABLED": false,
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ENV": null,
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_AGENT_NOT_FOUND": "fail_start",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_PROTOCOL_ERROR": "fail_start",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_TOOL_NOT_FOUND": "open",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_UNREACHABLE": "open",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__QUERY_PROFILE": "strict",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__RISK_PENALTY_SCALE": 1,
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__SERVER_NAME_MAP": {},
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__SOURCE": "stdio",
+      "MEMTOMEM_STM_PROXY__TOOLGRAPH__TIMEOUT_SECONDS": 5,
+      "MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__ENABLED": true,
+      "MEMTOMEM_STM_PROXY__TOOL_RELEVANCE__TOP_N": 20,
+      "MEMTOMEM_STM_PROXY__UPSTREAM_SERVERS": {},
+      "MEMTOMEM_STM_SURFACING__AUTO_TUNE_ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES": 20,
+      "MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING": 0.05,
+      "MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR": 0.005,
+      "MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT": 0.002,
+      "MEMTOMEM_STM_SURFACING__CACHE_TTL_SECONDS": 60,
+      "MEMTOMEM_STM_SURFACING__CIRCUIT_MAX_FAILURES": 3,
+      "MEMTOMEM_STM_SURFACING__CIRCUIT_RESET_SECONDS": 60,
+      "MEMTOMEM_STM_SURFACING__CONSUMER_MODEL": "",
+      "MEMTOMEM_STM_SURFACING__CONTEXT_TOOLS": {},
+      "MEMTOMEM_STM_SURFACING__CONTEXT_WINDOW_SIZE": 0,
+      "MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS": 5,
+      "MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS": 604800,
+      "MEMTOMEM_STM_SURFACING__DEFAULT_NAMESPACE": null,
+      "MEMTOMEM_STM_SURFACING__ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS": [],
+      "MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH": "~/.memtomem/stm_feedback.db",
+      "MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD": 3,
+      "MEMTOMEM_STM_SURFACING__FEEDBACK_ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK": true,
+      "MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT": true,
+      "MEMTOMEM_STM_SURFACING__INJECTION_MODE": "append",
+      "MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS": [],
+      "MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND": "memtomem-server",
+      "MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS": null,
+      "MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT": "stdio",
+      "MEMTOMEM_STM_SURFACING__LTM_MCP_URL": "",
+      "MEMTOMEM_STM_SURFACING__MAX_INJECTION_CHARS": 3000,
+      "MEMTOMEM_STM_SURFACING__MAX_RESULTS": 3,
+      "MEMTOMEM_STM_SURFACING__MAX_SURFACINGS_PER_MINUTE": 15,
+      "MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS": 3,
+      "MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS": 5000,
+      "MEMTOMEM_STM_SURFACING__MIN_SCORE": 0.03,
+      "MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT": true,
+      "MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS": 300,
+      "MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS": 30,
+      "MEMTOMEM_STM_SURFACING__RERANK": false,
+      "MEMTOMEM_STM_SURFACING__RESULT_CONTENT_MAX_CHARS": 500,
+      "MEMTOMEM_STM_SURFACING__RESULT_FORMAT": "structured",
+      "MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE": true,
+      "MEMTOMEM_STM_SURFACING__SECTION_HEADER": "## Relevant Memories",
+      "MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS": 90,
+      "MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS": 3,
+      "MEMTOMEM_STM_SURFACING__USE_DAEMON": false,
+      "MEMTOMEM_STM_SURFACING__WARMUP_ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__WRITE_TOOL_PATTERNS": [
+        "*write*",
+        "*create*",
+        "*delete*",
+        "*push*",
+        "*send*",
+        "*remove*"
+      ],
+      "MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS": 60
+    },
+    "options": {
+      "": [
+        "--version"
+      ],
+      "add": [
+        "--all",
+        "--allow-project-configs",
+        "--args",
+        "--command",
+        "--compression",
+        "--config",
+        "--env",
+        "--from-clients",
+        "--header",
+        "--import",
+        "--json",
+        "--max-chars",
+        "--prefix",
+        "--prune",
+        "--save-unverified",
+        "--select",
+        "--timeout",
+        "--transport",
+        "--url",
+        "--validate"
+      ],
+      "config": [],
+      "config validate": [
+        "--config",
+        "--json"
+      ],
+      "daemon": [],
+      "daemon restart": [],
+      "daemon run": [
+        "--detached",
+        "--foreground"
+      ],
+      "daemon start": [],
+      "daemon status": [
+        "--json"
+      ],
+      "daemon stop": [
+        "--all"
+      ],
+      "doctor": [
+        "--config",
+        "--json",
+        "--measure-ltm",
+        "--timeout"
+      ],
+      "eject": [
+        "--accept-schema-loss",
+        "--allow-argv-secrets",
+        "--config",
+        "--dry-run",
+        "--force",
+        "--json",
+        "--keep",
+        "--to",
+        "--yes"
+      ],
+      "gateway": [],
+      "gateway explain": [
+        "--config",
+        "--json"
+      ],
+      "gateway mode": [
+        "--apply",
+        "--bundle",
+        "--config",
+        "--dry-run"
+      ],
+      "gateway status": [
+        "--config",
+        "--json"
+      ],
+      "health": [
+        "--config",
+        "--json",
+        "--names",
+        "--timeout"
+      ],
+      "hook": [
+        "--daemon-timeout-seconds",
+        "--host",
+        "--no-daemon",
+        "--no-persist-query-text",
+        "--persist-query-text",
+        "--surfacing-timeout-seconds",
+        "--use-daemon"
+      ],
+      "hook install": [
+        "--apply",
+        "--daemon",
+        "--host",
+        "--inherit-runtime-env",
+        "--no-daemon",
+        "--surfacing-timeout"
+      ],
+      "hook uninstall": [
+        "--apply",
+        "--host"
+      ],
+      "host": [],
+      "host scan": [
+        "--from",
+        "--json"
+      ],
+      "host status": [
+        "--json"
+      ],
+      "host sync": [
+        "--allow-project-configs",
+        "--apply",
+        "--force",
+        "--json",
+        "--plan",
+        "--yes"
+      ],
+      "import": [
+        "--allow-project-configs",
+        "--apply",
+        "--from",
+        "--plan",
+        "--show-imported"
+      ],
+      "init": [
+        "--allow-project-configs",
+        "--client",
+        "--config",
+        "--demo",
+        "--freshness",
+        "--json",
+        "--lang",
+        "--mcp",
+        "--no-validate",
+        "--prune-originals",
+        "--replace-registration",
+        "--resume",
+        "--save-unverified"
+      ],
+      "list": [
+        "--config",
+        "--json"
+      ],
+      "project": [],
+      "project disable": [
+        "--project"
+      ],
+      "project enable": [
+        "--project"
+      ],
+      "project init": [
+        "--force",
+        "--name"
+      ],
+      "project list": [
+        "--json",
+        "--prune"
+      ],
+      "project route": [
+        "--apply",
+        "--config",
+        "--json",
+        "--project"
+      ],
+      "project show": [
+        "--json"
+      ],
+      "prune": [
+        "--all",
+        "--config",
+        "--dry-run",
+        "--json",
+        "--yes"
+      ],
+      "register": [
+        "--client",
+        "--config",
+        "--json",
+        "--mcp",
+        "--replace-registration"
+      ],
+      "remove": [
+        "--config",
+        "--json",
+        "--yes"
+      ],
+      "selection": [],
+      "selection feedback": [
+        "--active-only",
+        "--config",
+        "--json",
+        "--last",
+        "--log",
+        "--no-operator-override",
+        "--no-user-corrected",
+        "--operator-override",
+        "--selection-id",
+        "--server",
+        "--tool",
+        "--user-corrected",
+        "--yes"
+      ],
+      "selection replay": [
+        "--active-only",
+        "--config",
+        "--dataset",
+        "--json",
+        "--log",
+        "--no-telemetry",
+        "--output-dir"
+      ],
+      "stats": [
+        "--config",
+        "--json",
+        "--source",
+        "--tool"
+      ],
+      "status": [
+        "--config",
+        "--json"
+      ],
+      "surfacing": [
+        "--config"
+      ],
+      "tune": [
+        "--apply",
+        "--config",
+        "--json",
+        "--since-hours",
+        "--tool",
+        "--yes"
+      ],
+      "version": []
+    },
+    "registeredFunctions": [],
+    "tools": [
+      "demo_search",
+      "stm_compression_feedback",
+      "stm_proxy_read_more",
+      "stm_proxy_select_chunks",
+      "stm_surfacing_feedback"
+    ]
+  }
+}

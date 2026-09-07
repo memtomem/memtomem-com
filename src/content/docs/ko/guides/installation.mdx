@@ -62,15 +62,15 @@ uv tool install 'memtomem[all]' --refresh
 
 | Extra | 설명 | 명령 |
 |---|---|---|
-| `onnx` | fastembed 로컬 임베딩 (권장 기본값) | `pip install memtomem[onnx]` |
-| `ollama` | Ollama 제공자 클라이언트 | `pip install memtomem[ollama]` |
-| `openai` | OpenAI 제공자 클라이언트 | `pip install memtomem[openai]` |
-| `korean` | kiwipiepy 한국어 형태소 분석 | `pip install memtomem[korean]` |
-| `code` | tree-sitter AST 청킹 (Python / JS / TS) | `pip install memtomem[code]` |
-| `web` | FastAPI + uvicorn 기반 Web UI | `pip install memtomem[web]` |
-| `langfuse` | Langfuse 관측성 트레이싱 | `pip install memtomem[langfuse]` |
-| `langgraph` | `MemtomemStore` 및 `MemtomemBaseStore` 어댑터 | `pip install memtomem[langgraph]` |
-| `all` | 전체 | `pip install memtomem[all]` |
+| `onnx` | fastembed 로컬 임베딩 (권장 기본값) | `pip install "memtomem[onnx]"` |
+| `ollama` | Ollama 제공자 클라이언트 | `pip install "memtomem[ollama]"` |
+| `openai` | OpenAI 제공자 클라이언트 | `pip install "memtomem[openai]"` |
+| `korean` | kiwipiepy 한국어 형태소 분석 | `pip install "memtomem[korean]"` |
+| `code` | tree-sitter AST 청킹 (Python / JS / TS) | `pip install "memtomem[code]"` |
+| `web` | FastAPI + uvicorn 기반 Web UI | `pip install "memtomem[web]"` |
+| `langfuse` | Langfuse 관측성 트레이싱 | `pip install "memtomem[langfuse]"` |
+| `langgraph` | `MemtomemStore` 및 `MemtomemBaseStore` 어댑터 | `pip install "memtomem[langgraph]"` |
+| `all` | 전체 | `pip install "memtomem[all]"` |
 
 ### `mm` CLI
 
@@ -143,8 +143,8 @@ STM은 선택 사항입니다. 관련 기억을 자동으로 찾아 붙여 주�
 
 | Extra | 설명 | 명령 |
 |---|---|---|
-| `langfuse` | Langfuse 관측성 트레이싱 | `pip install memtomem-stm[langfuse]` |
-| `langchain` | LangChain 에이전트 통합 | `pip install memtomem-stm[langchain]` |
+| `langfuse` | Langfuse 관측성 트레이싱 | `pip install "memtomem-stm[langfuse]"` |
+| `langchain` | 선택적 LangChain 통합; 어댑터/MCP 의존성 호환성 확인 필요 | `pip install "memtomem-stm[langchain]"` |
 
 ### `mms` CLI
 
