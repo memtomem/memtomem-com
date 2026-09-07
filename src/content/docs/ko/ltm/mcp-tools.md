@@ -13,7 +13,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 |---|---|---|
 | `core` (기본) | `mem_do` 포함 총 9개 | 대부분의 에이전트에 가장 좋은 기본값 |
 | `standard` | `mem_do` 포함 38개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
-| `full` | 현재 도구 99개 + 제거 예정 별칭 1개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
+| `full` | 현재 도구 100개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
 
 다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이
 이미 memtomem을 제공한다면 항목을 추가하기 전에
@@ -66,11 +66,12 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.3.12에는 현재 도구 99개가 등록되어 있습니다. Full 모드는 v0.5.0에서
-제거할 `mem_context_migrate` 별칭도 유지하므로 이름은 총 100개입니다.
+v0.5.0은 현재 도구 100개와 `mem_do` 액션 94개를 제공합니다.
+`mem_context_migrate`는 제거됐고 `mem_candidate_evidence`가 추가됐습니다.
+총개수가 같더라도 이전 버전과 도구 구성은 다릅니다.
 Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과
-`mem_candidate_propose/list/review/recover`가 있습니다. Full 모드에는 AI
+`mem_candidate_propose/list/review/recover/evidence`가 있습니다. Full 모드에는 AI
 도구의 복사본을 미리 확인한 뒤 가져오는 `mem_context_pull`과 Quality Lab에서
 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다.
 
@@ -83,13 +84,16 @@ Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 않으며 승인된 후보만 일반 쓰기 단계로 넘어갑니다. 같은
 `idempotency_key`에 다른 내용을 보내면 거부합니다.
 
+
+`mem_candidate_evidence`는 호출자의 범위 안에 색인된 기억과 후보를 비교합니다. 다른 대기 후보나 고정 컨텍스트와 비교하지 않으며, 충돌 가능성 표시는 사실 판정이나 자동 승인·거부가 아닙니다.
+
 ## OpenCode
 
-공개된 `opencode-memtomem@0.1.2` 플러그인에는 Core 0.3.12가 포함되어 있습니다.
+공개된 `opencode-memtomem@0.3.0` 플러그인에는 Core 0.5.0가 포함되어 있습니다.
 OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없습니다:
 
 ```json
-{"plugin": ["opencode-memtomem@0.1.2"]}
+{"plugin": ["opencode-memtomem@0.3.0"]}
 ```
 
 플러그인의 슬래시 명령과 스킬 없이 MCP 도구만 사용하려면
@@ -101,7 +105,7 @@ OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.12", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}
@@ -158,3 +162,110 @@ MCP 클라이언트가 `mem_do`보다 개별 도구를 직접 호출하는 방�
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 실행한 뒤 같은 작업을 다시 요청해 보세요.
+
+## 전체 모드 도구 이름
+
+기본 core 모드의 9개 도구와 구분되는 full 모드의 현재 100개 이름입니다.
+
+<!-- upstream-tool-names:start -->
+- `mem_activity`
+- `mem_add`
+- `mem_add_redaction_stats`
+- `mem_agent_register`
+- `mem_agent_search`
+- `mem_agent_share`
+- `mem_ask`
+- `mem_auto_tag`
+- `mem_batch_add`
+- `mem_candidate_evidence`
+- `mem_candidate_list`
+- `mem_candidate_propose`
+- `mem_candidate_recover`
+- `mem_candidate_review`
+- `mem_cleanup_orphans`
+- `mem_config`
+- `mem_conflict_check`
+- `mem_consolidate`
+- `mem_consolidate_apply`
+- `mem_context_artifact_migrate`
+- `mem_context_artifact_transfer`
+- `mem_context_compose`
+- `mem_context_detect`
+- `mem_context_diff`
+- `mem_context_generate`
+- `mem_context_init`
+- `mem_context_memory_migrate`
+- `mem_context_promote`
+- `mem_context_pull`
+- `mem_context_sync`
+- `mem_context_version`
+- `mem_decay_expire`
+- `mem_decay_scan`
+- `mem_dedup_merge`
+- `mem_dedup_scan`
+- `mem_delete`
+- `mem_do`
+- `mem_edit`
+- `mem_embedding_reset`
+- `mem_entity_scan`
+- `mem_entity_search`
+- `mem_eval`
+- `mem_expand`
+- `mem_export`
+- `mem_fetch`
+- `mem_formation_scan`
+- `mem_import`
+- `mem_import_notion`
+- `mem_import_obsidian`
+- `mem_importance_scan`
+- `mem_index`
+- `mem_link`
+- `mem_list`
+- `mem_ns_assign`
+- `mem_ns_delete`
+- `mem_ns_get`
+- `mem_ns_list`
+- `mem_ns_rename`
+- `mem_ns_set`
+- `mem_ns_update`
+- `mem_pinned_delete`
+- `mem_pinned_get`
+- `mem_pinned_list`
+- `mem_pinned_set`
+- `mem_policy_add`
+- `mem_policy_delete`
+- `mem_policy_list`
+- `mem_policy_run`
+- `mem_procedure_list`
+- `mem_procedure_save`
+- `mem_quality_replay`
+- `mem_read`
+- `mem_recall`
+- `mem_reflect`
+- `mem_reflect_save`
+- `mem_related`
+- `mem_reset`
+- `mem_schedule_delete`
+- `mem_schedule_list`
+- `mem_schedule_register`
+- `mem_schedule_run_now`
+- `mem_scratch_get`
+- `mem_scratch_promote`
+- `mem_scratch_set`
+- `mem_search`
+- `mem_search_feedback`
+- `mem_search_history`
+- `mem_search_suggest`
+- `mem_session_end`
+- `mem_session_list`
+- `mem_session_start`
+- `mem_stats`
+- `mem_status`
+- `mem_tag_delete`
+- `mem_tag_list`
+- `mem_tag_merge`
+- `mem_tag_rename`
+- `mem_timeline`
+- `mem_unlink`
+- `mem_watchdog`
+<!-- upstream-tool-names:end -->

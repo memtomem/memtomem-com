@@ -75,7 +75,7 @@ Success means Agent A can find the item in its own scope, the item is not cross-
 | `standard` | direct `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | direct session tools | direct `mem_agent_search` / `mem_agent_share` |
 
-Use `core` unless a client genuinely benefits from a larger exposed tool list. The dispatcher preserves the full released action surface without forcing the model to choose among 99 direct tools.
+Use `core` unless a client genuinely benefits from a larger exposed tool list. The dispatcher preserves the full released action surface without exposing the full-mode catalog of 100 tools.
 
 ## Setting `agent_id`
 

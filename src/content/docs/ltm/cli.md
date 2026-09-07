@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.3.12. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.5.0. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.3.12 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.5.0 binary.
 
 | Group | Commands |
 |---|---|
@@ -17,7 +17,7 @@ The current top-level surface is preserved here in full. Detailed task flows fol
 | Retrieval / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
 | Runtime context | `context`, `wiki`, `sync-doctor` |
 | Collaboration | `session`, `activity`, `agent`, `review` |
-| Evaluation / operations | `status`, `quality`, `warmup`, `watchdog`, `schedule` |
+| Evaluation / operations | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
 | Lifecycle | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
 
 All command-group subcommands are mirrored below.
@@ -25,17 +25,18 @@ All command-group subcommands are mirrored below.
 | Group | Subcommands |
 |---|---|
 | `activity` | `log` |
-| `agent` | `list`, `migrate`, `register`, `share` |
+| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `share` |
 | `config` | `set`, `show`, `unset` |
-| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
+| `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
 | `mem` | `init`, `rescan`, `rescan-files` |
 | `memory` | `doctor` |
 | `pinned` | `compose`, `delete`, `get`, `list`, `set` |
 | `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
-| `review` | `approve`, `list`, `recover`, `reject`, `scan`, `show` |
+| `review` | `approve`, `evidence`, `list`, `recover`, `reject`, `scan`, `show` |
 | `schedule` | `add`, `delete`, `list`, `run-now` |
 | `session` | `end`, `events`, `list`, `start`, `wrap` |
 | `tags` | `delete`, `list`, `merge`, `rename` |
@@ -46,32 +47,50 @@ All command-group subcommands are mirrored below.
 
 Bare `mm web` launches the UI; `status` and `stop` manage it.
 
+## Additional diagnostics and review
+
+```bash
+mm doctor --json
+mm agent debug-resolve --agent-id alice
+mm review evidence CANDIDATE_ID --top-k 5
+mm context seed-validation --help
+mm context version --help
+```
+
+`doctor` diagnoses runtime configuration; `agent debug-resolve` explains search
+scope. `review evidence` compares a candidate with indexed memories but never
+approves it. BM25-only or unindexed dense stores may report evidence unavailable.
+`seed-validation` writes validation context assets; inspect its help before
+choosing to run it.
+
 ## Setup
+
+In v0.5.0, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
 Run the interactive setup wizard. Configures embedding provider, database path, tokenizer, reranker, and default namespace.
 
-At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, reranker, tokenizer, and namespace defaults. Pass `--preset <name>` to pick one non-interactively, or `--advanced` to force the full 10-step wizard.
+At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, reranker, tokenizer, and namespace defaults. Pass `--preset <name> --non-interactive` to run without prompts, or `--advanced` to force the full 10-step wizard.
 
 ```bash
 mm init                              # interactive setup with preset picker
 mm init --non-interactive            # auto-accept; behaves as `--preset minimal --non-interactive`
-mm init --preset korean              # apply Korean preset non-interactively
+mm init --preset korean --non-interactive   # apply Korean preset non-interactively
 mm init --preset english --non-interactive   # English preset, no prompts
 mm init --advanced                   # skip picker, run full 10-step wizard
 mm init --fresh                      # bulk-clean accumulated config, then re-run wizard
 ```
 
-On a reinstall path, `mm init` compares the embedding provider / model / dimension stored in the existing `~/.memtomem/memtomem.db` against the new preset. On mismatch, the interactive wizard offers an in-place rebuild of the vector index (`chunks_vec`); under `--non-interactive`, it prints a recovery hint pointing at `mm embedding-reset --mode apply-current`. The chunks table itself is preserved, so re-running `mm index <path>` afterwards restores the working set.
+On a reinstall path, `mm init` compares the embedding provider / model / dimension stored in the existing `~/.memtomem/memtomem.db` against the new preset. On mismatch, the interactive wizard offers an in-place rebuild of the vector index (`chunks_vec`); under `--non-interactive`, it prints a recovery hint pointing at `mm embedding-reset --mode apply-current`. The chunks table itself is preserved, so re-running `mm index --force <path>` afterwards restores the working set.
 
-`--fresh` drops every wizard-untouched config key whose value differs from the built-in default, then re-runs the wizard. A safe cleanup option when the config has accumulated leftovers from older versions; the previous `config.json` is backed up to `config.json.bak-<unix-ts>` before rewriting.
+`--fresh` resets wizard-untouched canonical settings to built-in defaults. It preserves custom keys, credentials, endpoints and user-curated lists; a backup is written only when keys are actually dropped.
 
 ### Running the MCP server
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Quick Start](/guides/quickstart/) for the config snippets.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 99 current tools plus one deprecated alias. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 100 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
 
@@ -494,7 +513,7 @@ mm embedding-reset --mode apply-current       # reset DB to current config (dest
 mm embedding-reset --mode revert-to-stored    # switch runtime embedder to DB stored values (non-destructive)
 ```
 
-`apply-current` rebuilds `chunks_vec` at the current config's dimension. The chunks table itself is preserved, but all vectors are deleted — run `mm index <path>` afterwards to re-index. `revert-to-stored` only flips runtime state; to make it permanent, update the embedding fields in `~/.memtomem/config.json` accordingly.
+`apply-current` rebuilds `chunks_vec` at the current config's dimension. The chunks table itself is preserved, but all vectors are deleted — run `mm index --force <path>` afterwards to re-index. `revert-to-stored` only flips runtime state; to make it permanent, update the embedding fields in `~/.memtomem/config.json` accordingly.
 
 ### `mm purge --matching-excluded`
 
@@ -522,7 +541,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.3.12           # pin a specific version
+mm upgrade --version 0.5.0           # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -538,9 +557,165 @@ mm uninstall                  # interactive, removes everything
 mm uninstall -y               # skip the confirmation prompt
 mm uninstall --keep-config    # preserve config.json + config.d/* + backups
 mm uninstall --keep-data      # preserve the SQLite DB + ~/.memtomem/memories/
-mm uninstall --force          # bypass the running-server safety check
+mm uninstall --force          # limited POSIX heuristics only; stop live writers first
 ```
 
-Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first or pass `--force`. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
+Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first. `--force` cannot bypass live instance-registry evidence, the lifecycle barrier, untrusted registry state, or an open SQLite database on Windows. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
 
 > See [Quick Start](/guides/quickstart/) for the full getting-started walkthrough.
+
+## Complete option index by command
+
+Public long options from the pinned source. Short aliases and the common `--help` flag are omitted. Use each command’s `--help` for arguments, defaults, and constraints.
+
+| Command | Options |
+|---|---|
+| `mm` | `--version` |
+| `mm activity` | — |
+| `mm activity log` | `--content`, `--json`, `--meta`, `--type` |
+| `mm add` | `--allow-namespace-mix`, `--confirm-project-shared`, `--file`, `--force-unsafe`, `--json`, `--namespace`, `--scope`, `--tags`, `--title`, `--yes` |
+| `mm agent` | — |
+| `mm agent debug-resolve` | `--agent-id`, `--current-agent-id`, `--current-namespace`, `--include-shared`, `--no-include-shared` |
+| `mm agent list` | `--json` |
+| `mm agent migrate` | `--dry-run`, `--yes` |
+| `mm agent register` | `--color`, `--description` |
+| `mm agent share` | `--force-unsafe`, `--target` |
+| `mm config` | — |
+| `mm config set` | — |
+| `mm config show` | `--format`, `--json` |
+| `mm config unset` | — |
+| `mm context` | — |
+| `mm context adopt` | — |
+| `mm context copy` | `--apply`, `--as`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
+| `mm context detect` | `--include` |
+| `mm context diff` | `--include`, `--scope` |
+| `mm context generate` | `--agent`, `--include`, `--label`, `--on-drop`, `--scope`, `--strict`, `--yes` |
+| `mm context init` | `--confirm-project-shared`, `--force-unsafe-import`, `--include`, `--only`, `--overwrite`, `--scope` |
+| `mm context install` | `--all`, `--force`, `--yes` |
+| `mm context memory-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--yes` |
+| `mm context migrate` | `--apply`, `--confirm-project-shared`, `--force`, `--from`, `--to`, `--yes` |
+| `mm context move` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
+| `mm context projects` | — |
+| `mm context projects add` | `--label` |
+| `mm context projects list` | `--json` |
+| `mm context projects pause` | — |
+| `mm context projects remove` | — |
+| `mm context projects resume` | — |
+| `mm context pull` | `--apply`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
+| `mm context rescan` | `--json`, `--quiet`, `--scope` |
+| `mm context seed-validation` | `--force`, `--json` |
+| `mm context settings-copy` | `--apply`, `--confirm-project-shared`, `--event`, `--hook-command`, `--json`, `--matcher`, `--to`, `--to-project`, `--yes` |
+| `mm context settings-doctor` | `--json`, `--scope` |
+| `mm context settings-migrate` | `--apply`, `--from`, `--json`, `--to`, `--yes` |
+| `mm context status` | `--all-projects`, `--scope` |
+| `mm context sync` | `--all-projects`, `--force-unsafe`, `--include`, `--label`, `--on-drop`, `--runtime`, `--scope`, `--strict`, `--yes` |
+| `mm context update` | `--all`, `--dry-run`, `--force`, `--force-head`, `--yes` |
+| `mm context version` | — |
+| `mm context version create` | `--note`, `--scope` |
+| `mm context version delete-label` | `--scope` |
+| `mm context version enable` | `--scope` |
+| `mm context version list` | `--scope` |
+| `mm context version promote` | `--scope`, `--to`, `--version` |
+| `mm doctor` | `--json` |
+| `mm embedding-reset` | `--mode`, `--yes` |
+| `mm gc` | — |
+| `mm gc orphan-projects` | `--apply`, `--yes` |
+| `mm gc orphan-sources` | `--apply`, `--yes` |
+| `mm index` | `--debounce-window`, `--flush`, `--force`, `--force-unsafe`, `--json`, `--namespace`, `--no-recursive`, `--reassign-namespaces`, `--recursive`, `--status` |
+| `mm ingest` | — |
+| `mm ingest claude-memory` | `--dry-run`, `--source` |
+| `mm ingest codex-memory` | `--dry-run`, `--source` |
+| `mm ingest gemini-memory` | `--dry-run`, `--source` |
+| `mm init` | `--advanced`, `--api-key`, `--auto-ns`, `--db-path`, `--decay`, `--fresh`, `--include-provider`, `--mcp`, `--memory-dir`, `--model`, `--namespace`, `--non-interactive`, `--preset`, `--provider`, `--tokenizer`, `--top-k` |
+| `mm mem` | — |
+| `mm mem init` | `--confirm-project-shared`, `--scope` |
+| `mm mem rescan` | `--json`, `--quiet`, `--scope`, `--source` |
+| `mm mem rescan-files` | `--json` |
+| `mm memory` | — |
+| `mm memory doctor` | `--apply`, `--fix`, `--json` |
+| `mm pinned` | — |
+| `mm pinned compose` | `--agent`, `--agent-id`, `--max-chars`, `--no-rerank`, `--top-k` |
+| `mm pinned delete` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--scope` |
+| `mm pinned get` | `--agent`, `--agent-id`, `--scope` |
+| `mm pinned list` | `--agent`, `--agent-id`, `--json` |
+| `mm pinned set` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--content`, `--description`, `--file`, `--force-unsafe`, `--priority`, `--scope` |
+| `mm purge` | `--apply`, `--json`, `--matching-excluded`, `--sample` |
+| `mm quality` | — |
+| `mm quality cases` | `--format`, `--status` |
+| `mm quality compare` | `--fail-on-regression`, `--format`, `--out` |
+| `mm quality experiment` | `--as-of`, `--baseline`, `--case`, `--format`, `--out`, `--policy`, `--profile` |
+| `mm quality export` | `--case`, `--out` |
+| `mm quality gate` | `--comparison-out`, `--format`, `--out`, `--policy` |
+| `mm quality import` | `--replace` |
+| `mm quality promote` | `--allow-unreplayable-filters`, `--name` |
+| `mm quality replay` | `--as-of`, `--case`, `--format`, `--out` |
+| `mm quality show` | — |
+| `mm quality status` | — |
+| `mm recall` | `--format`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
+| `mm reset` | `--backup`, `--force`, `--json`, `--yes` |
+| `mm review` | — |
+| `mm review approve` | `--reason`, `--reviewer` |
+| `mm review evidence` | `--top-k` |
+| `mm review list` | `--limit`, `--status` |
+| `mm review recover` | `--actor`, `--limit`, `--stale-after-minutes` |
+| `mm review reject` | `--reason`, `--reviewer` |
+| `mm review scan` | — |
+| `mm review show` | — |
+| `mm schedule` | — |
+| `mm schedule add` | `--cron`, `--job`, `--params` |
+| `mm schedule delete` | — |
+| `mm schedule list` | `--json` |
+| `mm schedule run-now` | — |
+| `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm session` | — |
+| `mm session end` | `--auto`, `--summary` |
+| `mm session events` | `--json` |
+| `mm session list` | `--agent-id`, `--json`, `--limit`, `--since` |
+| `mm session start` | `--agent-id`, `--auto-end-stale`, `--idempotent`, `--json`, `--namespace`, `--title` |
+| `mm session wrap` | `--agent-id`, `--title` |
+| `mm shell` | — |
+| `mm status` | `--format`, `--json` |
+| `mm sync-doctor` | — |
+| `mm tags` | — |
+| `mm tags delete` | `--apply`, `--yes` |
+| `mm tags list` | — |
+| `mm tags merge` | `--apply`, `--into`, `--yes` |
+| `mm tags rename` | `--apply`, `--yes` |
+| `mm uninstall` | `--force`, `--keep-config`, `--keep-data`, `--yes` |
+| `mm upgrade` | `--dry-run`, `--extras`, `--grace`, `--json`, `--version`, `--yes` |
+| `mm version` | — |
+| `mm warmup` | — |
+| `mm watchdog` | — |
+| `mm watchdog history` | `--hours` |
+| `mm watchdog run` | `--json` |
+| `mm watchdog status` | `--json` |
+| `mm web` | `--allow-remote-ui`, `--background`, `--dev`, `--host`, `--log-file`, `--mode`, `--open`, `--port`, `--timeout`, `--trusted-host`, `--trusted-origin` |
+| `mm web status` | — |
+| `mm web stop` | — |
+| `mm wiki` | — |
+| `mm wiki agent` | — |
+| `mm wiki agent commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki agent diff` | `--vendor` |
+| `mm wiki agent lint` | `--vendor` |
+| `mm wiki agent new` | `--editor` |
+| `mm wiki agent override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki agent promote` | `--message`, `--project` |
+| `mm wiki command` | — |
+| `mm wiki command commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki command diff` | `--vendor` |
+| `mm wiki command lint` | `--vendor` |
+| `mm wiki command new` | `--editor` |
+| `mm wiki command override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki command promote` | `--message`, `--project` |
+| `mm wiki init` | `--from` |
+| `mm wiki list` | `--type` |
+| `mm wiki pull` | — |
+| `mm wiki push` | — |
+| `mm wiki remote` | — |
+| `mm wiki skill` | — |
+| `mm wiki skill commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki skill diff` | `--vendor` |
+| `mm wiki skill lint` | `--vendor` |
+| `mm wiki skill new` | `--editor` |
+| `mm wiki skill override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki skill promote` | `--message`, `--project` |

@@ -29,7 +29,7 @@ Pick **one** client below. If that client already has both a plugin and a manual
 
 ## Claude Code
 
-The official plugin is the recommended path. The current marketplace plugin is version 0.3.3 and bundles Core 0.3.12:
+The official plugin is the recommended path. The current marketplace plugin is version 0.5.0 and bundles Core 0.5.0:
 
 ```text
 /plugin marketplace add memtomem/memtomem
@@ -50,7 +50,7 @@ The status should show the same database path as `mm status`, and search should 
 If you previously registered a manual server, run `/mcp` before continuing. Claude Code 2.1.218 matches the exact command and arguments; environment variables are not compared. The plugin signature is:
 
 ```text
-uvx --from memtomem==0.3.12 memtomem-server
+uvx --from memtomem==0.5.0 memtomem-server
 ```
 
 With that same signature, the manual registration wins and only one server runs under `mcp__memtomem__mem_*`. The bare `memtomem-server` entries below have a different signature, so both servers run and tools appear under both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`.
@@ -62,7 +62,7 @@ With that same signature, the manual registration wins and only one server runs 
 - **Keep the plugin commands with the manual server:** keep the plugin installed and register the manual entry with the exact plugin signature. For example:
 
   ```bash
-  claude mcp add memtomem -- uvx --from memtomem==0.3.12 memtomem-server
+  claude mcp add memtomem -- uvx --from memtomem==0.5.0 memtomem-server
   ```
 
 For MCP-only setup without the plugin's commands and skills, choose one Claude Code registration scope:
@@ -150,7 +150,7 @@ The published plugin provides an exact-pinned MCP server plus commands and skill
 
 ```json
 {
-  "plugin": ["opencode-memtomem@0.1.2"]
+  "plugin": ["opencode-memtomem@0.3.0"]
 }
 ```
 
@@ -162,7 +162,7 @@ For MCP tools only:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.12", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}

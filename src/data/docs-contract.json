@@ -1,16 +1,119 @@
 {
   "core": {
-    "version": "0.3.12",
+    "version": "0.5.0",
     "python": ">=3.12",
     "tools": {
       "core": 9,
       "standard": 38,
-      "fullCurrent": 99,
-      "deprecatedAliases": 1
-    }
+      "fullCurrent": 100,
+      "deprecatedAliases": 0,
+      "actions": 94
+    },
+    "toolNames": [
+      "mem_activity",
+      "mem_add",
+      "mem_add_redaction_stats",
+      "mem_agent_register",
+      "mem_agent_search",
+      "mem_agent_share",
+      "mem_ask",
+      "mem_auto_tag",
+      "mem_batch_add",
+      "mem_candidate_evidence",
+      "mem_candidate_list",
+      "mem_candidate_propose",
+      "mem_candidate_recover",
+      "mem_candidate_review",
+      "mem_cleanup_orphans",
+      "mem_config",
+      "mem_conflict_check",
+      "mem_consolidate",
+      "mem_consolidate_apply",
+      "mem_context_artifact_migrate",
+      "mem_context_artifact_transfer",
+      "mem_context_compose",
+      "mem_context_detect",
+      "mem_context_diff",
+      "mem_context_generate",
+      "mem_context_init",
+      "mem_context_memory_migrate",
+      "mem_context_promote",
+      "mem_context_pull",
+      "mem_context_sync",
+      "mem_context_version",
+      "mem_decay_expire",
+      "mem_decay_scan",
+      "mem_dedup_merge",
+      "mem_dedup_scan",
+      "mem_delete",
+      "mem_do",
+      "mem_edit",
+      "mem_embedding_reset",
+      "mem_entity_scan",
+      "mem_entity_search",
+      "mem_eval",
+      "mem_expand",
+      "mem_export",
+      "mem_fetch",
+      "mem_formation_scan",
+      "mem_import",
+      "mem_import_notion",
+      "mem_import_obsidian",
+      "mem_importance_scan",
+      "mem_index",
+      "mem_link",
+      "mem_list",
+      "mem_ns_assign",
+      "mem_ns_delete",
+      "mem_ns_get",
+      "mem_ns_list",
+      "mem_ns_rename",
+      "mem_ns_set",
+      "mem_ns_update",
+      "mem_pinned_delete",
+      "mem_pinned_get",
+      "mem_pinned_list",
+      "mem_pinned_set",
+      "mem_policy_add",
+      "mem_policy_delete",
+      "mem_policy_list",
+      "mem_policy_run",
+      "mem_procedure_list",
+      "mem_procedure_save",
+      "mem_quality_replay",
+      "mem_read",
+      "mem_recall",
+      "mem_reflect",
+      "mem_reflect_save",
+      "mem_related",
+      "mem_reset",
+      "mem_schedule_delete",
+      "mem_schedule_list",
+      "mem_schedule_register",
+      "mem_schedule_run_now",
+      "mem_scratch_get",
+      "mem_scratch_promote",
+      "mem_scratch_set",
+      "mem_search",
+      "mem_search_feedback",
+      "mem_search_history",
+      "mem_search_suggest",
+      "mem_session_end",
+      "mem_session_list",
+      "mem_session_start",
+      "mem_stats",
+      "mem_status",
+      "mem_tag_delete",
+      "mem_tag_list",
+      "mem_tag_merge",
+      "mem_tag_rename",
+      "mem_timeline",
+      "mem_unlink",
+      "mem_watchdog"
+    ]
   },
   "stm": {
-    "version": "0.1.41",
+    "version": "0.4.0",
     "python": ">=3.12",
     "tools": {
       "modelFacing": 4,
@@ -18,25 +121,25 @@
     }
   },
   "claudePlugin": {
-    "version": "0.3.3",
-    "bundledCore": "0.3.12"
+    "version": "0.5.0",
+    "bundledCore": "0.5.0"
   },
   "opencode": {
-    "version": "0.1.2",
-    "bundledCore": "0.3.12"
+    "version": "0.3.0",
+    "bundledCore": "0.5.0"
   },
   "sourceSnapshots": {
-    "coreMain": "57431301",
-    "stmMain": "bf06283"
+    "coreMain": "bb111b811389f9bb274ae8cfdc77e4c61b3622e2",
+    "stmMain": "6f8cb9c49655766e16381ecaed3598961a827df9"
   },
   "configuration": {
     "coreEnvironment": {
-      "count": 129,
-      "sha256": "c17602f13984fefeab7633d5c6ef3ac552865329b809367f4f6bbf614258100f"
+      "count": 135,
+      "sha256": "9859ecc97168bbb14412a5634ada91ceaac1d280d9383b5fda51974f363c3d8a"
     },
     "stmEnvironment": {
-      "count": 158,
-      "sha256": "399b9d8e07c62b9fe765e2d833205b659a1959ee2cb23cf9fed42cb4a3f7ac4d"
+      "count": 174,
+      "sha256": "bf728a0a48fce5fed4097ddfd22261dc24502e4a9d5a2012535abbcac44c5a33"
     }
   },
   "guides": {
@@ -166,6 +269,7 @@
     "agent",
     "config",
     "context",
+    "doctor",
     "embedding-reset",
     "gc",
     "index",
@@ -195,25 +299,149 @@
     "wiki"
   ],
   "coreCommandGroups": {
-    "activity": ["log"],
-    "agent": ["list", "migrate", "register", "share"],
-    "config": ["set", "show", "unset"],
-    "context": ["adopt", "copy", "detect", "diff", "generate", "init", "install", "memory-migrate", "migrate", "move", "projects", "pull", "rescan", "settings-copy", "settings-doctor", "settings-migrate", "status", "sync", "update", "version"],
-    "context projects": ["add", "list", "pause", "remove", "resume"],
-    "gc": ["orphan-projects", "orphan-sources"],
-    "ingest": ["claude-memory", "codex-memory", "gemini-memory"],
-    "mem": ["init", "rescan", "rescan-files"],
-    "memory": ["doctor"],
-    "pinned": ["compose", "delete", "get", "list", "set"],
-    "quality": ["cases", "compare", "experiment", "export", "gate", "import", "promote", "replay", "show", "status"],
-    "review": ["approve", "list", "recover", "reject", "scan", "show"],
-    "schedule": ["add", "delete", "list", "run-now"],
-    "session": ["end", "events", "list", "start", "wrap"],
-    "tags": ["delete", "list", "merge", "rename"],
-    "watchdog": ["history", "run", "status"],
-    "web": ["status", "stop"],
-    "wiki": ["agent", "command", "init", "list", "pull", "push", "remote", "skill"],
-    "wiki agent/command/skill": ["commit", "diff", "lint", "new", "override", "promote"]
+    "activity": [
+      "log"
+    ],
+    "agent": [
+      "debug-resolve",
+      "list",
+      "migrate",
+      "register",
+      "share"
+    ],
+    "config": [
+      "set",
+      "show",
+      "unset"
+    ],
+    "context": [
+      "adopt",
+      "copy",
+      "detect",
+      "diff",
+      "generate",
+      "init",
+      "install",
+      "memory-migrate",
+      "migrate",
+      "move",
+      "projects",
+      "pull",
+      "rescan",
+      "seed-validation",
+      "settings-copy",
+      "settings-doctor",
+      "settings-migrate",
+      "status",
+      "sync",
+      "update",
+      "version"
+    ],
+    "context projects": [
+      "add",
+      "list",
+      "pause",
+      "remove",
+      "resume"
+    ],
+    "context version": [
+      "create",
+      "delete-label",
+      "enable",
+      "list",
+      "promote"
+    ],
+    "gc": [
+      "orphan-projects",
+      "orphan-sources"
+    ],
+    "ingest": [
+      "claude-memory",
+      "codex-memory",
+      "gemini-memory"
+    ],
+    "mem": [
+      "init",
+      "rescan",
+      "rescan-files"
+    ],
+    "memory": [
+      "doctor"
+    ],
+    "pinned": [
+      "compose",
+      "delete",
+      "get",
+      "list",
+      "set"
+    ],
+    "quality": [
+      "cases",
+      "compare",
+      "experiment",
+      "export",
+      "gate",
+      "import",
+      "promote",
+      "replay",
+      "show",
+      "status"
+    ],
+    "review": [
+      "approve",
+      "evidence",
+      "list",
+      "recover",
+      "reject",
+      "scan",
+      "show"
+    ],
+    "schedule": [
+      "add",
+      "delete",
+      "list",
+      "run-now"
+    ],
+    "session": [
+      "end",
+      "events",
+      "list",
+      "start",
+      "wrap"
+    ],
+    "tags": [
+      "delete",
+      "list",
+      "merge",
+      "rename"
+    ],
+    "watchdog": [
+      "history",
+      "run",
+      "status"
+    ],
+    "web": [
+      "status",
+      "stop"
+    ],
+    "wiki": [
+      "agent",
+      "command",
+      "init",
+      "list",
+      "pull",
+      "push",
+      "remote",
+      "skill"
+    ],
+    "wiki agent/command/skill": [
+      "commit",
+      "diff",
+      "lint",
+      "new",
+      "override",
+      "promote"
+    ]
   },
   "stmTopLevelCommands": [
     "add",
@@ -249,6 +477,8 @@
     "gateway explain",
     "gateway mode",
     "gateway status",
+    "hook install",
+    "hook uninstall",
     "host scan",
     "host status",
     "host sync",
@@ -258,6 +488,7 @@
     "project list",
     "project route",
     "project show",
+    "selection feedback",
     "selection replay"
   ],
   "stmCliOptionTokens": [
@@ -273,41 +504,56 @@
     "--command",
     "--compression",
     "--config",
+    "--daemon",
     "--daemon-timeout-seconds",
     "--dataset",
     "--demo",
+    "--detached",
     "--dry-run",
     "--env",
     "--force",
+    "--foreground",
     "--freshness",
     "--from",
     "--from-clients",
     "--header",
     "--host",
+    "--import",
+    "--inherit-runtime-env",
     "--json",
     "--keep",
     "--lang",
+    "--last",
     "--log",
     "--max-chars",
     "--mcp",
     "--measure-ltm",
+    "--name",
     "--names",
     "--no-daemon",
+    "--no-operator-override",
     "--no-persist-query-text",
     "--no-telemetry",
+    "--no-user-corrected",
     "--no-validate",
+    "--operator-override",
     "--output-dir",
     "--persist-query-text",
     "--plan",
     "--prefix",
     "--project",
     "--prune",
+    "--prune-originals",
     "--replace-registration",
     "--resume",
     "--save-unverified",
+    "--select",
+    "--selection-id",
+    "--server",
     "--show-imported",
     "--since-hours",
     "--source",
+    "--surfacing-timeout",
     "--surfacing-timeout-seconds",
     "--timeout",
     "--to",
@@ -315,7 +561,10 @@
     "--transport",
     "--url",
     "--use-daemon",
+    "--user-corrected",
     "--validate",
+    "--version",
     "--yes"
-  ]
+  ],
+  "reviewedOn": "2026-09-07"
 }

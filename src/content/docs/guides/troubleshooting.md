@@ -119,7 +119,7 @@ Use that absolute path as the configured `command`, then fully restart the app. 
 
 This duplicates MCP server namespaces and tools, not necessarily the plugin's slash commands or skills. Resolve it according to the client:
 
-- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem==0.3.12 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
+- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem==0.5.0 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
 - **Codex:** run `codex mcp list`. `[mcp_servers.memtomem]` takes precedence over the plugin and runs one server. A different name such as `[mcp_servers.memtomem-local]` runs both; rename it to `memtomem` or remove it to use the plugin server.
 - **OpenCode:** keep the manual entry at the exact `mcp.memtomem` key, or remove it to use the plugin server. A different key such as `mcp."memtomem-local"` runs both.
 

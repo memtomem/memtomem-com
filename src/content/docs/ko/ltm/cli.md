@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.3.12를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.5.0를 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -17,7 +17,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | 검색 / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
 | 실행 환경 컨텍스트 | `context`, `wiki`, `sync-doctor` |
 | 협업 | `session`, `activity`, `agent`, `review` |
-| 평가 / 운영 | `status`, `quality`, `warmup`, `watchdog`, `schedule` |
+| 평가 / 운영 | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
 | 라이프사이클 | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
 
 명령 그룹별 하위 명령도 모두 나열합니다.
@@ -25,17 +25,18 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | 그룹 | 하위 명령 |
 |---|---|
 | `activity` | `log` |
-| `agent` | `list`, `migrate`, `register`, `share` |
+| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `share` |
 | `config` | `set`, `show`, `unset` |
-| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
+| `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
 | `mem` | `init`, `rescan`, `rescan-files` |
 | `memory` | `doctor` |
 | `pinned` | `compose`, `delete`, `get`, `list`, `set` |
 | `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
-| `review` | `approve`, `list`, `recover`, `reject`, `scan`, `show` |
+| `review` | `approve`, `evidence`, `list`, `recover`, `reject`, `scan`, `show` |
 | `schedule` | `add`, `delete`, `list`, `run-now` |
 | `session` | `end`, `events`, `list`, `start`, `wrap` |
 | `tags` | `delete`, `list`, `merge`, `rename` |
@@ -46,32 +47,49 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm web`은 UI를 실행하고 `mm web status`와 `mm web stop`은 실행 상태를 관리합니다.
 
+## 추가 진단·검토 명령
+
+```bash
+mm doctor --json
+mm agent debug-resolve --agent-id alice
+mm review evidence CANDIDATE_ID --top-k 5
+mm context seed-validation --help
+mm context version --help
+```
+
+`doctor`는 실행 환경을 진단하고, `agent debug-resolve`는 검색 범위를 설명합니다.
+`review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
+BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 나올 수 있습니다.
+`seed-validation`은 검증용 컨텍스트 자료를 만드는 쓰기 작업이므로 도움말을 확인한 뒤 선택적으로 실행하세요.
+
 ## 설정
+
+`-y`는 v0.5.0에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
 대화형 설정 마법사를 실행합니다. 임베딩 제공자, 데이터베이스 경로, 토크나이저, 리랭커, 기본 네임스페이스를 설정합니다.
 
-설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·리랭커·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 입력 없이 실행하려면 `--preset <name>`을 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
+설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·리랭커·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 입력 없이 실행하려면 `--preset <name> --non-interactive`를 함께 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
 
 ```bash
 mm init                              # 대화형 설정 + 프리셋 선택
 mm init --non-interactive            # 자동 수락; `--preset minimal --non-interactive`와 동일
-mm init --preset korean              # 한국어 프리셋을 비대화 모드로 적용
+mm init --preset korean --non-interactive   # 한국어 프리셋을 비대화 모드로 적용
 mm init --preset english --non-interactive   # 영어 프리셋, 프롬프트 없음
 mm init --advanced                   # 프리셋 선택 생략, 10단계 전체 마법사
 mm init --fresh                      # 누적 설정 일괄 정리 후 마법사 재실행
 ```
 
-재설치 후 `mm init`을 실행하면 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 제공자·모델·차원이 새 프리셋과 맞는지 검사합니다. 값이 다르면 대화형 모드에서는 벡터 인덱스(`chunks_vec`)를 다시 만드는 방법을 안내합니다. `--non-interactive`에서는 `mm embedding-reset --mode apply-current`를 안내합니다. 청크 테이블은 그대로 남으므로 이후 `mm index <path>`로 다시 색인하면 검색 데이터를 복구할 수 있습니다.
+재설치 후 `mm init`을 실행하면 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 제공자·모델·차원이 새 프리셋과 맞는지 검사합니다. 값이 다르면 대화형 모드에서는 벡터 인덱스(`chunks_vec`)를 다시 만드는 방법을 안내합니다. `--non-interactive`에서는 `mm embedding-reset --mode apply-current`를 안내합니다. 청크 테이블은 그대로 남으므로 이후 `mm index --force <path>`로 다시 색인하면 검색 데이터를 복구할 수 있습니다.
 
-`--fresh`는 마법사가 다루지 않는 사용자 설정을 제거하고 설정을 다시 시작합니다. 이전 버전에서 남은 값을 한꺼번에 정리할 때 사용합니다. 기존 `config.json`은 `config.json.bak-<unix-ts>`로 백업한 뒤 다시 작성합니다.
+`--fresh`는 마법사가 다루지 않는 표준 설정을 기본값으로 되돌립니다. 사용자 정의 키·자격 증명·엔드포인트·직접 관리하는 목록은 보존하며, 실제로 키를 제거할 때만 기존 설정을 백업합니다.
 
 ### MCP 서버 실행
 
 MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 등록 예시는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
-MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 99개와 제거 예정인 `mem_context_migrate` 별칭 1개를 표시합니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
+MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 100개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
 v0.1.25부터 MCP 연결만으로는 `~/.memtomem/memtomem.db`를 만들지 않습니다. DB는 도구를 처음 호출할 때 엽니다. 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`에 두며, 플랫폼에 따라 `$TMPDIR/memtomem-$UID/`를 사용합니다. 도구를 호출하지 않으면 홈 디렉터리에 파일을 남기지 않습니다.
 
@@ -496,7 +514,7 @@ mm embedding-reset --mode apply-current       # DB를 현재 설정으로 재설
 mm embedding-reset --mode revert-to-stored    # 실행 중인 임베더를 DB 저장값에 맞춤 (비파괴적)
 ```
 
-`apply-current`는 `chunks_vec`를 현재 설정의 차원으로 다시 만듭니다. 청크 테이블은 남지만 모든 벡터를 삭제하므로 이후 `mm index <path>`로 다시 색인해야 합니다. `revert-to-stored`는 설정 파일을 바꾸지 않고 실행 중인 임베더만 DB 값으로 되돌립니다. 이 상태를 계속 사용하려면 `~/.memtomem/config.json`의 임베딩 설정도 같은 값으로 바꾸세요.
+`apply-current`는 `chunks_vec`를 현재 설정의 차원으로 다시 만듭니다. 청크 테이블은 남지만 모든 벡터를 삭제하므로 이후 `mm index --force <path>`로 다시 색인해야 합니다. `revert-to-stored`는 설정 파일을 바꾸지 않고 실행 중인 임베더만 DB 값으로 되돌립니다. 이 상태를 계속 사용하려면 `~/.memtomem/config.json`의 임베딩 설정도 같은 값으로 바꾸세요.
 
 ### `mm purge --matching-excluded`
 
@@ -524,7 +542,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.3.12           # 특정 버전 고정
+mm upgrade --version 0.5.0           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -540,9 +558,165 @@ mm uninstall                  # 대화형, 전체 삭제
 mm uninstall -y               # 확인 프롬프트 스킵
 mm uninstall --keep-config    # config.json + config.d/* + 백업 보존
 mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
-mm uninstall --force          # 서버 실행 중 안전장치 우회
+mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 있는 프로세스는 먼저 종료
 ```
 
-기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하거나 `--force`를 사용하세요. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
+기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하세요. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
 
 > 전체 시작 과정은 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
+
+## 명령별 전체 옵션 인덱스
+
+고정 소스의 공개 긴 옵션 목록입니다. 짧은 별칭과 공통 `--help`는 생략합니다. 인수·기본값·제약은 해당 명령의 `--help`로 확인하세요.
+
+| 명령 | 옵션 |
+|---|---|
+| `mm` | `--version` |
+| `mm activity` | — |
+| `mm activity log` | `--content`, `--json`, `--meta`, `--type` |
+| `mm add` | `--allow-namespace-mix`, `--confirm-project-shared`, `--file`, `--force-unsafe`, `--json`, `--namespace`, `--scope`, `--tags`, `--title`, `--yes` |
+| `mm agent` | — |
+| `mm agent debug-resolve` | `--agent-id`, `--current-agent-id`, `--current-namespace`, `--include-shared`, `--no-include-shared` |
+| `mm agent list` | `--json` |
+| `mm agent migrate` | `--dry-run`, `--yes` |
+| `mm agent register` | `--color`, `--description` |
+| `mm agent share` | `--force-unsafe`, `--target` |
+| `mm config` | — |
+| `mm config set` | — |
+| `mm config show` | `--format`, `--json` |
+| `mm config unset` | — |
+| `mm context` | — |
+| `mm context adopt` | — |
+| `mm context copy` | `--apply`, `--as`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
+| `mm context detect` | `--include` |
+| `mm context diff` | `--include`, `--scope` |
+| `mm context generate` | `--agent`, `--include`, `--label`, `--on-drop`, `--scope`, `--strict`, `--yes` |
+| `mm context init` | `--confirm-project-shared`, `--force-unsafe-import`, `--include`, `--only`, `--overwrite`, `--scope` |
+| `mm context install` | `--all`, `--force`, `--yes` |
+| `mm context memory-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--yes` |
+| `mm context migrate` | `--apply`, `--confirm-project-shared`, `--force`, `--from`, `--to`, `--yes` |
+| `mm context move` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
+| `mm context projects` | — |
+| `mm context projects add` | `--label` |
+| `mm context projects list` | `--json` |
+| `mm context projects pause` | — |
+| `mm context projects remove` | — |
+| `mm context projects resume` | — |
+| `mm context pull` | `--apply`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
+| `mm context rescan` | `--json`, `--quiet`, `--scope` |
+| `mm context seed-validation` | `--force`, `--json` |
+| `mm context settings-copy` | `--apply`, `--confirm-project-shared`, `--event`, `--hook-command`, `--json`, `--matcher`, `--to`, `--to-project`, `--yes` |
+| `mm context settings-doctor` | `--json`, `--scope` |
+| `mm context settings-migrate` | `--apply`, `--from`, `--json`, `--to`, `--yes` |
+| `mm context status` | `--all-projects`, `--scope` |
+| `mm context sync` | `--all-projects`, `--force-unsafe`, `--include`, `--label`, `--on-drop`, `--runtime`, `--scope`, `--strict`, `--yes` |
+| `mm context update` | `--all`, `--dry-run`, `--force`, `--force-head`, `--yes` |
+| `mm context version` | — |
+| `mm context version create` | `--note`, `--scope` |
+| `mm context version delete-label` | `--scope` |
+| `mm context version enable` | `--scope` |
+| `mm context version list` | `--scope` |
+| `mm context version promote` | `--scope`, `--to`, `--version` |
+| `mm doctor` | `--json` |
+| `mm embedding-reset` | `--mode`, `--yes` |
+| `mm gc` | — |
+| `mm gc orphan-projects` | `--apply`, `--yes` |
+| `mm gc orphan-sources` | `--apply`, `--yes` |
+| `mm index` | `--debounce-window`, `--flush`, `--force`, `--force-unsafe`, `--json`, `--namespace`, `--no-recursive`, `--reassign-namespaces`, `--recursive`, `--status` |
+| `mm ingest` | — |
+| `mm ingest claude-memory` | `--dry-run`, `--source` |
+| `mm ingest codex-memory` | `--dry-run`, `--source` |
+| `mm ingest gemini-memory` | `--dry-run`, `--source` |
+| `mm init` | `--advanced`, `--api-key`, `--auto-ns`, `--db-path`, `--decay`, `--fresh`, `--include-provider`, `--mcp`, `--memory-dir`, `--model`, `--namespace`, `--non-interactive`, `--preset`, `--provider`, `--tokenizer`, `--top-k` |
+| `mm mem` | — |
+| `mm mem init` | `--confirm-project-shared`, `--scope` |
+| `mm mem rescan` | `--json`, `--quiet`, `--scope`, `--source` |
+| `mm mem rescan-files` | `--json` |
+| `mm memory` | — |
+| `mm memory doctor` | `--apply`, `--fix`, `--json` |
+| `mm pinned` | — |
+| `mm pinned compose` | `--agent`, `--agent-id`, `--max-chars`, `--no-rerank`, `--top-k` |
+| `mm pinned delete` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--scope` |
+| `mm pinned get` | `--agent`, `--agent-id`, `--scope` |
+| `mm pinned list` | `--agent`, `--agent-id`, `--json` |
+| `mm pinned set` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--content`, `--description`, `--file`, `--force-unsafe`, `--priority`, `--scope` |
+| `mm purge` | `--apply`, `--json`, `--matching-excluded`, `--sample` |
+| `mm quality` | — |
+| `mm quality cases` | `--format`, `--status` |
+| `mm quality compare` | `--fail-on-regression`, `--format`, `--out` |
+| `mm quality experiment` | `--as-of`, `--baseline`, `--case`, `--format`, `--out`, `--policy`, `--profile` |
+| `mm quality export` | `--case`, `--out` |
+| `mm quality gate` | `--comparison-out`, `--format`, `--out`, `--policy` |
+| `mm quality import` | `--replace` |
+| `mm quality promote` | `--allow-unreplayable-filters`, `--name` |
+| `mm quality replay` | `--as-of`, `--case`, `--format`, `--out` |
+| `mm quality show` | — |
+| `mm quality status` | — |
+| `mm recall` | `--format`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
+| `mm reset` | `--backup`, `--force`, `--json`, `--yes` |
+| `mm review` | — |
+| `mm review approve` | `--reason`, `--reviewer` |
+| `mm review evidence` | `--top-k` |
+| `mm review list` | `--limit`, `--status` |
+| `mm review recover` | `--actor`, `--limit`, `--stale-after-minutes` |
+| `mm review reject` | `--reason`, `--reviewer` |
+| `mm review scan` | — |
+| `mm review show` | — |
+| `mm schedule` | — |
+| `mm schedule add` | `--cron`, `--job`, `--params` |
+| `mm schedule delete` | — |
+| `mm schedule list` | `--json` |
+| `mm schedule run-now` | — |
+| `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm session` | — |
+| `mm session end` | `--auto`, `--summary` |
+| `mm session events` | `--json` |
+| `mm session list` | `--agent-id`, `--json`, `--limit`, `--since` |
+| `mm session start` | `--agent-id`, `--auto-end-stale`, `--idempotent`, `--json`, `--namespace`, `--title` |
+| `mm session wrap` | `--agent-id`, `--title` |
+| `mm shell` | — |
+| `mm status` | `--format`, `--json` |
+| `mm sync-doctor` | — |
+| `mm tags` | — |
+| `mm tags delete` | `--apply`, `--yes` |
+| `mm tags list` | — |
+| `mm tags merge` | `--apply`, `--into`, `--yes` |
+| `mm tags rename` | `--apply`, `--yes` |
+| `mm uninstall` | `--force`, `--keep-config`, `--keep-data`, `--yes` |
+| `mm upgrade` | `--dry-run`, `--extras`, `--grace`, `--json`, `--version`, `--yes` |
+| `mm version` | — |
+| `mm warmup` | — |
+| `mm watchdog` | — |
+| `mm watchdog history` | `--hours` |
+| `mm watchdog run` | `--json` |
+| `mm watchdog status` | `--json` |
+| `mm web` | `--allow-remote-ui`, `--background`, `--dev`, `--host`, `--log-file`, `--mode`, `--open`, `--port`, `--timeout`, `--trusted-host`, `--trusted-origin` |
+| `mm web status` | — |
+| `mm web stop` | — |
+| `mm wiki` | — |
+| `mm wiki agent` | — |
+| `mm wiki agent commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki agent diff` | `--vendor` |
+| `mm wiki agent lint` | `--vendor` |
+| `mm wiki agent new` | `--editor` |
+| `mm wiki agent override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki agent promote` | `--message`, `--project` |
+| `mm wiki command` | — |
+| `mm wiki command commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki command diff` | `--vendor` |
+| `mm wiki command lint` | `--vendor` |
+| `mm wiki command new` | `--editor` |
+| `mm wiki command override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki command promote` | `--message`, `--project` |
+| `mm wiki init` | `--from` |
+| `mm wiki list` | `--type` |
+| `mm wiki pull` | — |
+| `mm wiki push` | — |
+| `mm wiki remote` | — |
+| `mm wiki skill` | — |
+| `mm wiki skill commit` | `--canonical`, `--message`, `--vendor` |
+| `mm wiki skill diff` | `--vendor` |
+| `mm wiki skill lint` | `--vendor` |
+| `mm wiki skill new` | `--editor` |
+| `mm wiki skill override` | `--editor`, `--force`, `--vendor` |
+| `mm wiki skill promote` | `--message`, `--project` |

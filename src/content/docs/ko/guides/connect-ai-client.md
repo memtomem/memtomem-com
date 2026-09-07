@@ -29,7 +29,7 @@ MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용�
 
 ## Claude Code
 
-공식 플러그인 설치를 권장합니다. 현재 마켓플레이스 플러그인 버전은 0.3.3이며 Core 0.3.12를 포함합니다.
+공식 플러그인 설치를 권장합니다. 현재 마켓플레이스 플러그인 버전은 0.5.0이며 Core 0.5.0를 포함합니다.
 
 ```text
 /plugin marketplace add memtomem/memtomem
@@ -50,7 +50,7 @@ MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용�
 이전에 서버를 수동으로 등록했다면 먼저 `/mcp`를 실행하세요. Claude Code 2.1.218은 명령과 인수가 정확히 같은지 비교하며 환경변수는 비교하지 않습니다. 플러그인이 사용하는 실행 조합은 다음과 같습니다.
 
 ```text
-uvx --from memtomem==0.3.12 memtomem-server
+uvx --from memtomem==0.5.0 memtomem-server
 ```
 
 이 조합이 같으면 수동 등록이 우선하고 `mcp__memtomem__mem_*` 이름으로 서버 하나만 실행합니다. 아래의 단독 `memtomem-server` 등록은 조합이 다르므로 서버 두 개가 실행되고, 도구가 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*`에 모두 나타납니다.
@@ -62,7 +62,7 @@ uvx --from memtomem==0.3.12 memtomem-server
 - **플러그인 명령과 수동 서버를 함께 유지:** 플러그인은 설치된 상태로 두고 수동 항목을 플러그인과 정확히 같은 조합으로 등록합니다. 예:
 
   ```bash
-  claude mcp add memtomem -- uvx --from memtomem==0.3.12 memtomem-server
+  claude mcp add memtomem -- uvx --from memtomem==0.5.0 memtomem-server
   ```
 
 플러그인의 명령과 스킬 없이 MCP 서버만 연결하려면 Claude Code 등록 범위를 하나 선택합니다.
@@ -150,7 +150,7 @@ mm init --mcp kimi
 
 ```json
 {
-  "plugin": ["opencode-memtomem@0.1.2"]
+  "plugin": ["opencode-memtomem@0.3.0"]
 }
 ```
 
@@ -162,7 +162,7 @@ MCP 도구만 필요한 경우:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.3.12", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}
