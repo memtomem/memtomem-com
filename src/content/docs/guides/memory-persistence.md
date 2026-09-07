@@ -9,7 +9,7 @@ AI agents start new sessions without the full prior transcript. With memtomem co
 
 ## Prerequisites
 
-Complete [Quick Start](/guides/quickstart/) so `memtomem` is installed, initialized, and registered with your MCP client (Claude Code, Cursor, Claude Desktop, …).
+Complete [Quick Start](/guides/quickstart/) to install and initialize local memory, then [Connect an AI Client](/guides/connect-ai-client/) and verify `mem_status`. Quick Start alone does not register an MCP client. For a concrete coding exercise, use the [retry-policy scenario](/use-cases/vibe-coding/).
 
 ## Session A: Save a Memory
 

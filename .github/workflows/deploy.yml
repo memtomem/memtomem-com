@@ -26,6 +26,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      # Publish Core examples first. Do not deploy links to absent or stale assets.
+      - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: node scripts/check-onboarding-assets.mjs
       # Pull requests build and test only; the artifact would never be
       # deployed, so skip the upload there.
       - if: github.event_name != 'pull_request'

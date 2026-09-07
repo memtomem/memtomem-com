@@ -190,6 +190,8 @@ a { color: inherit; text-decoration: none; }
 .feature-grid {
 	display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
 }
+/* Two-card sections: without this the row leaves an empty third column. */
+.feature-grid-2 { grid-template-columns: repeat(2, 1fr); }
 .feature-card {
 	padding: 28px 24px;
 	border-radius: var(--radius-lg);
