@@ -95,45 +95,94 @@ test('core references are collected from blob, raw, and tree links', () => {
     `<a href="${RAW}/examples/onboarding/retry-policy/demo.py">b</a>`,
     `[c](${CORE}/tree/main/examples/onboarding/retry-policy)`,
     'https://github.com/memtomem/memtomem-stm/blob/main/README.md',
-    `${CORE}/blob/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb`,
+    `${CORE}/blob/v0.6.4/examples/onboarding/retry-policy/retry_policy.py#L1`,
+    'https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/onboarding/retry-policy/test_policy.py?download=1',
+    `${CORE}/tree/v0.6.4/examples/notebooks/`,
   ].join('\n'));
   assert.deepEqual([...found.files].sort(), [
     'examples/notebooks/05_langgraph_memory_basics.ipynb',
     'examples/onboarding/retry-policy/demo.py',
+    'examples/onboarding/retry-policy/retry_policy.py',
+    'examples/onboarding/retry-policy/test_policy.py',
   ]);
-  assert.deepEqual([...found.trees], ['examples/onboarding/retry-policy']);
+  assert.deepEqual([...found.trees], ['examples/onboarding/retry-policy', 'examples/notebooks']);
+  assert.equal(found.links.length, 6);
 });
 
 test('a trailing slash does not hide a covered directory link', () => {
-  const found = collectCoreReferences(`[a](${CORE}/tree/main/examples/onboarding/retry-policy/)`);
-  assert.doesNotThrow(() => assertReferencesCovered(found));
+  const found = collectCoreReferences(`[a](${CORE}/tree/v0.6.4/examples/onboarding/retry-policy/)`);
+  assert.doesNotThrow(() => assertReferencesCovered(found, 'v0.6.4'));
+});
+
+test('tagged links cannot bypass asset coverage', () => {
+  for (const url of [
+    `${CORE}/blob/v0.6.4/examples/notebooks/99_new.ipynb`,
+    'https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/notebooks/99_new.ipynb',
+    `${CORE}/tree/v0.6.4/examples/onboarding/new-example`,
+  ]) {
+    assert.throws(() => assertReferencesCovered(collectCoreReferences(url), 'v0.6.4'), /does not cover/);
+  }
+});
+
+test('GitHub raw download links must be covered and use the contract release', () => {
+  const valid = collectCoreReferences(`${CORE}/raw/v0.6.4/${REQUIRED_ASSET_PATHS[0]}?download=1`);
+  assert.deepEqual([...valid.files], [REQUIRED_ASSET_PATHS[0]]);
+  assert.equal(valid.links.length, 1);
+  assert.doesNotThrow(() => assertReferencesCovered(valid, 'v0.6.4'));
+  assert.throws(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/raw/main/${REQUIRED_ASSET_PATHS[0]}`
+  ), 'v0.6.4'), /Onboarding links must use/);
+  assert.throws(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/raw/main/examples/notebooks/99_new.ipynb`
+  ), 'v0.6.4'), /does not cover/);
+});
+
+test('onboarding links must use the contract release, including mixed refs', () => {
+  for (const ref of ['main', 'v0.6.3', 'preview', 'a'.repeat(40)]) {
+    for (const url of [
+      `${CORE}/blob/${ref}/${REQUIRED_ASSET_PATHS[0]}`,
+      `https://raw.githubusercontent.com/memtomem/memtomem/${ref}/${REQUIRED_ASSET_PATHS[0]}`,
+      `${CORE}/tree/${ref}/examples/onboarding/retry-policy`,
+    ]) {
+      const links = collectCoreReferences(`${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${url}`);
+      assert.throws(() => assertReferencesCovered(links, 'v0.6.4'), /Onboarding links must use v0\.6\.4/);
+    }
+  }
+  const unpinned = collectCoreReferences(`${CORE}/blob/main/${UNPINNED_CORE_PATHS[0]}`);
+  assert.doesNotThrow(() => assertReferencesCovered(unpinned, 'v0.6.4'));
 });
 
 test('every linked core file must be pinned or explicitly unpinned', () => {
-  assert.doesNotThrow(() => assertReferencesCovered({
-    files: new Set([REQUIRED_ASSET_PATHS[0], UNPINNED_CORE_PATHS[0]]),
-    trees: new Set(),
-  }));
+  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${CORE}/blob/main/${UNPINNED_CORE_PATHS[0]}`
+  ), 'v0.6.4'));
   assert.throws(
-    () => assertReferencesCovered({ files: new Set(['examples/notebooks/99_new.ipynb']), trees: new Set() }),
+    () => assertReferencesCovered(collectCoreReferences(`${CORE}/blob/v0.6.4/examples/notebooks/99_new.ipynb`), 'v0.6.4'),
     /does not cover: examples\/notebooks\/99_new\.ipynb/
   );
 });
 
 test('a linked core directory must contain at least one covered asset', () => {
-  assert.doesNotThrow(() => assertReferencesCovered({
-    files: new Set(),
-    trees: new Set(['examples/onboarding/retry-policy']),
-  }));
+  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/tree/v0.6.4/examples/onboarding/retry-policy`
+  ), 'v0.6.4'));
   assert.throws(
-    () => assertReferencesCovered({ files: new Set(), trees: new Set(['examples/onboarding/rag']) }),
+    () => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/v0.6.4/examples/onboarding/rag`), 'v0.6.4'),
     /directories that the onboarding manifest does not cover/
   );
   // A prefix that is not a directory boundary must not count as coverage.
   assert.throws(
-    () => assertReferencesCovered({ files: new Set(), trees: new Set(['examples/onboarding/retry']) }),
+    () => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/v0.6.4/examples/onboarding/retry`), 'v0.6.4'),
     /directories that the onboarding manifest does not cover/
   );
+});
+
+test('missing link refs cannot silently skip release validation', () => {
+  for (const links of [undefined, null, {}]) {
+    assert.throws(() => assertReferencesCovered({
+      files: new Set([REQUIRED_ASSET_PATHS[0]]), trees: new Set(), links,
+    }, 'v0.6.4'), /must include link refs/);
+  }
 });
 
 test('release ref comes from the contract and rejects missing or unsafe versions', () => {
@@ -160,8 +209,8 @@ test('transient fetch failures retry the same release URL and can recover', asyn
   assert.deepEqual(urls, Array(2).fill('https://raw.githubusercontent.com/memtomem/memtomem/v1.2.3/' + asset.path));
 });
 
-for (const failure of [404, 429, 'network', 'timeout']) {
-  test('fetch exhaustion distinguishes ' + failure + ' from a hash mismatch', async t => {
+for (const failure of [404, 429, 503, 'network', 'timeout']) {
+  test('fetch failure ' + failure + ' has distinct diagnostics and the expected retry count', async t => {
     const warnings = t.mock.method(console, 'warn', () => {});
     let calls = 0;
     await assert.rejects(fetchPublishedAsset(asset.path, 'v0.6.4', {
@@ -181,12 +230,14 @@ for (const failure of [404, 429, 'network', 'timeout']) {
       assert.doesNotMatch(error.message, /hash mismatch/);
       return true;
     });
-    assert.equal(calls, FETCH_ATTEMPTS);
-    assert.equal(warnings.mock.callCount(), FETCH_ATTEMPTS - 1);
+    const expectedAttempts = failure === 404 ? 1 : FETCH_ATTEMPTS;
+    assert.equal(calls, expectedAttempts);
+    assert.equal(warnings.mock.callCount(), expectedAttempts - 1);
   });
 }
 
-for (const scenario of ['published', 'version bump', 'stale hash', 'invalid version', 'local']) {
+for (const scenario of ['published', 'version bump', 'stale hash', 'invalid version', 'local',
+  'local invalid version', 'main link', 'stale link', 'local stale link', 'uncovered tagged link']) {
   test('CLI gate: ' + scenario, async () => {
     const root = await mkdtemp(join(tmpdir(), 'onboarding-gate-'));
     try {
@@ -195,13 +246,17 @@ for (const scenario of ['published', 'version bump', 'stale hash', 'invalid vers
       await cp(new URL('./check-onboarding-assets.mjs', import.meta.url), join(root, 'scripts/check-onboarding-assets.mjs'));
       const version = scenario === 'version bump' ? '1.2.3' : '0.6.4';
       await writeFile(join(root, 'src/data/docs-contract.json'), JSON.stringify({
-        core: { version: ['invalid version', 'local'].includes(scenario) ? null : version },
+        core: { version: scenario.includes('invalid version') ? null : version },
       }));
+      const linkRef = scenario === 'main link' ? 'main' : scenario.includes('stale link') ? 'v0.6.3' : 'v' + version;
+      const linkedPath = scenario === 'uncovered tagged link' ? 'examples/notebooks/99_new.ipynb' : REQUIRED_ASSET_PATHS[0];
+      await writeFile(join(root, 'src/page.md'), `[Download](https://raw.githubusercontent.com/memtomem/memtomem/${linkRef}/${linkedPath})`);
       const assets = REQUIRED_ASSET_PATHS.map(path => ({ path, sha256: asset.sha256 }));
       if (scenario === 'stale hash') assets[0].sha256 = '0'.repeat(64);
       await writeFile(join(root, 'src/data/onboarding-assets.json'), JSON.stringify(assets));
       const args = [];
-      if (scenario === 'local') {
+      const local = scenario.startsWith('local');
+      if (local) {
         for (const { path } of assets) {
           const target = join(root, 'core', path);
           await mkdir(dirname(target), { recursive: true });
@@ -221,15 +276,19 @@ for (const scenario of ['published', 'version bump', 'stale hash', 'invalid vers
         '--import', 'data:text/javascript,' + encodeURIComponent(mock),
         join(root, 'scripts/check-onboarding-assets.mjs'), ...args,
       ], { cwd: root, encoding: 'utf8', timeout: 10000 });
-      const failed = ['stale hash', 'invalid version'].includes(scenario);
+      const preflightFailure = scenario.includes('invalid version') || scenario.includes('link');
+      const failed = scenario === 'stale hash' || preflightFailure;
       assert.equal(result.status, failed ? 1 : 0, result.stdout + result.stderr);
       const fetches = result.stdout.split('\n').filter(line => line.startsWith('FETCH '));
-      assert.equal(fetches.length, ['invalid version', 'local'].includes(scenario) ? 0 : scenario === 'stale hash' ? 1 : 7);
+      assert.equal(fetches.length, preflightFailure || local ? 0 : scenario === 'stale hash' ? 1 : 7);
       if (failed) {
-        assert.match(result.stderr, scenario === 'stale hash' ? /hash mismatch/ : /core.version/);
+        const expectedError = scenario === 'stale hash' ? /hash mismatch/ :
+          scenario.includes('invalid version') ? /core.version/ :
+          scenario === 'uncovered tagged link' ? /does not cover/ : /Onboarding links must use/;
+        assert.match(result.stderr, expectedError);
         assert.doesNotMatch(result.stdout, /Onboarding assets verified/);
       } else {
-        assert.ok(result.stdout.includes(`Onboarding assets verified (7, ${scenario === 'local' ? 'local only' : 'published v' + version}).`));
+        assert.ok(result.stdout.includes(`Onboarding assets verified (7, ${local ? 'local only' : 'published v' + version}).`));
       }
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -249,4 +308,17 @@ test('PR build always includes the publication gate without change-path filters'
   const gate = build.split(/\n      - /).find(step => step.includes('run: node scripts/check-onboarding-assets.mjs'));
   assert.ok(gate, 'gate is a step inside build');
   assert.doesNotMatch(gate, /\b(?:if|continue-on-error):|--core-root|\|\||;|\|/);
+});
+
+test('deployment requires a successful build and a non-PR main event', async () => {
+  const workflow = (await readFile(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8'))
+    .replace(/^\s*#.*$/gm, '');
+  const deploy = workflow.match(/\n  deploy:\n([\s\S]*)/)?.[1];
+  assert.ok(deploy, 'deploy job is present');
+  const job = deploy.split('    steps:')[0];
+  assert.match(job, /^    if: github\.event_name != 'pull_request' && github\.ref == 'refs\/heads\/main'$/m);
+  assert.match(job, /^    needs: build$/m);
+  const upload = workflow.split(/\n      - /).find(step => step.includes('uses: actions/upload-pages-artifact@'));
+  assert.ok(upload, 'artifact upload step is present');
+  assert.match(upload, /^if: github\.event_name != 'pull_request'$/m);
 });

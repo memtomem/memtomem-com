@@ -18,10 +18,10 @@ description: LLM 없이 대화 상태·표준 Store·Core 검색을 구분하는
 | 05: 기억 기초 | `compile(store=...)`로 사용자 선호 저장 | 같은 사용자의 새 thread에서 조회, 다른 namespace에서 미조회, 새 store 객체에서 파일 재개방 |
 | 06: 검색 기반 기억 | 검색 → 초안 → 승인 → 저장 | 미승인 초안은 결과 기억을 쓰지 않음, 승인 결과의 Markdown 원본과 재개방 후 검색 |
 
-- [한국어 노트북 05 읽기](https://github.com/memtomem/memtomem/blob/main/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [노트북 05 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/main/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [한국어 노트북 06 읽기](https://github.com/memtomem/memtomem/blob/main/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
-- [노트북 06 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/main/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [한국어 노트북 05 읽기](https://github.com/memtomem/memtomem/blob/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [노트북 05 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [한국어 노트북 06 읽기](https://github.com/memtomem/memtomem/blob/v0.6.4/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [노트북 06 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
 
 브라우저에서 JSON이 보이면 링크를 “다른 이름으로 저장”하세요. 각 파일 안에 입력·코드·검증·해석·복구·연습이 모두 있습니다. private 저장소나 이전 노트북 실행은 필요하지 않습니다.
 

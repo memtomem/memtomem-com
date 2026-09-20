@@ -24,7 +24,7 @@ Use [Memory Across Sessions](/guides/memory-persistence/) for the full save/reop
 
 ## Try the sample
 
-[Open the sample project and Korean instructions](https://github.com/memtomem/memtomem/tree/main/examples/onboarding/retry-policy)
+[Open the sample project and Korean instructions](https://github.com/memtomem/memtomem/tree/v0.6.4/examples/onboarding/retry-policy)
 
 The isolated `demo.py` verifies an empty store, a saved decision, source-backed ADR retrieval, and cleanup. It uses no API key or embedding model, does not register a client, and leaves your normal memory store untouched. Initial package installation still needs internet.
 

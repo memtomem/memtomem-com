@@ -31,7 +31,7 @@ npm run build
 2. Update `src/data/docs-contract.json`, then synchronize every affected English/Korean page.
 3. Add the superseded Core and STM versions to the stale-version list in `scripts/check-doc-contract.mjs`. Keep this list explicit: a site-wide lower-semver rule would reject valid historical notes and independently versioned integrations.
 4. Run `npm test` and `npm run build` to check mutation regressions, the contract, generated site, search index, routes, and fragments.
-5. Run `node scripts/check-onboarding-assets.mjs` to verify the seven published assets at `v<core.version>` from the contract. Review the tagged source before updating any asset hashes, and include those updates in the version-bump PR.
+5. Update EN/KO onboarding file and directory links to `v<core.version>`, then run `node scripts/check-onboarding-assets.mjs` to verify the link refs and seven published assets from that tag. Review the tagged source before updating any asset hashes, and include links and hashes in the version-bump PR.
 
 ### Reproducing source evidence
 

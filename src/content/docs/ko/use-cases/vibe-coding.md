@@ -24,7 +24,7 @@ description: 코딩 에이전트 사용자를 위한 가상 프로젝트 실습.
 
 ## 샘플 실행
 
-[샘플 프로젝트와 한국어 실행 안내 열기](https://github.com/memtomem/memtomem/tree/main/examples/onboarding/retry-policy)
+[샘플 프로젝트와 한국어 실행 안내 열기](https://github.com/memtomem/memtomem/tree/v0.6.4/examples/onboarding/retry-policy)
 
 격리된 `demo.py`는 빈 저장소, 결정 저장, 출처 있는 ADR 검색, 정리를 검증합니다. API 키·임베딩 모델이 필요 없고 클라이언트를 등록하지 않으며 평소 기억 저장소를 건드리지 않습니다. 최초 패키지 설치에는 인터넷이 필요합니다.
 
