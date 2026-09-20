@@ -3,26 +3,30 @@
 The website and Core assets are separate deliveries. No deployment is implied
 by a successful local build.
 
-1. Review and publish the Core notebook and retry-policy example files first.
+1. Review and publish the Core notebook and retry-policy example files in the
+   release tag `v<core.version>` from `src/data/docs-contract.json` first.
 2. Run `node scripts/check-onboarding-assets.mjs`. It fetches the seven raw
-   GitHub assets and compares SHA-256 against `src/data/onboarding-assets.json`,
+   GitHub assets from that release tag and compares SHA-256 against
+   `src/data/onboarding-assets.json`,
    and checks that every Core file the site links is either pinned in that
    manifest or listed in `UNPINNED_CORE_PATHS`. Missing files, drift, and
    network errors stop deployment; they do not prove an asset itself is broken.
-   Update hashes only after reviewing and testing the changed Core source.
+   On a Core version bump, review and test the tagged source, then update the
+   contract version and any changed hashes in the same pull request.
 
-   Each fetch is retried a few times. raw.githubusercontent still serves a
-   branch ref from cache for a few minutes, so a run started immediately after
-   the Core merge can report `Onboarding asset is not published` for a file
-   that is in fact published. The fix is to re-run the workflow a few minutes
-   later, never to edit the manifest to match what the fetch returned.
+   Fetch failures are retried against the same tag and logged with the path,
+   ref, and HTTP status or network cause. A hash mismatch instead reports the
+   expected and actual SHA-256. Investigate publication or network failures
+   before retrying; never edit the manifest to match an error response.
 3. Run `npm test` and `npm run build`. For unpublished local review, use
    `node scripts/check-onboarding-assets.mjs --core-root /path/to/core`.
    Local mode is not publication proof and is not used by deployment CI.
 4. Review EN/KO landing cards, both use-case routes, locale switching, search,
    notebook downloads, and mobile layout in a connected browser.
-5. Approve website publication separately. The main-branch workflow checks
-   published assets before uploading its deployment artifact.
+5. Every pull request targeting `main` checks published assets, including PRs
+   with no asset-related changes. The main-branch workflow repeats the same
+   check before uploading its deployment artifact. Deployment remains limited
+   to non-PR runs on `main`.
 
 Marketing scripts are canonical in Core's `examples/onboarding/DEMO-SCRIPTS.md`.
 The scenarios are synthetic. Actual Claude/Codex sessions, paid API execution,

@@ -104,31 +104,44 @@ export function validateManifest(assets) {
 
 export function verifyAsset(asset, bytes) {
   const digest = createHash('sha256').update(bytes).digest('hex');
-  if (digest !== asset.sha256) throw new Error('Missing or changed onboarding asset: ' + asset.path);
+  if (digest !== asset.sha256) {
+    throw new Error('Onboarding asset hash mismatch: ' + asset.path +
+      ' expected ' + asset.sha256 + ', actual ' + digest);
+  }
 }
 
-// raw.githubusercontent serves a branch ref from cache for a few minutes and
-// rate-limits, so a deploy run right after the Core merge can see a stale 404
-// or a transient 5xx for an asset that is in fact published. Retrying keeps a
-// blip in a third-party fetch from blocking the Pages deploy of unrelated
-// site changes; a genuinely unpublished file still fails after the last try.
+export function coreReleaseRef(contract) {
+  const version = contract?.core?.version;
+  if (typeof version !== 'string' || version !== version.trim() ||
+      !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)*$/.test(version)) {
+    throw new Error('Documentation contract has no valid core.version release.');
+  }
+  return 'v' + version;
+}
+
+// Retry transient publication/cache and network failures against the same
+// release tag. Never fall back to main or change pins to accommodate a fetch.
 export const FETCH_ATTEMPTS = 4;
 const RETRY_DELAY_MS = 5000;
 
-async function fetchPublishedAsset(path, { attempts = FETCH_ATTEMPTS, delayMs = RETRY_DELAY_MS } = {}) {
-  const url = 'https://raw.githubusercontent.com/memtomem/memtomem/main/' + path;
+export async function fetchPublishedAsset(path, ref, {
+  attempts = FETCH_ATTEMPTS, delayMs = RETRY_DELAY_MS, fetchImpl = fetch,
+} = {}) {
+  const url = 'https://raw.githubusercontent.com/memtomem/memtomem/' + ref + '/' + path;
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
+      const response = await fetchImpl(url, { signal: AbortSignal.timeout(20000) });
       if (!response.ok) {
-        throw new Error('Onboarding asset is not published: ' + path + ' HTTP ' + response.status);
+        throw new Error('HTTP ' + response.status);
       }
       return Buffer.from(await response.arrayBuffer());
     } catch (error) {
-      lastError = error;
+      const detail = error.message + (error.cause?.message ? ': ' + error.cause.message : '');
+      lastError = new Error('Failed to fetch onboarding asset: ' + path + ' at ' + ref + ': ' + detail,
+        { cause: error });
       if (attempt === attempts) break;
-      console.warn('Retrying ' + path + ' (attempt ' + attempt + '/' + attempts + '): ' + error.message);
+      console.warn('Retrying (attempt ' + attempt + '/' + attempts + '): ' + lastError.message);
       await new Promise(done => setTimeout(done, delayMs * attempt));
     }
   }
@@ -144,16 +157,19 @@ async function main() {
     JSON.parse(await readFile(new URL('../src/data/onboarding-assets.json', import.meta.url), 'utf8'))
   );
   assertReferencesCovered(await scanSourceReferences(fileURLToPath(new URL('../src', import.meta.url))));
+  const ref = args.length ? null : coreReleaseRef(
+    JSON.parse(await readFile(new URL('../src/data/docs-contract.json', import.meta.url), 'utf8'))
+  );
   for (const asset of assets) {
     let bytes;
     if (args.length) {
       bytes = await readFile(resolve(args[1], asset.path));
     } else {
-      bytes = await fetchPublishedAsset(asset.path);
+      bytes = await fetchPublishedAsset(asset.path, ref);
     }
     verifyAsset(asset, bytes);
   }
-  console.log('Onboarding assets verified (' + assets.length + ', ' + (args.length ? 'local only' : 'published') + ').');
+  console.log('Onboarding assets verified (' + assets.length + ', ' + (args.length ? 'local only' : 'published ' + ref) + ').');
 }
 
 // Both sides are resolved through realpath. Comparing a realpath-resolved
