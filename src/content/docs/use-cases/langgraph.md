@@ -31,7 +31,7 @@ Use Python 3.12 or newer in an isolated environment:
 
 ```bash
 uv venv .venv
-uv pip install --python .venv/bin/python "memtomem[langgraph]==0.5.0" jupyterlab ipykernel
+uv pip install --python .venv/bin/python "memtomem[langgraph]==0.6.4" jupyterlab ipykernel
 uv run --python .venv/bin/python --no-project jupyter lab
 ```
 

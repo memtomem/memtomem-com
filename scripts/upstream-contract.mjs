@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // Matched on a version boundary so a prefix like 0.1.2 does not flag
 // historical notes about v0.1.23/v0.1.25. Single source of truth: the
 // document contract checker imports this list too.
-export const STALE_VERSIONS = ['0.3.10', '0.3.11', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3'];
+export const STALE_VERSIONS = ['0.3.10', '0.3.11', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0'];
 
 export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?![\\d.])`);

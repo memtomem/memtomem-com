@@ -66,7 +66,7 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.5.0은 현재 도구 100개와 `mem_do` 액션 94개를 제공합니다.
+v0.6.4는 현재 도구 100개와 `mem_do` 액션 94개를 제공합니다.
 `mem_context_migrate`는 제거됐고 `mem_candidate_evidence`가 추가됐습니다.
 총개수가 같더라도 이전 버전과 도구 구성은 다릅니다.
 Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
@@ -89,11 +89,11 @@ Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 
 ## OpenCode
 
-공개된 `opencode-memtomem@0.3.0` 플러그인에는 Core 0.5.0가 포함되어 있습니다.
+공개된 `opencode-memtomem@0.3.6` 플러그인에는 Core 0.6.4가 포함되어 있습니다.
 OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없습니다:
 
 ```json
-{"plugin": ["opencode-memtomem@0.3.0"]}
+{"plugin": ["opencode-memtomem@0.3.6"]}
 ```
 
 플러그인의 슬래시 명령과 스킬 없이 MCP 도구만 사용하려면
@@ -105,7 +105,7 @@ OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.6.4", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}

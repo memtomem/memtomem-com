@@ -1,6 +1,6 @@
 {
   "core": {
-    "version": "0.5.0",
+    "version": "0.6.4",
     "python": ">=3.12",
     "tools": {
       "core": 9,
@@ -113,33 +113,34 @@
     ]
   },
   "stm": {
-    "version": "0.4.0",
+    "version": "0.5.2",
     "python": ">=3.12",
     "tools": {
-      "modelFacing": 4,
-      "observability": 8
+      "modelFacing": 5,
+      "observabilityActions": 8
     }
   },
   "claudePlugin": {
-    "version": "0.5.0",
-    "bundledCore": "0.5.0"
+    "version": "0.5.6",
+    "bundledCore": "0.6.4",
+    "requirement": "memtomem[onnx]==0.6.4"
   },
   "opencode": {
-    "version": "0.3.0",
-    "bundledCore": "0.5.0"
+    "version": "0.3.6",
+    "bundledCore": "0.6.4"
   },
   "sourceSnapshots": {
-    "coreMain": "bb111b811389f9bb274ae8cfdc77e4c61b3622e2",
-    "stmMain": "6f8cb9c49655766e16381ecaed3598961a827df9"
+    "coreMain": "a4a13bdfd8c1ec799dc24e7413683f172724e564",
+    "stmMain": "53eb0c5b76c2e625d2d7cc066a3de6a424ce519a"
   },
   "configuration": {
     "coreEnvironment": {
-      "count": 135,
-      "sha256": "9859ecc97168bbb14412a5634ada91ceaac1d280d9383b5fda51974f363c3d8a"
+      "count": 148,
+      "sha256": "c720c22c4740bb5939b1ce45cc6eeb552f147143f739cb6819e975b3269bbb8a"
     },
     "stmEnvironment": {
-      "count": 174,
-      "sha256": "bf728a0a48fce5fed4097ddfd22261dc24502e4a9d5a2012535abbcac44c5a33"
+      "count": 176,
+      "sha256": "8240b3e6a0ebe9480274f16d5d40830598139d35679c5556e04c11a33de79401"
     }
   },
   "guides": {
@@ -285,6 +286,7 @@
     "review",
     "schedule",
     "search",
+    "serve",
     "session",
     "shell",
     "status",
@@ -307,6 +309,7 @@
       "list",
       "migrate",
       "register",
+      "search",
       "share"
     ],
     "config": [
@@ -319,7 +322,9 @@
       "copy",
       "detect",
       "diff",
+      "export",
       "generate",
+      "import",
       "init",
       "install",
       "memory-migrate",
@@ -566,5 +571,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-09-07"
+  "reviewedOn": "2026-09-20"
 }

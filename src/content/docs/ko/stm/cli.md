@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.4.0 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.5.2 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -392,7 +392,7 @@ mms import --plan --show-imported    # 계획에서 비밀값을 가리지 않�
 
 ## 운영 통계
 
-실행 중인 프록시의 관련 기억 제시, 도구 선택, 압축 동작을 점검할 수 있도록 STM은 관찰·관리 MCP 도구 8개(`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 제공합니다. 기본적으로 숨겨져 있으며 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 표시합니다. 자세한 입력과 출력은 [MCP 도구](/ko/stm/mcp-tools/)를 참고하세요.
+실행 중인 프록시의 관련 기억 제시, 도구 선택, 압축 동작을 점검할 수 있도록 STM은 `stm_admin` 도구 하나에 담긴 관찰·관리 액션 8개(`proxy_stats`, `proxy_cache_clear`, `proxy_health`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`)를 제공합니다. `stm_admin`은 기본적으로 숨겨져 있으며 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`로 표시합니다. 자세한 입력과 출력은 [MCP 도구](/ko/stm/mcp-tools/)를 참고하세요.
 
 ## 프록시 서버 실행
 
