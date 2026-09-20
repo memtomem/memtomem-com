@@ -7,7 +7,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem` 0.5.0와 `memtomem-stm` 0.4.0이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
+이 레퍼런스는 `memtomem` 0.6.4와 `memtomem-stm` 0.5.2이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -30,15 +30,19 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 | `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `"none"` |
 | `MEMTOMEM_EMBEDDING__MODEL` | 선택한 제공자의 모델명 | `""` |
 | `MEMTOMEM_EMBEDDING__DIMENSION` | 벡터 차원 수. 모델과 일치해야 함 | `0` |
+| `MEMTOMEM_EMBEDDING__ONNX_VARIANT` | 로컬 ONNX 정밀도: `fp32`, `int8-arm64`, `int8-avx2`, `int8-avx512`, `int8-avx512-vnni`. 변경하려면 재시작과 명시적인 인덱스 이전이 필요합니다. | `"fp32"` |
+| `MEMTOMEM_EMBEDDING__ONNX_ARTIFACT_PATH` | 체크섬이 포함된 `manifest.json`과 함께 로컬에서 내보낸 양자화 아티팩트 디렉터리. `fp32`가 아닌 모든 변형에 필요하며 자동 대체 경로는 없습니다. | `""` |
 | `MEMTOMEM_EMBEDDING__BASE_URL` | Ollama / OpenAI 호환 엔드포인트 | `""` |
 | `MEMTOMEM_EMBEDDING__API_KEY` | 유료 제공자의 API 키 | `""` |
 | `MEMTOMEM_EMBEDDING__BATCH_SIZE` | 임베딩 배치당 텍스트 수 | `64` |
 | `MEMTOMEM_EMBEDDING__ONNX_BATCH_SIZE` | 로컬 FastEmbed/ONNX 추론에서 한 번에 처리할 텍스트 수. 실행 중에도 변경 가능 | `8` |
-| `MEMTOMEM_EMBEDDING__MAX_SEQUENCE_TOKENS` | 로컬 ONNX 입력의 실제 토큰 상한. `0`이면 모델 상한을 사용합니다. 변경 후 재시작하고 기존 콘텐츠를 강제 재인덱싱해야 합니다. | `1024` |
+| `MEMTOMEM_EMBEDDING__MAX_SEQUENCE_TOKENS` | 로컬 ONNX 입력의 실제 토큰 상한. `0`이면 모델 상한을 사용하지만, 아래 E5 프로필에서는 예외입니다. 변경 후 재시작하고 기존 콘텐츠를 강제 재인덱싱해야 합니다. | `1024` |
 | `MEMTOMEM_EMBEDDING__ONNX_CPU_MEM_ARENA` | ONNX CPU 할당을 재사용합니다. 재시작은 필요하지만 할당자 설정이므로 재인덱싱은 필요하지 않습니다. | `false` |
 | `MEMTOMEM_EMBEDDING__MAX_CONCURRENT_BATCHES` | 병렬 임베딩 배치 상한 | `4` |
 | `MEMTOMEM_EMBEDDING__THREADS` | ONNX Runtime 스레드 상한 (`0` = ORT 기본값) | `4` |
 | `MEMTOMEM_EMBEDDING__PROGRESS_THRESHOLD` | 한 파일이 이 값보다 많은 청크를 만들 때만 청크별 진행 이벤트를 보냄. `0`은 항상 보냄 | `32` |
+
+**ONNX E5 프로필에서 실제로 적용되는 값.** `PROVIDER=onnx`이고 `MODEL`을 비워 두면 Core가 `multilingual-e5-small`을 선택하고, 직접 지정하지 않은 항목에 `DIMENSION=384`, `MAX_SEQUENCE_TOKENS=512`, `THREADS=2`, `ONNX_BATCH_SIZE=4`를 채웁니다. 위 표의 기본값은 *선언된* 기본값이며 이 프로필 밖에서 적용됩니다. 프로필 안에서는 `DIMENSION`이 `384`가 아니거나 `MAX_SEQUENCE_TOKENS`가 `512`가 아니면 값을 조정하지 않고 시작 시 거부합니다. 표에 적힌 `0`이나 `1024`를 명시적으로 지정한 경우도 마찬가지입니다.
 
 <a id="indexing"></a>
 
@@ -48,16 +52,27 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 |---|---|---|
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 훑지 않으므로 `mm index <dir>`로 처음 한 번 색인한 뒤 감시 기능에 맡기세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래에 있는 프로젝트 계층 기억의 루트 | `[]` |
+| `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | 색인과 검색에는 사용하지만 memtomem이 절대 다시 쓰지 않는 루트. 쓰기 가능한 루트와 겹치지 않아야 합니다. | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 인덱싱 대상 파일 확장자 (JSON 리스트) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | 청크당 최대 토큰 수 | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | 짧은 청크 병합 임계값 | `128` |
 | `MEMTOMEM_INDEXING__AUTO_DISCOVER` | 폐기 예정인 일회성 이전 기능. 기존 설정의 제공자 디렉터리를 명시적인 `memory_dirs`로 바꿔 저장한 뒤 이 값을 `false`로 변경합니다. 새 설치에서는 실행하지 않으며 새 설정에는 `mm init --include-provider ...`를 사용합니다. | `true` |
 | `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | 기본 자격 증명 제외 목록(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**` 등)에 추가할 `.gitignore` 형식의 패턴(JSON 목록). 사용자 `!negation`으로 기본 패턴을 해제할 수 없음 | `[]` |
+| `MEMTOMEM_INDEXING__INDEX_MASKING_MANIFEST_PATH` | 소유자가 검토한 마스킹 매니페스트 경로. 정확한 소스 경로와 콘텐츠 SHA-256, 완결된 블록의 줄 범위를 지정합니다. 소스가 바뀌었거나 매니페스트가 유효하지 않으면 일반 개인정보 보호 장치로 되돌아가며, 마스킹된 청크는 읽기 전용입니다. 자동 마스킹을 켜는 설정은 아닙니다. | `""` |
 | `MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS` | 짧은 형제 섹션을 결합할 때의 목표 토큰 수. `0` 설정 시 결합 단계 비활성화. | `384` |
 | `MEMTOMEM_INDEXING__CHUNK_OVERLAP_TOKENS` | 인접 청크 간 토큰 오버랩 | `0` |
+| `MEMTOMEM_INDEXING__CHUNK_MODEL_TOKENS` | 특수 토큰을 포함한 검색 입력 전체의 상한 | `8192` |
+| `MEMTOMEM_INDEXING__CHUNK_CONTEXT_TOKENS` | 제목과 설명 접두부에 배정하는 별도 예산 | `512` |
+| `MEMTOMEM_INDEXING__HARD_MAX_CHUNK_TOKENS` | 본문의 정확한 상한. `0`이면 하드 예산 모드를 사용하지 않습니다. 동일한 로컬 토크나이저가 필요합니다. | `0` |
+| `MEMTOMEM_INDEXING__CHUNK_TOKENIZER_PATH` | 임베딩 모델의 로컬 `tokenizer.json` 경로. 지정하면 하드 예산 모드에서 모델을 내려받지 않습니다. | `""` |
+| `MEMTOMEM_INDEXING__CHUNK_INPUT_PREFIX` | 최종 입력 토큰 계산에 포함하는 모델 역할 접두사(E5는 `passage: `). 변경 후 재시작이 필요합니다. | `""` |
+| `MEMTOMEM_INDEXING__ENRICH_CHUNK_CONTEXT` | 청크 컨텍스트에 캐시된 LLM 설명을 추가합니다. 하드 예산 모드가 필요합니다. | `false` |
 | `MEMTOMEM_INDEXING__STRUCTURED_CHUNK_MODE` | JSON/YAML/TOML 청킹 모드: `original` 또는 `recursive` | `"original"` |
 | `MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD` | 긴 산문을 문단 단위로 나누는 토큰 임계값 | `800` |
 | `MEMTOMEM_INDEXING__STARTUP_BACKFILL` | 서버 시작 시 `memory_dirs`를 한 번 스캔해 서버가 꺼져 있던 동안 추가된 파일을 반영 | `false` |
+| `MEMTOMEM_INDEXING__WATCHER_BACKEND` | 감시 백엔드. `auto`는 macOS에서 폴링을, 그 외 환경에서 네이티브 이벤트를 사용하며 `native` 또는 `polling`으로 지정할 수 있습니다. | `"auto"` |
+| `MEMTOMEM_INDEXING__WATCHER_DEBOUNCE_MS` | 자동 재색인 전 대기하는 안정화 시간(1–30000 ms) | `5000` |
+| `MEMTOMEM_INDEXING__WATCHER_MAX_WAIT_MS` | 편집이 계속되어도 이벤트를 모으는 최대 시간(1–30000 ms) | `30000` |
 | `MEMTOMEM_INDEXING__AUTO_SUMMARIZE` | LLM 설정 시 소스별 AI 요약 생성 | `false` |
 | `MEMTOMEM_INDEXING__SUMMARY_LANGUAGE` | AI 소스 요약 출력 언어 | `"en"` |
 | `MEMTOMEM_INDEXING__SUMMARY_MAX_INPUT_CHARS` | 요약 LLM에 전달하는 소스 문자 상한 | `3000` |
@@ -377,7 +392,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_DATA_DIR` | 데몬 연결 정보, 소유권 잠금, 백그라운드 실행 로그를 저장할 디렉터리 | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | 선택적 회전 로그 파일. `0600` 권한, 2 MiB 회전, 백업 3개 사용 | `null` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`이면 관찰·관리 도구 8개(`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`)를 표시. `false`여도 모델용 도구 4개는 계속 표시 | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`이면 `stm_admin` 디스패처와 그 관찰·관리 액션 8개(`proxy_stats`, `proxy_health`, `proxy_cache_clear`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`)를 표시. `false`여도 모델용 도구 5개는 계속 표시 | `false` |
 | `MEMTOMEM_STM_FORMATION__ENABLED` | 선택형 `stm_memory_propose` 도구 표시. 표시 여부는 이 값만으로 결정하며, 연결한 LTM이 검토 후 저장 방식을 지원하는지는 호출할 때 확인. 지원하지 않으면 `formation_unsupported` 반환 | `false` |
 | `MEMTOMEM_STM_FORMATION__MAX_CONTENT_CHARS` | 검토 후 저장할 후보 내용의 최대 길이. 넘으면 제안을 거부 | `2000` |
 
@@ -394,9 +409,11 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__DEFAULT_MAX_RESULT_CHARS` | 응답당 문자 예산 | `16000` |
 | `MEMTOMEM_STM_PROXY__MAX_UPSTREAM_CHARS` | 메모리 부족을 막기 위한 연결 서버 응답 크기 상한 | `10000000` |
 | `MEMTOMEM_STM_PROXY__MIN_RESULT_RETENTION` | 보존 하한 (0.0–1.0) | `0.65` |
-| `MEMTOMEM_STM_PROXY__MAX_DESCRIPTION_CHARS` | 에이전트에 표시할 도구 설명의 최대 길이 | `200` |
+| `MEMTOMEM_STM_PROXY__MAX_DESCRIPTION_CHARS` | 클라이언트에 보이는 도구 설명의 최대 길이(`[proxied] ` 접두사 포함). 업스트림에 적용되는 예산은 `min(server, global)`이므로 이 값만 올려서는 더 엄격한 서버별 값을 넓힐 수 없습니다. | `4000` |
 | `MEMTOMEM_STM_PROXY__STRIP_SCHEMA_DESCRIPTIONS` | 표시하는 도구에서 중첩된 JSON 스키마의 설명 제거 | `false` |
 | `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY` | 관련성 점수 계산에 쓰는 선택형 `_context_query` 인자를 도구 스키마에 표시 | `false` |
+| `MEMTOMEM_STM_PROXY__HOST_DESCRIPTION_CAP` | 호스트가 허용하는 설명 길이(프록시 접두사와 힌트 포함). 지정하지 않으면 알 수 없는 값으로 두며 호스트 한도를 추정하지 않습니다. 다음 도구 등록 시 적용되므로 확실히 반영하려면 재시작합니다. | `null` |
+| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | `description_override`가 대체한 원본 설명을 함께 반환합니다. 복구하면 재정의가 가리려 했던 업스트림 문구가 바로 그 독자에게 다시 전달되므로 기본값은 꺼짐입니다. | `false` |
 | `MEMTOMEM_STM_PROXY__CONSUMER_MODEL` | 컨텍스트 윈도우 예산 계산에 쓰는 클라이언트 모델 식별자 | `""` |
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | 프록시 결과에 허용할 수신 모델 컨텍스트 크기의 비율 | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | 토큰 예산용 정적 문자/토큰 추정치 | `3.5` |
@@ -471,7 +488,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | `stm_compression_feedback` 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | 압축 피드백 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | 압축 피드백 보존 일수 | `90` |
-| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달의 읽기 기록 활성화. `stm_progressive_stats`에서 확인 | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달의 읽기 기록 활성화. `stm_admin(action="progressive_stats")`에서 확인 | `true` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__DB_PATH` | 점진적 읽기 기록을 저장할 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__RETENTION_DAYS` | 점진적 읽기 기록 보존 일수 | `90` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | 내부 잠금을 기다릴 최대 시간. 넘으면 연결 서버가 느린 것이 아니라 교착 상태이거나 잠금 소유자가 멈춘 것으로 처리 | `30` |
@@ -577,7 +594,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `overall_deadline_seconds` | 재시도를 포함한 호출 하나의 전체 제한 시간. `call_timeout × (max_retries+1)`에 따른 최악의 대기 시간이 지나치게 커지는 것을 방지 | `180.0` |
 | `circuit_max_failures` | 이 서버의 회로를 열기 전까지 허용할 실패 횟수 | `3` |
 | `circuit_reset_seconds` | 열린 회로를 다시 확인할 간격 | `60.0` |
-| `max_description_chars` | 서버별 도구 설명 길이 상한 | `200` |
+| `max_description_chars` | 서버별 도구 설명 길이 상한. 실제 적용 예산은 `min(server, global)`입니다. | `4000` |
 | `strip_schema_descriptions` | 서버별로 중첩된 스키마 설명 제거 | `false` |
 | `origin` | `mms add --import`/`mms init`이 기록하고 `mms eject`가 사용하는 가져오기 출처 정보. CLI JSON 출력에서는 저장된 원본 항목의 민감 정보를 가림 | `null` |
 
@@ -639,7 +656,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__USE_DAEMON` | 단독 실행한 관련 기억 검색을 공용 데몬으로 처리. 별도의 내부 대체 경로는 없음 | `false` |
 | `MEMTOMEM_STM_SURFACING__WARMUP_ENABLED` | LTM 클라이언트를 백그라운드에서 미리 연결 | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH` | 관련 기억 피드백과 중복 제거 정보를 저장할 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
-| `MEMTOMEM_STM_SURFACING__MIN_SCORE` | 관련성 최소 점수 | `0.03` |
+| `MEMTOMEM_STM_SURFACING__MIN_SCORE` | RRF 척도에서 적용하는 전역 결과 점수 하한. 도구별 고정값이나 척도 게이트가 있으면 그쪽이 우선합니다. | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 최대 기억 수 | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | 응답이 이보다 짧으면 관련 기억 검색 생략 | `5000` |
 | `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수 | `3` |

@@ -28,7 +28,7 @@ mms doctor                                               # 3. diagnose the compl
 
 - **Proactive Surfacing** — Every tool call runs candidate memories through 5 relevance checks (context extraction → query suitability → LTM search → score threshold → dedup window) before anything is injected. Surfacing toggles per upstream (`mms surfacing <server> on|off`), so you can exclude a single server's responses from surfacing. See [Proactive Surfacing](/stm/surfacing/).
 - **Response Compression** — 10 strategies, auto-selected by content type (JSON, Markdown, API docs, free text, …), with query-aware ranking and safer JSON output tiers. See [Compression Strategies](/stm/compression/).
-- **Exposed-Tool Curation** — STM does not just relay every upstream tool as-is; it curates the advertised tool list at exposure time. Tools from unresponsive servers, descriptions that leak credentials, and duplicate or overflowing names are withheld from the agent. Tune the policy with `exposure.profile` (`strict` default / `review` / `explore`); `stm_proxy_health` reports "N discovered / M advertised".
+- **Exposed-Tool Curation** — STM does not just relay every upstream tool as-is; it curates the advertised tool list at exposure time. Tools from unresponsive servers, descriptions that leak credentials, and duplicate or overflowing names are withheld from the agent. Tune the policy with `exposure.profile` (`strict` default / `review` / `explore`); `stm_admin(action="proxy_health")` reports "N discovered / M advertised".
 - **Reversible Import** — Imported upstreams record their origin, so `mms list` distinguishes directly-registered servers from imported ones in an ORIGIN column (`*` marks a pruned host original). `mms eject` verifies the restore before it removes the STM entry.
 
 ## How It Works
@@ -65,7 +65,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.4.0` |
+| **Latest release** | `0.5.2` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

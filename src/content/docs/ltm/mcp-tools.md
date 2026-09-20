@@ -65,7 +65,7 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.5.0 registry has 100 current tools and 94 `mem_do` actions.
+The v0.6.4 registry has 100 current tools and 94 `mem_do` actions.
 `mem_context_migrate` was removed and `mem_candidate_evidence` was added;
 the unchanged total does not imply unchanged membership. Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
@@ -88,11 +88,11 @@ candidate; reusing it with different content is rejected.
 
 ## OpenCode
 
-The published `opencode-memtomem@0.3.0` plugin bundles Core 0.5.0. OpenCode
+The published `opencode-memtomem@0.3.6` plugin bundles Core 0.6.4. OpenCode
 uses the singular `plugin` key; there is no `opencode plugin add` command:
 
 ```json
-{"plugin": ["opencode-memtomem@0.3.0"]}
+{"plugin": ["opencode-memtomem@0.3.6"]}
 ```
 
 For MCP tools without the plugin's slash commands and skills, configure a local
@@ -104,7 +104,7 @@ server in `opencode.json`:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.5.0", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.6.4", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
       "environment": {"MEMTOMEM_TOOL_MODE": "core"}

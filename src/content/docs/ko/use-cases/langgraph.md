@@ -31,7 +31,7 @@ Python 3.12 이상에서 격리 환경을 만듭니다.
 
 ```bash
 uv venv .venv
-uv pip install --python .venv/bin/python "memtomem[langgraph]==0.5.0" jupyterlab ipykernel
+uv pip install --python .venv/bin/python "memtomem[langgraph]==0.6.4" jupyterlab ipykernel
 uv run --python .venv/bin/python --no-project jupyter lab
 ```
 

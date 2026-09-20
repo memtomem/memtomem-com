@@ -5,16 +5,16 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.5.0. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.6.4. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.5.0 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.4 binary.
 
 | Group | Commands |
 |---|---|
 | Setup / data | `init`, `config`, `add`, `index`, `ingest`, `mem`, `memory` |
-| Retrieval / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
+| Retrieval / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web`, `serve` |
 | Runtime context | `context`, `wiki`, `sync-doctor` |
 | Collaboration | `session`, `activity`, `agent`, `review` |
 | Evaluation / operations | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
@@ -25,9 +25,9 @@ All command-group subcommands are mirrored below.
 | Group | Subcommands |
 |---|---|
 | `activity` | `log` |
-| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `share` |
+| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `search`, `share` |
 | `config` | `set`, `show`, `unset` |
-| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `export`, `generate`, `import`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
@@ -65,7 +65,7 @@ choosing to run it.
 
 ## Setup
 
-In v0.5.0, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.6.4, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -299,7 +299,7 @@ The bulk sync targets the **Project (shared)** tier only, and one project's fail
 
 ### Seeding from existing runtime files
 
-There is no separate `mm context import` command. To seed canonical files from runtime-specific files, run `mm context init` with the artifact kinds and destination tier.
+`mm context init` seeds canonical files from the runtime-specific files already on this machine. Give it the artifact kinds and the destination tier.
 
 ```bash
 mm context detect --include agents,skills
@@ -308,6 +308,19 @@ mm context diff --include agents,skills --scope project_shared
 ```
 
 This is useful when you already authored files directly in Claude Code, Codex CLI, Antigravity CLI, or another runtime and want memtomem to manage them going forward. For reuse across projects see `move`/`copy` above; to install from a host-global library see `mm wiki`.
+
+### Carrying an artifact to another machine
+
+`mm context export` packs one canonical artifact into a portable bundle — a single JSON file with no absolute paths and no hostnames — and `mm context import` lands a bundle in a canonical store (ADR-0037). Use this pair to hand an artifact to a colleague; use `context init` above when the files are already on this machine.
+
+```bash
+mm context export skills deploy-check --out deploy-check.json
+mm context import deploy-check.json --to user            # preview (the default)
+mm context import deploy-check.json --to user --apply    # write
+```
+
+A bundle is foreign by definition, so every entry is scanned on the way in no matter which tier it lands in, and `--to` is required: a foreign file must not choose where it lands. Export refuses on a secret from every source tier and has no force flag, because a file you have handed over is as unretractable as a pushed commit. On import, `--force-unsafe-import` accepts a secret-shaped value into `user` or `project_local` after review; a `project_shared` landing refuses a secret-shaped value in every case, with or without that flag.
+
 
 ## Wiki — a canonical artifact library
 
@@ -541,7 +554,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.5.0           # pin a specific version
+mm upgrade --version 0.6.4           # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -579,6 +592,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm agent list` | `--json` |
 | `mm agent migrate` | `--dry-run`, `--yes` |
 | `mm agent register` | `--color`, `--description` |
+| `mm agent search` | `--agent-id`, `--format`, `--include-shared`, `--no-include-shared`, `--shared-namespace`, `--top-k` |
 | `mm agent share` | `--force-unsafe`, `--target` |
 | `mm config` | — |
 | `mm config set` | — |
@@ -589,7 +603,9 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm context copy` | `--apply`, `--as`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
 | `mm context detect` | `--include` |
 | `mm context diff` | `--include`, `--scope` |
+| `mm context export` | `--from`, `--no-versions`, `--out` |
 | `mm context generate` | `--agent`, `--include`, `--label`, `--on-drop`, `--scope`, `--strict`, `--yes` |
+| `mm context import` | `--apply`, `--as`, `--confirm-project-shared`, `--force-unsafe-import`, `--to`, `--to-project`, `--yes` |
 | `mm context init` | `--confirm-project-shared`, `--force-unsafe-import`, `--include`, `--only`, `--overwrite`, `--scope` |
 | `mm context install` | `--all`, `--force`, `--yes` |
 | `mm context memory-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--yes` |
@@ -601,12 +617,12 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm context projects pause` | — |
 | `mm context projects remove` | — |
 | `mm context projects resume` | — |
-| `mm context pull` | `--apply`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
+| `mm context pull` | `--apply`, `--confirm-project-shared`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
 | `mm context rescan` | `--json`, `--quiet`, `--scope` |
 | `mm context seed-validation` | `--force`, `--json` |
 | `mm context settings-copy` | `--apply`, `--confirm-project-shared`, `--event`, `--hook-command`, `--json`, `--matcher`, `--to`, `--to-project`, `--yes` |
 | `mm context settings-doctor` | `--json`, `--scope` |
-| `mm context settings-migrate` | `--apply`, `--from`, `--json`, `--to`, `--yes` |
+| `mm context settings-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--json`, `--to`, `--yes` |
 | `mm context status` | `--all-projects`, `--scope` |
 | `mm context sync` | `--all-projects`, `--force-unsafe`, `--include`, `--label`, `--on-drop`, `--runtime`, `--scope`, `--strict`, `--yes` |
 | `mm context update` | `--all`, `--dry-run`, `--force`, `--force-head`, `--yes` |
@@ -616,7 +632,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
-| `mm doctor` | `--json` |
+| `mm doctor` | `--claude-mcp`, `--json` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |
@@ -667,6 +683,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
 | `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm serve` | — |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--summary` |
 | `mm session events` | `--json` |

@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.5.0 and `memtomem-stm` 0.4.0 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
+This public reference tracks the complete `memtomem` 0.6.4 and `memtomem-stm` 0.5.2 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -26,15 +26,19 @@ This public reference tracks the complete `memtomem` 0.5.0 and `memtomem-stm` 0.
 | `MEMTOMEM_EMBEDDING__PROVIDER` | `none` / `onnx` / `ollama` / `openai` | `"none"` |
 | `MEMTOMEM_EMBEDDING__MODEL` | Model name for the chosen provider | `""` |
 | `MEMTOMEM_EMBEDDING__DIMENSION` | Vector dimension (must match model) | `0` |
+| `MEMTOMEM_EMBEDDING__ONNX_VARIANT` | Local ONNX precision: `fp32`, `int8-arm64`, `int8-avx2`, `int8-avx512`, or `int8-avx512-vnni`. Changing it requires a restart and an explicit index migration. | `"fp32"` |
+| `MEMTOMEM_EMBEDDING__ONNX_ARTIFACT_PATH` | Directory holding a locally exported quantized artifact with a checksummed `manifest.json`. Required for every non-`fp32` variant; there is no automatic fallback. | `""` |
 | `MEMTOMEM_EMBEDDING__BASE_URL` | Ollama / OpenAI-compatible endpoint | `""` |
 | `MEMTOMEM_EMBEDDING__API_KEY` | API key for paid providers | `""` |
 | `MEMTOMEM_EMBEDDING__BATCH_SIZE` | Texts per embedding batch | `64` |
 | `MEMTOMEM_EMBEDDING__ONNX_BATCH_SIZE` | Texts per local FastEmbed/ONNX inference batch; runtime-mutable | `8` |
-| `MEMTOMEM_EMBEDDING__MAX_SEQUENCE_TOKENS` | Actual-token cap per local ONNX input; `0` restores the model limit. Restart after changing it and force-reindex existing content so vectors use one policy. | `1024` |
+| `MEMTOMEM_EMBEDDING__MAX_SEQUENCE_TOKENS` | Actual-token cap per local ONNX input; `0` restores the model limit, except under the E5 profile noted below. Restart after changing it and force-reindex existing content so vectors use one policy. | `1024` |
 | `MEMTOMEM_EMBEDDING__ONNX_CPU_MEM_ARENA` | Reuse ONNX CPU allocations. Restart required; this allocator-only switch does not require re-indexing. | `false` |
 | `MEMTOMEM_EMBEDDING__MAX_CONCURRENT_BATCHES` | Max parallel embedding batches | `4` |
 | `MEMTOMEM_EMBEDDING__THREADS` | ONNX Runtime thread cap (`0` = ORT default) | `4` |
 | `MEMTOMEM_EMBEDDING__PROGRESS_THRESHOLD` | Emit per-chunk progress only when a file produces more chunks than this threshold; `0` always emits | `32` |
+
+**Effective defaults under the ONNX E5 profile.** With `PROVIDER=onnx` and no `MODEL`, Core selects `multilingual-e5-small` and fills in `DIMENSION=384`, `MAX_SEQUENCE_TOKENS=512`, `THREADS=2` and `ONNX_BATCH_SIZE=4` for every one of those you leave unset. The Default column above is the *declared* default, which is what applies outside that profile. Inside it, a `DIMENSION` other than `384` and a `MAX_SEQUENCE_TOKENS` other than `512` are rejected at startup rather than adjusted — including the declared `0` and `1024`, if you set them explicitly.
 
 ### Indexing
 
@@ -42,16 +46,27 @@ This public reference tracks the complete `memtomem` 0.5.0 and `memtomem-stm` 0.
 |---|---|---|
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | Directories reactively re-indexed by the long-running `memtomem-server` file watcher (JSON list). Pre-existing files are not auto-scanned — seed them once with `mm index <dir>`, then the watcher picks up further edits. Populated by `mm init` when you opt in to AI agent memory enrollment. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | Project-tier memory roots under `.memtomem/memories` or `.memtomem/memories.local` | `[]` |
+| `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | Roots memtomem indexes and searches but never rewrites. Must be disjoint from the writable roots. | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | File extensions to index (JSON list) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | Maximum tokens per chunk | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | Merge threshold for short chunks | `128` |
 | `MEMTOMEM_INDEXING__AUTO_DISCOVER` | Deprecated one-shot migration trigger. Existing configs convert detected provider directories into explicit `memory_dirs`, persist them, and flip this field to `false`; new installs skip the migration. Use `mm init --include-provider ...` for new configuration. | `true` |
 | `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | `.gitignore`-syntax patterns (JSON list) that stack on top of the built-in credential denylist (`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**`, ...). User `!negation` cannot override the built-in secret patterns. | `[]` |
+| `MEMTOMEM_INDEXING__INDEX_MASKING_MANIFEST_PATH` | Owner-reviewed masking manifest naming exact source paths, content SHA-256 values, and complete-block line spans. A changed source or an invalid manifest falls back to the normal privacy guard, and masked chunks are read-only. It does not enable automatic masking. | `""` |
 | `MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS` | Greedy semantic-pack target for short sibling sections. Set `0` to disable the pack pass. | `384` |
 | `MEMTOMEM_INDEXING__CHUNK_OVERLAP_TOKENS` | Token overlap between adjacent chunks | `0` |
+| `MEMTOMEM_INDEXING__CHUNK_MODEL_TOKENS` | Composed retrieval-input ceiling, including special tokens | `8192` |
+| `MEMTOMEM_INDEXING__CHUNK_CONTEXT_TOKENS` | Separate budget for the heading and description prefix | `512` |
+| `MEMTOMEM_INDEXING__HARD_MAX_CHUNK_TOKENS` | Exact body ceiling; `0` disables hard-budget mode. Requires a matching local tokenizer. | `0` |
+| `MEMTOMEM_INDEXING__CHUNK_TOKENIZER_PATH` | Local `tokenizer.json` for the embedding model, so hard-budget mode downloads no model | `""` |
+| `MEMTOMEM_INDEXING__CHUNK_INPUT_PREFIX` | Exact model-role prefix counted in the final input token budget (E5 uses `passage: `). Restart required. | `""` |
+| `MEMTOMEM_INDEXING__ENRICH_CHUNK_CONTEXT` | Add cached LLM descriptions to the chunk context. Requires hard-budget mode. | `false` |
 | `MEMTOMEM_INDEXING__STRUCTURED_CHUNK_MODE` | JSON/YAML/TOML chunking mode: `original` or `recursive` | `"original"` |
 | `MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD` | Split long prose into paragraphs above this token count | `800` |
 | `MEMTOMEM_INDEXING__STARTUP_BACKFILL` | On server start, run a one-shot scan over `memory_dirs` to catch files added while the server was down | `false` |
+| `MEMTOMEM_INDEXING__WATCHER_BACKEND` | Watch backend: `auto` polls on macOS and uses native events elsewhere; `native` or `polling` override it | `"auto"` |
+| `MEMTOMEM_INDEXING__WATCHER_DEBOUNCE_MS` | Quiet period before automatic re-indexing, 1–30000 ms | `5000` |
+| `MEMTOMEM_INDEXING__WATCHER_MAX_WAIT_MS` | Maximum event-collection window, 1–30000 ms, even under continuous edits | `30000` |
 | `MEMTOMEM_INDEXING__AUTO_SUMMARIZE` | Generate AI per-source summaries when LLM is configured | `false` |
 | `MEMTOMEM_INDEXING__SUMMARY_LANGUAGE` | Output language for AI source summaries | `"en"` |
 | `MEMTOMEM_INDEXING__SUMMARY_MAX_INPUT_CHARS` | Max source chars sent to the summary LLM | `3000` |
@@ -327,7 +342,7 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_DATA_DIR` | Daemon handshake, ownership lock, and detached log directory | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | Optional rotating log file; files use `0600`, 2 MiB rotation, and three backups | `null` |
-| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises eight observability/admin tools (`stm_proxy_stats`, `stm_proxy_health`, `stm_proxy_cache_clear`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`). The four model-facing tools remain visible when false. | `false` |
+| `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises the `stm_admin` dispatcher and its eight observability/admin actions (`proxy_stats`, `proxy_cache_clear`, `proxy_health`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`). The five model-facing tools remain visible when false. | `false` |
 | `MEMTOMEM_STM_FORMATION__ENABLED` | Advertise the opt-in `stm_memory_propose` tool. This flag alone controls advertisement; upstream LTM support for review-first proposals is checked at call time (an incompatible core returns `formation_unsupported`). | `false` |
 | `MEMTOMEM_STM_FORMATION__MAX_CONTENT_CHARS` | Maximum review-first candidate content size; larger proposals are rejected | `2000` |
 
@@ -342,9 +357,11 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_PROXY__DEFAULT_MAX_RESULT_CHARS` | Per-response char budget | `16000` |
 | `MEMTOMEM_STM_PROXY__MAX_UPSTREAM_CHARS` | OOM guard on upstream response size | `10000000` |
 | `MEMTOMEM_STM_PROXY__MIN_RESULT_RETENTION` | Retention floor (0.0–1.0) | `0.65` |
-| `MEMTOMEM_STM_PROXY__MAX_DESCRIPTION_CHARS` | Maximum advertised tool-description length | `200` |
+| `MEMTOMEM_STM_PROXY__MAX_DESCRIPTION_CHARS` | Cap on the client-visible tool description, `[proxied] ` prefix included. The effective budget for an upstream is `min(server, global)`, so raising this alone does not widen a stricter per-server value. | `4000` |
 | `MEMTOMEM_STM_PROXY__STRIP_SCHEMA_DESCRIPTIONS` | Remove nested JSON-schema descriptions from advertised tools | `false` |
 | `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY` | Advertise the optional `_context_query` argument used for relevance scoring | `false` |
+| `MEMTOMEM_STM_PROXY__HOST_DESCRIPTION_CAP` | Explicit host description limit, proxy prefix and hints included. Unset means unknown, so no host limit is inferred. Applied at the next advertisement; restart to apply it reliably. | `null` |
+| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | Also return the text a `description_override` replaced. Off by default, because recovery hands the overridden upstream text back to the one reader the override was written for. | `false` |
 | `MEMTOMEM_STM_PROXY__CONSUMER_MODEL` | Client model identifier used to resolve its context-window budget | `""` |
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | Fraction of the consumer context window available to a proxied result | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | Static character-to-token estimate used for token budgets | `3.5` |
@@ -411,7 +428,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | Persist `stm_compression_feedback` | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | Compression feedback SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | Compression feedback retention | `90` |
-| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_progressive_stats`) | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_admin(action="progressive_stats")`) | `true` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__DB_PATH` | Progressive-read telemetry SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__RETENTION_DAYS` | Progressive-read telemetry retention | `90` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | Internal lock-acquisition ceiling; a timeout signals a deadlock/stuck holder rather than a slow upstream | `30` |
@@ -509,7 +526,7 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 | `overall_deadline_seconds` | Total wall-clock budget across all retry attempts. Prevents `call_timeout × (max_retries+1)` worst-case blowout. | `180.0` |
 | `circuit_max_failures` | failures before opening this upstream's circuit | `3` |
 | `circuit_reset_seconds` | open-circuit reset interval | `60.0` |
-| `max_description_chars` | per-upstream tool-description cap | `200` |
+| `max_description_chars` | per-upstream tool-description cap; the effective budget is `min(server, global)` | `4000` |
 | `strip_schema_descriptions` | per-upstream nested schema-description stripping | `false` |
 | `origin` | Import-provenance block written by `mms add --import`/`mms init` and used by `mms eject`; CLI JSON output redacts the stored original entry. | `null` |
 
@@ -569,7 +586,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__USE_DAEMON` | Route standalone surfacing through the shared daemon, with no private fallback | `false` |
 | `MEMTOMEM_STM_SURFACING__WARMUP_ENABLED` | Warm the LTM client in the background | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH` | Surfacing feedback and dedup SQLite path | `"~/.memtomem/stm_feedback.db"` |
-| `MEMTOMEM_STM_SURFACING__MIN_SCORE` | Minimum relevance score | `0.03` |
+| `MEMTOMEM_STM_SURFACING__MIN_SCORE` | Global result-score floor on the RRF scale, applied unless a per-tool pin or the scale gate overrides it | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | Max memories injected per call | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | Skip surfacing on tiny responses | `5000` |
 | `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query | `3` |

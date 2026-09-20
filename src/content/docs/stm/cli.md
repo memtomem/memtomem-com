@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.4.0 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
+The `mms` command is installed with the `memtomem-stm` v0.5.2 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -388,7 +388,7 @@ First import wins: identical names with different definitions are flagged as con
 
 ## Operational statistics
 
-To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships eight observability MCP tools (`stm_proxy_stats`, `stm_proxy_cache_clear`, `stm_proxy_health`, `stm_surfacing_stats`, `stm_selection_stats`, `stm_compression_stats`, `stm_progressive_stats`, `stm_tuning_recommendations`). They are hidden from `tools/list` by default; set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to expose them. See [MCP Tools](/stm/mcp-tools/).
+To inspect proxy, surfacing, selection, and compression behavior at runtime, STM ships eight observability actions on a single `stm_admin` tool (`proxy_stats`, `proxy_cache_clear`, `proxy_health`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`). `stm_admin` is hidden from `tools/list` by default; set `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true` to advertise it. See [MCP Tools](/stm/mcp-tools/).
 
 ## Running the proxy server
 

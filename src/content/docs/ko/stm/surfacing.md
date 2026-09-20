@@ -96,7 +96,7 @@ mms surfacing <server> off      # 해당 서버의 관련 기억 자동 제시 �
 mms surfacing <server> on       # 다시 활성화
 ```
 
-이 값은 각 서버의 `surfacing_enabled` 플래그(기본값 `true`)로 공용 프록시 설정(`stm_proxy.json`)에 저장됩니다. 따라서 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 동일한 범위를 공유합니다. 실행 중인 프록시에도 재시작 없이 반영되며 현재 상태는 `mms list`의 SURFACING 열에 표시됩니다. 비활성화한 서버의 호출은 LTM을 검색하기 전에 건너뛰고, `stm_surfacing_stats`에서 정상 건너뜀(`upstream_disabled`)으로 집계합니다.
+이 값은 각 서버의 `surfacing_enabled` 플래그(기본값 `true`)로 공용 프록시 설정(`stm_proxy.json`)에 저장됩니다. 따라서 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 동일한 범위를 공유합니다. 실행 중인 프록시에도 재시작 없이 반영되며 현재 상태는 `mms list`의 SURFACING 열에 표시됩니다. 비활성화한 서버의 호출은 LTM을 검색하기 전에 건너뛰고, `stm_admin(action="surfacing_stats")`에서 정상 건너뜀(`upstream_disabled`)으로 집계합니다.
 
 도구별로 제외하거나 여러 서버에 패턴을 적용하려면 `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS`를 사용합니다. 값은 `server__tool` 패턴으로 비교합니다.
 

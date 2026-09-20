@@ -119,6 +119,9 @@ if (/uvx\s+--from\s+memtomem(?:\s|["'])/.test(combined)) {
 if (contract.claudePlugin.bundledCore !== contract.core.version) {
   errors.push(`Claude plugin bundles Core ${contract.claudePlugin.bundledCore}; expected ${contract.core.version}`);
 }
+if (!contract.claudePlugin.requirement.endsWith(`==${contract.claudePlugin.bundledCore}`)) {
+  errors.push(`Claude plugin requirement ${contract.claudePlugin.requirement} is not pinned to Core ${contract.claudePlugin.bundledCore}`);
+}
 if (contract.opencode.bundledCore !== contract.core.version) {
   errors.push(`OpenCode plugin bundles Core ${contract.opencode.bundledCore}; expected ${contract.core.version}`);
 }
@@ -198,8 +201,14 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   assertSectionContains(
     file,
     claudeSection,
-    `uvx --from memtomem==${contract.claudePlugin.bundledCore} memtomem-server`,
+    `uvx --from ${contract.claudePlugin.requirement} memtomem-server`,
     'Claude exact plugin signature'
+  );
+  assertSectionContains(
+    file,
+    claudeSection,
+    `claude mcp add memtomem -- uvx --from "${contract.claudePlugin.requirement}" memtomem-server`,
+    'Claude quoted manual registration'
   );
   const opencodeSection = markdownSection(text, contract.guides.clientGuide.coexistence.opencode.heading, 2);
   assertSectionContains(
@@ -242,7 +251,7 @@ for (const file of troubleshootingPairs) {
   assertSectionContains(
     file,
     section,
-    `uvx --from memtomem==${contract.claudePlugin.bundledCore} memtomem-server`,
+    `uvx --from ${contract.claudePlugin.requirement} memtomem-server`,
     'troubleshooting Claude exact plugin signature'
   );
 }

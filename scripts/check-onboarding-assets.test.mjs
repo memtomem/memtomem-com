@@ -83,7 +83,7 @@ test('core references are collected from blob, raw, and tree links', () => {
     `<a href="${RAW}/examples/onboarding/retry-policy/demo.py">b</a>`,
     `[c](${CORE}/tree/main/examples/onboarding/retry-policy)`,
     'https://github.com/memtomem/memtomem-stm/blob/main/README.md',
-    `${CORE}/blob/v0.5.0/examples/notebooks/05_langgraph_memory_basics.ipynb`,
+    `${CORE}/blob/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb`,
   ].join('\n'));
   assert.deepEqual([...found.files].sort(), [
     'examples/notebooks/05_langgraph_memory_basics.ipynb',

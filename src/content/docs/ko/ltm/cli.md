@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.5.0를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.6.4를 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -14,7 +14,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | 그룹 | 명령 |
 |---|---|
 | 설정 / 데이터 | `init`, `config`, `add`, `index`, `ingest`, `mem`, `memory` |
-| 검색 / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web` |
+| 검색 / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web`, `serve` |
 | 실행 환경 컨텍스트 | `context`, `wiki`, `sync-doctor` |
 | 협업 | `session`, `activity`, `agent`, `review` |
 | 평가 / 운영 | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
@@ -25,9 +25,9 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | 그룹 | 하위 명령 |
 |---|---|
 | `activity` | `log` |
-| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `share` |
+| `agent` | `debug-resolve`, `list`, `migrate`, `register`, `search`, `share` |
 | `config` | `set`, `show`, `unset` |
-| `context` | `adopt`, `copy`, `detect`, `diff`, `generate`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
+| `context` | `adopt`, `copy`, `detect`, `diff`, `export`, `generate`, `import`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
@@ -64,7 +64,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.5.0에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.6.4에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -299,7 +299,7 @@ mm context status --all-projects              # 읽기 전용: 어떤 프로젝�
 <a id="기존-런타임-파일에서-시드하기"></a>
 ### 기존 AI 도구의 파일을 기준본으로 가져오기
 
-별도의 `mm context import` 명령은 없습니다. AI 도구의 기존 파일로 기준본을 만들려면 항목 종류와 대상 계층을 지정해 `mm context init`을 실행합니다.
+`mm context init`은 이미 이 컴퓨터에 있는 AI 도구의 파일로 기준본을 만듭니다. 항목 종류와 대상 계층을 지정해 실행합니다.
 
 ```bash
 mm context detect --include agents,skills
@@ -308,6 +308,19 @@ mm context diff --include agents,skills --scope project_shared
 ```
 
 Claude Code, Codex CLI, Antigravity CLI 등에서 직접 만든 파일을 앞으로 memtomem으로 관리할 때 사용합니다. 프로젝트 사이에서 재사용하려면 위의 `move`와 `copy`를 사용하세요. 공용 라이브러리에서 설치하려면 `mm wiki`를 사용합니다.
+
+### 다른 컴퓨터로 항목 옮기기
+
+`mm context export`는 기준본 하나를 절대 경로와 호스트명이 없는 JSON 파일 한 개로 묶고, `mm context import`는 그 묶음을 기준본 저장소에 반영합니다(ADR-0037). 동료에게 항목을 전달할 때 이 두 명령을 사용하고, 파일이 이미 이 컴퓨터에 있다면 위의 `context init`을 사용합니다.
+
+```bash
+mm context export skills deploy-check --out deploy-check.json
+mm context import deploy-check.json --to user            # 미리보기(기본값)
+mm context import deploy-check.json --to user --apply    # 실제 반영
+```
+
+묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 건넨 파일은 푸시한 커밋만큼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
+
 
 <a id="wiki--정규-아티팩트-라이브러리"></a>
 ## Wiki — 공용 항목 라이브러리
@@ -542,7 +555,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.5.0           # 특정 버전 고정
+mm upgrade --version 0.6.4           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -580,6 +593,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm agent list` | `--json` |
 | `mm agent migrate` | `--dry-run`, `--yes` |
 | `mm agent register` | `--color`, `--description` |
+| `mm agent search` | `--agent-id`, `--format`, `--include-shared`, `--no-include-shared`, `--shared-namespace`, `--top-k` |
 | `mm agent share` | `--force-unsafe`, `--target` |
 | `mm config` | — |
 | `mm config set` | — |
@@ -590,7 +604,9 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm context copy` | `--apply`, `--as`, `--confirm-project-shared`, `--from`, `--to`, `--to-project`, `--yes` |
 | `mm context detect` | `--include` |
 | `mm context diff` | `--include`, `--scope` |
+| `mm context export` | `--from`, `--no-versions`, `--out` |
 | `mm context generate` | `--agent`, `--include`, `--label`, `--on-drop`, `--scope`, `--strict`, `--yes` |
+| `mm context import` | `--apply`, `--as`, `--confirm-project-shared`, `--force-unsafe-import`, `--to`, `--to-project`, `--yes` |
 | `mm context init` | `--confirm-project-shared`, `--force-unsafe-import`, `--include`, `--only`, `--overwrite`, `--scope` |
 | `mm context install` | `--all`, `--force`, `--yes` |
 | `mm context memory-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--to`, `--yes` |
@@ -602,12 +618,12 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm context projects pause` | — |
 | `mm context projects remove` | — |
 | `mm context projects resume` | — |
-| `mm context pull` | `--apply`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
+| `mm context pull` | `--apply`, `--confirm-project-shared`, `--diff`, `--force-unsafe-import`, `--from`, `--json`, `--overwrite`, `--scope`, `--yes` |
 | `mm context rescan` | `--json`, `--quiet`, `--scope` |
 | `mm context seed-validation` | `--force`, `--json` |
 | `mm context settings-copy` | `--apply`, `--confirm-project-shared`, `--event`, `--hook-command`, `--json`, `--matcher`, `--to`, `--to-project`, `--yes` |
 | `mm context settings-doctor` | `--json`, `--scope` |
-| `mm context settings-migrate` | `--apply`, `--from`, `--json`, `--to`, `--yes` |
+| `mm context settings-migrate` | `--apply`, `--confirm-project-shared`, `--from`, `--json`, `--to`, `--yes` |
 | `mm context status` | `--all-projects`, `--scope` |
 | `mm context sync` | `--all-projects`, `--force-unsafe`, `--include`, `--label`, `--on-drop`, `--runtime`, `--scope`, `--strict`, `--yes` |
 | `mm context update` | `--all`, `--dry-run`, `--force`, `--force-head`, `--yes` |
@@ -617,7 +633,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
-| `mm doctor` | `--json` |
+| `mm doctor` | `--claude-mcp`, `--json` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |
@@ -668,6 +684,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
 | `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm serve` | — |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--summary` |
 | `mm session events` | `--json` |

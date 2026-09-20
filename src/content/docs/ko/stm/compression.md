@@ -65,7 +65,7 @@ JSON을 다루는 압축 계층은 압축을 마친 뒤 결과를 다시 유효�
 
 모든 `progressive` 청크는 표준 바닥글 `\n---\n[progressive: chars=<n>]`로 끝납니다. 에이전트는 `memtomem_stm.proxy.progressive`가 제공하는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN`을 기준으로 나눠야 합니다. `\n---\n`만 기준으로 삼으면 본문의 Markdown 수평선이나 YAML 구분선과 겹쳐 일부 내용이 빠질 수 있습니다.
 
-`progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_progressive_stats`에서 확인할 수 있습니다. 기본 저장소에 문제가 생겨 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
+`progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소에 문제가 생겨 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
 
 응답 캐시는 스키마 5를 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다.
 
@@ -90,7 +90,7 @@ progressive → hybrid → truncate
 - 에이전트가 **정보 손실을 보고**하면 → 해당 도구의 보존 비율 상향
 - 에이전트가 **응답이 너무 길다**고 하면 → 보존 비율 하향
 
-이 피드백 루프는 `stm_compression_feedback` 도구로 구동되며, 누적된 피드백과 도구별 조정 현황은 `stm_compression_stats`로 확인할 수 있습니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
+이 피드백 루프는 `stm_compression_feedback` 도구로 구동되며, 누적된 피드백과 도구별 조정 현황은 `stm_admin(action="compression_stats")`으로 확인할 수 있습니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
 
 ## 복구 범위
 

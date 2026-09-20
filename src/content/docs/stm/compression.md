@@ -61,7 +61,7 @@ The `progressive` strategy delivers retained content sequentially, subject to th
 
 Every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
 
-Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by the `stm_progressive_stats` tool (see [MCP Tools](/stm/mcp-tools/)).
+Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)).
 
 The response cache uses schema 5 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions.
 
@@ -84,7 +84,7 @@ Agent feedback automatically adjusts per-tool compression budgets:
 - Agent reports **information loss** → Increase preservation ratio for that tool
 - Agent reports **response too long** → Decrease preservation ratio
 
-This feedback loop is driven by the `stm_compression_feedback` tool; accumulated feedback and per-tool adjustments are visible via `stm_compression_stats` (see [MCP Tools](/stm/mcp-tools/)).
+This feedback loop is driven by the `stm_compression_feedback` tool; accumulated feedback and per-tool adjustments are visible via `stm_admin(action="compression_stats")` (see [MCP Tools](/stm/mcp-tools/)).
 
 ## Recovery boundaries
 
