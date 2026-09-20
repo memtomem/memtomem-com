@@ -31,6 +31,7 @@ npm run build
 2. Update `src/data/docs-contract.json`, then synchronize every affected English/Korean page.
 3. Add the superseded Core and STM versions to the stale-version list in `scripts/check-doc-contract.mjs`. Keep this list explicit: a site-wide lower-semver rule would reject valid historical notes and independently versioned integrations.
 4. Run `npm test` and `npm run build` to check mutation regressions, the contract, generated site, search index, routes, and fragments.
+5. Update EN/KO onboarding file and directory links to `v<core.version>`, then run `node scripts/check-onboarding-assets.mjs` to verify the link refs and seven published assets from that tag. Review the tagged source before updating any asset hashes, and include links and hashes in the version-bump PR.
 
 ### Reproducing source evidence
 
@@ -51,7 +52,10 @@ The smoke test uses a temporary home, no remote models, and the bundled STM
 demo. It verifies keyword storage/search, force-indexing, MCP proxying and
 durable metrics; it does not validate embedding downloads or remote services.
 
-PRs run tests/build only. The deployment job permits only non-PR events on
+Every PR targeting `main` runs tests, the build, and the published onboarding
+asset gate, regardless of which files changed. The gate uses the documented
+Core release tag; moving Core's `main` does not change its fetch target.
+The deployment job permits only non-PR events on
 `main`; a manual run on another branch cannot deploy.
 
 Pushes to `main` deploy through the GitHub Pages workflow in `.github/workflows/deploy.yml`.

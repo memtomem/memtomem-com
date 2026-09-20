@@ -18,10 +18,10 @@ These are synthetic learning examples. The default responses are deterministic t
 | 05: Memory basics | Store a preference through `compile(store=...)` | Same-user new thread reads it; another namespace does not; a new store object reopens the file |
 | 06: Retrieval memory | Retrieve → compose → approve → save | Unapproved draft creates no output memory; approved result has a Markdown source and can be searched after reopening |
 
-- [Read Korean notebook 05](https://github.com/memtomem/memtomem/blob/main/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [Download notebook 05](https://raw.githubusercontent.com/memtomem/memtomem/main/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [Read Korean notebook 06](https://github.com/memtomem/memtomem/blob/main/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
-- [Download notebook 06](https://raw.githubusercontent.com/memtomem/memtomem/main/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [Read Korean notebook 05](https://github.com/memtomem/memtomem/blob/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [Download notebook 05](https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [Read Korean notebook 06](https://github.com/memtomem/memtomem/blob/v0.6.4/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [Download notebook 06](https://raw.githubusercontent.com/memtomem/memtomem/v0.6.4/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
 
 Download each raw file using “Save link as” if your browser displays JSON. Each notebook includes its own input, code, assertions, explanation, recovery steps, and exercise. No private repository or previous notebook run is required.
 
