@@ -70,7 +70,7 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 
 ## 피드백 루프
 
-자동으로 제시한 각 기억에는 제공자마다 기준이 다른 원점수 대신 `[weak]` / `[related]` / `[strong]` 등급을 표시합니다. 점수 범위를 맞춘 뒤 현재 임계 구간에 따라 등급을 정합니다. 각 기억에는 고유한 `memory_id`도 붙으므로, 에이전트는 전체 결과나 개별 기억을 따로 평가할 수 있습니다.
+자동으로 제시한 각 기억에는 제공자마다 기준이 다른 원점수 대신 `[weak]` / `[related]` / `[strong]` 등급을 표시합니다. 등급은 `[min_score, 상한]` 구간을 셋으로 나누어 정합니다. `rrf`로 표시된 결과의 상한은 `sum(rrf_weights) / (rrf_k + 1)`입니다. 이 값은 검색을 처리한 Core 세션의 `runtime_profile`에서 계산합니다. 프로필이 없거나 유효하지 않거나 두 검색 경로(BM25와 dense)를 함께 쓰는 구성이 아니면 기준값 `2/61`(약 0.033)을 사용합니다. 이전 데몬이 이 값을 전달하지 않을 때도 같습니다. `score_scale` 표시가 없거나(compact 형식, 이전 Core) STM이 알 수 없는 값인 결과는 기존 `[min_score, 1.0]` 구간을 유지합니다. 리랭커 logit처럼 RRF가 아닌 알려진 점수 척도가 표시된 결과에는 의미 있는 구간이 없으므로 등급을 표시하지 않습니다. 각 기억에는 고유한 `memory_id`도 붙으므로, 에이전트는 전체 결과나 개별 기억을 따로 평가할 수 있습니다.
 
 - 이벤트 전체: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
 - 개별 기억: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`
@@ -81,6 +81,14 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 - **partially_helpful** → 중립 피드백으로 집계
 - **not_relevant** → `min_score` 상향 (더 엄격한 필터링)
 - **already_known** → 부정적 피드백으로 집계하고 로컬 우선순위 조정과 중복 제거에 반영
+
+상향 폭에는 상한이 있습니다. 실제 상한은 `min(auto_tune_score_ceiling, max(배치 기준값, min_score))`입니다. 따라서 설정한 `min_score`가 배치 기준값보다 높으면 그대로 유지하고 낮추지 않습니다. 배치 기준값은 Core가 점수를 보내는 정밀도에 맞춰 내림한 값입니다.
+
+- `rrf` 결과: 표시된 상한(유효한 값이 없으면 `2/61`)을 소수 4자리로 내림합니다(`2/61` → `0.0327`).
+- `score_scale` 표시가 없거나 STM이 알 수 없는 값인 결과: `2/61`을 소수 2자리로 내림합니다(`0.03`).
+- 빈 배치나 STM이 아는 RRF 외 점수 척도: 추가 상한이 없습니다.
+
+저장된 조정값은 다시 쓰지 않습니다. 이미 상한보다 높게 조정된 도구는 다음 검색부터 상한으로 필터링하지만, `stm_surfacing_stats`에는 저장된 값이 계속 표시됩니다. 이 동작은 프록시와, `hook.record_feedback_events`가 켜진 데몬에 적용됩니다.
 
 개별 기억에 `not_relevant` 또는 `already_known`을 부여하면 다음에 같은 캐시 응답을 사용할 때 그 기억만 제외합니다. 전체 결과를 버리지는 않습니다.
 
@@ -113,6 +121,9 @@ mms surfacing <server> on       # 다시 활성화
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
 - **로컬 피드백에 따른 제외** — 같은 기억이 서로 다른 결과에서 `not_relevant` 또는 `already_known`으로 반복 평가되면 `feedback_demotion_negative_threshold`(기본 `3`)에 도달한 뒤부터 응답에 넣기 전에 제외
 - **검색어 보호** — `query_retention_days`가 지나면 저장한 원문 검색어를 비움(기본 30일). `persist_query_text=false`이면 원문 대신 `sha256:` 해시를 저장
+- **제시 기회 기록** — 피드백 추적기가 있는 엔진(데몬, `feedback_enabled`가 켜진 프록시)은 관련 기억 검색에 진입한 호출마다 `surfacing_opportunities` 행을 남김. 행에는 결과, 인자 개수·경로 깊이·흔한 파일 확장자 같은 인자 형태, 추출한 검색어의 digest가 담기며 인자의 키와 값은 저장하지 않음. 행은 약 320바이트이고 `stats_retention_days`에 따라 삭제됨. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 끄거나 `opportunities_sample_rate`로 일부만 저장(보류 추첨을 거친 호출은 항상 저장)
+- **호출 식별자** — 훅은 호스트의 `session_id`, `cwd`, `tool_use_id`, `agent_id`를 데몬에 전달하며 로그에는 남기지 않음. `surfacing_events` 행에는 `tool_use_id`, `host_session_id`, `host_agent_id`를 저장하고 `cwd`는 저장하지 않음. 제시한 기억의 원본 경로와 미리보기 텍스트는 설치별 키로 만든 해시만 저장
+- **보류(holdout)** — `holdout_rate`(기본 `0.0`)가 0보다 크면, Claude Code 훅이 데몬을 거쳐 보낸 호출 가운데 조건을 갖춘 호출의 주입을 무작위로 보류해 효과를 측정. 보류한 호출은 도구 응답을 그대로 반환하고 기록만 남김. 프록시 경로는 보류하지 않음
 
 <a id="ltm-전송"></a>
 

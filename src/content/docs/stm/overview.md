@@ -65,7 +65,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.5.2` |
+| **Latest release** | `0.6.1` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

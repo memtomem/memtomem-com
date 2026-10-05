@@ -95,7 +95,7 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 |---|---|---|---|
 | Minimal | BM25 keyword search only | no model download | first smoke test and exact identifiers |
 | English (Recommended) | local ONNX embedding + English reranker | downloads local models once | mostly English projects |
-| Korean-optimized | multilingual embedding + reranker + Korean tokenizer | downloads local models once | Korean or multilingual notes |
+| Korean-optimized | multilingual embedding + Korean tokenizer (no reranker) | downloads local models once | Korean or multilingual notes |
 
 The CLI tokens remain `--preset minimal`, `--preset english`, and `--preset korean`. Remote Ollama or OpenAI-compatible providers are explicit later choices; selecting them can send request data to the configured service.
 

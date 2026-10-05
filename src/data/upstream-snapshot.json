@@ -200,7 +200,7 @@
         "promote"
       ]
     },
-    "commit": "a4a13bdfd8c1ec799dc24e7413683f172724e564",
+    "commit": "5b7034126574a2956b6a328622006a46b2a0e367",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -834,6 +834,7 @@
       "session": [],
       "session end": [
         "--auto",
+        "--json",
         "--summary"
       ],
       "session events": [
@@ -1264,7 +1265,7 @@
         "replay"
       ]
     },
-    "commit": "53eb0c5b76c2e625d2d7cc066a3de6a424ce519a",
+    "commit": "24556ab65dc71e602abe239f5bc5fca11a4acdf7",
     "environment": {
       "MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS": false,
       "MEMTOMEM_STM_DAEMON__ALLOW_NON_LOOPBACK": false,
@@ -1408,6 +1409,7 @@
       "MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD": 3,
       "MEMTOMEM_STM_SURFACING__FEEDBACK_ENABLED": true,
       "MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK": true,
+      "MEMTOMEM_STM_SURFACING__HOLDOUT_RATE": 0.0,
       "MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT": true,
       "MEMTOMEM_STM_SURFACING__INJECTION_MODE": "append",
       "MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS": [],
@@ -1421,6 +1423,8 @@
       "MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS": 3,
       "MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS": 5000,
       "MEMTOMEM_STM_SURFACING__MIN_SCORE": 0.017,
+      "MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE": 1.0,
       "MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT": true,
       "MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS": 300,
       "MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS": 30,

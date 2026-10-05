@@ -67,7 +67,7 @@ JSON을 다루는 압축 계층은 압축을 마친 뒤 결과를 다시 유효�
 
 `progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소에 문제가 생겨 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
 
-응답 캐시는 스키마 5를 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다.
+응답 캐시는 스키마 5를 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
 
 <a id="폴백-래더"></a>
 
@@ -81,7 +81,12 @@ progressive → hybrid → truncate
 
 각 단계에서 하한을 충족하면 해당 전략의 결과를 사용합니다. 도구별 `max_result_chars` 설정이 이 하한보다 더 많이 깎으려 하면, 절삭하기 전에 글자 수 예산을 `len(response) * min_result_retention` 까지 끌어올립니다.
 
-`llm_summary` 전략에는 별도의 **시간 제한**이 있습니다. 서버·도구별 `llm` 블록의 `llm_timeout_seconds` 필드로 지정하며 기본값은 `60`초입니다. LLM 응답이 느리거나 멈춰도 프록시 전체가 멈추지 않습니다. 제한 시간을 넘기면 STM은 `truncate`를 대신 사용해 정해진 길이 안에서 응답합니다.
+- **최소 분량 계산:** 하한에 해당하는 최소 분량은 정수 글자 수로 올림합니다. 일반 텍스트 절삭은 이 분량 이상에서만 문장·단어 경계를 고르고, 그런 경계가 없으면 예산 위치에서 자릅니다. 이 절삭은 `truncate` 전략, LLM이 설정되지 않은 `llm_summary`, schema-pruning·skeleton의 일반 텍스트 대체, 저장소 오류 시 대체, 마지막 `truncate` 단계에 적용됩니다.
+  - 이전에는 하한에 몇 글자 모자란 결과가 progressive 전달로 바뀌었습니다. 이제는 하한 이상의 절삭 결과 하나로 전달합니다.
+  - 구조적 절삭처럼 여전히 하한에 못 미치는 결과는 이전처럼 대체 단계로 넘어갑니다.
+- **명시적 `retention_floor`:** 도구의 `retention_floor`는 서버 값보다, 서버 값은 전역 비율보다 우선합니다. `null`이면 상위 값을 상속하고, 명시적 `0`이면 그 수준에서 하한을 끕니다. 명시적 `retention_floor`는 전역 `min_result_retention`이 `0`이어도 적용됩니다. 예를 들어 `1.0`으로 지정한 도구는 문자 예산으로 자르지 않고 응답 전체를 보존합니다.
+
+`llm_summary` 전략에는 별도의 **시간 제한**이 있습니다. 서버·도구별 `llm` 블록의 `llm_timeout_seconds` 필드로 지정하며 기본값은 `60`초입니다. LLM 응답이 느리거나 멈춰도 프록시 전체가 멈추지 않습니다. 제한 시간을 넘기면 STM은 `truncate`를 대신 사용해 정해진 길이 안에서 응답합니다. LLM이 빈 요약이나 공백만 반환하면 압축기는 잘라 낸 원문으로 대체합니다. 이 결과가 보존 하한을 충족하면 `llm_summary→llm_empty_fallback`으로 기록하고, 충족하지 못하면 다른 결과와 마찬가지로 하한 검사가 대체합니다(예: `llm_summary→progressive_fallback`). 엔드포인트는 응답했으므로 빈 요약은 회로 차단기 실패로 세지 않습니다. Anthropic 응답은 첫 블록만이 아니라 모든 text 블록에서 요약을 읽습니다.
 
 ## 압축 예산 설정
 

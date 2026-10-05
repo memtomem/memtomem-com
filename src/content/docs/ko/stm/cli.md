@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.5.2 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.6.1 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -77,7 +77,7 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 | `--env KEY=VALUE` | 연결한 서버 프로세스에 전달할 환경 변수(반복 가능) |
 | `--header KEY=VALUE` | `sse` / `streamable_http`용 평문 헤더(반복 가능, 설정 파일 권한 `0600`) |
 | `--compression` | `auto` (기본), `none`, `truncate`, `selective`, `hybrid` |
-| `--max-chars` | 출력 크기 예산 (기본 `8000`) |
+| `--max-chars` | 서버별 문자 예산. 생략하면 설정에 값을 쓰지 않으므로 모델에 맞춰 조정되는 전역 예산(`default_max_result_chars`, 기본 16,000자)을 상속하며, 지정하면 그 값으로 고정 |
 | `--validate` | 저장 전에 MCP `initialize`와 `list-tools`로 서버 확인 |
 | `--timeout` | `--validate`에서 서버별로 기다릴 시간(초, 기본 `10`) |
 | `--json` | JSON 결과 문서 하나 출력 |
@@ -109,6 +109,10 @@ mms list --json                      # 스크립트용 JSON
 
 표의 **ORIGIN** 열에는 각 서버를 가져온 위치가 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, `mms add`로 직접 등록한 항목은 `-`로 표시합니다. 값 뒤의 `*`는 클라이언트의 원본 등록을 정리해 현재 STM을 통해서만 호출된다는 뜻입니다. `mms eject <name>`로 복원할 수 있습니다. v0.1.32부터는 **SURFACING** 열도 표시하므로 서버별 `mms surfacing` 설정을 여기서 확인할 수 있습니다.
 
+**SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
+
+표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 이 값들은 실행 설정을 만들 수 없을 때뿐 아니라 실제 설정에 서버가 하나도 없을 때도 빈 객체(`{}`)가 되므로, 설정 실패 여부는 `config_valid`와 `config_error`로 판단합니다.
+
 ### `mms status`
 
 프록시가 설정되어 있고 올바른 설정 파일을 가리키는지 요약해서 보여 줍니다. 서버별 상세 정보는 포함하지 않습니다.
@@ -118,7 +122,9 @@ mms status
 mms status --json                    # 스크립트용 JSON
 ```
 
-v0.1.32부터 `status`는 설정 경로, `enabled` 값, 스키마 검증 경고, `Servers: N (P host-pruned)`를 요약합니다. 서버별 압축, 출력 예산, 관련 기억 제시 상태는 `mms list`에서 확인합니다. `status --json`은 민감 정보를 가린 `servers` 맵 전체와 `server_count` / `pruned_count` 키를 반환합니다.
+v0.1.32부터 `status`는 설정 경로, `enabled` 값, 스키마 검증 경고, `Servers: N (P host-pruned)`를 요약합니다. 서버별 압축 전략과 관련 기억 제시 상태는 `mms list`에서 확인합니다. `status --json`은 민감 정보를 가린 `servers` 맵 전체와 `server_count` / `pruned_count` 키를 반환하며, `effective_server_count`(환경 변수 때문에 시작할 수 없는 설정이면 `null`)도 포함합니다. `enabled`는 시작 시 설정 해석이 성공하면 환경 변수 재정의까지 반영한 실제 값입니다.
+
+`list`와 `status`는 서버 시작 시와 같은 기준으로 설정을 검증하므로, 시작 시 거부되는 환경 변수가 있으면 설정을 유효하지 않은 것으로 표시합니다. `config_error`에는 값 없이 오류 위치와 유형 코드만 표시합니다. 위치에는 환경 변수나 헤더 이름 같은 키가 포함될 수 있지만 값은 포함되지 않습니다. 파일 오류의 자세한 내용은 `mms config validate`로 확인합니다.
 
 ### `mms surfacing <server> [on|off]`
 
@@ -157,6 +163,16 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 `--names`는 `mcp__<server>__<prefix>__<tool>`의 전체 길이가 MCP의 64자 제한(#261)을 넘어 등록 후 표시되지 않는 도구를 찾을 때 사용합니다.
 
 `health`는 서버별 **회로 차단기** 상태도 표시합니다. v0.1.32부터 기본으로 활성화됩니다. 연속 3회 호출에 실패하면 해당 서버의 도구는 약 60초 동안 `circuit_open`을 바로 반환하므로 호출할 때마다 재시도와 제한 시간을 모두 소진하지 않습니다. 캐시된 응답은 계속 제공하고 다른 서버에는 영향을 주지 않습니다. `stm_proxy.json`에서 해당 서버에 `circuit_max_failures: 0`을 지정하면 매번 다시 시도하는 이전 동작으로 돌아갑니다.
+
+`health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 오류 표시에는 거부된 값과 예외 메시지를 포함하지 않으며, 일부 항목은 다음과 같이 가립니다.
+
+- 설정 오류는 오류 위치와 유형만 표시합니다.
+- 서버 확인에 실패하면 예외 메시지 대신 `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)`처럼 예외 유형만 표시합니다. `mms add --validate`와 가져오기 검증도 같습니다. 원래 메시지가 필요하면 서버 명령을 직접 실행하거나 엔드포인트에 직접 접속해 확인합니다.
+- URL에서는 쿼리 문자열과 프래그먼트를 지웁니다.
+- 피드백·지표 DB의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 표시합니다.
+- stdio LTM 서버의 실행 인자는 `<command> [args hidden]`으로 가립니다. `--json`의 `surfacing.ltm_server.args`는 인자마다 `<REDACTED>` 하나로 표시하므로 개수는 셀 수 있습니다. 실제 값은 `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` 설정에서 직접 확인합니다.
+
+`--json`에는 `doctor`가 출력하는 점검 행과 같은 `surfacing.runtime_profile_checks`가 포함됩니다.
 
 ### `mms prune`
 
@@ -238,6 +254,8 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열게 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
 
+훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
+
 ### `mms doctor`
 
 상태, 연결, 설정 검사를 하나의 PASS/WARN/FAIL 보고서로 실행합니다. 기본 실행은 상태를 바꾸지 않으며 LTM도 검색하지 않습니다. FAIL이 있으면 종료 코드 1, WARN만 있으면 종료 코드 0을 반환합니다.
@@ -249,6 +267,8 @@ mms doctor --measure-ltm             # 이미 실행 중인 데몬으로 읽기 
 ```
 
 옵션은 `--config`, `--json`, `--timeout`, `--measure-ltm`입니다. 측정 모드는 데몬이 없을 때 새로 시작하지 않습니다.
+
+시작 시 거부되는 환경 변수가 있으면 `config schema` 검사가 FAIL이 되어 종료 코드 1을 반환합니다. 관련 기억 제시 기회 기록에 집계할 내용이 있으면 참고용 `surfacing opportunities` 검사를 표시합니다. 업그레이드한 프로세스가 `stm_feedback.db`를 처음 열기 전까지는 새 테이블이 없다고 보고합니다. 오류 표시 방식은 [`mms health`](#mms-health)와 같습니다.
 
 ### `mms config validate`
 
@@ -303,6 +323,16 @@ mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
 
 CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의 실시간 횟수는 관찰·관리 MCP 도구에서 확인하세요.
 
+- **압축 통계 측정 기준:** 관련 기억을 덧붙이기 전의 첫 응답 텍스트를 측정하며, 이후 `stm_proxy_read_more` 읽기는 포함하지 않습니다.
+  - 명시적 `progressive` 응답이 여러 조각으로 나뉘면 첫 조각과 footer만 기록합니다. 따라서 해당 도구의 절감률이 이전보다 높게 나옵니다.
+  - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
+  - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
+- **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
+- **관련 기억 제시 통계:**
+  - 실제로 보여 준 이벤트만 제시 횟수로 셉니다.
+  - 보류(holdout)된 호출은 `withheld (holdout)` 줄에, 제시 기회 기록은 `opportunities` 줄에 따로 표시합니다. 두 줄 모두 집계할 내용이 있을 때만 나타납니다.
+- **`--json` 오류 필드:** `compression.error`와 `surfacing.error`의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 유형만 표시합니다.
+
 ### `mms tune`
 
 기존 지표·피드백 저장소를 바탕으로 도구별 압축 권장 설정을 미리 보거나 적용합니다.
@@ -313,6 +343,10 @@ mms tune --apply [--yes]
 ```
 
 기본값은 미리보기입니다. `--apply`는 시각을 붙인 백업을 만든 뒤 설정 잠금을 잡고 선택한 `tool_overrides`를 저장합니다. 실행 중인 프록시에도 재시작 없이 반영됩니다. `mms stats`와 달리 `tune`은 기존 저장소에 여러 번 실행해도 결과가 같은 스키마 이전을 수행할 수 있습니다.
+
+`--tool ""`처럼 빈 필터는 어떤 도구와도 일치하지 않습니다. 모든 도구를 분석하려면 `--tool`을 생략하세요. 따라서 `mms tune --apply --yes --tool ""`는 아무 도구의 재정의도 쓰지 않습니다.
+
+현재 설정에서 해석한 전략이 `none`이거나 명시적 `progressive`인 도구에는 `max_result_chars` 권장을 내지 않습니다. 두 경로 모두 이 예산을 읽지 않기 때문입니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
 
 ## 프로젝트 관리
 

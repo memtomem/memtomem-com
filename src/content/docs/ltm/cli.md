@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.6.4. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.6.7. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.4 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.7 binary.
 
 | Group | Commands |
 |---|---|
@@ -55,6 +55,7 @@ mm agent debug-resolve --agent-id alice
 mm review evidence CANDIDATE_ID --top-k 5
 mm context seed-validation --help
 mm context version --help
+mm context settings-doctor --json
 ```
 
 `doctor` diagnoses runtime configuration; `agent debug-resolve` explains search
@@ -62,10 +63,17 @@ scope. `review evidence` compares a candidate with indexed memories but never
 approves it. BM25-only or unindexed dense stores may report evidence unavailable.
 `seed-validation` writes validation context assets; inspect its help before
 choosing to run it.
+`settings-doctor --json` reports the highest-ranking `status` of `duplicates`,
+`malformed`, `incomplete`, `advisory`, `clean`. `advisory` means the only findings
+are hook commands that may not run on another machine; `clean` means every axis is
+empty. `duplicates` and `malformed` exit 1; the others exit 0, so a script that passes only on `clean` should accept
+`advisory` too or read the findings. A settings file in a directory memtomem
+cannot search is skipped and listed as `unreadable`; with no duplicates or
+malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.6.4, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.6.7, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -386,8 +394,10 @@ mm session start --agent-id claude-code --title "refactor auth"
 mm session list --json                           # scriptable list output
 mm session events <session-id> --json            # event timeline as JSON
 mm session wrap -- <command...>                  # auto start/end around a command
-mm session end
+mm session end --auto --json                     # summarize from events, print a JSON ack
 ```
+
+`mm session end --json` prints `{"ok": true, "session_id": ..., "summary": ..., "event_count": N}` on success, and `{"ok": false, "reason": ...}` with exit code 1 when there is no active session or storage fails. `mm session events --json` with no session prints `{"error": "no_session"}` and also exits 1.
 
 The current session ID is stored in `~/.memtomem/.current_session`, so `mm activity log` and other commands pick it up automatically.
 
@@ -400,7 +410,7 @@ mm activity log --type tool_call --content "ran tests"
 mm activity log --type decision --content "picked strategy X" --meta '{"k":"v"}' --json
 ```
 
-With `--json`, a successful write returns `{"ok": true, ...}` on stdout; no active session or a write failure returns `{"ok": false, "reason": ...}`. Exit code is always 0.
+With `--json`, a successful write returns `{"ok": true, ...}` on stdout; a failure returns `{"ok": false, "reason": ...}`. No active session (`no_active_session`) is a no-op and exits 0; malformed `--meta` (`invalid_meta`) or a failed write (`write_failed`) exits 1. Without `--json`, a missing session or a failed write prints nothing on stdout and exits 0.
 
 ### `mm agent register / list / share`
 
@@ -431,6 +441,8 @@ mm status --json                     # machine-readable, for scripts / `jq` pipe
 
 Added in v0.1.25; `--json` / `--format json` added in v0.3.4. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
 
+When `search.tokenizer` is `kiwipiepy` but the `kiwipiepy` package cannot be found, or the process has already fallen back to `unicode61`, both `mm status` and `mem_status` list a `tokenizer_fallback` warning. Rows indexed during the fallback are tokenized differently, so Korean keyword search can miss them. Install the `korean` extra wherever memtomem runs, restart its servers, then rebuild the keyword index.
+
 ### `mm sync-doctor`
 
 Run six read-only checks against the current private memory-sync repository. Failures exit non-zero; warnings do not.
@@ -460,7 +472,7 @@ mm memory doctor --fix               # preview removal of broken index links (dr
 mm memory doctor --fix --apply       # actually remove broken links
 ```
 
-`--fix` only removes index pointer lines whose target is missing on disk, and it is a dry-run unless `--apply` is also passed. It exits 1 when any error-severity finding exists, so it works as a CI check.
+`--fix` only removes index pointer lines whose target is missing on disk, and it is a dry-run unless `--apply` is also passed. It exits 1 when any error-severity finding exists, so it works as a CI check. A held missing source is reported as `held_source`, a warning, so it exits 0 when held sources are the only finding.
 
 `dangling_wikilink` is informational: it may be a deliberate forward reference or a stale name. It never fails the run and `--fix` never removes it.
 
@@ -507,7 +519,9 @@ mm schedule delete <sched-id>
 
 ### `mm gc orphan-sources`
 
-Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks.
+Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks permanently.
+
+The watcher, scheduled compaction and health maintenance never delete a missing source on their own: they **hold** it. A held source is hidden from search while its chunks are kept for recovery. To delete those chunks, review with `mm gc orphan-sources`, then run it with `--apply`. Over MCP, `cleanup_orphans` purges only when both `dry_run=false` and `confirm_purge=true` are passed. One case still deletes on its own: a path that now holds a directory or another non-regular file loses its chunks on the next event for it.
 
 ```bash
 mm gc orphan-sources
@@ -554,12 +568,14 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.6.4           # pin a specific version
+mm upgrade --version 0.6.7           # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
 
-Extras are auto-detected from the current uv-tool install by default, so a `memtomem[all]` user keeps `[all]`.
+Extras are auto-detected from the current uv-tool install by default, so a `memtomem[all]` user keeps `[all]`. If uv's install receipt is missing or unreadable, none are detected; check the `Extras:` line of `--dry-run` and pass `--extras` when it says none were found.
+
+Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 
 ### `mm uninstall`
 
@@ -685,7 +701,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
 | `mm serve` | — |
 | `mm session` | — |
-| `mm session end` | `--auto`, `--summary` |
+| `mm session end` | `--auto`, `--json`, `--summary` |
 | `mm session events` | `--json` |
 | `mm session list` | `--agent-id`, `--json`, `--limit`, `--since` |
 | `mm session start` | `--agent-id`, `--auto-end-stale`, `--idempotent`, `--json`, `--namespace`, `--title` |

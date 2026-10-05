@@ -92,14 +92,14 @@ CLI로는 `mms stats`, `mms health`, `mms tune`이 같은 정보를 보여 줍�
 
 | 액션 | 파라미터 | 보고 내용 |
 |---|---|---|
-| `proxy_stats` | — | 토큰 절감량, 캐시 적중, 도구별 호출 이력 |
-| `proxy_health` | — | 업스트림 연결 상태와 프록시 상태. 업스트림마다 **발견한** 도구 수와 실제로 **노출한** 도구 수를 함께 보고하므로, 노출 조건 검사로 걸러진 차이를 한눈에 확인할 수 있습니다. 서피싱 서킷 브레이커 상태도 보여 주며, 외부 도구 그래프 노출 조건 제공자를 켰다면 그 상태도 포함합니다. |
+| `proxy_stats` | — | 토큰 절감량, 캐시 적중, 도구별 호출 이력. Core가 보낸 검색 힌트는 본문 대신 개수(`last: N hint(s)`)로만 표시합니다. |
+| `proxy_health` | — | 업스트림 연결 상태와 프록시 상태. 업스트림마다 **발견한** 도구 수와 실제로 **노출한** 도구 수를 함께 보고하므로, 노출 조건 검사로 걸러진 차이를 한눈에 확인할 수 있습니다. 서피싱 서킷 브레이커 상태도 보여 주며, 외부 도구 그래프 노출 조건 제공자를 켰다면 그 상태도 포함합니다. `startup connect failed` 줄과 피드백 DB 오류는 메시지 대신 `ConnectError`, `DatabaseError (SQLITE_CORRUPT)`처럼 예외 유형만 표시합니다. |
 | `proxy_cache_clear` | `server`, `tool` | 캐시를 비웁니다. 범위를 지정하지 않으면 SQLite 응답 캐시와 메모리 내 서피싱 캐시를 모두 비우고, `server` 또는 `tool`로 범위를 좁히면 응답 캐시만 비웁니다. 서피싱 캐시는 질의 해시로만 색인되어 서버·도구 축이 없기 때문입니다. 시작 시에만 쓰는 도구 그래프 조회 캐시는 건드리지 않습니다. |
-| `surfacing_stats` | `tool`, `since`, `limit` | `events_total`, `distinct_tools`, `total_feedback`, 도구별 집계, 평가 분포, 도움이 된 비율, 최근 목록을 보고합니다. `since`는 ISO-8601 시각이며, `limit`의 기본값은 `10`이고 `0`이면 최근 목록을 숨깁니다. |
+| `surfacing_stats` | `tool`, `since`, `limit` | `events_total`, `distinct_tools`, `total_feedback`, 도구별 집계, 평가 분포, 도움이 된 비율, 최근 목록을 보고합니다. `since`는 ISO-8601 시각이며, `limit`의 기본값은 `10`이고 `0`이면 최근 목록을 숨깁니다. 집계할 내용이 있을 때만 다음 줄이 추가됩니다. `Withheld:`는 보류(holdout)되어 위 집계에서 제외된 이벤트 수입니다. `Opportunities:`는 저장된 제시 기회 기록 수로, 이 프로세스에서 샘플링으로 제외한 수와 결과별 집계(`by decision`)를 함께 보여 줍니다. 건너뜀 사유에는 정상 사례인 `empty_render`(표시할 항목이 없음)와 `cancelled`(결정 전에 호출이 취소됨)가 있습니다. 상태 판정에서 `empty_render`는 완료된 검색으로 집계하고 `cancelled`는 제외합니다. |
 | `selection_stats` | — | 도구 선택과 실행 텔레메트리. `proxy.selection_telemetry.enabled = true`로 설정하면 프록시가 JSONL 로그를 기록하며, 이 액션이 그 로그를 읽어 이벤트 수, 랭커 버전별 선택, 서버·도구별 선택, 지연 백분위를 포함한 실행 성공·실패, 노출 조건 검사의 거부 사유 집계로 정리합니다. 이 프로세스의 기록 경로 카운터(기록된 이벤트 / 샘플링 제외 / 마스킹 제외 / 기록 오류)도 함께 보여 줍니다. 집계 대상은 활성 로그뿐이며, 회전된 백업은 존재만 표시하고 파싱하지 않습니다. |
 | `compression_stats` | `tool` | 도구별 압축 피드백 건수 |
-| `progressive_stats` | `tool` | Progressive 압축 호출의 응답별 후속 조회 비율과 적용 범위. 최초 청크와 `stm_proxy_read_more` 후속 호출이 각각 `progressive_reads`의 한 행이 되며, 집계는 캐시 키 단위로 묶으므로 후속 조회가 다섯 번인 응답과 한 번도 없는 응답의 가중치가 같습니다. 총 조회 수, 총 응답 수, 후속 조회 비율, 평균 제공 문자 수, 평균 전체 문자 수, 평균 적용 범위, 도구별 집계를 보고합니다. 기본 `PROGRESSIVE` 저장 경로가 실패해 캐시 없는 전체 응답 전달로 내려간 횟수도 함께 보고하므로, 저장소 고장이 조용히 묻히지 않습니다. |
-| `tuning_recommendations` | `since_hours`, `tool` | 최근 피드백에서 도출한 도구별 자동 튜닝 권고. `since_hours`의 기본값은 `24.0`입니다. |
+| `progressive_stats` | `tool` | Progressive 압축 호출의 응답별 후속 조회 비율과 적용 범위. 최초 청크와 `stm_proxy_read_more` 후속 호출이 각각 `progressive_reads`의 한 행이 되며, 집계는 캐시 키 단위로 묶으므로 후속 조회가 다섯 번인 응답과 한 번도 없는 응답의 가중치가 같습니다. 총 조회 수, 총 응답 수, 후속 조회 비율, 평균 제공 문자 수, 평균 전체 문자 수, 평균 적용 범위, 도구별 집계를 보고합니다. 기본 `PROGRESSIVE` 저장 경로가 실패해 캐시 없는 전체 응답 전달로 내려간 횟수도 함께 보고하므로, 저장소 고장이 조용히 묻히지 않습니다. 기록된 최초 응답·후속 조회 분량(`Recorded initial payload chars`, `Recorded follow-up payload chars`)과 구분 표시가 없는 이전 조회 이벤트 수(`Unclassified legacy read events`)도 보고합니다. 분량에는 footer와 관련 기억이 포함되지 않으며, 반복 조회는 다시 셉니다. |
+| `tuning_recommendations` | `since_hours`, `tool` | 최근 피드백에서 도출한 도구별 자동 튜닝 권고. `since_hours`의 기본값은 `24.0`입니다. 빈 `tool`은 어떤 도구와도 일치하지 않으므로, 모든 도구를 보려면 생략합니다. |
 
 <a id="프록시되는-업스트림-도구"></a>
 

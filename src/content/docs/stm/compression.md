@@ -63,7 +63,7 @@ Every progressive chunk ends with the canonical footer `\n---\n[progressive: cha
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)).
 
-The response cache uses schema 5 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions.
+The response cache uses schema 5 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
 
 ## Fallback Ladder
 
@@ -75,7 +75,12 @@ progressive → hybrid → truncate
 
 Each tier checks the floor — if satisfied, that strategy's output is used. The char budget is raised to `len(response) * min_result_retention` before truncation when per-tool `max_result_chars` would otherwise drop more than the floor allows.
 
-The `llm_summary` strategy has its own **timeout guard**: the `llm_timeout_seconds` field (default `60`s) on the per-server / per-tool `llm` block. A slow or stuck LLM endpoint no longer blocks the proxy — on timeout, STM falls back to `truncate` so the agent still receives a bounded response.
+- **Rounding the minimum:** the minimum is rounded up to a whole character and passed to plain-text truncation. Truncation picks a sentence or word boundary only at or above it, and otherwise cuts at the budget. This covers the `truncate` strategy, `llm_summary` without an LLM configured, the schema-pruning and skeleton plain-text fallbacks, store-error degradation and the terminal truncate tier.
+  - A plain-text cut that used to fall a few characters short of the floor, and switch to progressive delivery, now arrives as one truncated result of at least the floor.
+  - A result that still falls short, such as a structural cut, takes its fallback as before.
+- **Explicit `retention_floor`:** a tool `retention_floor` overrides a server one, which overrides the global ladder; `null` inherits and an explicit `0` opts that level out. An explicit `retention_floor` applies even with `min_result_retention: 0`. A tool set to `1.0`, for example, is preserved in full rather than cut to its character budget.
+
+The `llm_summary` strategy has its own **timeout guard**: the `llm_timeout_seconds` field (default `60`s) on the per-server / per-tool `llm` block. A slow or stuck LLM endpoint no longer blocks the proxy — on timeout, STM falls back to `truncate` so the agent still receives a bounded response. An empty or whitespace-only summary makes the compressor fall back to the truncated original, recorded as `llm_summary→llm_empty_fallback` when that result clears the retention floor; if it does not, the retention guard replaces it as for any other result (for example `llm_summary→progressive_fallback`). Because the endpoint answered, an empty summary does not count as a circuit-breaker failure. Anthropic responses are read from every text block, not only the first.
 
 ## Compression Budget Tuning
 

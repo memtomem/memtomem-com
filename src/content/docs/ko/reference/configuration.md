@@ -7,7 +7,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem` 0.6.4와 `memtomem-stm` 0.5.2이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
+이 레퍼런스는 `memtomem` 0.6.7과 `memtomem-stm` 0.6.1이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -109,7 +109,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (로컬 ONNX) / `cohere` (외부 API) | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | 모델명. 비영어 콘텐츠에는 `jinaai/jina-reranker-v2-base-multilingual` 권장. | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | 모델명. 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 한국어 최적화 프리셋은 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | 하한선 — 리랭커가 받는 후보 수의 최솟값 | `20` |
@@ -274,7 +274,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 상태 모니터
 
-상태 확인, 연결이 끊긴 레코드 정리, 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다.
+상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다. 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -283,7 +283,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 | `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | 진단 주기 | `300` |
 | `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | 정밀 검사 주기 | `3600` |
 | `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | 보관 스냅샷 수 상한 | `1000` |
-| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | 고아 레코드 정리 임계치 | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | 자동 유지보수가 원본이 사라진 자료 출처를 보류하기 시작하는 개수 기준 | `10` |
 | `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | 자동 유지보수 수행 | `true` |
 
 <a id="scheduler"></a>
@@ -454,7 +454,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | 4b단계 EXTRACT(사실 추출) | `false` |
-| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | 추출 전략: `none`, `llm`, `heuristic`, `hybrid` | `"llm"` |
+| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | 추출 전략: `none`, `llm`, `heuristic`, `hybrid`. LLM 응답은 전체(markdown 코드 펜스는 제거)를 JSON 사실 배열로만 해석하므로, 설명 문장으로 감싼 응답, 빈 응답, 모든 항목이 잘못된 배열은 heuristic 추출로 대체 | `"llm"` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__PROVIDER` | 추출 LLM 제공자: `openai`, `anthropic`, `ollama` | `openai` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__MODEL` | 추출 LLM 모델 | `gpt-4.1-mini` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__API_KEY` | 추출 LLM API 키 | `""` |
@@ -569,11 +569,11 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `url` | 네트워크 연결의 엔드포인트 | `""` |
 | `headers` | 네트워크 연결에 넣을 고정 헤더 | `null` |
 | `compression` | 이 서버의 기본 압축 전략 | `auto` |
-| `max_result_chars` | 결과 문자 예산 | `8000` |
+| `max_result_chars` | 결과 문자 예산. 생략하면 전역 `default_max_result_chars`를 상속하고, 명시한 값은 `8000`을 포함해 그대로 적용. 토큰 예산이 함께 있으면 토큰 예산이 우선 | `8000` |
 | `max_result_tokens` | 선택적 토큰 환산 결과 예산 | `null` |
 | `chars_per_token` | 서버별 문자/토큰 추정치 | `null`(프록시 값 상속) |
 | `token_estimation_mode` | 선택형 `static` / `unicode` 추정 방식 재정의 | `null`(프록시 값 상속) |
-| `retention_floor` | 선택형 최소 압축 보존 비율 | `null`(프록시 값 상속) |
+| `retention_floor` | 선택형 최소 압축 보존 비율. 전역 `min_result_retention`이 `0`이어도 적용되며, `0`이면 이 수준에서 하한을 끔 | `null`(프록시 값 상속) |
 | `llm` | 서버별 LLM 압축 설정 | `null` |
 | `selective` | selective 압축 설정 | `null` |
 | `hybrid` | hybrid 압축 설정 | `null` |
@@ -678,7 +678,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | 튜닝 전 최소 피드백 샘플 수 | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | 임계값 조정 단위 | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | 기본 자동 튜닝 하한. 명시적 `min_score`를 포함하도록 검증 시 확장 | `0.005` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | 기본 자동 튜닝 상한. 명시적 `min_score`를 포함하도록 검증 시 확장 | `0.05` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | 기본 자동 튜닝 상한. 명시적 `min_score`를 포함하도록 검증 시 확장. 실행 중에는 배치에서 도달 가능한 기준값으로도 상한을 둠([피드백 루프](/ko/stm/surfacing/#피드백-루프) 참고) | `0.05` |
 | `MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT` | 검색어를 만들 때 사용할 수 있는 세션 맥락 포함 | `true` |
 | `MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK` | 관련 기억 검색 결과에 대해 LTM에 설정된 웹훅 실행 요청 | `true` |
 | `MEMTOMEM_STM_SURFACING__MAX_INJECTION_CHARS` | 주입되는 기억 전체 문자 상한 | `3000` |
@@ -688,6 +688,9 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | 피드백 DB에 검색어 원문을 보존할 일수. 기간이 지나면 해당 열의 값만 비움. `0`이면 정리하지 않음 | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | 집계한 관련 기억 검색 통계의 보존 일수 | `90` |
 | `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 `sha256:<16-hex>` 해시 저장 | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | 관련 기억 검색에 진입한 호출마다 결과(표시, 건너뜀과 그 사유, 오류, 취소)를 `surfacing_opportunities` 행으로 기록. 행에는 인자 개수, 경로 깊이, 흔한 파일 형식의 확장자 같은 인자 형태만 담기며 키와 값은 담기지 않음. `false`이면 기록을 완전히 끔. 피드백 추적기가 있는 엔진(daemon, `feedback_enabled`가 켜진 proxy)만 기록 | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | 저장할 opportunity 행의 비율(`0.0`~`1.0`). 제외된 행은 `stm_surfacing_stats`에서 개수로만 집계. 보류(holdout) 추첨을 거친 호출은 샘플링에서 제외하지 않으므로 `HOLDOUT_RATE`가 `0`보다 크면 `0.0`이어도 행이 저장될 수 있음 | `1.0` |
+| `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | 효과 측정을 위해 무작위로 주입을 보류할 비율. `[0, 0.5]` 밖의 값은 거부하지 않고 범위 안으로 조정함. Claude Code hook 경로에서 `tool_use_id`와 `session_id`가 모두 있는 호출만 대상이며 proxy 경로는 보류하지 않음 | `0.0` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED` | 부정적 피드백을 반복해서 받은 기억을 응답에 넣기 전에 제외 | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | 기억을 제외하기 전에 필요한 서로 다른 부정적 평가 수 | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | 관련 기억 제시 전용 수신 모델. 빈 값이면 `proxy.consumer_model` 상속 | `""` |

@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.6.4 and `memtomem-stm` 0.5.2 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
+This public reference tracks the complete `memtomem` 0.6.7 and `memtomem-stm` 0.6.1 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -99,7 +99,7 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | Enable reranking of hybrid search results | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | Model name. Use `jinaai/jina-reranker-v2-base-multilingual` for non-English content. | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | Model name. For non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. The Korean-optimized preset leaves reranking off, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | Floor — reranker never sees fewer candidates than this | `20` |
@@ -238,7 +238,7 @@ Background job that periodically groups near-duplicate memories and compresses t
 
 ### Health watchdog
 
-Background loop for periodic health checks, orphan-record cleanup, and automatic maintenance.
+Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted; purging their chunks is an explicit `mm gc orphan-sources --apply`.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -247,7 +247,7 @@ Background loop for periodic health checks, orphan-record cleanup, and automatic
 | `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | Diagnostic-check interval | `300` |
 | `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | Deep-scan interval | `3600` |
 | `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | Snapshot retention cap | `1000` |
-| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | Orphan-record cleanup threshold | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | Missing-source count at which auto-maintenance holds them (no chunks are deleted) | `10` |
 | `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | Perform automatic maintenance | `true` |
 
 ### Scheduler
@@ -396,7 +396,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | Stage 4b EXTRACT (fact extraction) | `false` |
-| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | Extraction strategy: `none`, `llm`, `heuristic`, or `hybrid` | `"llm"` |
+| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | Extraction strategy: `none`, `llm`, `heuristic`, or `hybrid`. An LLM reply is parsed only as a whole JSON fact array (a markdown fence is stripped); a reply wrapped in prose, an empty one, or an array whose entries are all malformed falls back to heuristic extraction | `"llm"` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__PROVIDER` | Extraction LLM provider: `openai`, `anthropic`, or `ollama` | `openai` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__MODEL` | Extraction LLM model | `gpt-4.1-mini` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__API_KEY` | Extraction LLM API key | `""` |
@@ -501,11 +501,11 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 | `url` | endpoint for a network transport | `""` |
 | `headers` | static headers for a network transport | `null` |
 | `compression` | default compression strategy for this upstream | `auto` |
-| `max_result_chars` | result character budget | `8000` |
+| `max_result_chars` | result character budget. Omitted, the server inherits the global `default_max_result_chars`; any stated value, `8000` included, applies. A token budget outranks it | `8000` |
 | `max_result_tokens` | optional token-equivalent result budget | `null` |
 | `chars_per_token` | optional per-upstream character/token estimate | `null` (inherits proxy) |
 | `token_estimation_mode` | optional `static` / `unicode` estimator override | `null` (inherits proxy) |
-| `retention_floor` | optional minimum compression-retention fraction | `null` (inherits proxy) |
+| `retention_floor` | optional minimum compression-retention fraction; applies even when the global `min_result_retention` is `0`, and an explicit `0` opts this level out | `null` (inherits proxy) |
 | `llm` | per-upstream LLM compressor settings | `null` |
 | `selective` | selective-compressor settings | `null` |
 | `hybrid` | hybrid-compressor settings | `null` |
@@ -608,7 +608,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | Minimum feedback samples before tuning | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | Threshold adjustment step | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | Default lower auto-tune bound; validation widens it to include an explicit `min_score` | `0.005` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | Default upper auto-tune bound; validation widens it to include an explicit `min_score` | `0.05` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | Default upper auto-tune bound; validation widens it to include an explicit `min_score`. At run time raises are also capped at the batch's attainable reference (see [Feedback Loop](/stm/surfacing/#feedback-loop)) | `0.05` |
 | `MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT` | Include available session context in the generated query | `true` |
 | `MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK` | Ask LTM to fire its configured webhook for surfaced results | `true` |
 | `MEMTOMEM_STM_SURFACING__MAX_INJECTION_CHARS` | Total injected-memory character cap | `3000` |
@@ -618,6 +618,9 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | Days to retain raw query text in the feedback DB before clearing the column; `0` disables cleanup | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | Aggregated surfacing-stat retention | `90` |
 | `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `sha256:<16-hex>` digests when `false` | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | Record one `surfacing_opportunities` row per call that entered surfacing, labelled with how it ended (surfaced, skipped and why, errored, cancelled). Rows carry the shape of the arguments (their number, a path's depth and, for a common file type, its extension), never their keys or values; `false` turns the log off completely. Only engines with a feedback tracker write them (the daemon, and the proxy with `feedback_enabled`) | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | Share of opportunity rows kept (`0.0`–`1.0`); dropped rows are counted in `stm_surfacing_stats` but not stored. A call that drew a holdout arm is never sampled out, so `0.0` can still store rows while `HOLDOUT_RATE` is above `0` | `1.0` |
+| `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | Share of eligible injections withheld at random to measure whether surfacing changes what the agent does next. Values outside `[0, 0.5]` are clamped, not rejected. Only Claude Code hook calls carrying both `tool_use_id` and `session_id` are eligible; the proxy path never withholds | `0.0` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED` | Locally filter memories with repeated negative feedback before injection | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | Distinct negative surfacing events before local demotion applies | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | Surfacing-specific consumer model; empty inherits `proxy.consumer_model` | `""` |
