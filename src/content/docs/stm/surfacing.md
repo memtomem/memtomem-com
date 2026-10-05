@@ -81,8 +81,8 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 Raises are capped at `min(auto_tune_score_ceiling, max(batch reference, min_score))`, so a configured `min_score` above the batch reference is kept, never lowered. The batch reference is rounded down to the precision Core sends scores at:
 
 - `rrf` results: their `score_ceiling` stamp (or `2/61` without a valid one) at 4 places (`2/61` → `0.0327`).
-- Results without a `score_scale`: `2/61` at 2 places (`0.03`).
-- An empty batch or a named non-RRF scale: no extra cap.
+- Results without a `score_scale`, or with a label STM does not recognize: `2/61` at 2 places (`0.03`).
+- An empty batch, or a recognized non-RRF scale: no extra cap.
 
 Stored adjustments are not rewritten: a tool already tuned above the cap filters at the cap from its next search on, while `stm_surfacing_stats` keeps showing the stored value. This applies to the proxy, and to the daemon when `hook.record_feedback_events` is on.
 
