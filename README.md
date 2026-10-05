@@ -29,7 +29,7 @@ npm run build
 
 1. Verify the Core and STM versions and supported surfaces against reviewed upstream checkouts.
 2. Update `src/data/docs-contract.json`, then synchronize every affected English/Korean page.
-3. Add the superseded Core and STM versions to the stale-version list in `scripts/check-doc-contract.mjs`. Keep this list explicit: a site-wide lower-semver rule would reject valid historical notes and independently versioned integrations.
+3. Add the superseded Core and STM versions to the `STALE_VERSIONS` list in `scripts/upstream-contract.mjs` (both checkers use it). Keep this list explicit: a site-wide lower-semver rule would reject valid historical notes and independently versioned integrations.
 4. Run `npm test` and `npm run build` to check mutation regressions, the contract, generated site, search index, routes, and fragments.
 5. Update every EN/KO Core file and directory link to `v<core.version>`, including the unpinned configuration-guide link after confirming the guide still exists at that tag (see `ONBOARDING-RELEASE.md`). Then run `node scripts/check-onboarding-assets.mjs` to verify the link refs and seven published assets from that tag. Review the tagged source before updating any asset hashes, and include links and hashes in the version-bump PR.
 
