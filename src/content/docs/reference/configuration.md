@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.6.4 and `memtomem-stm` 0.5.2 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
+This public reference tracks the complete `memtomem` 0.6.7 and `memtomem-stm` 0.6.1 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -618,6 +618,9 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | Days to retain raw query text in the feedback DB before clearing the column; `0` disables cleanup | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | Aggregated surfacing-stat retention | `90` |
 | `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `sha256:<16-hex>` digests when `false` | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | Record one `surfacing_opportunities` row per call that entered surfacing, labelled with how it ended (surfaced, skipped and why, errored, cancelled). Rows carry counts about the arguments, never their keys or values. Only engines with a feedback tracker write them (the daemon, and the proxy with `feedback_enabled`) | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | Share of opportunity rows kept (`0.0`–`1.0`); dropped rows are counted in `stm_surfacing_stats` but not stored | `1.0` |
+| `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | Share of eligible injections withheld at random to measure whether surfacing changes what the agent does next. Values outside `[0, 0.5]` are clamped, not rejected. Only Claude Code hook calls carrying both `tool_use_id` and `session_id` are eligible; the proxy path never withholds | `0.0` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED` | Locally filter memories with repeated negative feedback before injection | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | Distinct negative surfacing events before local demotion applies | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | Surfacing-specific consumer model; empty inherits `proxy.consumer_model` | `""` |

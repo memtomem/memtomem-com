@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.6.4를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.6.7을 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -64,7 +64,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.6.4에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.6.7에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -555,7 +555,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.6.4           # 특정 버전 고정
+mm upgrade --version 0.6.7           # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -686,7 +686,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
 | `mm serve` | — |
 | `mm session` | — |
-| `mm session end` | `--auto`, `--summary` |
+| `mm session end` | `--auto`, `--json`, `--summary` |
 | `mm session events` | `--json` |
 | `mm session list` | `--agent-id`, `--json`, `--limit`, `--since` |
 | `mm session start` | `--agent-id`, `--auto-end-stale`, `--idempotent`, `--json`, `--namespace`, `--title` |

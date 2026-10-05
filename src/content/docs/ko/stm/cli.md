@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.5.2 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.6.1 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 

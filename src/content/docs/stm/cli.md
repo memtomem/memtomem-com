@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.5.2 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
+The `mms` command is installed with the `memtomem-stm` v0.6.1 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
