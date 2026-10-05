@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { validateUpstream } from './upstream-contract.mjs';
+import { validateUpstream, staleVersionPattern } from './upstream-contract.mjs';
 const snapshot = JSON.parse(await readFile('src/data/upstream-snapshot.json', 'utf8'));
 const contract = JSON.parse(await readFile('src/data/docs-contract.json', 'utf8'));
 const sources = {};
@@ -21,3 +21,17 @@ for (const [name, mutate] of [
 ['private repository link', (s, c, d) => { d[config] += '\nhttps://github.com/memtomem/memtomem-docs/blob/main/audit.md'; }],
 ['private audit path', (s, c, d) => { d[config] += '\n/docs/audits/internal.md'; }],
 ]) { test('rejects ' + name, () => { const s = structuredClone(snapshot), c = structuredClone(contract), d = { ...sources }; mutate(s, c, d); assert.ok(validateUpstream(s, c, d).length > 0); }); }
+test('rejects stale release at sentence end', () => { const d = { ...sources }; d[config] += '\nThis targets memtomem v0.3.12. Next'; assert.deepEqual(validateUpstream(snapshot, contract, d), [config + ': stale release']); });
+for (const [version, text, stale] of [
+['0.6.4', 'targets memtomem v0.6.4. Commands', true],
+['0.6.4', 'v0.6.4.', true],
+['0.6.4', '==0.6.4"', true],
+['0.6.4', '0.6.4-rc1', true],
+['0.6.4', '0.6.4.dev0', true],
+['0.6.4', '0.6.4.x', true],
+['0.6.4', '`0.6.4`', true],
+['0.6.4', '**0.6.4**', true],
+['0.1.2', 'notes on v0.1.23', false],
+['0.6.4', 'v0.6.4.1', false],
+['0.6.4', '10.6.4', false],
+]) { test(`stale pattern ${version} ${stale ? 'flags' : 'ignores'} ${text}`, () => assert.equal(staleVersionPattern(version).test(text), stale)); }
