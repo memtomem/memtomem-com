@@ -34,6 +34,10 @@ The data directory (`~/.memtomem/`) is created with `0o700` permissions and its 
 memtomem blocks credential-, token-, and key-shaped content from flowing into your stores or wider scopes at several points.
 
 - **STM sensitive-content detection** — Responses containing credential patterns (for example `sk-…`, `ghp_…`, AWS `AKIA…`, JWTs, private keys) are excluded from the response cache and selection telemetry. External LLM compression falls back to local truncation when its privacy scan finds a hit. The bundled STM runtime does not write responses into LTM.
+- **STM error-text summaries** — Exception messages can quote a URL query, an argument or part of a header back, so STM does not store or show them.
+  - **Calls that raise:** when a proxied call raises, the error the MCP client receives, `proxy_metrics.error_message`, the `startup connect failed` line in `stm_proxy_health` and the `extract_error` / `index_error` columns name the exception type (`ConnectError`, `HTTP 401 (HTTPStatusError)`), as do runtime log lines.
+  - **Upstream `isError` results:** these still reach the client unchanged; only their stored row is summarized as `upstream isError (<n> chars)`.
+  - **What is kept:** failures STM composes itself (open circuit breaker, oversize response, policy denial) keep their message, and logged tracebacks are unchanged.
 - **Indexing credential exclusion** — LTM indexing applies a built-in credential denylist (`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**`, …). A user `!negation` pattern cannot re-enable these built-in patterns.
 - **Re-scan on share** — When `mem_agent_share` copies a memory into a wider namespace, the redaction guard re-scans it, and secret-looking content is blocked at share time.
 - **Context Gateway** — Writing or moving to the `project_shared` tier (git-tracked) hard-refuses on a detected secret, with no `--force` valve (git history is permanent). The `user` and `project_local` tiers allow an override after review.
@@ -45,6 +49,8 @@ STM surfacing extracts a query from each tool call to search LTM. You control ho
 - `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT=false` — Store a `sha256:<16-hex>` digest instead of the raw text.
 - `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` (default `30`) — Clear raw query text retained in the feedback DB after the given number of days.
 - Queries matching the persistence-sensitive set (credentials and email addresses) are hashed before persistence regardless of the setting.
+- **Opportunity log** — Each call that entered surfacing records how it ended and the shape of its arguments (their number, a path's depth, a common file extension), never their keys or values. Turn it off with `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`.
+- **Call identifiers** — Surfacing events store the host's `tool_use_id`, session ID and agent ID, but never the working directory (`cwd`). Delivered memories are recorded only as keyed hashes of their path and preview text.
 - **Write-tool skip** — Surfacing is automatically disabled for upstream tools that mutate state.
 
 ## No Lock-In

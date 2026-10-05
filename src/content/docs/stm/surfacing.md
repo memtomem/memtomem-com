@@ -66,7 +66,7 @@ Automatically scales based on the agent's context window size:
 
 ## Feedback Loop
 
-Each memory in the surfaced block shows a relevance bucket — `[weak]` / `[related]` / `[strong]` — instead of a raw provider-dependent score. Buckets are computed after score-scale handling across the active threshold range. Each memory also exposes its own `memory_id` (a backticked token), so the agent can rate a whole event or rate individual memories one at a time:
+Each memory in the surfaced block shows a relevance bucket — `[weak]` / `[related]` / `[strong]` — instead of a raw provider-dependent score. Buckets split a `[min_score, top]` band into thirds. For results stamped `rrf`, the top is `sum(rrf_weights) / (rrf_k + 1)`, computed from the `runtime_profile` of the Core session that served the search. It falls back to the `2/61` baseline (about 0.033) when the profile is missing, invalid or not a two-leg (BM25 + dense) fusion, or when an older daemon omits the stamp. Results without a `score_scale` stamp (compact format, older cores) keep the `[min_score, 1.0]` band. Each memory also exposes its own `memory_id` (a backticked token), so the agent can rate a whole event or rate individual memories one at a time:
 
 - Whole event: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
 - Specific memories: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`
@@ -77,6 +77,14 @@ When an agent evaluates surfacing quality, the auto-tuner continuously optimizes
 - **partially_helpful** → Count as neutral evidence
 - **not_relevant** → Raise `min_score` (stricter filtering)
 - **already_known** → Count as negative feedback and feed local demotion / dedup behavior
+
+Raises are capped at `min(auto_tune_score_ceiling, max(batch reference, min_score))`, so a configured `min_score` above the batch reference is kept, never lowered. The batch reference is rounded down to the precision Core sends scores at:
+
+- `rrf` results: their `score_ceiling` stamp (or `2/61` without a valid one) at 4 places (`2/61` → `0.0327`).
+- Results without a `score_scale`: `2/61` at 2 places (`0.03`).
+- An empty batch or a named non-RRF scale: no extra cap.
+
+Stored adjustments are not rewritten: a tool already tuned above the cap filters at the cap from its next search on, while `stm_surfacing_stats` keeps showing the stored value. This applies to the proxy, and to the daemon when `hook.record_feedback_events` is on.
 
 Rating an individual memory `not_relevant` or `already_known` invalidates exactly that memory on the next cache hit, excluding only those memories from injection rather than the whole event.
 
@@ -107,6 +115,9 @@ Surfacing runs under the following safeguards for resilience and privacy:
 - **Injection size cap** — Default `3000 chars` per injection
 - **Local feedback demotion** — Memories repeatedly rated `not_relevant` or `already_known` are filtered before injection once they cross `feedback_demotion_negative_threshold` (default `3` distinct events)
 - **Query-text privacy** — `query_retention_days` clears persisted raw query text after 30 days by default, and `persist_query_text=false` stores a `sha256:` digest instead of the raw query
+- **Opportunity log** — Engines with a feedback tracker (the daemon, and the proxy with `feedback_enabled`) write one `surfacing_opportunities` row per call that entered surfacing: how it ended, the shape of the arguments (their number, a path's depth and, for a common file type, its extension) and a digest of the extracted query. No argument key or value is stored. Rows are about 320 bytes and are deleted with `stats_retention_days`; opt out with `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false` or keep a share with `opportunities_sample_rate`
+- **Call identifiers** — The hook passes the host's `session_id`, `cwd`, `tool_use_id` and `agent_id` to the daemon and never logs them. `surfacing_events` rows store `tool_use_id`, `host_session_id` and `host_agent_id`; `cwd` is never stored. Delivered memories are recorded only as keyed hashes of their source path and preview text, with a per-install key
+- **Holdout** — With `holdout_rate` above its default `0.0`, eligible injections on Claude Code hook calls through the daemon are withheld at random to measure their effect. A withheld call returns the tool response unchanged and is only recorded; the proxy path never withholds
 
 ## LTM Transport
 

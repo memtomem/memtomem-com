@@ -454,7 +454,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | 4b단계 EXTRACT(사실 추출) | `false` |
-| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | 추출 전략: `none`, `llm`, `heuristic`, `hybrid` | `"llm"` |
+| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | 추출 전략: `none`, `llm`, `heuristic`, `hybrid`. LLM 응답은 전체(markdown 코드 펜스는 제거)를 JSON 사실 배열로만 해석하므로, 설명 문장으로 감싼 응답, 빈 응답, 모든 항목이 잘못된 배열은 heuristic 추출로 대체 | `"llm"` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__PROVIDER` | 추출 LLM 제공자: `openai`, `anthropic`, `ollama` | `openai` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__MODEL` | 추출 LLM 모델 | `gpt-4.1-mini` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__API_KEY` | 추출 LLM API 키 | `""` |
@@ -569,11 +569,11 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `url` | 네트워크 연결의 엔드포인트 | `""` |
 | `headers` | 네트워크 연결에 넣을 고정 헤더 | `null` |
 | `compression` | 이 서버의 기본 압축 전략 | `auto` |
-| `max_result_chars` | 결과 문자 예산 | `8000` |
+| `max_result_chars` | 결과 문자 예산. 생략하면 전역 `default_max_result_chars`를 상속하고, 명시한 값은 `8000`을 포함해 그대로 적용. 토큰 예산이 함께 있으면 토큰 예산이 우선 | `8000` |
 | `max_result_tokens` | 선택적 토큰 환산 결과 예산 | `null` |
 | `chars_per_token` | 서버별 문자/토큰 추정치 | `null`(프록시 값 상속) |
 | `token_estimation_mode` | 선택형 `static` / `unicode` 추정 방식 재정의 | `null`(프록시 값 상속) |
-| `retention_floor` | 선택형 최소 압축 보존 비율 | `null`(프록시 값 상속) |
+| `retention_floor` | 선택형 최소 압축 보존 비율. 전역 `min_result_retention`이 `0`이어도 적용되며, `0`이면 이 수준에서 하한을 끔 | `null`(프록시 값 상속) |
 | `llm` | 서버별 LLM 압축 설정 | `null` |
 | `selective` | selective 압축 설정 | `null` |
 | `hybrid` | hybrid 압축 설정 | `null` |
@@ -678,7 +678,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | 튜닝 전 최소 피드백 샘플 수 | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | 임계값 조정 단위 | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | 기본 자동 튜닝 하한. 명시적 `min_score`를 포함하도록 검증 시 확장 | `0.005` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | 기본 자동 튜닝 상한. 명시적 `min_score`를 포함하도록 검증 시 확장 | `0.05` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | 기본 자동 튜닝 상한. 명시적 `min_score`를 포함하도록 검증 시 확장. 실행 중에는 배치에서 도달 가능한 기준값으로도 상한을 둠([피드백 루프](/ko/stm/surfacing/#피드백-루프) 참고) | `0.05` |
 | `MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT` | 검색어를 만들 때 사용할 수 있는 세션 맥락 포함 | `true` |
 | `MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK` | 관련 기억 검색 결과에 대해 LTM에 설정된 웹훅 실행 요청 | `true` |
 | `MEMTOMEM_STM_SURFACING__MAX_INJECTION_CHARS` | 주입되는 기억 전체 문자 상한 | `3000` |

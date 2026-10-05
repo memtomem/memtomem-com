@@ -75,7 +75,7 @@ mms add filesystem --command filesystem-server --prefix fs --validate
 | `--env KEY=VALUE` | Environment variable to forward to the upstream process (repeatable) |
 | `--header KEY=VALUE` | Plaintext header for `sse` / `streamable_http` (repeatable; config file is mode `0600`) |
 | `--compression` | `auto` (default), `none`, `truncate`, `selective`, `hybrid` |
-| `--max-chars` | Output-size budget (default `8000`) |
+| `--max-chars` | Per-server character budget. Omitted by default, so nothing is written and the server inherits the model-aware global budget (`default_max_result_chars`, 16,000 by default); pass a value to pin one |
 | `--validate` | Probe the server (MCP initialize + list-tools) before saving |
 | `--timeout` | Probe timeout in seconds when `--validate` is set (default `10`) |
 | `--json` | Emit one JSON result document |
@@ -107,6 +107,10 @@ mms list --json                      # scriptable JSON
 
 The table includes an **ORIGIN** column reporting each upstream's import source. The value is the source-client kind (`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`); manually `mms add`-ed entries show `-`. A trailing `*` marks an entry whose host original was pruned, so it now exists only behind STM — `mms eject <name>` restores it. As of v0.1.32 the table also carries a **SURFACING** column — the visible home of the per-server `mms surfacing` toggle.
 
+The **SOURCE** column reports where each server definition comes from — `file`, `env`, or `file+env` — and servers defined only in the environment get rows too. **COMPRESSION** shows the resolved server default rather than the file's value: a server that omits `compression` inherits `default_compression`, `MEMTOMEM_STM_PROXY__*` environment overrides are applied, and an invalid configuration shows `unknown`. Tables with at least one server end with `COMPRESSION shows the resolved server default; tool overrides may differ.` followed by one `"server"/"tool": strategy (tool override)` line per explicit tool-level `compression`. The table strips URL userinfo, query strings and fragments, and shows the arguments of rows the environment touches (`env`, `file+env`) as `[args hidden]`. Per-server `max_result_chars` has no column, because tool overrides can make it misleading; read it from `--json` or the config file.
+
+Scripts should read `--json` rather than parse the table. Its `servers` map still describes the file, while `effective_servers`, `server_sources` and `effective_compression` (keyed by server name, with `strategy`, `source` — `server` or `global` — and `tool_overrides`) describe the runtime view; `effective_compression` is `{}` for an invalid configuration.
+
 ### `mms status`
 
 Answer "is the proxy set up and pointed at the right config?" — a config summary, not the per-server view.
@@ -116,7 +120,9 @@ mms status
 mms status --json                    # scriptable JSON
 ```
 
-As of v0.1.32 `status` is a summary: config path, the `enabled` flag, any schema-validation warning, and `Servers: N (P host-pruned)`. Per-server detail (compression, output budget, surfacing state) moved to `mms list`. `status --json` keeps its full redacted `servers` map and adds `server_count` / `pruned_count`.
+As of v0.1.32 `status` is a summary: config path, the `enabled` flag, any schema-validation warning, and `Servers: N (P host-pruned)`. Per-server detail (compression strategy, surfacing state) moved to `mms list`. `status --json` keeps its full redacted `servers` map and adds `server_count` / `pruned_count`, plus `effective_server_count` (`null` if environment parsing prevents startup). Its `enabled` field reports the runtime value after environment overrides whenever startup parsing succeeds.
+
+`list` and `status` validate the configuration the way server startup does, so an environment variable that startup rejects marks the configuration invalid. `config_error` reports the location and type code of each error without values; a location can name a key, such as an env or header name, but never its value. Run `mms config validate` for the details of a file error.
 
 ### `mms surfacing <server> [on|off]`
 
@@ -155,6 +161,16 @@ mms health --names                   # also flag tools whose proxied name overfl
 `--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
 
 `health` also renders a per-upstream **circuit breaker** line. As of v0.1.32 the breaker is on by default: after 3 consecutive failed calls an upstream's tools fast-fail with `circuit_open` for ~60s instead of each call burning the full retry/deadline budget; cached responses keep serving and other upstreams are unaffected. Set `circuit_max_failures: 0` on an upstream in `stm_proxy.json` to restore the old always-retry behavior.
+
+`health` and `doctor` validate the configuration the way server startup does: an environment that startup rejects, such as `MEMTOMEM_STM_PROXY='[1]'`, reports `config_valid: false` in `health`. They keep configured values out of their output:
+
+- Configuration errors show only their location and type.
+- A failed probe reads as its exception type — `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)` — instead of the exception text, which could quote a URL, argument or header back. The same applies to `mms add --validate` and import validation. Run the server command or reach the endpoint directly for the underlying message.
+- URLs drop their query string and fragment.
+- SQLite errors from the feedback or metrics DB read e.g. `DatabaseError (SQLITE_CORRUPT)`.
+- A stdio LTM server's launch arguments show as `<command> [args hidden]`. In `--json`, `surfacing.ltm_server.args` holds one `<REDACTED>` per argument, so scripts can still count them; read `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` directly for the values.
+
+`--json` also carries `surfacing.runtime_profile_checks`, the same rows `doctor` prints.
 
 ### `mms prune`
 
@@ -236,6 +252,8 @@ mms daemon run                       # foreground long-lived server loop
 
 The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable.
 
+The hook↔daemon protocol version is part of the daemon fingerprint. It became v8 in 0.6.0, so after an upgrade the hook starts a new v8 daemon, and a daemon from the earlier version keeps running beside it until it idles out. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
+
 ### `mms doctor`
 
 Run the status, health, and config checks as one PASS/WARN/FAIL report. The default is passive and never edits state or searches LTM; FAIL exits 1 and WARN-only exits 0.
@@ -247,6 +265,8 @@ mms doctor --measure-ltm             # five read-only searches through an alread
 ```
 
 Options: `--config`, `--json`, `--timeout`, and `--measure-ltm`. Measurement never starts a missing daemon.
+
+An environment variable that startup rejects FAILs the `config schema` check, so `doctor` exits 1. An informational `surfacing opportunities` check appears when the opportunity log has something to count. Until an upgraded process opens `stm_feedback.db`, `doctor` reports the new table as missing. Errors are rendered as in [`mms health`](#mms-health).
 
 ### `mms config validate`
 
@@ -301,6 +321,16 @@ mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
 
 The CLI sees disk-backed metrics only; process-local live counters remain available through the observability MCP tools.
 
+- **Compression measurement:** compression statistics measure the initial response text before surfacing, and exclude follow-up `stm_proxy_read_more` reads.
+  - When an explicit `progressive` response is chunked, its row records the first chunk plus footer, so saved percentages rise for those tools.
+  - `mms stats` warns about successful MCP rows recorded before this accounting.
+  - The `--json` summary adds `initial_response_calls`, `unclassified_mcp_calls` and a `measurement` description.
+- **Error counts:** `lock_timeout` and `internal_error` rows recorded by the proxy's own call path count as errors. Rows recorded before the upgrade are not rewritten.
+- **Surfacing:**
+  - Only shown events count as surfacings.
+  - Withheld (holdout) calls appear on a separate `withheld (holdout)` line, and the opportunity log on an `opportunities` line. Each line appears only when there is something to count.
+- **`--json` errors:** a SQLite error in `compression.error` or `surfacing.error` reads as its type, e.g. `DatabaseError (SQLITE_CORRUPT)`.
+
 ### `mms tune`
 
 Preview or apply per-tool compression recommendations derived from the existing metrics and feedback stores.
@@ -311,6 +341,10 @@ mms tune --apply [--yes]
 ```
 
 Preview is the default. `--apply` takes a timestamped backup and writes accepted `tool_overrides` under the config lock; the running proxy hot-reloads them. Unlike `mms stats`, tune may run idempotent schema migrations on stores that already exist.
+
+An empty filter such as `--tool ""` matches no tools; omit `--tool` to analyze all of them. In particular, `mms tune --apply --yes --tool ""` writes no overrides.
+
+A tool whose strategy, resolved from the current configuration, is `none` or an explicit `progressive` gets no `max_result_chars` recommendation, because neither path reads that budget. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
 
 ## Project Management (W1)
 

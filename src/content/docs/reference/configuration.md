@@ -396,7 +396,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__EXTRACTION__ENABLED` | Stage 4b EXTRACT (fact extraction) | `false` |
-| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | Extraction strategy: `none`, `llm`, `heuristic`, or `hybrid` | `"llm"` |
+| `MEMTOMEM_STM_PROXY__EXTRACTION__STRATEGY` | Extraction strategy: `none`, `llm`, `heuristic`, or `hybrid`. An LLM reply is parsed only as a whole JSON fact array (a markdown fence is stripped); a reply wrapped in prose, an empty one, or an array whose entries are all malformed falls back to heuristic extraction | `"llm"` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__PROVIDER` | Extraction LLM provider: `openai`, `anthropic`, or `ollama` | `openai` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__MODEL` | Extraction LLM model | `gpt-4.1-mini` |
 | `MEMTOMEM_STM_PROXY__EXTRACTION__LLM__API_KEY` | Extraction LLM API key | `""` |
@@ -501,11 +501,11 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 | `url` | endpoint for a network transport | `""` |
 | `headers` | static headers for a network transport | `null` |
 | `compression` | default compression strategy for this upstream | `auto` |
-| `max_result_chars` | result character budget | `8000` |
+| `max_result_chars` | result character budget. Omitted, the server inherits the global `default_max_result_chars`; any stated value, `8000` included, applies. A token budget outranks it | `8000` |
 | `max_result_tokens` | optional token-equivalent result budget | `null` |
 | `chars_per_token` | optional per-upstream character/token estimate | `null` (inherits proxy) |
 | `token_estimation_mode` | optional `static` / `unicode` estimator override | `null` (inherits proxy) |
-| `retention_floor` | optional minimum compression-retention fraction | `null` (inherits proxy) |
+| `retention_floor` | optional minimum compression-retention fraction; applies even when the global `min_result_retention` is `0`, and an explicit `0` opts this level out | `null` (inherits proxy) |
 | `llm` | per-upstream LLM compressor settings | `null` |
 | `selective` | selective-compressor settings | `null` |
 | `hybrid` | hybrid-compressor settings | `null` |
@@ -608,7 +608,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | Minimum feedback samples before tuning | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | Threshold adjustment step | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | Default lower auto-tune bound; validation widens it to include an explicit `min_score` | `0.005` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | Default upper auto-tune bound; validation widens it to include an explicit `min_score` | `0.05` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_CEILING` | Default upper auto-tune bound; validation widens it to include an explicit `min_score`. At run time raises are also capped at the batch's attainable reference (see [Feedback Loop](/stm/surfacing/#feedback-loop)) | `0.05` |
 | `MEMTOMEM_STM_SURFACING__INCLUDE_SESSION_CONTEXT` | Include available session context in the generated query | `true` |
 | `MEMTOMEM_STM_SURFACING__FIRE_WEBHOOK` | Ask LTM to fire its configured webhook for surfaced results | `true` |
 | `MEMTOMEM_STM_SURFACING__MAX_INJECTION_CHARS` | Total injected-memory character cap | `3000` |
