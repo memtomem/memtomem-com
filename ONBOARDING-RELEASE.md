@@ -9,16 +9,22 @@ by a successful local build.
    GitHub assets from that release tag and compares SHA-256 against
    `src/data/onboarding-assets.json`,
    and checks that every Core file the site links is either pinned in that
-   manifest or listed in `UNPINNED_CORE_PATHS`. Onboarding file and directory
-   links must use the same release tag as the gate, written either as
+   manifest or listed in `UNPINNED_CORE_PATHS`. Every Core file and directory
+   link must use the same release tag as the gate, written either as
    `v<core.version>` or as `refs/tags/v<core.version>`; a branch such as
    `refs/heads/v<core.version>` is rejected. A link on the wrong ref is reported
    with every source page that holds it. Missing files, drift, and
    network errors stop deployment; they do not prove an asset itself is broken.
    On a Core version bump, review and test the tagged source, then update the
-   contract version, EN/KO onboarding links, and any changed hashes in the
-   same pull request. The explicitly unpinned configuration prose link may
-   continue to point to `main`.
+   contract version, EN/KO Core links, and any changed hashes in the same pull
+   request.
+
+   Unpinned prose (`UNPINNED_CORE_PATHS`, currently the upstream
+   configuration guide) is linked at the release tag too, but is not
+   hash-checked. The site documents a release, and a tag URL cannot break when
+   upstream moves or rewrites the file on `main`. On a version bump, confirm
+   that the guide still exists at the new tag before updating the link. The
+   gate checks the link's ref statically and never fetches Core `main`.
 
    A 404 fails immediately. Other fetch failures are retried against the same
    tag and logged with the path, ref, and HTTP status or network cause. Each

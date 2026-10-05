@@ -17,9 +17,11 @@ export const REQUIRED_ASSET_PATHS = [
 ];
 
 // Core files the site links but deliberately does not pin by digest: upstream
-// prose we point at without quoting line by line. Anything else the docs link
-// must be a pinned asset, so a new Core link is a deliberate decision rather
-// than an unnoticed gap in the gate.
+// prose we point at without quoting line by line. Their links still name the
+// release tag, like every Core link (#29), so upstream moving the file on main
+// cannot break them. Anything else the docs link must be a pinned asset, so a
+// new Core link is a deliberate decision rather than an unnoticed gap in the
+// gate.
 export const UNPINNED_CORE_PATHS = [
   'docs/guides/configuration.md',
 ];
@@ -73,16 +75,13 @@ export function assertReferencesCovered({ files, trees, links }, expectedRef) {
       'Site links Core directories that the onboarding manifest does not cover: ' + uncheckedTrees.join(', ')
     );
   }
-  // Visitors must receive the same release bytes the gate verifies. Keep the
-  // explicitly unpinned prose links independent of this onboarding contract.
-  const mismatched = links.filter(link => {
-    const onboarding = link.type === 'file'
-      ? REQUIRED_ASSET_PATHS.includes(link.path)
-      : REQUIRED_ASSET_PATHS.some(path => path.startsWith(link.path + '/'));
-    return onboarding && !namesRelease(link.ref, expectedRef);
-  });
+  // Every link left is covered above. Visitors must receive the release the
+  // gate verifies, and unpinned prose must match the release the site
+  // documents, so all of them name the release tag. This is a static check:
+  // the gate never reads Core main (#24).
+  const mismatched = links.filter(link => !namesRelease(link.ref, expectedRef));
   if (mismatched.length) {
-    throw new Error('Onboarding links must use ' + expectedRef + ': ' +
+    throw new Error('Core links must use ' + expectedRef + ': ' +
       mismatched.map(link => link.path + ' at ' + link.ref + (link.source ? ' in ' + link.source : '')).join(', '));
   }
 }
