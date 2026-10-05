@@ -8,7 +8,8 @@
     "start": "astro dev",
     "check:docs": "node scripts/check-doc-contract.mjs",
     "check:links": "node scripts/check-built-links.mjs",
-    "build": "npm run check:docs && astro build && pagefind --site dist --force-language en && npm run check:links",
+    "check:cdn": "node scripts/check-built-cdn.mjs",
+    "build": "npm run check:docs && astro build && pagefind --site dist --force-language en && npm run check:links && npm run check:cdn",
     "preview": "astro preview",
     "astro": "astro"
   },
