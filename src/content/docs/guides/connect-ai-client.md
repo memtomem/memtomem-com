@@ -1,6 +1,6 @@
 ---
 title: Connect an AI Client
-description: Connect Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi CLI, OpenCode, or Antigravity to memtomem.
+description: Connect Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi CLI, OpenCode, Hermes Agent, or Antigravity to memtomem.
 ---
 
 **Estimated time:** 5–10 minutes
@@ -26,6 +26,7 @@ Pick **one** client below. If that client already has both a plugin and a manual
 | Claude Code | exact command and arguments | the same signature runs one server; a different signature runs both |
 | Codex CLI | server name | manual `memtomem` wins; a different name runs both |
 | OpenCode | `mcp` key | manual `mcp.memtomem` wins; a different key runs both |
+| Hermes Agent | server name | manual `mcp_servers.memtomem` wins; a different name runs both |
 
 ## Claude Code
 
@@ -173,6 +174,46 @@ For MCP tools only:
 
 OpenCode applies the same-name rule to the `mcp` key. An existing `mcp.memtomem` entry wins over the plugin's default and only one server runs. Remove that entry to use the plugin server. A differently named key such as `mcp."memtomem-local"` is not deduplicated, so both servers run.
 
+## Hermes Agent
+
+The official plugin package provides the memtomem MCP server and six memory skills (index, recall, remember, search, setup, status). It requires:
+
+- Hermes Agent 0.21.5 or later;
+- MCP support in Hermes's environment (`hermes-agent[mcp]`). Without it, Hermes loads the skills but starts no MCP server, and logs the reason only at debug level;
+- `uv` on `PATH`. The plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.6.7' memtomem-server`;
+- Python 3.12. If uv cannot find one, it downloads one on first start. When that download is not possible (offline, or uv's Python downloads turned off), the server does not start; run `uv python install 3.12` once to fix it.
+
+Install it from the Hermes plugin catalog:
+
+```bash
+hermes plugins install memtomem --enable
+```
+
+The catalog pins a reviewed commit, currently memtomem 0.6.7. It can trail the newest release until the catalog entry is updated. To pin a specific release yourself, install from the Git repository. Hermes's `--ref` takes a full 40-character commit SHA and refuses a tag name. For 0.6.7:
+
+```bash
+hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-plugin" --ref 5b7034126574a2956b6a328622006a46b2a0e367 --enable
+```
+
+Look up another release's commit with `git ls-remote --exit-code https://github.com/memtomem/memtomem "refs/tags/v<version>" "refs/tags/v<version>^{}"`. If it prints two lines, use the SHA on the line that ends in `^{}`. If the plugin is already installed, reinstall with `--force --ref <new-commit-sha>`.
+
+Start a new Hermes session, ask it for memtomem status, and confirm the database path matches `mm status`.
+
+The package runs memtomem at **user scope**. The server starts in the plugin directory, so per-project memory is not available and paths given to indexing must be absolute. The handoff workflow, which needs a project, is not included. Storage paths in `~/.memtomem/config.json` must be absolute or start with `~`. A relative path resolves against the plugin directory and opens a different store.
+
+For MCP-only setup, add this entry to `~/.hermes/config.yaml`, then start a new session:
+
+```yaml
+mcp_servers:
+  memtomem:
+    command: memtomem-server
+    args: []
+```
+
+Either way, Hermes passes MCP servers only a small allowlist of environment variables, plus variables from an external secret source you configured in Hermes. A `MEMTOMEM_*` setting exported in your shell does not reach the server. memtomem does read a `.env` file itself at startup, searching upward from its installed location rather than the plugin or launch directory; for the plugin's `uvx` launch that is normally `~/.env`, so settings there can still apply. If the database path differs from `mm status`, check these differences first. A manual entry can set the values it needs under `env:`.
+
+Hermes resolves MCP servers by name. If the plugin is also enabled, the `mcp_servers.memtomem` entry in `config.yaml` wins and only one server runs. Remove that entry to switch to the plugin's server. A different name such as `mcp_servers.memtomem-local` is not deduplicated, so both servers run. `hermes mcp list` shows only the `config.yaml` entries, not the plugin's server.
+
 ## Antigravity
 
 Antigravity IDE and Antigravity CLI (`agy`) use separate files.
@@ -211,13 +252,13 @@ The setup is complete when:
 - its database path matches `mm status`;
 - a saved memory can be found with its source path in a new session.
 
-`mem_status` and a matching database path can succeed even when two servers are active. Use `/mcp` in Claude Code, `codex mcp list` in Codex, or the exact `mcp.memtomem` key in OpenCode to verify the first condition.
+`mem_status` and a matching database path can succeed even when two servers are active. Use `/mcp` in Claude Code, `codex mcp list` in Codex, or the exact `mcp.memtomem` key in OpenCode to verify the first condition. In Hermes Agent, check the plugins in `hermes plugins list --enabled` together with every `mcp_servers` entry in `config.yaml`.
 
 ## If It Does Not Work
 
 1. Run `mm status` to separate an installation problem from a client problem.
 2. For a manual MCP-only entry, confirm the configured command is `memtomem-server`; an official plugin may use its own pinned command.
-3. Apply the Claude Code, Codex, or OpenCode matching rule above and leave exactly one active server.
+3. Apply the Claude Code, Codex, OpenCode, or Hermes Agent matching rule above and leave exactly one active server.
 4. Restart the client or open a new session after plugin installation.
 5. If a GUI-launched client cannot resolve a manual command, run `command -v memtomem-server` and use that absolute executable path in its configuration.
 6. Continue with [Troubleshooting](/guides/troubleshooting/) if the database path or namespace differs.

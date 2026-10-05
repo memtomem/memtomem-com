@@ -218,6 +218,17 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
     `OpenCode plugin version ${contract.opencode.version}`
   );
 
+  // The Hermes plugin is pinned to the reviewed Core release: a commit SHA for
+  // the Git install and the exact server requirement it launches.
+  const hermesSection = markdownSection(text, contract.guides.clientGuide.coexistence.hermes.heading, 2);
+  assertSectionContains(file, hermesSection, `--ref ${contract.sourceSnapshots.coreMain}`, 'Hermes release commit pin');
+  assertSectionContains(
+    file,
+    hermesSection,
+    `uvx --python 3.12 --from 'memtomem[onnx]==${contract.core.version}' memtomem-server`,
+    'Hermes plugin server requirement'
+  );
+
   for (const spec of Object.values(contract.guides.clientGuide.coexistence)) {
     const section = markdownSection(text, spec.heading, 2);
     if (!section) {
