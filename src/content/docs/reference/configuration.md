@@ -587,7 +587,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__WARMUP_ENABLED` | Warm the LTM client in the background | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH` | Surfacing feedback and dedup SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | Global result-score floor on the RRF scale, applied unless a per-tool pin or the scale gate overrides it | `0.017` |
-| `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | Max memories injected per call | `3` |
+| `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | Max retrieved memories injected per call. Pinned context returned by the core's `context_compose` is added separately and does not count toward this limit | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | Skip surfacing on tiny responses | `5000` |
 | `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | Minimum interval between repeated surfacing work | `5` |
@@ -625,8 +625,8 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | Distinct negative surfacing events before local demotion applies | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | Surfacing-specific consumer model; empty inherits `proxy.consumer_model` | `""` |
 | `MEMTOMEM_STM_SURFACING__RESULT_FORMAT` | LTM response mode: `compact` or `structured` | `"structured"` |
-| `MEMTOMEM_STM_SURFACING__RERANK` | Whether LTM should rerank surfaced candidates; `null` delegates to LTM configuration | `false` |
-| `MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE` | Apply `score_scale`-aware normalization before the minimum-score gate | `true` |
+| `MEMTOMEM_STM_SURFACING__RERANK` | Per-call rerank request sent to the core for surfacing searches: `false` skips the rerank stage, `true` asks for the configured reranker, `none` sends no request and leaves it to core configuration. Sent only to cores that advertise per-call rerank | `false` |
+| `MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE` | Skip the global or auto-tuned `min_score` for batches whose `score_scale` is a recognized non-RRF scale, and pause auto-tuning for them. A per-tool `min_score` still applies; scores are not rescaled | `true` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT` | LTM MCP transport: `stdio`, `sse`, or `streamable_http` | `"stdio"` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND` | MCP command launching the LTM server for stdio transport | `"memtomem-server"` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` | Args for the LTM command (JSON list) | `[]` |

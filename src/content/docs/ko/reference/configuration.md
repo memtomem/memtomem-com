@@ -657,7 +657,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__WARMUP_ENABLED` | LTM 클라이언트를 백그라운드에서 미리 연결 | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH` | 관련 기억 피드백과 중복 제거 정보를 저장할 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | RRF 척도에서 적용하는 전역 결과 점수 하한. 도구별 고정값이나 척도 게이트가 있으면 그쪽이 우선합니다. | `0.017` |
-| `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 최대 기억 수 | `3` |
+| `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 검색 결과 기억의 최대 수. Core가 `context_compose`로 반환하는 고정(pinned) 컨텍스트는 별도이며 이 수에 포함되지 않음 | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | 응답이 이보다 짧으면 관련 기억 검색 생략 | `5000` |
 | `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수 | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | 관련 기억 검색을 반복할 때 둘 사이의 최소 간격 | `5` |
@@ -695,8 +695,8 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | 기억을 제외하기 전에 필요한 서로 다른 부정적 평가 수 | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | 관련 기억 제시 전용 수신 모델. 빈 값이면 `proxy.consumer_model` 상속 | `""` |
 | `MEMTOMEM_STM_SURFACING__RESULT_FORMAT` | LTM 응답 모드: `compact` 또는 `structured` | `"structured"` |
-| `MEMTOMEM_STM_SURFACING__RERANK` | LTM에 후보 재순위를 요청할지 여부. `null`이면 LTM 설정에 맡김 | `false` |
-| `MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE` | 최소 점수를 확인하기 전에 `score_scale`에 맞춰 점수 범위를 조정 | `true` |
+| `MEMTOMEM_STM_SURFACING__RERANK` | 서피싱 검색에서 Core에 보낼 호출별 재순위 요청. `false`는 재순위 단계 생략, `true`는 Core에 설정된 리랭커 사용, `none`은 요청하지 않고 Core 설정에 맡김. 호출별 재순위를 지원한다고 알린 Core에만 전달 | `false` |
+| `MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE` | `score_scale`이 RRF가 아닌 알려진 척도인 결과 묶음에는 전역 또는 자동 조정된 `min_score`를 적용하지 않고 자동 조정도 멈춤. 도구별 `min_score`는 계속 적용하며, 점수 자체는 변환하지 않음 | `true` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT` | LTM MCP 연결 방식: `stdio`, `sse`, `streamable_http` | `"stdio"` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND` | stdio 연결에서 LTM 서버를 실행할 MCP 명령 | `"memtomem-server"` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` | LTM 명령 인자(JSON 목록) | `[]` |
