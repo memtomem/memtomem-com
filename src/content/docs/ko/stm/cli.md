@@ -109,9 +109,9 @@ mms list --json                      # 스크립트용 JSON
 
 표의 **ORIGIN** 열에는 각 서버를 가져온 위치가 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, `mms add`로 직접 등록한 항목은 `-`로 표시합니다. 값 뒤의 `*`는 클라이언트의 원본 등록을 정리해 현재 STM을 통해서만 호출된다는 뜻입니다. `mms eject <name>`로 복원할 수 있습니다. v0.1.32부터는 **SURFACING** 열도 표시하므로 서버별 `mms surfacing` 설정을 여기서 확인할 수 있습니다.
 
-**SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영하며, 설정이 검증에 실패하면 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
+**SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
 
-표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 설정이 검증에 실패하면 `effective_compression`은 `{}`입니다.
+표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 실행 설정을 만들 수 없을 때만 이 값들이 빈 객체(`{}`)가 됩니다.
 
 ### `mms status`
 
@@ -164,7 +164,7 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 
 `health`는 서버별 **회로 차단기** 상태도 표시합니다. v0.1.32부터 기본으로 활성화됩니다. 연속 3회 호출에 실패하면 해당 서버의 도구는 약 60초 동안 `circuit_open`을 바로 반환하므로 호출할 때마다 재시도와 제한 시간을 모두 소진하지 않습니다. 캐시된 응답은 계속 제공하고 다른 서버에는 영향을 주지 않습니다. `stm_proxy.json`에서 해당 서버에 `circuit_max_failures: 0`을 지정하면 매번 다시 시도하는 이전 동작으로 돌아갑니다.
 
-`health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 출력에는 설정 값이 드러나지 않습니다.
+`health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 오류 표시에는 거부된 값과 예외 메시지를 포함하지 않으며, 일부 항목은 다음과 같이 가립니다.
 
 - 설정 오류는 오류 위치와 유형만 표시합니다.
 - 서버 확인에 실패하면 예외 메시지 대신 `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)`처럼 예외 유형만 표시합니다. `mms add --validate`와 가져오기 검증도 같습니다. 원래 메시지가 필요하면 서버 명령을 직접 실행하거나 엔드포인트에 직접 접속해 확인합니다.

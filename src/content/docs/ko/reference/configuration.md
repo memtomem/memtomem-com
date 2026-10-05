@@ -688,8 +688,8 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | 피드백 DB에 검색어 원문을 보존할 일수. 기간이 지나면 해당 열의 값만 비움. `0`이면 정리하지 않음 | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | 집계한 관련 기억 검색 통계의 보존 일수 | `90` |
 | `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 `sha256:<16-hex>` 해시 저장 | `true` |
-| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | 관련 기억 검색에 진입한 호출마다 결과(표시, 건너뜀과 그 사유, 오류, 취소)를 `surfacing_opportunities` 행으로 기록. 행에는 인자의 개수 정보만 담기며 키와 값은 담기지 않음. 피드백 추적기가 있는 엔진(daemon, `feedback_enabled`가 켜진 proxy)만 기록 | `true` |
-| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | 저장할 opportunity 행의 비율(`0.0`~`1.0`). 제외된 행은 `stm_surfacing_stats`에서 개수로만 집계 | `1.0` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | 관련 기억 검색에 진입한 호출마다 결과(표시, 건너뜀과 그 사유, 오류, 취소)를 `surfacing_opportunities` 행으로 기록. 행에는 인자 개수, 경로 깊이, 흔한 파일 형식의 확장자 같은 인자 형태만 담기며 키와 값은 담기지 않음. `false`이면 기록을 완전히 끔. 피드백 추적기가 있는 엔진(daemon, `feedback_enabled`가 켜진 proxy)만 기록 | `true` |
+| `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | 저장할 opportunity 행의 비율(`0.0`~`1.0`). 제외된 행은 `stm_surfacing_stats`에서 개수로만 집계. 보류(holdout) 추첨을 거친 호출은 샘플링에서 제외하지 않으므로 `HOLDOUT_RATE`가 `0`보다 크면 `0.0`이어도 행이 저장될 수 있음 | `1.0` |
 | `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | 효과 측정을 위해 무작위로 주입을 보류할 비율. `[0, 0.5]` 밖의 값은 거부하지 않고 범위 안으로 조정함. Claude Code hook 경로에서 `tool_use_id`와 `session_id`가 모두 있는 호출만 대상이며 proxy 경로는 보류하지 않음 | `0.0` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED` | 부정적 피드백을 반복해서 받은 기억을 응답에 넣기 전에 제외 | `true` |
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | 기억을 제외하기 전에 필요한 서로 다른 부정적 평가 수 | `3` |

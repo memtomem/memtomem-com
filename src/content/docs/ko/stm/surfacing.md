@@ -121,7 +121,7 @@ mms surfacing <server> on       # 다시 활성화
 - **주입 크기 상한** — 주입당 기본 `3000 chars`
 - **로컬 피드백에 따른 제외** — 같은 기억이 서로 다른 결과에서 `not_relevant` 또는 `already_known`으로 반복 평가되면 `feedback_demotion_negative_threshold`(기본 `3`)에 도달한 뒤부터 응답에 넣기 전에 제외
 - **검색어 보호** — `query_retention_days`가 지나면 저장한 원문 검색어를 비움(기본 30일). `persist_query_text=false`이면 원문 대신 `sha256:` 해시를 저장
-- **제시 기회 기록** — 피드백 추적기가 있는 엔진(데몬, `feedback_enabled`가 켜진 프록시)은 관련 기억 검색에 진입한 호출마다 `surfacing_opportunities` 행을 남김. 행에는 결과, 인자 개수·경로 깊이·흔한 파일 확장자 같은 인자 형태, 추출한 검색어의 digest가 담기며 인자의 키와 값은 저장하지 않음. 행은 약 320바이트이고 `stats_retention_days`에 따라 삭제됨. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 끄거나 `opportunities_sample_rate`로 일부만 저장
+- **제시 기회 기록** — 피드백 추적기가 있는 엔진(데몬, `feedback_enabled`가 켜진 프록시)은 관련 기억 검색에 진입한 호출마다 `surfacing_opportunities` 행을 남김. 행에는 결과, 인자 개수·경로 깊이·흔한 파일 확장자 같은 인자 형태, 추출한 검색어의 digest가 담기며 인자의 키와 값은 저장하지 않음. 행은 약 320바이트이고 `stats_retention_days`에 따라 삭제됨. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 끄거나 `opportunities_sample_rate`로 일부만 저장(보류 추첨을 거친 호출은 항상 저장)
 - **호출 식별자** — 훅은 호스트의 `session_id`, `cwd`, `tool_use_id`, `agent_id`를 데몬에 전달하며 로그에는 남기지 않음. `surfacing_events` 행에는 `tool_use_id`, `host_session_id`, `host_agent_id`를 저장하고 `cwd`는 저장하지 않음. 제시한 기억의 원본 경로와 미리보기 텍스트는 설치별 키로 만든 해시만 저장
 - **보류(holdout)** — `holdout_rate`(기본 `0.0`)가 0보다 크면, Claude Code 훅이 데몬을 거쳐 보낸 호출 가운데 조건을 갖춘 호출의 주입을 무작위로 보류해 효과를 측정. 보류한 호출은 도구 응답을 그대로 반환하고 기록만 남김. 프록시 경로는 보류하지 않음
 

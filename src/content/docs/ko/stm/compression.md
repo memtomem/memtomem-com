@@ -86,7 +86,7 @@ progressive → hybrid → truncate
   - 구조적 절삭처럼 여전히 하한에 못 미치는 결과는 이전처럼 대체 단계로 넘어갑니다.
 - **명시적 `retention_floor`:** 도구의 `retention_floor`는 서버 값보다, 서버 값은 전역 비율보다 우선합니다. `null`이면 상위 값을 상속하고, 명시적 `0`이면 그 수준에서 하한을 끕니다. 명시적 `retention_floor`는 전역 `min_result_retention`이 `0`이어도 적용됩니다. 예를 들어 `1.0`으로 지정한 도구는 문자 예산으로 자르지 않고 응답 전체를 보존합니다.
 
-`llm_summary` 전략에는 별도의 **시간 제한**이 있습니다. 서버·도구별 `llm` 블록의 `llm_timeout_seconds` 필드로 지정하며 기본값은 `60`초입니다. LLM 응답이 느리거나 멈춰도 프록시 전체가 멈추지 않습니다. 제한 시간을 넘기면 STM은 `truncate`를 대신 사용해 정해진 길이 안에서 응답합니다. LLM이 빈 요약이나 공백만 반환해도 잘라 낸 원문으로 대체하고 `llm_summary→llm_empty_fallback`으로 기록합니다. 이 경우 엔드포인트는 응답했으므로 회로 차단기 실패로 세지 않습니다. Anthropic 응답은 첫 블록만이 아니라 모든 text 블록에서 요약을 읽습니다.
+`llm_summary` 전략에는 별도의 **시간 제한**이 있습니다. 서버·도구별 `llm` 블록의 `llm_timeout_seconds` 필드로 지정하며 기본값은 `60`초입니다. LLM 응답이 느리거나 멈춰도 프록시 전체가 멈추지 않습니다. 제한 시간을 넘기면 STM은 `truncate`를 대신 사용해 정해진 길이 안에서 응답합니다. LLM이 빈 요약이나 공백만 반환하면 압축기는 잘라 낸 원문으로 대체합니다. 이 결과가 보존 하한을 충족하면 `llm_summary→llm_empty_fallback`으로 기록하고, 충족하지 못하면 다른 결과와 마찬가지로 하한 검사가 대체합니다(예: `llm_summary→progressive_fallback`). 엔드포인트는 응답했으므로 빈 요약은 회로 차단기 실패로 세지 않습니다. Anthropic 응답은 첫 블록만이 아니라 모든 text 블록에서 요약을 읽습니다.
 
 ## 압축 예산 설정
 
