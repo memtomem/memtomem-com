@@ -40,8 +40,8 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 
 Once a query is extracted, surfaced memories are filtered further to ensure usefulness (context extraction already happened in the [step above](#5-level-context-extraction)):
 
-1. **LTM search** — Hybrid search for candidate memories
-2. **Score filtering** — Normalize score scales when `scale_gated_min_score=true` (default), then remove results below `min_score`. Reranking is off by default unless `MEMTOMEM_STM_SURFACING__RERANK` or LTM configuration enables it.
+1. **LTM search** — Hybrid search for candidate memories. To keep latency low, surfacing asks the core to skip its rerank stage by default (`MEMTOMEM_STM_SURFACING__RERANK=false`). `true` asks for the core's configured reranker, and `none` sends no request and leaves the decision to the core's own configuration. The value is sent only to cores that advertise per-call rerank support; older cores follow their own configuration.
+2. **Score filtering** — Remove results below `min_score`, a threshold on the RRF scale. With `scale_gated_min_score=true` (default), the global or auto-tuned `min_score` is not applied to a batch whose core-reported `score_scale` is a recognized non-RRF scale, such as reranker scores, because an RRF threshold has no meaning on that scale; the number of retrieved memories is still capped by `max_results`. A per-tool `context_tools.<tool>.min_score` always applies. A missing or unrecognized `score_scale` keeps the filter. Scores themselves are never rescaled.
 3. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
 
 ## Injection Modes
