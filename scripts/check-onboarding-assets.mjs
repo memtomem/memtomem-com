@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { extname, resolve } from 'node:path';
+import { extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // The gate's own record of what must be checked. A manifest that drops an
@@ -24,21 +24,30 @@ export const UNPINNED_CORE_PATHS = [
   'docs/guides/configuration.md',
 ];
 
-const CORE_FILE_LINK = /https:\/\/(?:raw\.githubusercontent\.com\/memtomem\/memtomem|github\.com\/memtomem\/memtomem\/(?:blob|raw))\/([^/)\s"'<>]+)\/([^)\s"'<>?#]+)/g;
-const CORE_TREE_LINK = /https:\/\/github\.com\/memtomem\/memtomem\/tree\/([^/)\s"'<>]+)\/([^)\s"'<>?#]+)/g;
+// A ref is either shorthand (`v0.6.4`, `main`) or fully qualified
+// (`refs/tags/v0.6.4`, `refs/heads/main`). The qualified prefix stays part of
+// the captured ref so a branch named like the release cannot pass as its tag.
+const CORE_FILE_LINK = /https:\/\/(?:raw\.githubusercontent\.com\/memtomem\/memtomem|github\.com\/memtomem\/memtomem\/(?:blob|raw))\/((?:refs\/(?:tags|heads)\/)?[^/)\s"'<>]+)\/([^)\s"'<>?#]+)/g;
+const CORE_TREE_LINK = /https:\/\/github\.com\/memtomem\/memtomem\/tree\/((?:refs\/(?:tags|heads)\/)?[^/)\s"'<>]+)\/([^)\s"'<>?#]+)/g;
 
-export function collectCoreReferences(text) {
+// The release tag in either spelling. `refs/heads/<release>` is a branch and
+// does not match.
+function namesRelease(ref, expectedRef) {
+  return ref === expectedRef || ref === 'refs/tags/' + expectedRef;
+}
+
+export function collectCoreReferences(text, source) {
   const files = new Set();
   const trees = new Set();
   const links = [];
   for (const match of text.matchAll(CORE_FILE_LINK)) {
     files.add(match[2]);
-    links.push({ type: 'file', ref: match[1], path: match[2] });
+    links.push({ type: 'file', ref: match[1], path: match[2], source });
   }
   for (const match of text.matchAll(CORE_TREE_LINK)) {
     const path = match[2].replace(/\/+$/, '');
     trees.add(path);
-    links.push({ type: 'tree', ref: match[1], path });
+    links.push({ type: 'tree', ref: match[1], path, source });
   }
   return { files, trees, links };
 }
@@ -70,17 +79,19 @@ export function assertReferencesCovered({ files, trees, links }, expectedRef) {
     const onboarding = link.type === 'file'
       ? REQUIRED_ASSET_PATHS.includes(link.path)
       : REQUIRED_ASSET_PATHS.some(path => path.startsWith(link.path + '/'));
-    return onboarding && link.ref !== expectedRef;
+    return onboarding && !namesRelease(link.ref, expectedRef);
   });
   if (mismatched.length) {
     throw new Error('Onboarding links must use ' + expectedRef + ': ' +
-      mismatched.map(link => link.path + ' at ' + link.ref).join(', '));
+      mismatched.map(link => link.path + ' at ' + link.ref + (link.source ? ' in ' + link.source : '')).join(', '));
   }
 }
 
 const SCANNED_EXTENSIONS = new Set(['.md', '.mdx', '.astro', '.html', '.json', '.ts', '.js', '.mjs']);
 
-async function scanSourceReferences(root) {
+// Link records carry the repository-relative file they came from, so a stale
+// link names every page that holds it.
+export async function scanSourceReferences(root, base = root) {
   const files = new Set();
   const trees = new Set();
   const links = [];
@@ -89,7 +100,7 @@ async function scanSourceReferences(root) {
       const path = resolve(dir, entry.name);
       if (entry.isDirectory()) await walk(path);
       else if (SCANNED_EXTENSIONS.has(extname(entry.name))) {
-        const found = collectCoreReferences(await readFile(path, 'utf8'));
+        const found = collectCoreReferences(await readFile(path, 'utf8'), relative(base, path).split(sep).join('/'));
         for (const value of found.files) files.add(value);
         for (const value of found.trees) trees.add(value);
         links.push(...found.links);
@@ -161,6 +172,11 @@ export async function fetchPublishedAsset(path, ref, {
       if (!response.ok) {
         const error = new Error('HTTP ' + response.status);
         error.status = response.status;
+        // Ask for the unread body to be released, without waiting: a cancel
+        // can stay pending (a teed body, a stalled stream) and must not hold
+        // up the retry or the report. Cleanup failures never replace the
+        // HTTP status in the diagnostic.
+        Promise.resolve().then(() => response.body?.cancel()).catch(() => {});
         throw error;
       }
       return Buffer.from(await response.arrayBuffer());
@@ -187,7 +203,9 @@ async function main() {
   const ref = coreReleaseRef(
     JSON.parse(await readFile(new URL('../src/data/docs-contract.json', import.meta.url), 'utf8'))
   );
-  assertReferencesCovered(await scanSourceReferences(fileURLToPath(new URL('../src', import.meta.url))), ref);
+  assertReferencesCovered(await scanSourceReferences(
+    fileURLToPath(new URL('../src', import.meta.url)), fileURLToPath(new URL('..', import.meta.url))
+  ), ref);
   for (const asset of assets) {
     let bytes;
     if (args.length) {
