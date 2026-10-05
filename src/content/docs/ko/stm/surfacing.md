@@ -70,7 +70,7 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 
 ## 피드백 루프
 
-자동으로 제시한 각 기억에는 제공자마다 기준이 다른 원점수 대신 `[weak]` / `[related]` / `[strong]` 등급을 표시합니다. 등급은 `[min_score, 상한]` 구간을 셋으로 나누어 정합니다. `rrf`로 표시된 결과의 상한은 `sum(rrf_weights) / (rrf_k + 1)`입니다. 이 값은 검색을 처리한 Core 세션의 `runtime_profile`에서 계산합니다. 프로필이 없거나 유효하지 않거나 두 검색 경로(BM25와 dense)를 함께 쓰는 구성이 아니면 기준값 `2/61`(약 0.033)을 사용합니다. 이전 데몬이 이 값을 전달하지 않을 때도 같습니다. `score_scale` 표시가 없는 결과(compact 형식, 이전 Core)는 기존 `[min_score, 1.0]` 구간을 유지합니다. 각 기억에는 고유한 `memory_id`도 붙으므로, 에이전트는 전체 결과나 개별 기억을 따로 평가할 수 있습니다.
+자동으로 제시한 각 기억에는 제공자마다 기준이 다른 원점수 대신 `[weak]` / `[related]` / `[strong]` 등급을 표시합니다. 등급은 `[min_score, 상한]` 구간을 셋으로 나누어 정합니다. `rrf`로 표시된 결과의 상한은 `sum(rrf_weights) / (rrf_k + 1)`입니다. 이 값은 검색을 처리한 Core 세션의 `runtime_profile`에서 계산합니다. 프로필이 없거나 유효하지 않거나 두 검색 경로(BM25와 dense)를 함께 쓰는 구성이 아니면 기준값 `2/61`(약 0.033)을 사용합니다. 이전 데몬이 이 값을 전달하지 않을 때도 같습니다. `score_scale` 표시가 없거나(compact 형식, 이전 Core) STM이 알 수 없는 값인 결과는 기존 `[min_score, 1.0]` 구간을 유지합니다. 리랭커 logit처럼 RRF가 아닌 알려진 점수 척도가 표시된 결과에는 의미 있는 구간이 없으므로 등급을 표시하지 않습니다. 각 기억에는 고유한 `memory_id`도 붙으므로, 에이전트는 전체 결과나 개별 기억을 따로 평가할 수 있습니다.
 
 - 이벤트 전체: `stm_surfacing_feedback(surfacing_id=..., rating="helpful")`
 - 개별 기억: `stm_surfacing_feedback(surfacing_id=..., ratings=[{"memory_id": ..., "rating": "not_relevant"}])`

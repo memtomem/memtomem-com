@@ -111,7 +111,7 @@ mms list --json                      # 스크립트용 JSON
 
 **SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
 
-표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 실행 설정을 만들 수 없을 때만 이 값들이 빈 객체(`{}`)가 됩니다.
+표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 이 값들은 실행 설정을 만들 수 없을 때뿐 아니라 실제 설정에 서버가 하나도 없을 때도 빈 객체(`{}`)가 되므로, 설정 실패 여부는 `config_valid`와 `config_error`로 판단합니다.
 
 ### `mms status`
 
