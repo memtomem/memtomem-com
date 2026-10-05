@@ -10,6 +10,7 @@ import {
   UNPINNED_CORE_PATHS,
   assertReferencesCovered,
   collectCoreReferences,
+  scanSourceReferences,
   validateManifest,
   verifyAsset,
   coreReleaseRef,
@@ -152,6 +153,69 @@ test('onboarding links must use the contract release, including mixed refs', () 
   assert.doesNotThrow(() => assertReferencesCovered(unpinned, 'v0.6.4'));
 });
 
+test('fully qualified release tag refs resolve to the asset path and pass', () => {
+  const urls = [
+    `${CORE}/raw/refs/tags/v0.6.4/${REQUIRED_ASSET_PATHS[0]}`,
+    `${CORE}/blob/refs/tags/v0.6.4/${REQUIRED_ASSET_PATHS[1]}#L1`,
+    `https://raw.githubusercontent.com/memtomem/memtomem/refs/tags/v0.6.4/${REQUIRED_ASSET_PATHS[2]}`,
+    `${CORE}/tree/refs/tags/v0.6.4/examples/onboarding/retry-policy/`,
+  ];
+  const found = collectCoreReferences(urls.join('\n'));
+  assert.deepEqual([...found.files].sort(), REQUIRED_ASSET_PATHS.slice(0, 3).sort());
+  assert.deepEqual([...found.trees], ['examples/onboarding/retry-policy']);
+  assert.ok(found.links.every(link => link.ref === 'refs/tags/v0.6.4'));
+  assert.doesNotThrow(() => assertReferencesCovered(found, 'v0.6.4'));
+});
+
+test('qualified wrong tags, branches, and uncovered assets stay rejected', () => {
+  for (const ref of ['refs/tags/v0.6.3', 'refs/heads/main', 'refs/heads/v0.6.4']) {
+    for (const url of [
+      `${CORE}/raw/${ref}/${REQUIRED_ASSET_PATHS[0]}`,
+      `https://raw.githubusercontent.com/memtomem/memtomem/${ref}/${REQUIRED_ASSET_PATHS[0]}`,
+      `${CORE}/tree/${ref}/examples/onboarding/retry-policy`,
+    ]) {
+      assert.throws(() => assertReferencesCovered(collectCoreReferences(url), 'v0.6.4'), error => {
+        assert.match(error.message, /Onboarding links must use v0\.6\.4/);
+        assert.ok(error.message.includes(' at ' + ref), error.message);
+        return true;
+      });
+    }
+  }
+  assert.throws(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/raw/refs/tags/v0.6.4/examples/notebooks/99_new.ipynb`
+  ), 'v0.6.4'), /does not cover: examples\/notebooks\/99_new\.ipynb/);
+});
+
+test('a stale link names every source document that holds it', () => {
+  const url = `${CORE}/blob/v0.6.3/${REQUIRED_ASSET_PATHS[0]}`;
+  const en = collectCoreReferences(url, 'src/content/docs/guides/use-cases.md');
+  const ko = collectCoreReferences(url, 'src/content/docs/ko/guides/use-cases.md');
+  const merged = { files: new Set([...en.files, ...ko.files]), trees: new Set(), links: [...en.links, ...ko.links] };
+  assert.throws(() => assertReferencesCovered(merged, 'v0.6.4'), error => {
+    assert.match(error.message, /Onboarding links must use v0\.6\.4/);
+    for (const source of ['src/content/docs/guides/use-cases.md', 'src/content/docs/ko/guides/use-cases.md']) {
+      assert.ok(error.message.includes(REQUIRED_ASSET_PATHS[0] + ' at v0.6.3 in ' + source), error.message);
+    }
+    return true;
+  });
+});
+
+test('source scan records repository-relative files for each occurrence', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'onboarding-scan-'));
+  try {
+    const url = `${CORE}/blob/v0.6.3/${REQUIRED_ASSET_PATHS[0]}`;
+    for (const page of ['src/content/docs/a.md', 'src/content/docs/ko/a.md']) {
+      await mkdir(dirname(join(root, page)), { recursive: true });
+      await writeFile(join(root, page), `[x](${url})`);
+    }
+    const found = await scanSourceReferences(join(root, 'src'), root);
+    assert.deepEqual(found.links.map(link => link.source).sort(), ['src/content/docs/a.md', 'src/content/docs/ko/a.md']);
+    assert.deepEqual([...found.files], [REQUIRED_ASSET_PATHS[0]]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('every linked core file must be pinned or explicitly unpinned', () => {
   assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
     `${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${CORE}/blob/main/${UNPINNED_CORE_PATHS[0]}`
@@ -236,6 +300,48 @@ for (const failure of [404, 429, 503, 'network', 'timeout']) {
   });
 }
 
+const failedResponse = (status, body) => ({ ok: false, status, body });
+
+for (const status of [404, 429, 503]) {
+  test('failed HTTP ' + status + ' requests body release on every attempt', async t => {
+    t.mock.method(console, 'warn', () => {});
+    let calls = 0;
+    let cancelled = 0;
+    await assert.rejects(fetchPublishedAsset(asset.path, 'v0.6.4', {
+      delayMs: 0,
+      fetchImpl: async () => {
+        calls += 1;
+        return failedResponse(status, { cancel: async () => { cancelled += 1; } });
+      },
+    }), new RegExp('at v0\\.6\\.4: HTTP ' + status + '$'));
+    const expectedAttempts = status === 404 ? 1 : FETCH_ATTEMPTS;
+    assert.equal(calls, expectedAttempts);
+    assert.equal(cancelled, expectedAttempts);
+  });
+}
+
+for (const [name, body] of [
+  ['missing body', null],
+  ['rejected cleanup', { cancel: async () => { throw new Error('cancel failed'); } }],
+  ['throwing cleanup', { cancel: () => { throw new Error('cancel failed'); } }],
+  ['never-settling cleanup', { cancel: () => new Promise(() => {}) }],
+]) {
+  test('a ' + name + ' keeps the original HTTP diagnostic and retry count', async t => {
+    const warnings = t.mock.method(console, 'warn', () => {});
+    let calls = 0;
+    await assert.rejects(fetchPublishedAsset(asset.path, 'v0.6.4', {
+      delayMs: 0,
+      fetchImpl: async () => { calls += 1; return failedResponse(503, body); },
+    }), error => {
+      assert.equal(error.message, 'Failed to fetch onboarding asset: ' + asset.path + ' at v0.6.4: HTTP 503');
+      assert.equal(error.cause.status, 503);
+      return true;
+    });
+    assert.equal(calls, FETCH_ATTEMPTS);
+    assert.equal(warnings.mock.callCount(), FETCH_ATTEMPTS - 1);
+  });
+}
+
 for (const scenario of ['published', 'version bump', 'stale hash', 'invalid version', 'local',
   'local invalid version', 'main link', 'stale link', 'local stale link', 'uncovered tagged link']) {
   test('CLI gate: ' + scenario, async () => {
@@ -286,6 +392,9 @@ for (const scenario of ['published', 'version bump', 'stale hash', 'invalid vers
           scenario.includes('invalid version') ? /core.version/ :
           scenario === 'uncovered tagged link' ? /does not cover/ : /Onboarding links must use/;
         assert.match(result.stderr, expectedError);
+        if (scenario.includes('link') && scenario !== 'uncovered tagged link') {
+          assert.ok(result.stderr.includes(' in src/page.md'), result.stderr);
+        }
         assert.doesNotMatch(result.stdout, /Onboarding assets verified/);
       } else {
         assert.ok(result.stdout.includes(`Onboarding assets verified (7, ${local ? 'local only' : 'published v' + version}).`));

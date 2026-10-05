@@ -10,7 +10,10 @@ by a successful local build.
    `src/data/onboarding-assets.json`,
    and checks that every Core file the site links is either pinned in that
    manifest or listed in `UNPINNED_CORE_PATHS`. Onboarding file and directory
-   links must use the same release tag as the gate. Missing files, drift, and
+   links must use the same release tag as the gate, written either as
+   `v<core.version>` or as `refs/tags/v<core.version>`; a branch such as
+   `refs/heads/v<core.version>` is rejected. A link on the wrong ref is reported
+   with every source page that holds it. Missing files, drift, and
    network errors stop deployment; they do not prove an asset itself is broken.
    On a Core version bump, review and test the tagged source, then update the
    contract version, EN/KO onboarding links, and any changed hashes in the
@@ -18,7 +21,9 @@ by a successful local build.
    continue to point to `main`.
 
    A 404 fails immediately. Other fetch failures are retried against the same
-   tag and logged with the path, ref, and HTTP status or network cause.
+   tag and logged with the path, ref, and HTTP status or network cause. Each
+   failed response's body is cancelled on a best-effort basis; the gate does
+   not wait for that cleanup before retrying or reporting.
    A hash mismatch instead reports the expected and actual SHA-256. Investigate
    publication or network failures before retrying; never edit the manifest to
    match an error response.
