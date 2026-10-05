@@ -99,7 +99,7 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | Enable reranking of hybrid search results | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | Model name. Use `jinaai/jina-reranker-v2-base-multilingual` for non-English content. | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | Model name. For non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. The Korean-optimized preset leaves reranking off, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | Floor — reranker never sees fewer candidates than this | `20` |
@@ -238,7 +238,7 @@ Background job that periodically groups near-duplicate memories and compresses t
 
 ### Health watchdog
 
-Background loop for periodic health checks, orphan-record cleanup, and automatic maintenance.
+Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted; purging their chunks is an explicit `mm gc orphan-sources --apply`.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -247,7 +247,7 @@ Background loop for periodic health checks, orphan-record cleanup, and automatic
 | `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | Diagnostic-check interval | `300` |
 | `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | Deep-scan interval | `3600` |
 | `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | Snapshot retention cap | `1000` |
-| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | Orphan-record cleanup threshold | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | Missing-source count at which auto-maintenance holds them (no chunks are deleted) | `10` |
 | `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | Perform automatic maintenance | `true` |
 
 ### Scheduler

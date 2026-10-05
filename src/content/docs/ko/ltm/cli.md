@@ -55,12 +55,14 @@ mm agent debug-resolve --agent-id alice
 mm review evidence CANDIDATE_ID --top-k 5
 mm context seed-validation --help
 mm context version --help
+mm context settings-doctor --json
 ```
 
 `doctor`는 실행 환경을 진단하고, `agent debug-resolve`는 검색 범위를 설명합니다.
 `review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
 BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 나올 수 있습니다.
 `seed-validation`은 검증용 컨텍스트 자료를 만드는 쓰기 작업이므로 도움말을 확인한 뒤 선택적으로 실행하세요.
+`settings-doctor --json`의 `status`는 `duplicates`, `malformed`, `incomplete`, `advisory`, `clean` 중 우선순위가 가장 높은 값입니다. `advisory`는 다른 기기에서 실행되지 않을 수 있는 hook 명령만 발견된 경우이고, `clean`은 모든 항목이 비어 있을 때만 표시됩니다. `duplicates`와 `malformed`는 종료 코드 1, 나머지는 0입니다. `advisory`도 종료 코드가 0이므로 `clean`만 통과로 처리하던 스크립트는 `advisory`도 허용하거나 발견 항목을 직접 확인해야 합니다. 검색 권한이 없는 디렉터리의 설정 파일은 `unreadable`로 표시하고 건너뛰며, 중복이나 잘못된 matcher가 없으면 `incomplete`를 보고합니다.
 
 ## 설정
 
@@ -387,8 +389,10 @@ mm session start --agent-id claude-code --title "리팩터링 auth"
 mm session list --json                           # 스크립트용 JSON 출력
 mm session events <session-id> --json            # 이벤트 타임라인 JSON
 mm session wrap -- <command...>                  # 명령어 실행 전후로 세션 자동 start/end
-mm session end
+mm session end --auto --json                     # 이벤트로 요약을 만들고 JSON 확인 응답 출력
 ```
+
+`mm session end --json`은 성공하면 `{"ok": true, "session_id": ..., "summary": ..., "event_count": N}`을 출력합니다. 활성 세션이 없거나 저장에 실패하면 `{"ok": false, "reason": ...}`를 출력하고 종료 코드 1로 끝납니다. `mm session events --json`도 세션이 없으면 `{"error": "no_session"}`을 출력하고 종료 코드 1로 끝납니다.
 
 현재 세션 ID는 `~/.memtomem/.current_session`에 저장됩니다. `mm activity log` 같은 다음 명령은 이 값을 자동으로 사용합니다.
 
@@ -401,7 +405,7 @@ mm activity log --type tool_call --content "ran tests"
 mm activity log --type decision --content "전략 X 채택" --meta '{"k":"v"}' --json
 ```
 
-`--json`을 지정하면 성공 시 `{"ok": true, ...}`를 표준 출력으로 보냅니다. 활성 세션이 없거나 기록에 실패하면 `{"ok": false, "reason": ...}`를 출력합니다. 종료 코드는 항상 0입니다.
+`--json`을 지정하면 성공 시 `{"ok": true, ...}`를 표준 출력으로 보냅니다. 실패하면 `{"ok": false, "reason": ...}`를 출력합니다. 활성 세션이 없는 경우(`no_active_session`)는 아무 작업도 하지 않는 정상 처리로 보아 종료 코드 0으로 끝나고, `--meta` 형식 오류(`invalid_meta`)나 기록 실패(`write_failed`)는 종료 코드 1로 끝납니다. `--json` 없이 실행하면 세션이 없거나 기록에 실패해도 표준 출력이 없으며 종료 코드는 0입니다.
 
 ### `mm agent register / list / share`
 
@@ -432,6 +436,8 @@ mm status --json                     # 기계 판독용 — 스크립트 / `jq` 
 
 이 명령은 v0.1.25에 추가됐고 `--json`과 `--format json`은 v0.3.4부터 지원합니다. MCP 클라이언트를 실행하지 않고도 DB가 열리는지, 기억이 몇 건 있는지 빠르게 확인할 수 있습니다.
 
+`search.tokenizer`가 `kiwipiepy`인데 `kiwipiepy` 패키지를 찾을 수 없거나 프로세스가 이미 `unicode61`로 대체한 경우, `mm status`와 `mem_status`는 `tokenizer_fallback` 경고를 표시합니다. 이 상태에서 색인한 행은 다른 방식으로 토큰화되므로 한국어 키워드 검색에서 누락될 수 있습니다. memtomem을 실행하는 모든 환경에 `korean` extra를 설치하고 서버를 다시 시작한 뒤 키워드 인덱스를 다시 만드세요.
+
 ### `mm sync-doctor`
 
 현재 비공개 기억 동기화 저장소를 여섯 가지 항목으로 검사합니다. 파일은 수정하지 않습니다. 오류가 있으면 0이 아닌 종료 코드를 반환하지만 경고만 있으면 성공으로 끝납니다.
@@ -461,7 +467,7 @@ mm memory doctor --fix               # 제거할 인덱스 링크 미리보기
 mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
 ```
 
-`--fix`는 대상 파일이 사라진 인덱스 포인터만 제거합니다. `--apply`가 없으면 변경 내용을 보여 주기만 합니다. error 등급 문제가 있으면 종료 코드 1을 반환하므로 CI에서도 사용할 수 있습니다.
+`--fix`는 대상 파일이 사라진 인덱스 포인터만 제거합니다. `--apply`가 없으면 변경 내용을 보여 주기만 합니다. error 등급 문제가 있으면 종료 코드 1을 반환하므로 CI에서도 사용할 수 있습니다. 보류된 자료 출처는 warning 등급인 `held_source`로 보고되므로, 이것만 발견되면 종료 코드는 0입니다.
 
 `dangling_wikilink`는 참고 정보입니다. 앞으로 만들 문서를 미리 가리키거나 이전 이름이 남은 경우일 수 있으므로 검사를 실패시키지 않고 `--fix`로도 제거하지 않습니다.
 
@@ -508,7 +514,9 @@ mm schedule delete <sched-id>
 
 ### `mm gc orphan-sources`
 
-원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 제거합니다.
+원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 영구히 제거합니다.
+
+파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제합니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
 
 ```bash
 mm gc orphan-sources
@@ -560,7 +568,9 @@ mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
 
-선택 기능(extras)은 현재 `uv tool` 설치 내역에서 자동으로 찾습니다. `memtomem[all]`을 사용했다면 `[all]` 설정을 유지합니다.
+선택 기능(extras)은 현재 `uv tool` 설치 내역에서 자동으로 찾습니다. `memtomem[all]`을 사용했다면 `[all]` 설정을 유지합니다. 설치 기록이 없거나 읽을 수 없으면 extras를 찾지 못하므로, `--dry-run` 출력의 `Extras:` 줄을 확인하고 필요하면 `--extras`를 지정하세요.
+
+0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 건드리지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 멈춥니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 올려야 합니다.
 
 ### `mm uninstall`
 

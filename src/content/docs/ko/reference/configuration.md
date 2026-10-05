@@ -109,7 +109,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (로컬 ONNX) / `cohere` (외부 API) | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | 모델명. 비영어 콘텐츠에는 `jinaai/jina-reranker-v2-base-multilingual` 권장. | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | 모델명. 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 한국어 최적화 프리셋은 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | 하한선 — 리랭커가 받는 후보 수의 최솟값 | `20` |
@@ -274,7 +274,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 상태 모니터
 
-상태 확인, 연결이 끊긴 레코드 정리, 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다.
+상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다. 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -283,7 +283,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 | `MEMTOMEM_HEALTH_WATCHDOG__DIAGNOSTIC_INTERVAL_SECONDS` | 진단 주기 | `300` |
 | `MEMTOMEM_HEALTH_WATCHDOG__DEEP_INTERVAL_SECONDS` | 정밀 검사 주기 | `3600` |
 | `MEMTOMEM_HEALTH_WATCHDOG__MAX_SNAPSHOTS` | 보관 스냅샷 수 상한 | `1000` |
-| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | 고아 레코드 정리 임계치 | `10` |
+| `MEMTOMEM_HEALTH_WATCHDOG__ORPHAN_CLEANUP_THRESHOLD` | 자동 유지보수가 원본이 사라진 자료 출처를 보류하기 시작하는 개수 기준 | `10` |
 | `MEMTOMEM_HEALTH_WATCHDOG__AUTO_MAINTENANCE` | 자동 유지보수 수행 | `true` |
 
 <a id="scheduler"></a>
