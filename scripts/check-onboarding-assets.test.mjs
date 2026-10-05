@@ -132,7 +132,7 @@ test('GitHub raw download links must be covered and use the contract release', (
   assert.doesNotThrow(() => assertReferencesCovered(valid, 'v0.6.4'));
   assert.throws(() => assertReferencesCovered(collectCoreReferences(
     `${CORE}/raw/main/${REQUIRED_ASSET_PATHS[0]}`
-  ), 'v0.6.4'), /Onboarding links must use/);
+  ), 'v0.6.4'), /Core links must use/);
   assert.throws(() => assertReferencesCovered(collectCoreReferences(
     `${CORE}/raw/main/examples/notebooks/99_new.ipynb`
   ), 'v0.6.4'), /does not cover/);
@@ -146,11 +146,12 @@ test('onboarding links must use the contract release, including mixed refs', () 
       `${CORE}/tree/${ref}/examples/onboarding/retry-policy`,
     ]) {
       const links = collectCoreReferences(`${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${url}`);
-      assert.throws(() => assertReferencesCovered(links, 'v0.6.4'), /Onboarding links must use v0\.6\.4/);
+      assert.throws(() => assertReferencesCovered(links, 'v0.6.4'), /Core links must use v0\.6\.4/);
     }
   }
-  const unpinned = collectCoreReferences(`${CORE}/blob/main/${UNPINNED_CORE_PATHS[0]}`);
-  assert.doesNotThrow(() => assertReferencesCovered(unpinned, 'v0.6.4'));
+  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/blob/v0.6.4/${UNPINNED_CORE_PATHS[0]}`
+  ), 'v0.6.4'));
 });
 
 test('fully qualified release tag refs resolve to the asset path and pass', () => {
@@ -175,7 +176,7 @@ test('qualified wrong tags, branches, and uncovered assets stay rejected', () =>
       `${CORE}/tree/${ref}/examples/onboarding/retry-policy`,
     ]) {
       assert.throws(() => assertReferencesCovered(collectCoreReferences(url), 'v0.6.4'), error => {
-        assert.match(error.message, /Onboarding links must use v0\.6\.4/);
+        assert.match(error.message, /Core links must use v0\.6\.4/);
         assert.ok(error.message.includes(' at ' + ref), error.message);
         return true;
       });
@@ -192,7 +193,7 @@ test('a stale link names every source document that holds it', () => {
   const ko = collectCoreReferences(url, 'src/content/docs/ko/guides/use-cases.md');
   const merged = { files: new Set([...en.files, ...ko.files]), trees: new Set(), links: [...en.links, ...ko.links] };
   assert.throws(() => assertReferencesCovered(merged, 'v0.6.4'), error => {
-    assert.match(error.message, /Onboarding links must use v0\.6\.4/);
+    assert.match(error.message, /Core links must use v0\.6\.4/);
     for (const source of ['src/content/docs/guides/use-cases.md', 'src/content/docs/ko/guides/use-cases.md']) {
       assert.ok(error.message.includes(REQUIRED_ASSET_PATHS[0] + ' at v0.6.3 in ' + source), error.message);
     }
@@ -216,9 +217,30 @@ test('source scan records repository-relative files for each occurrence', async 
   }
 });
 
+test('unpinned prose links must name the release tag too', () => {
+  for (const ref of ['main', 'refs/heads/main', 'refs/heads/v0.6.4', 'v0.6.3']) {
+    assert.throws(() => assertReferencesCovered(collectCoreReferences(
+      `${CORE}/blob/${ref}/${UNPINNED_CORE_PATHS[0]}`, 'src/content/docs/reference/configuration.md'
+    ), 'v0.6.4'), error => {
+      assert.ok(error.message.includes('Core links must use v0.6.4: ' + UNPINNED_CORE_PATHS[0] + ' at ' + ref +
+        ' in src/content/docs/reference/configuration.md'), error.message);
+      return true;
+    });
+  }
+  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+    `${CORE}/blob/refs/tags/v0.6.4/${UNPINNED_CORE_PATHS[0]}`
+  ), 'v0.6.4'));
+  // A directory that holds only unpinned prose follows the same rule.
+  assert.throws(() => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/main/docs/guides`), 'v0.6.4'),
+    /Core links must use v0\.6\.4: docs\/guides at main/);
+  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/v0.6.4/docs/guides`), 'v0.6.4'));
+  assert.throws(() => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/v0.6.4/docs/guide`), 'v0.6.4'),
+    /directories that the onboarding manifest does not cover: docs\/guide$/);
+});
+
 test('every linked core file must be pinned or explicitly unpinned', () => {
   assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
-    `${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${CORE}/blob/main/${UNPINNED_CORE_PATHS[0]}`
+    `${CORE}/blob/v0.6.4/${REQUIRED_ASSET_PATHS[0]}\n${CORE}/blob/v0.6.4/${UNPINNED_CORE_PATHS[0]}`
   ), 'v0.6.4'));
   assert.throws(
     () => assertReferencesCovered(collectCoreReferences(`${CORE}/blob/v0.6.4/examples/notebooks/99_new.ipynb`), 'v0.6.4'),
@@ -390,7 +412,7 @@ for (const scenario of ['published', 'version bump', 'stale hash', 'invalid vers
       if (failed) {
         const expectedError = scenario === 'stale hash' ? /hash mismatch/ :
           scenario.includes('invalid version') ? /core.version/ :
-          scenario === 'uncovered tagged link' ? /does not cover/ : /Onboarding links must use/;
+          scenario === 'uncovered tagged link' ? /does not cover/ : /Core links must use/;
         assert.match(result.stderr, expectedError);
         if (scenario.includes('link') && scenario !== 'uncovered tagged link') {
           assert.ok(result.stderr.includes(' in src/page.md'), result.stderr);
