@@ -8,6 +8,8 @@ const root = process.cwd();
 for (const [name, mutate] of [
 ['missing mirror', async d => { await rm(path.join(d, 'src/content/docs/ko/ltm/overview.md')); }],
 ['unknown setting', async d => { const p=path.join(d,'src/content/docs/reference/configuration.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n| `MEMTOMEM_FAKE` | unknown | `false` |\n'); }],
+['stale Hermes commit pin', async d => { const sha=JSON.parse(await readFile(path.join(d,'src/data/docs-contract.json'),'utf8')).sourceSnapshots.coreMain; const p=path.join(d,'src/content/docs/ko/guides/connect-ai-client.md'); const before=await readFile(p,'utf8'); const after=before.replace('--ref '+sha,'--ref '+'0'.repeat(40)); assert.notEqual(after,before); await writeFile(p,after); }],
+['missing Hermes coexistence rule', async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); await writeFile(p,(await readFile(p,'utf8')).replaceAll('mcp_servers.memtomem-local','mcp_servers.other')); }],
 ['invalid JSON example', async d => { const p=path.join(d,'src/content/docs/ltm/overview.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n```json\n{"broken": }\n```\n'); }],
 ]) test('full checker rejects '+name, async () => {
 const dir=await mkdtemp(path.join(tmpdir(),'site-contract-'));

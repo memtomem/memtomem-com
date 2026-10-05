@@ -171,6 +171,7 @@
         "/memtomem:status",
         "codex plugin marketplace add memtomem/memtomem",
         "codex plugin add memtomem@memtomem",
+        "hermes plugins install memtomem --enable",
         "memtomem-server"
       ],
       "clients": [
@@ -182,6 +183,7 @@
         "Gemini CLI",
         "Kimi CLI",
         "OpenCode",
+        "Hermes Agent",
         "Antigravity"
       ],
       "coexistence": {
@@ -209,6 +211,18 @@
           "requiredTokens": [
             "mcp.memtomem",
             "mcp.\"memtomem-local\""
+          ]
+        },
+        "hermes": {
+          "heading": "Hermes Agent",
+          "requiredTokens": [
+            "0.21.5",
+            "hermes-agent[mcp]",
+            "--ref",
+            "mcp_servers:",
+            "mcp_servers.memtomem",
+            "mcp_servers.memtomem-local",
+            "hermes mcp list"
           ]
         }
       },
