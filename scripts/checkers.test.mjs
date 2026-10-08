@@ -5,15 +5,29 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 const root = process.cwd();
-for (const [name, mutate] of [
+const hermesInstall = pkg => `hermes plugins install "https://github.com/memtomem/memtomem#packages/${pkg}" --ref `;
+const mutateHermesRef = (file, pkg, replace) => async d => { const sha=JSON.parse(await readFile(path.join(d,'src/data/docs-contract.json'),'utf8')).sourceSnapshots.coreMain; const p=path.join(d,file); const before=await readFile(p,'utf8'); const after=before.replace(hermesInstall(pkg)+sha, replace(hermesInstall(pkg), sha)); assert.notEqual(after,before); await writeFile(p,after); };
+const hermesRefMutations = [];
+for (const [file, pkg] of [['src/content/docs/ko/guides/connect-ai-client.md','memtomem-hermes-plugin'],['src/content/docs/guides/connect-ai-client.md','memtomem-hermes-memory']]) {
+  for (const [kind, replace] of [
+    ['stale', (cmd) => cmd+'0'.repeat(40)],
+    ['removed', (cmd) => cmd.replace(/ --ref $/, '')],
+    ['shortened', (cmd, sha) => cmd+sha.slice(0, 12)],
+    ['tag', (cmd) => cmd+'v0.6.8'],
+  ]) hermesRefMutations.push([`${kind} Hermes ${pkg} commit pin`, mutateHermesRef(file, pkg, replace)]);
+}
+// Both install commands stay correct; only the every-ref rule can catch this.
+const extraHermesRef = form => async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); const before=await readFile(p,'utf8'); const after=before.replace('`hermes mcp list` shows only', 'Reinstall with '+form+'. `hermes mcp list` shows only'); assert.notEqual(after,before); await writeFile(p,after); };
+for (const [name, mutate, expected] of [
 ['missing mirror', async d => { await rm(path.join(d, 'src/content/docs/ko/ltm/overview.md')); }],
 ['unknown setting', async d => { const p=path.join(d,'src/content/docs/reference/configuration.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n| `MEMTOMEM_FAKE` | unknown | `false` |\n'); }],
-['stale Hermes commit pin', async d => { const sha=JSON.parse(await readFile(path.join(d,'src/data/docs-contract.json'),'utf8')).sourceSnapshots.coreMain; const p=path.join(d,'src/content/docs/ko/guides/connect-ai-client.md'); const before=await readFile(p,'utf8'); const after=before.replace('--ref '+sha,'--ref '+'0'.repeat(40)); assert.notEqual(after,before); await writeFile(p,after); }],
+...hermesRefMutations,
+...['`--ref 0000000000000000000000000000000000000000`', "--ref '0000000000000000000000000000000000000000'", '--ref "0000000000000000000000000000000000000000"', '--ref=0000000000000000000000000000000000000000', '(--ref 0000000000000000000000000000000000000000)'].map(form => [`extra stale Hermes ref ${form}`, extraHermesRef(form), /Hermes commit 0{40} is not the release commit/]),
 ['missing Hermes coexistence rule', async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); await writeFile(p,(await readFile(p,'utf8')).replaceAll('mcp_servers.memtomem-local','mcp_servers.other')); }],
 ['invalid JSON example', async d => { const p=path.join(d,'src/content/docs/ltm/overview.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n```json\n{"broken": }\n```\n'); }],
 ]) test('full checker rejects '+name, async () => {
 const dir=await mkdtemp(path.join(tmpdir(),'site-contract-'));
-try { await cp(path.join(root,'src'),path.join(dir,'src'),{recursive:true}); await cp(path.join(root,'astro.config.mjs'),path.join(dir,'astro.config.mjs')); await mutate(dir); const result=spawnSync(process.execPath,[path.join(root,'scripts/check-doc-contract.mjs')],{cwd:dir,encoding:'utf8'}); assert.equal(result.status,1,result.stdout+result.stderr); assert.match(result.stderr,/Documentation contract failed/); } finally { await rm(dir,{recursive:true,force:true}); }
+try { await cp(path.join(root,'src'),path.join(dir,'src'),{recursive:true}); await cp(path.join(root,'astro.config.mjs'),path.join(dir,'astro.config.mjs')); await mutate(dir); const result=spawnSync(process.execPath,[path.join(root,'scripts/check-doc-contract.mjs')],{cwd:dir,encoding:'utf8'}); assert.equal(result.status,1,result.stdout+result.stderr); assert.match(result.stderr,/Documentation contract failed/); if (expected) assert.match(result.stderr, expected); } finally { await rm(dir,{recursive:true,force:true}); }
 });
 for(const [name,href] of [['route','/absent/'],['fragment','#absent']]) test('built checker rejects missing '+name,async()=>{ const dir=await mkdtemp(path.join(tmpdir(),'site-links-')); try { await mkdir(path.join(dir,'dist')); await writeFile(path.join(dir,'dist/index.html'),'<html><a href="'+href+'">broken</a></html>'); const result=spawnSync(process.execPath,[path.join(root,'scripts/check-built-links.mjs')],{cwd:dir,encoding:'utf8'}); assert.equal(result.status,1); assert.match(result.stderr,new RegExp('missing '+name)); } finally { await rm(dir,{recursive:true,force:true}); } });
 const builtCdn = async files => { const dir=await mkdtemp(path.join(tmpdir(),'site-cdn-')); try { for (const [file, body] of Object.entries(files)) { await mkdir(path.dirname(path.join(dir,'dist',file)),{recursive:true}); await writeFile(path.join(dir,'dist',file),body); } return spawnSync(process.execPath,[path.join(root,'scripts/check-built-cdn.mjs')],{cwd:dir,encoding:'utf8'}); } finally { await rm(dir,{recursive:true,force:true}); } };

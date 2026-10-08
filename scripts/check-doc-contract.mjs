@@ -218,10 +218,25 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
     `OpenCode plugin version ${contract.opencode.version}`
   );
 
-  // The Hermes plugin is pinned to the reviewed Core release: a commit SHA for
-  // the Git install and the exact server requirement it launches.
+  // The Hermes plugin and memory provider are pinned to the reviewed Core
+  // release: a commit SHA for each Git install and the exact server
+  // requirement the plugin launches. Each install command is checked whole,
+  // so one correct pin cannot cover for the other, and any other full commit
+  // SHA in the section, however it is quoted, must be the same commit.
   const hermesSection = markdownSection(text, contract.guides.clientGuide.coexistence.hermes.heading, 2);
-  assertSectionContains(file, hermesSection, `--ref ${contract.sourceSnapshots.coreMain}`, 'Hermes release commit pin');
+  for (const [pkg, suffix] of [['memtomem-hermes-plugin', ' --enable'], ['memtomem-hermes-memory', '']]) {
+    assertSectionContains(
+      file,
+      hermesSection,
+      `hermes plugins install "https://github.com/memtomem/memtomem#packages/${pkg}" --ref ${contract.sourceSnapshots.coreMain}${suffix}\n`,
+      `Hermes ${pkg} release commit pin`
+    );
+  }
+  for (const [sha] of (hermesSection ?? '').matchAll(/(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])/gi)) {
+    if (sha !== contract.sourceSnapshots.coreMain) {
+      errors.push(`${relative(file)}: Hermes commit ${sha} is not the release commit ${contract.sourceSnapshots.coreMain}`);
+    }
+  }
   assertSectionContains(
     file,
     hermesSection,

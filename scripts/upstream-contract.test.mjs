@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { validateUpstream, staleVersionPattern } from './upstream-contract.mjs';
+import { validateUpstream, staleVersionPattern, STALE_VERSIONS } from './upstream-contract.mjs';
 const snapshot = JSON.parse(await readFile('src/data/upstream-snapshot.json', 'utf8'));
 const contract = JSON.parse(await readFile('src/data/docs-contract.json', 'utf8'));
 const sources = {};
@@ -9,6 +9,7 @@ async function walk(dir) { for (const entry of await readdir(dir, { withFileType
 await walk('src/content/docs');
 const config = 'src/content/docs/reference/configuration.md';
 test('pinned website passes', () => assert.deepEqual(validateUpstream(snapshot, contract, sources), []));
+test('no current release is listed as stale', () => { for (const version of [contract.core.version, contract.stm.version, contract.claudePlugin.version, contract.opencode.version]) assert.ok(!STALE_VERSIONS.includes(version), version + ' is current but listed in STALE_VERSIONS'); });
 for (const [name, mutate] of [
 ['same-count tool replacement', (s, c) => { c.core.toolNames[0] = 'mem_fake'; }],
 ['wrong source revision', (s, c) => { c.sourceSnapshots.coreMain = 'bad'; }],

@@ -21,6 +21,7 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 - **저장소** — 기본 저장소는 로컬 SQLite(`~/.memtomem/`)입니다. MCP `stdio` 연결은 네트워크 포트를 열지 않습니다. `mm web`도 기본적으로 내 컴퓨터에서만 접속할 수 있는 루프백 주소에 연결됩니다.
 - **임베딩** — 키워드 전용 모드는 임베딩 서비스가 필요 없습니다. 내장 ONNX(fastembed)는 로컬에서 실행되며 Ollama와 OpenAI 호환 제공자는 선택적으로 설정하는 경계입니다.
 - **재정렬(Reranking)** — 재정렬을 켜면 기본 제공자는 로컬 ONNX(fastembed)이며, 외부 API가 필요 없습니다.
+- **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 telemetry를 전송합니다. memtomem 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 꺼진 상태로 실행됩니다. 환경에 이미 값이 있으면 그 값을 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정합니다. memtomem 0.6.8을 고정한 Claude Code, Codex, OpenCode 플러그인과 [0.6.8 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit을 고정한 동안 카탈로그로 설치한 Hermes 플러그인은 telemetry가 켜진 상태로 실행됩니다. 이 경우 0.6.8 commit으로 다시 설치합니다. 다만 memtomem보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
 - **STM 프록시** — 기본 연결 방식은 `stdio`입니다. 응답 캐시·측정값·피드백은 `~/.memtomem/` 아래의 로컬 SQLite 파일에 저장됩니다. 연결한 MCP 서버나 원격 LTM을 사용할 때는 해당 서버와 통신합니다.
 - **계정 불필요** — 로그인이나 가입 없이 동작합니다.
 - **선택적 외부 연결** — OpenAI 호환 임베딩, Cohere 리랭킹, 외부 주소의 Ollama, 압축·추출용 외부 LLM, 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse는 설정한 주소로 데이터를 보낼 수 있습니다. STM의 `privacy_scan_enabled`는 기본적으로 자격 증명을 검사합니다. 민감 정보가 발견되면 외부 LLM으로 보내지 않고 로컬에서 처리합니다. 이 검사를 끄면 연결한 MCP 서버의 응답이 검사 없이 외부 서비스로 전송될 수 있으며, 시작할 때 경고가 표시됩니다.
