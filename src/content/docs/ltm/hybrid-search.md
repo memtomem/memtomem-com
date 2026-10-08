@@ -21,6 +21,8 @@ With an embedding provider enabled, BM25 and vector retrieval run in parallel, f
 | **Vector search** | sqlite-vec + ONNX/Ollama/OpenAI embeddings | Semantic similarity. Can match "how to deploy" → "deployment checklist" |
 | **RRF fusion** | Reciprocal Rank Fusion | Combines rankings from both engines into a final score |
 
+If vector retrieval raises an error (for example, the embedding server is unreachable), the remaining results are still returned, and when there are any they carry the notice `semantic search failed for this query — results may be incomplete`. It appears at the end of `mem_search`'s compact output, in the structured `hints` array, on `mm search`'s stderr and in `mem_ask`'s grounded prompt. It does not mean the results are keyword-only: the session-summary rescue search can still contribute vector hits. When vector retrieval is skipped because of an embedding mismatch, a separate notice that names the fix appears instead, and an empty result set is reported as before.
+
 ## Reranker Pool Tuning
 
 When reranking is enabled, the reranker sees a candidate pool of size `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. The defaults (oversample `2.0`, min_pool `20`, max_pool `200`) give the classic 2× oversample at `top_k=10` and scale up with larger `top_k` requests. Tune with:
@@ -62,6 +64,8 @@ This minimizes indexing cost even for large document sets.
 Searches can be scoped by namespace. Folder-based derivation is disabled by default (`namespace.enable_auto_ns=false`); use an explicit namespace, a path rule, or opt into auto derivation. Per-agent namespaces stay out of unscoped search by default. See [Multi-Agent](/ltm/multi-agent/) for details.
 
 Structured search responses identify the active `score_scale` (`rrf`, `bm25`, `dense`, `none`, or `rerank`). Do not compare one fixed threshold across different scales; clients such as STM use this metadata to gate or suspend scale-specific filtering.
+
+`mem_search`'s structured response always carries a top-level `recorded` key, empty responses included: `true` in the default recording mode and `false` under `record=false`. It reports which mode applied, not that a write happened. Compact and verbose output are unchanged, and servers before 0.6.8 omit the key.
 
 Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/reference/configuration/).
 

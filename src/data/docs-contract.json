@@ -1,6 +1,6 @@
 {
   "core": {
-    "version": "0.6.7",
+    "version": "0.6.8",
     "python": ">=3.12",
     "tools": {
       "core": 9,
@@ -121,16 +121,16 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.9",
-    "bundledCore": "0.6.7",
-    "requirement": "memtomem[onnx]==0.6.7"
+    "version": "0.5.14",
+    "bundledCore": "0.6.8",
+    "requirement": "memtomem[onnx]==0.6.8"
   },
   "opencode": {
-    "version": "0.3.9",
-    "bundledCore": "0.6.7"
+    "version": "0.3.11",
+    "bundledCore": "0.6.8"
   },
   "sourceSnapshots": {
-    "coreMain": "5b7034126574a2956b6a328622006a46b2a0e367",
+    "coreMain": "592865456cf7670311648fbc619bbb876d002a1e",
     "stmMain": "24556ab65dc71e602abe239f5bc5fca11a4acdf7"
   },
   "configuration": {
@@ -585,5 +585,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-10-05"
+  "reviewedOn": "2026-10-09"
 }

@@ -149,9 +149,11 @@ test('onboarding links must use the contract release, including mixed refs', () 
       assert.throws(() => assertReferencesCovered(links, 'v0.6.4'), /Core links must use v0\.6\.4/);
     }
   }
-  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
-    `${CORE}/blob/v0.6.4/${UNPINNED_CORE_PATHS[0]}`
-  ), 'v0.6.4'));
+  for (const unpinned of UNPINNED_CORE_PATHS) {
+    assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+      `${CORE}/blob/v0.6.4/${unpinned}`
+    ), 'v0.6.4'));
+  }
 });
 
 test('fully qualified release tag refs resolve to the asset path and pass', () => {
@@ -218,18 +220,20 @@ test('source scan records repository-relative files for each occurrence', async 
 });
 
 test('unpinned prose links must name the release tag too', () => {
-  for (const ref of ['main', 'refs/heads/main', 'refs/heads/v0.6.4', 'v0.6.3']) {
-    assert.throws(() => assertReferencesCovered(collectCoreReferences(
-      `${CORE}/blob/${ref}/${UNPINNED_CORE_PATHS[0]}`, 'src/content/docs/reference/configuration.md'
-    ), 'v0.6.4'), error => {
-      assert.ok(error.message.includes('Core links must use v0.6.4: ' + UNPINNED_CORE_PATHS[0] + ' at ' + ref +
-        ' in src/content/docs/reference/configuration.md'), error.message);
-      return true;
-    });
+  for (const unpinned of UNPINNED_CORE_PATHS) {
+    for (const ref of ['main', 'refs/heads/main', 'refs/heads/v0.6.4', 'v0.6.3']) {
+      assert.throws(() => assertReferencesCovered(collectCoreReferences(
+        `${CORE}/blob/${ref}/${unpinned}`, 'src/content/docs/reference/configuration.md'
+      ), 'v0.6.4'), error => {
+        assert.ok(error.message.includes('Core links must use v0.6.4: ' + unpinned + ' at ' + ref +
+          ' in src/content/docs/reference/configuration.md'), error.message);
+        return true;
+      });
+    }
+    assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
+      `${CORE}/blob/refs/tags/v0.6.4/${unpinned}`
+    ), 'v0.6.4'));
   }
-  assert.doesNotThrow(() => assertReferencesCovered(collectCoreReferences(
-    `${CORE}/blob/refs/tags/v0.6.4/${UNPINNED_CORE_PATHS[0]}`
-  ), 'v0.6.4'));
   // A directory that holds only unpinned prose follows the same rule.
   assert.throws(() => assertReferencesCovered(collectCoreReferences(`${CORE}/tree/main/docs/guides`), 'v0.6.4'),
     /Core links must use v0\.6\.4: docs\/guides at main/);

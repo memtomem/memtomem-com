@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.6.7 and `memtomem-stm` 0.6.1 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
+This public reference tracks the complete `memtomem` 0.6.8 and `memtomem-stm` 0.6.1 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -327,7 +327,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.7/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.8/docs/guides/configuration.md) in the upstream repo.
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
