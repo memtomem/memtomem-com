@@ -316,7 +316,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_WIKI_PATH` | Override the wiki store location | `~/.memtomem-wiki` |
-| `MEMTOMEM_FASTEMBED_CACHE` | Override the ONNX / FastEmbed model cache | platform cache directory |
+| `MEMTOMEM_FASTEMBED_CACHE` | Override the ONNX / FastEmbed model cache (checked before `FASTEMBED_CACHE_PATH`) | `~/.memtomem/cache/fastembed` |
 | `MEMTOMEM_INDEX_DEBOUNCE_QUEUE` | Override the file-watcher debounce queue file | state directory |
 
 ### Embedding provider comparison
