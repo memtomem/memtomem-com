@@ -3,7 +3,7 @@ title: 로컬 우선 · 정보 보호
 description: memtomem의 로컬 우선 기본값, 비밀값 보호, 선택적 네트워크 경계를 설명합니다.
 ---
 
-memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인덱스는 내 컴퓨터에 둡니다. 원격 임베딩·LLM·리랭커, 원격 MCP/LTM 연결, 웹훅, Toolgraph 서버, Langfuse 추적을 직접 설정했을 때만 해당 외부 서비스와 통신합니다.
+memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인덱스는 내 컴퓨터에 둡니다. 기억 내용은 원격 임베딩·LLM·리랭커, 원격 MCP/LTM 연결, 웹훅, Toolgraph 서버, Langfuse 추적을 직접 설정했을 때만 해당 외부 서비스로 전송됩니다. 이와 별도로, 로컬 ONNX 모델은 네트워크에서 모델 파일을 내려받습니다([모델 다운로드](#모델-다운로드) 참고).
 
 ## 30초 경계 확인
 
@@ -14,12 +14,20 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 | 원격 Ollama, OpenAI 호환 임베딩·LLM, Cohere 리랭킹 | 직접 설정할 때만 사용 | 설정한 주소로 전송될 수 있음 |
 | 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse | 직접 설정할 때만 사용 | 해당 연동 설정에 따라 전송될 수 있음 |
 
-모든 처리를 로컬에 두려면 Minimal 또는 로컬 ONNX 경로를 사용하고, Web UI와 데몬은 루프백에 유지하며, 선택형 원격 제공자를 설정하지 마세요.
+### 모델 다운로드
+
+로컬 ONNX 임베딩과 리랭킹은 실행 자체는 내 컴퓨터에서 하지만, 모델 파일은 네트워크에서 받아 옵니다. 모델이 필요한데 캐시에 해당 모델의 Hugging Face snapshot이 없으면 Hugging Face Hub에서 모델 파일을 내려받습니다. 이 다운로드가 실패하면 fastembed는 자체 다운로드 주소를 대신 사용할 수 있습니다. 이 대체 경로로만 캐시된 모델에는 Hugging Face snapshot이 없으므로, 온라인 상태에서는 불러올 때마다 Hub에서 다시 내려받고 그 다운로드가 실패할 때만 대체 사본을 사용합니다. 예외적으로 `embedding.onnx_variant`가 `fp32`가 아닌 임베딩 모델은 내려받지 않고 `embedding.onnx_artifact_path`에 직접 내보낸(export) 로컬 artifact를 불러옵니다. 리랭커 모델은 이 예외에 해당하지 않으며 위 규칙을 따릅니다. 이때 받아 오는 것은 모델 가중치이며, 기억 내용은 전송되지 않습니다. memtomem은 이 다운로드 동안 huggingface_hub의 telemetry를 끕니다.
+
+- fastembed 모델은 `~/.memtomem/cache/fastembed/`에 저장됩니다. `MEMTOMEM_FASTEMBED_CACHE`(우선) 또는 `FASTEMBED_CACHE_PATH`로 위치를 바꿀 수 있습니다. `rerank.provider=local`(sentence-transformers)은 Hugging Face의 기본 캐시를 사용합니다.
+- 네트워크에 연결된 상태에서 `mm warmup`을 실행하면 설정된 로컬 모델을 미리 내려받아 불러옵니다.
+- 키워드 전용 모드(`embedding.provider=none`, Minimal 프리셋)는 임베딩 모델을 내려받지 않습니다.
+
+모든 처리를 로컬에 두려면 Minimal 또는 로컬 ONNX 경로를 사용하고(로컬 ONNX는 모델 파일을 내려받습니다. [모델 다운로드](#모델-다운로드) 참고), Web UI와 데몬은 루프백에 유지하며, 선택형 원격 제공자를 설정하지 마세요.
 
 ## 로컬 우선 기본값
 
 - **저장소** — 기본 저장소는 로컬 SQLite(`~/.memtomem/`)입니다. MCP `stdio` 연결은 네트워크 포트를 열지 않습니다. `mm web`도 기본적으로 내 컴퓨터에서만 접속할 수 있는 루프백 주소에 연결됩니다.
-- **임베딩** — 키워드 전용 모드는 임베딩 서비스가 필요 없습니다. 내장 ONNX(fastembed)는 로컬에서 실행되며 Ollama와 OpenAI 호환 제공자는 선택적으로 설정하는 경계입니다.
+- **임베딩** — 키워드 전용 모드는 임베딩 서비스가 필요 없습니다. 내장 ONNX(fastembed)는 추론을 로컬에서 실행하고, 모델 파일은 [모델 다운로드](#모델-다운로드)에서 설명한 방식으로 내려받으며, Ollama와 OpenAI 호환 제공자는 선택적으로 설정하는 경계입니다.
 - **재정렬(Reranking)** — 재정렬을 켜면 기본 제공자는 로컬 ONNX(fastembed)이며, 외부 API가 필요 없습니다.
 - **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 telemetry를 전송합니다. memtomem 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 꺼진 상태로 실행됩니다. 환경에 이미 값이 있으면 그 값을 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정합니다. memtomem 0.6.8을 고정한 Claude Code, Codex, OpenCode 플러그인과 [0.6.8 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit을 고정한 동안 카탈로그로 설치한 Hermes 플러그인은 telemetry가 켜진 상태로 실행됩니다. 이 경우 0.6.8 commit으로 다시 설치합니다. 다만 memtomem보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
 - **STM 프록시** — 기본 연결 방식은 `stdio`입니다. 응답 캐시·측정값·피드백은 `~/.memtomem/` 아래의 로컬 SQLite 파일에 저장됩니다. 연결한 MCP 서버나 원격 LTM을 사용할 때는 해당 서버와 통신합니다.

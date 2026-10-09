@@ -3,7 +3,7 @@ title: Local-First & Privacy
 description: How memtomem keeps local-first defaults, protects secrets, and makes optional network boundaries explicit.
 ---
 
-memtomem is local-first: its default stores and search indexes live on your machine. Network communication occurs only across boundaries you configure, such as a remote embedding/LLM/rerank provider, remote MCP/LTM transport, webhook, Toolgraph server, or Langfuse tracing.
+memtomem is local-first: its default stores and search indexes live on your machine. Memory content is sent only across boundaries you configure, such as a remote embedding/LLM/rerank provider, remote MCP/LTM transport, webhook, Toolgraph server, or Langfuse tracing. Separately, local ONNX models download their model files over the network (see [Model Downloads](#model-downloads)).
 
 ## 30-Second Boundary Check
 
@@ -14,12 +14,20 @@ memtomem is local-first: its default stores and search indexes live on your mach
 | Remote Ollama, OpenAI-compatible embedding/LLM, Cohere reranking | opt-in | Yes, to the configured endpoint |
 | Remote MCP/LTM, webhooks, Toolgraph, Langfuse | opt-in | Yes, according to that integration's configuration |
 
-For an all-local setup, use the Minimal or local ONNX path, keep Web UI and daemons on loopback, and do not configure optional remote providers.
+### Model Downloads
+
+Local ONNX embedding and reranking run on your machine, but their model files come from the network. When a model is needed and its Hugging Face snapshot is not in the cache, the files are downloaded from the Hugging Face Hub. If that download fails, fastembed can fall back to its own download URL. A model cached only through that fallback has no Hugging Face snapshot, so while online each load downloads from the Hub again and uses the fallback copy only if that fails. The exception is an embedding model with a non-`fp32` `embedding.onnx_variant`: it loads the locally exported artifact in `embedding.onnx_artifact_path` instead of downloading. Reranker models are unaffected and follow the rule above. What is fetched is model weights; no memory content is sent. memtomem turns huggingface_hub telemetry off for these downloads.
+
+- fastembed models are cached in `~/.memtomem/cache/fastembed/`. Move the cache with `MEMTOMEM_FASTEMBED_CACHE` (checked first) or `FASTEMBED_CACHE_PATH`. `rerank.provider=local` (sentence-transformers) uses the default Hugging Face cache instead.
+- While online, `mm warmup` downloads and loads the configured local models ahead of time.
+- Keyword-only mode (`embedding.provider=none`, the Minimal preset) downloads no embedding model.
+
+For an all-local setup, use the Minimal path or the local ONNX path (which downloads model files; see [Model Downloads](#model-downloads)), keep Web UI and daemons on loopback, and do not configure optional remote providers.
 
 ## Local-First Defaults
 
 - **Storage** — The default store is local SQLite (`~/.memtomem/`). The MCP stdio path exposes no network port; `mm web` binds to loopback by default.
-- **Embeddings** — Keyword-only mode needs no embedding service. The built-in ONNX (fastembed) provider runs locally; Ollama and OpenAI-compatible providers are optional configured boundaries.
+- **Embeddings** — Keyword-only mode needs no embedding service. The built-in ONNX (fastembed) provider runs inference locally and downloads its model files as described in [Model Downloads](#model-downloads); Ollama and OpenAI-compatible providers are optional configured boundaries.
 - **Reranking** — When you enable reranking, the default provider is local ONNX (fastembed) — no external API required.
 - **ONNX Runtime telemetry** — Official ONNX Runtime builds from 1.29 upload telemetry to Microsoft on Linux and macOS by default. From memtomem 0.6.8, importing the package sets `ORT_DISABLE_TELEMETRY=1`, so the server, the `mm` CLI and the web UI all run with it off. A value already in the environment is left alone; set `ORT_DISABLE_TELEMETRY=0` yourself to allow the upload. The Claude Code, Codex and OpenCode plugins pinned to memtomem 0.6.8, and the [Hermes plugin installed at the 0.6.8 commit](/guides/connect-ai-client/#hermes-agent), also pass the same value in the server's launch environment. A server older than 0.6.8 does not set it, so a Hermes plugin installed from the catalog while the catalog pins an earlier commit runs with telemetry on; reinstall it at the 0.6.8 commit. It does not cover a program that initializes `onnxruntime` before importing memtomem. On Windows, ONNX Runtime does not read this variable and emits ETW events, which Windows records only while a trace session is collecting.
 - **STM proxy** — The default client transport is stdio. Persisted response cache, metrics, and feedback are local SQLite files under `~/.memtomem/`; configured upstream MCP servers and remote LTM transports retain their own network boundaries.

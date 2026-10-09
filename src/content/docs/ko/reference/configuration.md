@@ -362,7 +362,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_WIKI_PATH` | 위키 저장소 위치 재정의 | `~/.memtomem-wiki` |
-| `MEMTOMEM_FASTEMBED_CACHE` | ONNX / FastEmbed 모델 캐시 재정의 | 플랫폼 캐시 디렉터리 |
+| `MEMTOMEM_FASTEMBED_CACHE` | ONNX / FastEmbed 모델 캐시 재정의(`FASTEMBED_CACHE_PATH`보다 우선) | `~/.memtomem/cache/fastembed` |
 | `MEMTOMEM_INDEX_DEBOUNCE_QUEUE` | 짧은 시간에 연속으로 생긴 파일 변경을 모아 두는 큐 파일 경로 재정의 | 상태 디렉터리 |
 
 <a id="임베딩-프로바이더-비교"></a>
