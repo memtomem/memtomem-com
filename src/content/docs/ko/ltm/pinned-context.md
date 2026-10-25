@@ -41,11 +41,3 @@ mm review show CANDIDATE_ID
 mm review approve CANDIDATE_ID --reviewer "$USER"
 mm review recover --stale-after-minutes 15 --actor "$USER"
 ```
-
-## LangGraph 어댑터
-
-`MemtomemBaseStore`는 LangGraph의 tuple-namespace JSON Store를 구현합니다.
-`MemtomemStore`는 검색·쓰기·세션·작업 기억을 다루는 상위 비동기
-어댑터입니다. `config_overrides`는 주변 환경의 기본 설정보다 우선합니다.
-그래프마다 DB를 분리하고 테스트 데이터가 사용자 기본 저장소에 저장되지
-않도록 할 수 있습니다.

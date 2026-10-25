@@ -13,17 +13,9 @@ memtomem은 **세션이나 AI 도구가 바뀌어도 남는 기억**을 제공�
 - **AI 도구가 노트·문서를 검색하도록 하고 싶을 때** — Markdown이나 구조화 파일이 있는 폴더를 `mm index ~/notes`로 색인하면 MCP를 지원하는 AI 도구에서 검색할 수 있습니다.
 - **여러 AI 도구가 같은 지식을 공유해야 할 때** — Claude Code, Cursor, Codex CLI 등이 기억 저장소 하나를 함께 사용할 수 있습니다.
 
-## 저장·검색으로 먼저 확인
+## 시작하기
 
-```bash
-uv tool install 'memtomem[all]'
-mm init --preset minimal --non-interactive --mcp skip
-mm status
-mm add "전환 전에 릴리스 smoke test를 실행한다" --tags release,decision
-mm search "릴리스 smoke test"
-```
-
-클라이언트를 연결하기 전에 저장과 검색이 동작하는지 확인하는 흐름입니다. 아직 진행하지 않았다면 [빠른 시작](/ko/guides/quickstart/)과 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 먼저 완료하세요. 클라이언트를 연결했다면 [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)으로 이어가세요.
+설치와 저장·검색 확인은 [빠른 시작](/ko/guides/quickstart/)에서, 클라이언트 등록은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 진행합니다. 클라이언트를 연결했다면 [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)으로 이어가세요.
 
 ## 핵심 개념
 

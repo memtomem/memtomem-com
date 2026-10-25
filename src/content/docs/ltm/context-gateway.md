@@ -119,6 +119,18 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 
 The `mem_context_artifact_transfer` MCP action performs the same operation headlessly.
 
+## Carry an Artifact to Another Machine
+
+`mm context export` packs one canonical artifact into a portable bundle — a single JSON file with no absolute paths and no hostnames — and `mm context import` lands a bundle in a canonical store. Use this pair to hand an artifact to a colleague; when the files are already on this machine, use `mm context pull` or `mm context init` instead.
+
+```bash
+mm context export skills deploy-check --out deploy-check.json
+mm context import deploy-check.json --to user            # preview (the default)
+mm context import deploy-check.json --to user --apply    # write
+```
+
+A bundle is foreign by definition, so every entry is scanned on the way in no matter which tier it lands in, and `--to` is required: a foreign file must not choose where it lands. Export refuses on a secret from every source tier and has no force flag, because a file you have handed over is as unretractable as a pushed commit. On import, `--force-unsafe-import` accepts a secret-shaped value into `user` or `project_local` after review; a `project_shared` landing refuses a secret-shaped value in every case, with or without that flag.
+
 ## Manage Multiple Projects
 
 Register several projects to bulk-sync shared artifacts, or check drift across all of them at once. All multi-project operations target the `project_shared` tier:
@@ -136,7 +148,7 @@ mm context sync --all-projects
 mm context status --all-projects
 ```
 
-Paused projects and projects not enrolled for sync are skipped. In the web UI, opting a project into sync is shown as **Activate** ("Project activated for sync").
+Paused projects and projects not enrolled for sync are skipped. One project's failure does not abort the batch. In the web UI, opting a project into sync is shown as **Activate** ("Project activated for sync").
 
 ## MCP Server Definitions
 

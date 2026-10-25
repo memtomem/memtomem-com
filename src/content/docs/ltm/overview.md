@@ -13,17 +13,9 @@ memtomem gives your AI agent **memory that persists across sessions and across a
 - **You want notes or docs to be searchable by your agent** — point `mm index ~/notes` at a folder of Markdown / structured files and every MCP-connected agent can query it.
 - **Multiple agents need to share the same knowledge** — Claude Code, Cursor, Codex CLI, and any other MCP client share one memory store.
 
-## Start with a Verified Round Trip
+## Get Started
 
-```bash
-uv tool install 'memtomem[all]'
-mm init --preset minimal --non-interactive --mcp skip
-mm status
-mm add "Release smoke tests run before cutover" --tags release,decision
-mm search "release smoke tests"
-```
-
-This proves storage and search before a client is involved. If you have not done so yet, complete [Quick Start](/guides/quickstart/) and [Connect an AI Client](/guides/connect-ai-client/); once a client is connected, continue with [Memory Across Sessions](/ltm/memory-persistence/).
+Install memtomem and verify storage and search in [Quick Start](/guides/quickstart/), then register a client in [Connect an AI Client](/guides/connect-ai-client/). Once a client is connected, continue with [Memory Across Sessions](/ltm/memory-persistence/).
 
 ## Core Concepts
 

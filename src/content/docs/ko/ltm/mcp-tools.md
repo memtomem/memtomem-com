@@ -89,37 +89,10 @@ Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 
 ## OpenCode
 
-공개된 `opencode-memtomem@0.3.15` 플러그인에는 Core 0.6.12가 포함되어 있습니다.
-OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없습니다:
+OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록하는 방법과, 둘을 함께 설정했을 때 어느 서버가 실행되는지는 [OpenCode 연결 안내](/ko/guides/connect-ai-client/#opencode)에서 다룹니다. 도구 노출과 관련해서는 다음 두 가지를 확인하세요.
 
-```json
-{"plugin": ["opencode-memtomem@0.3.15"]}
-```
-
-플러그인의 슬래시 명령과 스킬 없이 MCP 도구만 사용하려면
-`opencode.json`에 로컬 서버를 설정합니다.
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "memtomem": {
-      "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.6.12", "memtomem-server"],
-      "enabled": true,
-      "timeout": 60000,
-      "environment": {"MEMTOMEM_TOOL_MODE": "core"}
-    }
-  }
-}
-```
-
-기존 수동 `mcp.memtomem` 항목은 플러그인의 기본 서버보다 우선하므로 서버
-하나만 실행합니다. 수동 서버를 쓰려면 이 키를 정확히 유지하고, 플러그인
-서버를 쓰려면 수동 항목을 제거하세요. `mcp."memtomem-local"`처럼 다른 키는
-중복 제거되지 않아 서버 두 개가 실행됩니다. 가능한 구성은
-[OpenCode 연결 안내](/ko/guides/connect-ai-client/#opencode)에서 모두 확인할
-수 있습니다.
+- 공개 플러그인은 서버를 `core` 모드로 실행합니다.
+- 수동 서버의 도구 모드는 `opencode.json`의 `mcp` 아래 서버 항목에서 `environment` 키에 `MEMTOMEM_TOOL_MODE`로 지정합니다. OpenCode는 `env` 대신 `environment` 키를 사용합니다.
 
 ## 자주 쓰는 액션
 

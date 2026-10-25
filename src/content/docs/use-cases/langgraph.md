@@ -41,9 +41,11 @@ Each notebook should print six `PASS` markers. Notebook 06 additionally prints `
 
 ## Do not confuse the two adapters
 
-`MemtomemBaseStore` implements LangGraph's standard Store interface and uses inspectable JSON files. Its no-embedding search uses lexical overlap, not Core's BM25/RRF pipeline. It does not support TTL.
+`MemtomemBaseStore` implements LangGraph's standard Store interface, with tuple namespaces stored in inspectable JSON files. Its no-embedding search uses lexical overlap, not Core's BM25/RRF pipeline. It does not support TTL.
 
-`MemtomemStore` exposes Core's Markdown write/index/search operations and is used explicitly inside nodes, not passed as `compile(store=...)`. Notebook 06 uses keyword-only search. The two examples do not automatically share a database with each other or with a coding client.
+`MemtomemStore` is an async adapter that exposes Core's Markdown write/index/search operations, sessions, and working memory, and is used explicitly inside nodes, not passed as `compile(store=...)`. Notebook 06 uses keyword-only search. The two examples do not automatically share a database with each other or with a coding client.
+
+`MemtomemStore`'s `config_overrides` apply after ambient config. Use them to point a graph at its own database so test writes do not land in the user's default store. An unknown section or key raises an error on the first call instead of falling back to the default store.
 
 `InMemorySaver` is an in-process teaching checkpointer, not durable checkpoint recovery. Namespace selection is not an authentication or authorization system.
 

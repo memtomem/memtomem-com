@@ -41,9 +41,11 @@ Windows에서는 `.venv/bin/python` 대신 `.venv/Scripts/python.exe`를 사용�
 
 ## 두 어댑터를 구분하세요
 
-`MemtomemBaseStore`는 LangGraph 표준 Store 인터페이스이며 검사 가능한 JSON 파일을 사용합니다. 임베딩이 없을 때 어휘 겹침으로 검색하며 Core의 BM25/RRF 파이프라인과 다릅니다. TTL은 지원하지 않습니다.
+`MemtomemBaseStore`는 LangGraph 표준 Store 인터페이스를 구현하며, tuple 형태의 namespace를 검사 가능한 JSON 파일에 저장합니다. 임베딩이 없을 때 어휘 겹침으로 검색하며 Core의 BM25/RRF 파이프라인과 다릅니다. TTL은 지원하지 않습니다.
 
-`MemtomemStore`는 Core의 Markdown 작성·색인·검색을 노드에서 명시적으로 호출하는 어댑터입니다. `compile(store=...)`에 전달하지 않습니다. 06에서는 키워드 검색만 사용합니다. 두 예제 간에, 또는 코딩 클라이언트와 DB를 자동으로 공유하는 구성은 아닙니다.
+`MemtomemStore`는 Core의 Markdown 작성·색인·검색과 세션·작업 기억을 노드에서 명시적으로 호출하는 비동기 어댑터입니다. `compile(store=...)`에 전달하지 않습니다. 06에서는 키워드 검색만 사용합니다. 두 예제 간에, 또는 코딩 클라이언트와 DB를 자동으로 공유하는 구성은 아닙니다.
+
+`MemtomemStore`의 `config_overrides`는 주변 환경의 설정을 읽은 뒤에 적용됩니다. 그래프 전용 DB를 명시적으로 지정해 테스트 데이터가 사용자 기본 저장소에 저장되지 않도록 할 수 있습니다. 알 수 없는 섹션이나 키를 지정하면 기본 저장소로 넘어가지 않고 첫 호출에서 오류가 발생합니다.
 
 `InMemorySaver`는 프로세스 안의 학습용 checkpointer이며 영속 체크포인트 복구를 보장하지 않습니다. namespace 선택도 인증·인가 시스템이 아닙니다.
 

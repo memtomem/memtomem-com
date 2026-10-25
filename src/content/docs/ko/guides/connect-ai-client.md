@@ -147,7 +147,7 @@ mm init --mcp kimi
 
 ## OpenCode
 
-공개 플러그인은 고정 버전 MCP 서버와 명령·스킬을 함께 제공합니다. `opencode.json`에 추가하세요.
+공개된 `opencode-memtomem@0.3.15` 플러그인에는 Core 0.6.12가 포함되어 있으며, 고정 버전 MCP 서버와 명령·스킬을 함께 제공합니다. OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없으므로 `opencode.json`에 직접 추가하세요.
 
 ```json
 {
