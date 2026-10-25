@@ -1,8 +1,6 @@
 ---
 title: Memory Persistence Across Sessions
 description: Store a memory in one session and recall it in the next — the core memtomem flow, in under 5 minutes.
-sidebar:
-  order: 2
 ---
 
 AI agents start new sessions without the full prior transcript. With memtomem connected, content explicitly written through its tools is **persisted to disk** and can be retrieved by later sessions and agents connected to the same store and namespace. This tutorial walks through that flow end-to-end.

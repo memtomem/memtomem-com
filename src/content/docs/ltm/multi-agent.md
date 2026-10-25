@@ -123,7 +123,7 @@ mm agent share CHUNK_ID --target shared
 
 ## Difference from Built-In Memory Import
 
-`mm ingest claude-memory`, `mm ingest codex-memory`, and `mm ingest gemini-memory` load external files into fixed source namespaces. They do not assign an `agent_id` or start a session. See [Index and Import Existing Content](/guides/index-and-import/).
+`mm ingest claude-memory`, `mm ingest codex-memory`, and `mm ingest gemini-memory` load external files into fixed source namespaces. They do not assign an `agent_id` or start a session. See [Index and Import Existing Content](/ltm/index-and-import/).
 
 ## Interaction Patterns
 
@@ -144,7 +144,7 @@ Use the Web UI or CLI search to inspect shared decisions, their sources, and the
 
 ## Next
 
-- [Memory Across Sessions](/guides/memory-persistence/)
-- [Index and Import Existing Content](/guides/index-and-import/)
+- [Memory Across Sessions](/ltm/memory-persistence/)
+- [Index and Import Existing Content](/ltm/index-and-import/)
 - [Context Gateway](/ltm/context-gateway/)
 - [LTM MCP Tools](/ltm/mcp-tools/)

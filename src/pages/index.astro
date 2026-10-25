@@ -144,26 +144,32 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<a class="feature-card accent" href={`${base}/ltm/hybrid-search/`}>
 				<h3>Searchable Long-Term Memory</h3>
 				<p>Index your notes, docs, and code with <code>mm index</code>, then search by keyword with the minimal preset. Enable embeddings for hybrid search — BM25 keyword and dense-vector semantic search fused via RRF, so exact identifiers and meaning-based queries both land. Markdown, code, and structured files are chunked by structure, and re-indexing only re-embeds the chunks that changed.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card teal" href={`${base}/ltm/multi-agent/`}>
 				<h3>Memory Across Sessions &amp; Agents</h3>
 				<p>Memory doesn't vanish when a session ends. Namespaces route searches between agent-specific and <code>shared</code> scopes; they are not access-control boundaries. The session workflow lets Claude Code, Cursor, and Codex continue from one memory store.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
 				<p>Keep master skills, commands, and subagents in the <code>.memtomem/</code> Store. Preview and Pull runtime copies into the Store, then Push the reviewed Store version to selected runtimes. Copy or move artifacts across projects and tiers, or operate across registered projects in one batch.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card amber" href={`${base}/stm/surfacing/`}>
 				<h3>Proactive Surfacing</h3>
 				<p>Your agent doesn't have to ask. STM observes the MCP calls it proxies and surfaces relevant memories at the right moment. Each surfaced memory carries an id, so your agent can rate or invalidate individual items.</p>
+				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card blue" href={`${base}/stm/compression/`}>
 				<h3>Token-Aware Compression</h3>
 				<p>Responses from MCP tools routed through STM can be compressed before they reach your agent. Configured response budgets and gates control compression. Ten modes are supported, including auto-selection and passthrough. Actual savings depend on the response and configured retention limits.</p>
+				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card green" href={`${base}/guides/privacy/`}>
 				<h3>Local-First &amp; Private</h3>
 				<p>SQLite storage and local ONNX inference need no GPU or cloud account. Optional Ollama, OpenAI-compatible, Cohere, and Langfuse integrations can contact configured services. Local files use restrictive permissions, and credential-shaped content is filtered at cache, index, and share boundaries.</p>
+				<span class="tag tag-guide">LTM + STM</span>
 			</a>
 		</div>
 	</div>
@@ -218,6 +224,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				</div>
 			</div>
 		</div>
+		<div class="arch-links">
+			<a class="tag tag-ltm" href={`${base}/ltm/overview/`}>LTM Overview</a>
+			<a class="tag tag-stm" href={`${base}/stm/overview/`}>STM Overview</a>
+		</div>
 	</div>
 </section>
 
@@ -252,17 +262,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<p>Connect Claude Code, Codex, or another released MCP client and verify <code>mem_status</code>.</p>
 				<span class="tag tag-guide">Connection</span>
 			</a>
-			<a href={`${base}/guides/index-and-import/`} class="doc-card">
+			<a href={`${base}/ltm/index-and-import/`} class="doc-card">
 				<h3>Index Existing Content</h3>
 				<p>Index notes and code or import built-in AI memory with a preview and source check.</p>
 				<span class="tag tag-ltm">Content</span>
 			</a>
-			<a href={`${base}/guides/memory-persistence/`} class="doc-card">
+			<a href={`${base}/ltm/memory-persistence/`} class="doc-card">
 				<h3>Memory Across Sessions</h3>
 				<p>Save a confirmed decision, start a new session, and retrieve its reason and source.</p>
 				<span class="tag tag-ltm">Workflow</span>
 			</a>
-			<a href={`${base}/guides/stm-first-proxy/`} class="doc-card">
+			<a href={`${base}/stm/first-proxy/`} class="doc-card">
 				<h3>Add STM to an MCP Server</h3>
 				<p>Run the local demo, make a real proxied call, inspect metrics, and restore the original path.</p>
 				<span class="tag tag-stm">Optional STM</span>
@@ -292,7 +302,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <footer class="footer">
 	<span>DAPADA Inc. — Apache 2.0</span>
 	<span>
-		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub</a>
+		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub (LTM)</a>
+		&nbsp;·&nbsp;
+		<a href="https://github.com/memtomem/memtomem-stm" style="color:inherit;">GitHub (STM)</a>
 		&nbsp;·&nbsp;
 		<a href="https://pypi.org/project/memtomem/" style="color:inherit;">PyPI</a>
 	</span>

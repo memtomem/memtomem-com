@@ -75,7 +75,7 @@ STM imports your existing MCP servers and proxies them in front — but the move
 
 ## Related
 
-- [Environment Variables](/reference/configuration/) — full privacy-related settings
+- [LTM Environment Variables](/ltm/configuration/) and [STM Environment Variables](/stm/configuration/) — full privacy-related settings
 - [Proactive Surfacing](/stm/surfacing/) — query privacy and gating
 - [Context Gateway](/ltm/context-gateway/) — per-tier secret blocking
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — redaction on share

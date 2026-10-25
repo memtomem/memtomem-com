@@ -123,7 +123,7 @@ mm agent share CHUNK_ID --target shared
 
 ## 내장 기억 가져오기와 차이
 
-`mm ingest claude-memory`, `mm ingest codex-memory`, `mm ingest gemini-memory`는 외부 파일을 자료별 고정 네임스페이스에 넣습니다. `agent_id`를 지정하거나 세션을 시작하지 않습니다. 자세한 절차는 [기존 자료 색인·가져오기](/ko/guides/index-and-import/)를 참고하세요.
+`mm ingest claude-memory`, `mm ingest codex-memory`, `mm ingest gemini-memory`는 외부 파일을 자료별 고정 네임스페이스에 넣습니다. `agent_id`를 지정하거나 세션을 시작하지 않습니다. 자세한 절차는 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)를 참고하세요.
 
 ## 상호작용 패턴
 
@@ -144,7 +144,7 @@ Web UI나 CLI 검색에서 공유한 결정, 출처, 네임스페이스를 확�
 
 ## 다음 단계
 
-- [세션을 넘나드는 기억](/ko/guides/memory-persistence/)
-- [기존 자료 색인·가져오기](/ko/guides/index-and-import/)
+- [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)
+- [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)
 - [Context Gateway](/ko/ltm/context-gateway/)
 - [LTM MCP 도구](/ko/ltm/mcp-tools/)

@@ -12,10 +12,10 @@ description: 첫 기억 저장부터 기존 자료 가져오기, STM 프록시, 
 | 코딩 에이전트 예제를 실행하고 싶다 | [코딩 결정과 근거 문서 검색](/ko/use-cases/vibe-coding/) | 저장한 이유와 ADR 출처를 다시 찾음 |
 | LangGraph에 기억을 추가하고 싶다 | [모델 없는 입문 노트북](/ko/use-cases/langgraph/) | 한국어 노트북 두 개에서 API 키 없이 각각 PASS 6개 확인 |
 | 기억 저장과 검색이 되는지 확인 | [빠른 시작](/ko/guides/quickstart/) | 방금 추가한 기억이 `mm search` 결과에 표시됨 |
-| 새 AI 세션에서 이전 결정을 다시 찾기 | [세션을 넘나드는 기억](/ko/guides/memory-persistence/) | 새 세션에서 저장한 이유와 출처까지 확인 |
+| 새 AI 세션에서 이전 결정을 다시 찾기 | [세션을 넘나드는 기억](/ko/ltm/memory-persistence/) | 새 세션에서 저장한 이유와 출처까지 확인 |
 | Claude Code·Codex·다른 MCP 클라이언트 연결 | [AI 클라이언트 연결](/ko/guides/connect-ai-client/) | 클라이언트에서 `mem_status` 호출 성공 |
-| 기존 노트·문서·코드·AI 도구 기억 검색 | [기존 자료 색인·가져오기](/ko/guides/index-and-import/) | 알고 있는 문구가 출처 경로와 함께 검색됨 |
-| 응답 압축이나 관련 기억 자동 제시 추가 | [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/) | 프록시 호출이 `mms stats --source mcp`에 기록됨 |
+| 기존 노트·문서·코드·AI 도구 기억 검색 | [기존 자료 색인·가져오기](/ko/ltm/index-and-import/) | 알고 있는 문구가 출처 경로와 함께 검색됨 |
+| 응답 압축이나 관련 기억 자동 제시 추가 | [MCP 서버에 STM 추가](/ko/stm/first-proxy/) | 프록시 호출이 `mms stats --source mcp`에 기록됨 |
 | 개인·에이전트·공유 기억 분리 | [멀티 에이전트 협업](/ko/ltm/multi-agent/) | 한 에이전트가 검토한 기억을 공유하고 다른 에이전트가 검색 |
 | 여러 실행 환경의 스킬·명령 관리 | [Context Gateway](/ko/ltm/context-gateway/) | Store 기준본을 미리 확인하고 선택한 실행 환경에 Push |
 | 로컬 저장과 외부 전송 범위 확인 | [로컬 우선 · 정보 보호](/ko/guides/privacy/) | 켠 연동 가운데 어떤 것이 외부로 데이터를 보내는지 파악 |
@@ -64,6 +64,7 @@ STM은 LTM을 대체하지 않으며, 프록시를 거친 응답을 모두 장�
 
 - [LTM CLI 레퍼런스](/ko/ltm/cli/)
 - [LTM MCP 도구](/ko/ltm/mcp-tools/)
+- [LTM 환경 변수](/ko/ltm/configuration/)
 - [STM CLI 레퍼런스](/ko/stm/cli/)
 - [STM MCP 도구](/ko/stm/mcp-tools/)
-- [환경 변수](/ko/reference/configuration/)
+- [STM 환경 변수](/ko/stm/configuration/)

@@ -1,5 +1,5 @@
 ---
-title: MCP Tools
+title: STM MCP Tools
 description: STM proxy exposes 5 model-facing tools, an stm_admin dispatcher carrying 8 observability actions, and an opt-in formation tool.
 ---
 

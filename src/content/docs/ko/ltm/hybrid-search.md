@@ -3,7 +3,7 @@ title: 하이브리드 검색
 description: BM25 키워드 검색과 벡터 검색을 RRF로 결합하는 방식과 조정 방법.
 ---
 
-> 처음이라면 [세션을 넘나드는 기억](/ko/guides/memory-persistence/)에서 기억을 저장하고 다시 찾는 과정부터 확인하세요.
+> 처음이라면 [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)에서 기억을 저장하고 다시 찾는 과정부터 확인하세요.
 
 memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 정확한 용어와 뜻이 비슷한 표현을 모두 찾을 수 있습니다.
 
@@ -35,7 +35,7 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | 하한선 — 리랭커가 받는 후보 수의 최소값 |
 | `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | 상한선 — 큰 `top_k`에서 비용 폭주 방지 |
 
-실행 중인 설정은 `mm config set rerank.oversample 3.0`처럼 바꿀 수 있습니다. 리랭커 모델을 비롯한 나머지 `rerank.*` 설정은 [설정 레퍼런스](/ko/reference/configuration/)를 참고하세요.
+실행 중인 설정은 `mm config set rerank.oversample 3.0`처럼 바꿀 수 있습니다. 리랭커 모델을 비롯한 나머지 `rerank.*` 설정은 [설정 레퍼런스](/ko/ltm/configuration/)를 참고하세요.
 
 ## 시맨틱 청킹
 
@@ -69,7 +69,7 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 `mem_search`의 structured 응답에는 결과가 없을 때를 포함해 항상 최상위 `recorded` 키가 있습니다. 기본 기록 모드로 실행하면 `true`, `record=false`로 실행하면 `false`입니다. 이 값은 어떤 모드가 적용되었는지를 나타낼 뿐, 실제로 기록이 일어났는지를 나타내지는 않습니다. compact와 verbose 출력은 바뀌지 않으며, 0.6.8 이전 서버는 이 키를 보내지 않습니다.
 
-유사한 중복 찾기, 오래된 결과의 점수 낮추기, TTL 만료, 자동 태깅 설정은 [설정 레퍼런스](/ko/reference/configuration/)에서 확인할 수 있습니다.
+유사한 중복 찾기, 오래된 결과의 점수 낮추기, TTL 만료, 자동 태깅 설정은 [설정 레퍼런스](/ko/ltm/configuration/)에서 확인할 수 있습니다.
 
 <a id="retrieval-benchmark-v2"></a>
 ## 검색 벤치마크 v2

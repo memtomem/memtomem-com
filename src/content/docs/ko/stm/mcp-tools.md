@@ -1,5 +1,5 @@
 ---
-title: MCP 도구
+title: STM MCP 도구
 description: STM 프록시가 제공하는 모델용 도구 5개와 관찰 액션 8개를 담은 stm_admin, 선택형 기억 제안 도구를 설명합니다.
 ---
 

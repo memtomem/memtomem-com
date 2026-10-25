@@ -1,5 +1,5 @@
 ---
-title: MCP Tools
+title: LTM MCP Tools
 description: How memtomem exposes memory features to MCP clients.
 ---
 

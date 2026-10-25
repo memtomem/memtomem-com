@@ -20,7 +20,8 @@ for (const [file, pkg] of [['src/content/docs/ko/guides/connect-ai-client.md','m
 const extraHermesRef = form => async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); const before=await readFile(p,'utf8'); const after=before.replace('`hermes mcp list` shows only', 'Reinstall with '+form+'. `hermes mcp list` shows only'); assert.notEqual(after,before); await writeFile(p,after); };
 for (const [name, mutate, expected] of [
 ['missing mirror', async d => { await rm(path.join(d, 'src/content/docs/ko/ltm/overview.md')); }],
-['unknown setting', async d => { const p=path.join(d,'src/content/docs/reference/configuration.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n| `MEMTOMEM_FAKE` | unknown | `false` |\n'); }],
+['unknown setting', async d => { const p=path.join(d,'src/content/docs/ltm/configuration.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n| `MEMTOMEM_FAKE` | unknown | `false` |\n'); }],
+['STM setting on the LTM page', async d => { const p=path.join(d,'src/content/docs/ko/ltm/configuration.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n| `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | moved | `true` |\n'); }, /stm environment rows on the ltm page: MEMTOMEM_STM_PROXY__CACHE__ENABLED/],
 ...hermesRefMutations,
 ...['`--ref 0000000000000000000000000000000000000000`', "--ref '0000000000000000000000000000000000000000'", '--ref "0000000000000000000000000000000000000000"', '--ref=0000000000000000000000000000000000000000', '(--ref 0000000000000000000000000000000000000000)'].map(form => [`extra stale Hermes ref ${form}`, extraHermesRef(form), /Hermes commit 0{40} is not the release commit/]),
 ['missing Hermes coexistence rule', async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); await writeFile(p,(await readFile(p,'utf8')).replaceAll('mcp_servers.memtomem-local','mcp_servers.other')); }],

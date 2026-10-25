@@ -1,5 +1,5 @@
 ---
-title: MCP 도구
+title: LTM MCP 도구
 description: memtomem이 MCP 클라이언트에 기억 도구를 제공하는 방식.
 ---
 

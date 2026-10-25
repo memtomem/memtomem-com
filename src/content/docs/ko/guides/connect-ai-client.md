@@ -305,11 +305,11 @@ mem_status를 호출해서 데이터베이스 경로, 임베딩 제공자, 청�
 5. GUI에서 수동 명령을 찾지 못하면 `command -v memtomem-server`로 절대 경로를 확인해 설정에 사용합니다.
 6. 데이터베이스 경로나 네임스페이스가 다르면 [문제 해결](/ko/guides/troubleshooting/)을 이어서 확인합니다.
 
-플러그인 설치만으로 프로젝트 색인, 내장 기억 가져오기, 파일 감시, 대화 전체 저장이 실행되지는 않습니다. 이런 작업은 [기존 자료 색인·가져오기](/ko/guides/index-and-import/)에서 명시적으로 실행하세요.
+플러그인 설치만으로 프로젝트 색인, 내장 기억 가져오기, 파일 감시, 대화 전체 저장이 실행되지는 않습니다. 이런 작업은 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)에서 명시적으로 실행하세요.
 
 ## 다음 단계
 
-- [세션을 넘나드는 기억](/ko/guides/memory-persistence/)
-- [기존 자료 색인·가져오기](/ko/guides/index-and-import/)
+- [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)
+- [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)
 - [LTM MCP 도구](/ko/ltm/mcp-tools/)
 - [LTM 운영 및 API](/ko/ltm/operations/)

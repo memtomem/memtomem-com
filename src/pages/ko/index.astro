@@ -144,26 +144,32 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
 					<p>노트·문서·코드를 <code>mm index</code>로 색인합니다. 임베딩을 활성화하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합하며, minimal 설정은 키워드 검색만 사용합니다. 정확한 이름과 의미가 비슷한 표현을 함께 찾을 수 있습니다. 문서는 구조에 맞춰 나누고, 다시 색인할 때는 바뀐 부분만 임베딩을 계산합니다.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
 					<p>기억은 세션이 끝나도 남습니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다. Claude Code·Cursor·Codex는 같은 저장소에서 이전 작업을 이어갑니다.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
 					<p>스킬·명령·서브에이전트의 기준본을 <code>.memtomem/</code> Store에 보관합니다. Pull은 실행 환경의 파일을 미리 확인한 뒤 Store로 가져오고, Push는 검토한 기준본을 선택한 실행 환경으로 보냅니다. 프로젝트와 계층 사이의 복사·이동도 지원합니다.</p>
+				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
 				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 자신을 거치는 MCP 도구 호출에서 실행 조건을 확인하고 관련 기억을 알맞은 순간에 찾아 붙여 줍니다. 붙여 준 기억마다 식별자가 있어, 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
+				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>
 				<p>STM을 거치는 MCP 도구 응답은 에이전트에 전달하기 전에 압축할 수 있습니다. 설정한 응답 예산과 조건에 따라 압축하며 자동 선택·그대로 전달을 포함한 10가지 모드를 지원합니다. 실제 절감량은 응답과 보존 설정에 따라 달라집니다.</p>
+				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
 				<h3>로컬 우선 · 정보 보호</h3>
 				<p>SQLite 저장과 로컬 ONNX 추론은 GPU나 클라우드 계정 없이 동작합니다. 선택형 Ollama·OpenAI 호환·Cohere·Langfuse 연동은 설정한 서비스와 통신할 수 있습니다. 로컬 파일에는 제한 권한을 적용하고, 자격 증명 형태의 콘텐츠는 캐시·인덱스·공유 경계에서 걸러냅니다.</p>
+				<span class="tag tag-guide">LTM + STM</span>
 			</a>
 		</div>
 	</div>
@@ -218,6 +224,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				</div>
 			</div>
 		</div>
+		<div class="arch-links">
+			<a class="tag tag-ltm" href={`${base}/ko/ltm/overview/`}>LTM 개요</a>
+			<a class="tag tag-stm" href={`${base}/ko/stm/overview/`}>STM 개요</a>
+		</div>
 	</div>
 </section>
 
@@ -252,17 +262,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<p>Claude Code, Codex 또는 다른 지원 MCP 클라이언트를 연결하고 <code>mem_status</code>를 확인합니다.</p>
 				<span class="tag tag-guide">연결</span>
 			</a>
-			<a href={`${base}/ko/guides/index-and-import/`} class="doc-card">
+			<a href={`${base}/ko/ltm/index-and-import/`} class="doc-card">
 				<h3>기존 자료 색인</h3>
 				<p>노트·코드를 색인하거나 AI 도구 내장 기억을 미리보기와 출처 확인을 거쳐 가져옵니다.</p>
 				<span class="tag tag-ltm">자료</span>
 			</a>
-			<a href={`${base}/ko/guides/memory-persistence/`} class="doc-card">
+			<a href={`${base}/ko/ltm/memory-persistence/`} class="doc-card">
 				<h3>세션을 넘나드는 기억</h3>
 				<p>검증된 결정을 저장하고 새 세션에서 이유와 출처까지 다시 찾습니다.</p>
 				<span class="tag tag-ltm">워크플로</span>
 			</a>
-			<a href={`${base}/ko/guides/stm-first-proxy/`} class="doc-card">
+			<a href={`${base}/ko/stm/first-proxy/`} class="doc-card">
 				<h3>MCP 서버에 STM 추가</h3>
 				<p>로컬 데모, 실제 프록시 호출, 지표 확인, 원래 경로 복원까지 진행합니다.</p>
 				<span class="tag tag-stm">선택형 STM</span>
@@ -292,7 +302,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <footer class="footer">
 	<span>DAPADA Inc. — Apache 2.0</span>
 	<span>
-		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub</a>
+		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub (LTM)</a>
+		&nbsp;·&nbsp;
+		<a href="https://github.com/memtomem/memtomem-stm" style="color:inherit;">GitHub (STM)</a>
 		&nbsp;·&nbsp;
 		<a href="https://pypi.org/project/memtomem/" style="color:inherit;">PyPI</a>
 	</span>

@@ -23,7 +23,7 @@ export function validateUpstream(snapshot, contract, sources) {
   for (const kind of ['core', 'stm']) {
     same(snapshot[kind].commit, contract.sourceSnapshots[kind + 'Main'], kind + ' source pin mismatch');
     for (const locale of ['', 'ko/']) {
-      const config = sources[`src/content/docs/${locale}reference/configuration.md`] || '';
+      const config = sources[`src/content/docs/${locale}${kind === 'core' ? 'ltm' : 'stm'}/configuration.md`] || '';
       const rows = [...config.matchAll(/^\| `(MEMTOMEM_[A-Z0-9_]+)` \| (.*) \| `(.*)` \|$/gm)];
       for (const [key, value] of Object.entries(snapshot[kind].environment)) {
         const matches = rows.filter(row => row[1] === key);

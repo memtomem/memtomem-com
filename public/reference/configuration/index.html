@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>memtomem</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://memtomem.com/ltm/configuration/">
+<script>
+(function () {
+  // Section ids that moved to the STM page when the combined reference was split.
+  var stm = new Set(["stm-memtomem-stm--prefix-memtomem_stm_","general","proxy","proxy--cache","proxy--auto-index-stage-4","proxy--extraction","proxy--metrics--feedback--relevance-scorer","proxy--tool-exposure","proxy--selection-telemetry--tool-relevance","proxy--tool-graph-eligibility-optional","per-upstream-upstreamserverconfig","compression-sub-configs","per-tool-overrides","surfacing-stage-3","hook--daemon","langfuse-observability","compression-strategies-memtomem_stm_proxy__default_compression","stm-additional-settings"]);
+  var key = '';
+  try { key = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+  location.replace((stm.has(key) ? "/stm/configuration/" : "/ltm/configuration/") + location.hash);
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=/ltm/configuration/"></noscript>
+</head>
+<body>
+<p><a href="/ltm/configuration/">This page has moved.</a></p>
+</body>
+</html>

@@ -89,7 +89,7 @@ mm status --json
 mm search "원본에_실제로_있는_단어"
 ```
 
-출처와 재실행 점검은 [기존 자료 색인·가져오기](/ko/guides/index-and-import/)를 참고하세요.
+출처와 재실행 점검은 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)를 참고하세요.
 
 ## 4. 플러그인·MCP 연결
 
@@ -174,7 +174,7 @@ mms eject SERVER_NAME --dry-run
 mms eject SERVER_NAME
 ```
 
-복원 전후 확인은 [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/)를 참고하세요.
+복원 전후 확인은 [MCP 서버에 STM 추가](/ko/stm/first-proxy/)를 참고하세요.
 
 ## 7. 로그·파일
 
@@ -190,4 +190,4 @@ mms eject SERVER_NAME
 | `~/.memtomem/stm_proxy.json` | STM 프록시 설정 |
 | `~/.memtomem/logs/web.log` | 백그라운드 Web UI 로그 |
 
-현재 릴리스의 전체 설정은 [환경 변수](/ko/reference/configuration/)를 참고하세요.
+현재 릴리스의 전체 설정은 [LTM 환경 변수](/ko/ltm/configuration/)와 [STM 환경 변수](/ko/stm/configuration/)를 참고하세요.

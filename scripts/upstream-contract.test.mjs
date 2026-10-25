@@ -7,7 +7,8 @@ const contract = JSON.parse(await readFile('src/data/docs-contract.json', 'utf8'
 const sources = {};
 async function walk(dir) { for (const entry of await readdir(dir, { withFileTypes: true })) { const file = dir + '/' + entry.name; if (entry.isDirectory()) await walk(file); else if (/\.mdx?$/.test(file)) sources[file] = await readFile(file, 'utf8'); } }
 await walk('src/content/docs');
-const config = 'src/content/docs/reference/configuration.md';
+const config = 'src/content/docs/ltm/configuration.md';
+const stmConfig = 'src/content/docs/stm/configuration.md';
 test('pinned website passes', () => assert.deepEqual(validateUpstream(snapshot, contract, sources), []));
 test('no current release is listed as stale', () => { for (const version of [contract.core.version, contract.stm.version, contract.claudePlugin.version, contract.opencode.version]) assert.ok(!STALE_VERSIONS.includes(version), version + ' is current but listed in STALE_VERSIONS'); });
 for (const [name, mutate] of [
@@ -15,7 +16,9 @@ for (const [name, mutate] of [
 ['wrong source revision', (s, c) => { c.sourceSnapshots.coreMain = 'bad'; }],
 ['missing setting', (s, c, d) => { d[config] = d[config].replaceAll('MEMTOMEM_EMBEDDING__PROVIDER', 'MEMTOMEM_REMOVED'); }],
 ['default value changed', (s, c, d) => { d[config] = d[config].replace('| `"none"` |', '| `"onnx"` |'); }],
-['Korean default drift', (s, c, d) => { d['src/content/docs/ko/reference/configuration.md'] = ''; }],
+['Korean default drift', (s, c, d) => { d['src/content/docs/ko/ltm/configuration.md'] = ''; }],
+['STM default drift', (s, c, d) => { d[stmConfig] = d[stmConfig].replace('| `MEMTOMEM_STM_PROXY__CACHE__ENABLED` |', '| `MEMTOMEM_STM_PROXY__CACHE__REMOVED` |'); }],
+['Korean STM default drift', (s, c, d) => { d['src/content/docs/ko/stm/configuration.md'] = ''; }],
 ['CLI option omitted', (s, c, d) => { d['src/content/docs/stm/cli.md'] = d['src/content/docs/stm/cli.md'].replaceAll('--inherit-runtime-env', '--fake-option'); }],
 ['public tool catalog drift', (s, c, d) => { d['src/content/docs/ko/ltm/mcp-tools.md'] = ''; }],
 ['stale release', (s, c, d) => { d[config] += '\nmemtomem 0.3.12'; }],

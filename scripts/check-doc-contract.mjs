@@ -137,11 +137,17 @@ function digest(values) {
   return createHash('sha256').update(values.join('\n')).digest('hex');
 }
 
-const enConfig = path.join(docsRoot, 'reference/configuration.md');
-const koConfig = path.join(docsRoot, 'ko/reference/configuration.md');
 for (const kind of ['core', 'stm']) {
-  const enValues = tableEnvironment(sourceText.get(enConfig), kind);
-  const koValues = tableEnvironment(sourceText.get(koConfig), kind);
+  const product = kind === 'core' ? 'ltm' : 'stm';
+  const enConfig = path.join(docsRoot, `${product}/configuration.md`);
+  const koConfig = path.join(docsRoot, `ko/${product}/configuration.md`);
+  const otherKind = kind === 'core' ? 'stm' : 'core';
+  for (const file of [enConfig, koConfig]) {
+    const foreign = tableEnvironment(sourceText.get(file) ?? '', otherKind);
+    if (foreign.length) errors.push(`${relative(file)}: ${otherKind} environment rows on the ${product} page: ${foreign.join(',')}`);
+  }
+  const enValues = tableEnvironment(sourceText.get(enConfig) ?? '', kind);
+  const koValues = tableEnvironment(sourceText.get(koConfig) ?? '', kind);
   const expected = contract.configuration[`${kind}Environment`];
   if (JSON.stringify(enValues) !== JSON.stringify(koValues)) {
     const enOnly = enValues.filter((value) => !koValues.includes(value));
@@ -282,13 +288,13 @@ for (const file of troubleshootingPairs) {
   );
 }
 
-for (const file of pairedGuideFiles('guides/index-and-import')) {
+for (const file of pairedGuideFiles('ltm/index-and-import')) {
   for (const command of contract.guides.indexGuideCommands) {
     assertContains(file, command, `index-guide command ${command}`);
   }
 }
 
-for (const file of pairedGuideFiles('guides/stm-first-proxy')) {
+for (const file of pairedGuideFiles('stm/first-proxy')) {
   for (const command of contract.guides.stmGuideCommands) {
     assertContains(file, command, `STM-guide command ${command}`);
   }

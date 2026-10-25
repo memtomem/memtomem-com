@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: STM Overview
 description: What memtomem-stm is — an MCP proxy that adds proactive surfacing and compression for AI agents.
 ---
 
@@ -22,7 +22,7 @@ mms init --demo --client auto                            # 2. create a runnable 
 mms doctor                                               # 3. diagnose the complete setup
 ```
 
-`mms init --demo` creates a deterministic demo upstream. `--client auto` registers a supported detected host; use `mms register --client claude`, `--client codex`, or `--client auto` later to change registration. The completed call, metrics, prune, and rollback workflow is in [Add STM to an MCP Server](/guides/stm-first-proxy/).
+`mms init --demo` creates a deterministic demo upstream. `--client auto` registers a supported detected host; use `mms register --client claude`, `--client codex`, or `--client auto` later to change registration. The completed call, metrics, prune, and rollback workflow is in [Add STM to an MCP Server](/stm/first-proxy/).
 
 ## Core Capabilities
 
@@ -72,16 +72,16 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
 
-## Next Steps
-
-- [Add STM to an MCP Server](/guides/stm-first-proxy/) — demo, real proxied call, metrics, and rollback
-- [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
-- [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
-- [MCP Tools](/stm/mcp-tools/) — STM management and observability tools
-- [CLI Reference](/stm/cli/) — `mms` command reference
-
 ## Limits and retry safety
 
 The default `proxy.max_upstream_bytes` limit is 40 MiB (41,943,040 bytes) of decoded compact JSON, including metadata, non-text blocks and error content. It is not a wire-byte or peak-memory guarantee.
 
-A timed-out or disconnected call can have executed upstream. Retrying an ambiguous failure requires a replay-safe policy and remaining retry/deadline budget; an unannotated tool is not automatically safe. Restarting a session does not roll back side effects. Shutdown watchdog and parent-liveness settings are listed in the [configuration reference](/reference/configuration/).
+A timed-out or disconnected call can have executed upstream. Retrying an ambiguous failure requires a replay-safe policy and remaining retry/deadline budget; an unannotated tool is not automatically safe. Restarting a session does not roll back side effects. Shutdown watchdog and parent-liveness settings are listed in the [configuration reference](/stm/configuration/).
+
+## Next Steps
+
+- [Add STM to an MCP Server](/stm/first-proxy/) — demo, real proxied call, metrics, and rollback
+- [Proactive Surfacing](/stm/surfacing/) — 5-level gating and feedback auto-tuning
+- [Compression Strategies](/stm/compression/) — 10 strategies and auto-selection logic
+- [MCP Tools](/stm/mcp-tools/) — STM management and observability tools
+- [CLI Reference](/stm/cli/) — `mms` command reference

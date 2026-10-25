@@ -1,5 +1,5 @@
 ---
-title: CLI 레퍼런스
+title: LTM CLI 레퍼런스
 description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전체.
 ---
 
@@ -89,7 +89,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 ### MCP 서버 실행
 
-MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 등록 예시는 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
+MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 클라이언트별 등록 방법은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
 
 MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 100개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
