@@ -73,8 +73,8 @@ Report missing information that compression dropped. This is a learning signal, 
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `server` | string | Yes | Upstream server |
-| `tool` | string | Yes | Tool name |
+| `server` | string | Yes | Upstream server name |
+| `tool` | string | Yes | Upstream tool name, not the client-side `prefix__tool` name; a report naming a tool this proxy has not registered is refused |
 | `missing` | string | Yes | What the agent needed but didn't get |
 | `kind` | string | No | Category hint |
 | `trace_id` | string | No | Langfuse trace id if available |
@@ -112,10 +112,10 @@ mms add filesystem --command npx \
 # filesystem's read_file becomes fs__read_file
 ```
 
-STM does not advertise every upstream tool 1:1 — it applies an eligibility filter at exposure time. Tools from a disconnected server, tools whose metadata contains credential-looking strings, and tools with colliding names are not advertised to the agent; the discovered-vs-advertised counts in `stm_admin(action="proxy_health")` make the difference visible.
+STM does not advertise every upstream tool 1:1 — it applies an eligibility filter at exposure time. Tools from a disconnected server, tools whose metadata contains credential-looking strings, and tools with colliding names are not advertised to the agent, and a tool whose name falls outside the MCP tool-name grammar (`[A-Za-z0-9._-]`, 1–128 characters) is not proxied at all; the discovered-vs-advertised counts in `stm_admin(action="proxy_health")` make the difference visible.
 
 Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
 
-When the agent calls `fs__read_file`, the bundled proxy runs **CLEAN → COMPRESS → SURFACE**. It returns the compressed response plus any surfaced memories and does not write the response back into LTM.
+When the agent calls `fs__read_file`, the bundled proxy runs **CLEAN → COMPRESS → SURFACE**. It returns the compressed response plus any surfaced memories and does not write the response back into LTM. Annotated multi-block responses are the exception (see [Compression Strategies](/stm/compression/)).
 
 > See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.

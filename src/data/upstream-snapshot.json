@@ -102,12 +102,16 @@
         "gemini-memory"
       ],
       "mem": [
+        "doctor",
         "init",
         "rescan",
         "rescan-files"
       ],
       "memory": [
-        "doctor"
+        "doctor",
+        "init",
+        "rescan",
+        "rescan-files"
       ],
       "pinned": [
         "compose",
@@ -200,7 +204,7 @@
         "promote"
       ]
     },
-    "commit": "592865456cf7670311648fbc619bbb876d002a1e",
+    "commit": "a45c11d5d5dc5840d589a0bbe08b562897907f0e",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -273,6 +277,7 @@
       "MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD": 800,
       "MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS": [],
       "MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS": [],
+      "MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS": [],
       "MEMTOMEM_INDEXING__STARTUP_BACKFILL": false,
       "MEMTOMEM_INDEXING__STRUCTURED_CHUNK_MODE": "original",
       "MEMTOMEM_INDEXING__SUMMARY_LANGUAGE": "en",
@@ -363,12 +368,14 @@
       "MEMTOMEM_STORAGE__COLLECTION_NAME": "memories",
       "MEMTOMEM_STORAGE__SQLITE_PATH": "~/.memtomem/memtomem.db",
       "MEMTOMEM_WARMUP__ENABLED": false,
+      "MEMTOMEM_WEBHOOK__ALLOW_PRIVATE_HOSTS": false,
       "MEMTOMEM_WEBHOOK__ENABLED": false,
       "MEMTOMEM_WEBHOOK__EVENTS": [
         "add",
         "delete",
         "search"
       ],
+      "MEMTOMEM_WEBHOOK__PROXY": "",
       "MEMTOMEM_WEBHOOK__SECRET": "",
       "MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS": 10.0,
       "MEMTOMEM_WEBHOOK__URL": ""
@@ -620,6 +627,7 @@
       ],
       "gc orphan-sources": [
         "--apply",
+        "--under",
         "--yes"
       ],
       "index": [
@@ -666,6 +674,11 @@
         "--top-k"
       ],
       "mem": [],
+      "mem doctor": [
+        "--apply",
+        "--fix",
+        "--json"
+      ],
       "mem init": [
         "--confirm-project-shared",
         "--scope"
@@ -683,6 +696,19 @@
       "memory doctor": [
         "--apply",
         "--fix",
+        "--json"
+      ],
+      "memory init": [
+        "--confirm-project-shared",
+        "--scope"
+      ],
+      "memory rescan": [
+        "--json",
+        "--quiet",
+        "--scope",
+        "--source"
+      ],
+      "memory rescan-files": [
         "--json"
       ],
       "pinned": [],
@@ -772,6 +798,7 @@
       "quality status": [],
       "recall": [
         "--format",
+        "--json",
         "--limit",
         "--namespace",
         "--scope",
@@ -823,6 +850,7 @@
       "search": [
         "--as-of",
         "--format",
+        "--json",
         "--namespace",
         "--no-rerank",
         "--scope",
@@ -1265,7 +1293,7 @@
         "replay"
       ]
     },
-    "commit": "24556ab65dc71e602abe239f5bc5fca11a4acdf7",
+    "commit": "68661e5d43ff95f5eb273b8034a7e2f334dcb7e9",
     "environment": {
       "MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS": false,
       "MEMTOMEM_STM_DAEMON__ALLOW_NON_LOOPBACK": false,
@@ -1290,6 +1318,8 @@
       "MEMTOMEM_STM_LANGFUSE__PUBLIC_KEY": "",
       "MEMTOMEM_STM_LANGFUSE__SAMPLING_RATE": 1.0,
       "MEMTOMEM_STM_LANGFUSE__SECRET_KEY": "",
+      "MEMTOMEM_STM_LOG_DEPENDENCIES": false,
+      "MEMTOMEM_STM_LOG_EXCEPTION_TEXT": false,
       "MEMTOMEM_STM_LOG_FILE": null,
       "MEMTOMEM_STM_LOG_LEVEL": "WARNING",
       "MEMTOMEM_STM_OTLP__ENABLED": false,

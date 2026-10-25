@@ -7,6 +7,8 @@ description: 10 compression strategies, auto-selection logic, and query-aware bu
 
 Every MCP tool response routed through STM passes through its compression gate before it reaches your agent. Direct upstream calls bypass STM. When a routed response exceeds its configured budget, STM compresses it — and the method depends on the content type.
 
+**Exception — annotated multi-block responses:** when a response has more than one text block and any text block carries metadata (`annotations` or `_meta`), STM keeps the block boundaries instead of compressing the response as one string. Each text block is cleaned on its own, the raw text is capped at `max_upstream_chars`, and the cleaned text is cut to the tool's character budget (`max_result_chars`, or `max_result_tokens` when a token budget is set) with no retention floor. Block metadata, non-text content, `structuredContent` and `_meta` are kept, and the response is returned without compression, surfacing or caching (metrics label `metadata_bypass`). To receive more, raise the tool's budget, and `max_upstream_chars` if that is the lower limit.
+
 memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It ships 10 strategies in total — 8 content-type reducers plus the `auto` selector and the `none` passthrough — reducing response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses the right reducer per response from the immediate-response strategies.
 
 ## Compression Strategies
@@ -63,7 +65,7 @@ Every progressive chunk ends with the canonical footer `\n---\n[progressive: cha
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)).
 
-The response cache uses schema 5 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
+The response cache uses schema 6 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
 
 ## Fallback Ladder
 
@@ -78,7 +80,7 @@ Each tier checks the floor — if satisfied, that strategy's output is used. The
 - **Rounding the minimum:** the minimum is rounded up to a whole character and passed to plain-text truncation. Truncation picks a sentence or word boundary only at or above it, and otherwise cuts at the budget. This covers the `truncate` strategy, `llm_summary` without an LLM configured, the schema-pruning and skeleton plain-text fallbacks, store-error degradation and the terminal truncate tier.
   - A plain-text cut that used to fall a few characters short of the floor, and switch to progressive delivery, now arrives as one truncated result of at least the floor.
   - A result that still falls short, such as a structural cut, takes its fallback as before.
-- **Explicit `retention_floor`:** a tool `retention_floor` overrides a server one, which overrides the global ladder; `null` inherits and an explicit `0` opts that level out. An explicit `retention_floor` applies even with `min_result_retention: 0`. A tool set to `1.0`, for example, is preserved in full rather than cut to its character budget.
+- **Explicit `retention_floor`:** a tool `retention_floor` overrides a server one, which overrides the global ladder; `null` inherits and an explicit `0` opts that level out. An explicit `retention_floor` applies even with `min_result_retention: 0` (but not to the annotated multi-block exception above). A tool set to `1.0`, for example, is preserved in full rather than cut to its character budget.
 
 The `llm_summary` strategy has its own **timeout guard**: the `llm_timeout_seconds` field (default `60`s) on the per-server / per-tool `llm` block. A slow or stuck LLM endpoint no longer blocks the proxy — on timeout, STM falls back to `truncate` so the agent still receives a bounded response. An empty or whitespace-only summary makes the compressor fall back to the truncated original, recorded as `llm_summary→llm_empty_fallback` when that result clears the retention floor; if it does not, the retention guard replaces it as for any other result (for example `llm_summary→progressive_fallback`). Because the endpoint answered, an empty summary does not count as a circuit-breaker failure. Anthropic responses are read from every text block, not only the first.
 
@@ -93,6 +95,6 @@ This feedback loop is driven by the `stm_compression_feedback` tool; accumulated
 
 ## Recovery boundaries
 
-Progressive delivery retains the cleaned source after upstream limits, not an unlimited byte-for-byte copy of the original response. Pending selections are memory-backed by default; SQLite persistence is opt-in. Entries expire under their TTL. An expired ID returns an error, not an automatic upstream refetch. Repeating an original read-only call is a separate, explicit action; do not replay a write just to recover content.
+Progressive delivery retains the cleaned source after upstream limits, not an unlimited byte-for-byte copy of the original response. Pending selections are memory-backed by default; SQLite persistence is opt-in. With `pending_store: "sqlite"`, a SELECTIVE, HYBRID or PROGRESSIVE response that matches STM's credential patterns is not written to `pending_selections.db`: it comes back uncached as a boundary-aware truncation (SELECTIVE/HYBRID, `truncate_on_sensitive`) or as the full cleaned response (PROGRESSIVE, `passthrough_on_sensitive`). Email addresses do not trigger it. Entries expire under their TTL; `progressive.ttl_seconds: 0` expires immediately, delivering the first chunk with an expiry notice. An expired ID returns an error, not an automatic upstream refetch. Repeating an original read-only call is a separate, explicit action; do not replay a write just to recover content.
 
-Cache schema 5 uses length-prefixed key framing and Unicode serialization. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.
+Cache schema 6 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings (URL, headers, transport, command), so editing them no longer replays the old connection's reply. Older cache rows are discarded on initialization (metrics and feedback are kept); this is separate from deleting LTM memories.

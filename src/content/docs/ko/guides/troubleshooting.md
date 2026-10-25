@@ -120,7 +120,7 @@ command -v memtomem-server
 
 중복되는 것은 MCP 서버 네임스페이스와 도구이며, 플러그인의 슬래시 명령이나 스킬까지 반드시 중복되는 것은 아닙니다. 클라이언트에 맞게 정리하세요.
 
-- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.6.8 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
+- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.6.12 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
 - **Codex:** `codex mcp list`를 실행합니다. `[mcp_servers.memtomem]`은 플러그인보다 우선하며 서버 하나만 실행합니다. `[mcp_servers.memtomem-local]`처럼 다른 이름을 쓰면 서버 두 개가 실행되므로 이름을 `memtomem`으로 바꾸거나 플러그인 서버를 쓰기 위해 수동 항목을 제거합니다.
 - **OpenCode:** 수동 항목을 정확한 `mcp.memtomem` 키로 유지하거나, 플러그인 서버를 쓰기 위해 제거합니다. `mcp."memtomem-local"`처럼 다른 키를 쓰면 서버 두 개가 실행됩니다.
 
@@ -155,7 +155,7 @@ mms doctor
 
 ### 프록시 도구가 사라짐(64자 제한)
 
-최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 만들어질 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄인 뒤 `mms health --names`를 실행해 해당 최종 이름이 더 이상 보고되지 않는지 확인하세요.
+최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 만들어질 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄인 뒤 `mms health --names`를 실행해 해당 최종 이름이 더 이상 보고되지 않는지 확인하세요. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 업스트림 도구는 길이와 관계없이 프록시되지 않으며, `mms health`가 그 개수를 보고합니다. 이 경우 업스트림 서버에서 도구 이름을 바꿔야 합니다.
 
 ### `mms stats --source mcp`가 비어 있음
 

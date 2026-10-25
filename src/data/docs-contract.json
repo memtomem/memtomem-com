@@ -1,6 +1,6 @@
 {
   "core": {
-    "version": "0.6.8",
+    "version": "0.6.12",
     "python": ">=3.12",
     "tools": {
       "core": 9,
@@ -113,7 +113,7 @@
     ]
   },
   "stm": {
-    "version": "0.6.1",
+    "version": "0.6.9",
     "python": ">=3.12",
     "tools": {
       "modelFacing": 5,
@@ -121,26 +121,26 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.14",
-    "bundledCore": "0.6.8",
-    "requirement": "memtomem[onnx]==0.6.8"
+    "version": "0.5.18",
+    "bundledCore": "0.6.12",
+    "requirement": "memtomem[onnx]==0.6.12"
   },
   "opencode": {
-    "version": "0.3.11",
-    "bundledCore": "0.6.8"
+    "version": "0.3.15",
+    "bundledCore": "0.6.12"
   },
   "sourceSnapshots": {
-    "coreMain": "592865456cf7670311648fbc619bbb876d002a1e",
-    "stmMain": "24556ab65dc71e602abe239f5bc5fca11a4acdf7"
+    "coreMain": "a45c11d5d5dc5840d589a0bbe08b562897907f0e",
+    "stmMain": "68661e5d43ff95f5eb273b8034a7e2f334dcb7e9"
   },
   "configuration": {
     "coreEnvironment": {
-      "count": 148,
-      "sha256": "c720c22c4740bb5939b1ce45cc6eeb552f147143f739cb6819e975b3269bbb8a"
+      "count": 151,
+      "sha256": "95ed71d08b94b71352a5dd646763b983525f08a19130258590156bc130947bfe"
     },
     "stmEnvironment": {
-      "count": 179,
-      "sha256": "3c6a0276a6b31ec75685f77de08596862a4a86513f1ccb2d08055f4063734c3d"
+      "count": 181,
+      "sha256": "3abe50b4ed87a17e664a36c2dec492d69cdc497e6a253f979ca24bc0ef9d3f1d"
     }
   },
   "guides": {
@@ -380,12 +380,16 @@
       "gemini-memory"
     ],
     "mem": [
+      "doctor",
       "init",
       "rescan",
       "rescan-files"
     ],
     "memory": [
-      "doctor"
+      "doctor",
+      "init",
+      "rescan",
+      "rescan-files"
     ],
     "pinned": [
       "compose",
@@ -585,5 +589,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-10-09"
+  "reviewedOn": "2026-10-25"
 }

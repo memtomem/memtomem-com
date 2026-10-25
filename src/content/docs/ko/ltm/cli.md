@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.6.8을 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.6.12를 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -32,8 +32,8 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
-| `mem` | `init`, `rescan`, `rescan-files` |
-| `memory` | `doctor` |
+| `mem` | `doctor`, `init`, `rescan`, `rescan-files` |
+| `memory` | `doctor`, `init`, `rescan`, `rescan-files` |
 | `pinned` | `compose`, `delete`, `get`, `list`, `set` |
 | `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
 | `review` | `approve`, `evidence`, `list`, `recover`, `reject`, `scan`, `show` |
@@ -66,7 +66,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.6.8에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.6.12에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -121,7 +121,7 @@ mm search "how does the auth middleware work"
 mm search "deployment config" --namespace project-x --top-k 5
 ```
 
-`--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다.
+`--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다. `--json`은 `--format json`의 축약형입니다.
 
 ### `mm tags list / rename / delete / merge`
 
@@ -148,7 +148,7 @@ mm recall --source-filter "postmortems/" --format json
 mm recall --namespace project-x --format plain
 ```
 
-`--format`은 `table`(기본), `json`(스크립트용), `plain`(텍스트 연결용) 중에서 선택합니다. 날짜는 `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, ISO datetime 형식을 지원합니다.
+`--format`은 `table`(기본), `json`(스크립트용), `plain`(텍스트 연결용) 중에서 선택합니다. `--json`은 `--format json`의 축약형입니다. 날짜는 `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, ISO datetime 형식을 지원합니다.
 
 ### `mm web`
 
@@ -467,7 +467,7 @@ mm memory doctor --fix               # 제거할 인덱스 링크 미리보기
 mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
 ```
 
-`--fix`는 대상 파일이 사라진 인덱스 포인터만 제거합니다. `--apply`가 없으면 변경 내용을 보여 주기만 합니다. error 등급 문제가 있으면 종료 코드 1을 반환하므로 CI에서도 사용할 수 있습니다. 보류된 자료 출처는 warning 등급인 `held_source`로 보고되므로, 이것만 발견되면 종료 코드는 0입니다.
+`--fix`는 대상 파일이 사라진 인덱스 포인터만 제거합니다. `--apply`가 없으면 변경 내용을 보여 주기만 합니다. error 등급 문제가 있으면 종료 코드 1을 반환하므로 CI에서도 사용할 수 있습니다. 보류된 자료 출처는 warning 등급인 `held_source`로 보고되므로, 이것만 발견되면 종료 코드는 0입니다. `indexing.retain_missing_dirs`가 검색 가능하게 유지하는 사라진 출처는 info 등급인 `archived_source`로 보고됩니다.
 
 `dangling_wikilink`는 참고 정보입니다. 앞으로 만들 문서를 미리 가리키거나 이전 이름이 남은 경우일 수 있으므로 검사를 실패시키지 않고 `--fix`로도 제거하지 않습니다.
 
@@ -516,11 +516,12 @@ mm schedule delete <sched-id>
 
 원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 영구히 제거합니다.
 
-파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제합니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
+파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 소유한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. `indexing.retain_missing_dirs` 아래의 출처는 예외로, 원본이 사라져도 보류되지 않고 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
 
 ```bash
 mm gc orphan-sources
 mm gc orphan-sources --apply
+mm gc orphan-sources --apply --under ~/notes
 ```
 
 `mm gc orphan-projects`는 기록된 `project_root`가 사라진 청크를 찾습니다. 기본 동작은 미리보기입니다. `--apply`는 프로젝트 루트마다 확인하고, `--apply --yes`는 추가 입력 없이 삭제합니다. 이동식 디스크이거나 잠시 연결이 끊긴 경로가 아닌지 먼저 확인하세요.
@@ -563,12 +564,17 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.6.8           # 특정 버전 고정
+mm upgrade --version 0.6.12          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
 
 선택 기능(extras)은 현재 `uv tool` 설치 내역에서 자동으로 찾습니다. `memtomem[all]`을 사용했다면 `[all]` 설정을 유지합니다. 설치 기록이 없거나 읽을 수 없으면 extras를 찾지 못하므로, `--dry-run` 출력의 `Extras:` 줄을 확인하고 필요하면 `--extras`를 지정하세요.
+
+0.6.12 이전 릴리스에서 업그레이드했다면 다음 두 가지를 확인합니다.
+
+- **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이 검사 없이 메모리 도구가 저장한 내용은 blocked로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
+- **PKCS#8 형식의 개인 키**(`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`)는 0.6.12 이전에는 쓰기 검사(write guard)를 통과했으며, 업그레이드해도 이미 저장된 내용은 다시 검사하지 않습니다. `mm mem rescan --scope <tier> --json`으로 키가 들어 있는 저장 청크를 확인하고, 보고된 각 파일에서 키를 제거한 뒤 `mm index <dir>`를 실행합니다. rescan을 다시 실행해 아무것도 보고되지 않는지 확인합니다. 계속 보고되는 출처는 다시 색인되지 않은 것입니다. 삭제한 파일, 제외된 경로, 10 MB를 넘는 파일, `mm index` 실행에서 오류가 보고된 파일이 해당합니다. 이런 청크를 제거하는 방법은 [보안 권고](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8)에 있습니다. 호스팅 서비스나 git 기록에 들어간 키는 교체(rotate)합니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 건드리지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 멈춥니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 올려야 합니다.
 
@@ -647,7 +653,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |
-| `mm gc orphan-sources` | `--apply`, `--yes` |
+| `mm gc orphan-sources` | `--apply`, `--under`, `--yes` |
 | `mm index` | `--debounce-window`, `--flush`, `--force`, `--force-unsafe`, `--json`, `--namespace`, `--no-recursive`, `--reassign-namespaces`, `--recursive`, `--status` |
 | `mm ingest` | — |
 | `mm ingest claude-memory` | `--dry-run`, `--source` |
@@ -655,11 +661,15 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm ingest gemini-memory` | `--dry-run`, `--source` |
 | `mm init` | `--advanced`, `--api-key`, `--auto-ns`, `--db-path`, `--decay`, `--fresh`, `--include-provider`, `--mcp`, `--memory-dir`, `--model`, `--namespace`, `--non-interactive`, `--preset`, `--provider`, `--tokenizer`, `--top-k` |
 | `mm mem` | — |
+| `mm mem doctor` | `--apply`, `--fix`, `--json` |
 | `mm mem init` | `--confirm-project-shared`, `--scope` |
 | `mm mem rescan` | `--json`, `--quiet`, `--scope`, `--source` |
 | `mm mem rescan-files` | `--json` |
 | `mm memory` | — |
 | `mm memory doctor` | `--apply`, `--fix`, `--json` |
+| `mm memory init` | `--confirm-project-shared`, `--scope` |
+| `mm memory rescan` | `--json`, `--quiet`, `--scope`, `--source` |
+| `mm memory rescan-files` | `--json` |
 | `mm pinned` | — |
 | `mm pinned compose` | `--agent`, `--agent-id`, `--max-chars`, `--no-rerank`, `--top-k` |
 | `mm pinned delete` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--scope` |
@@ -678,7 +688,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm quality replay` | `--as-of`, `--case`, `--format`, `--out` |
 | `mm quality show` | — |
 | `mm quality status` | — |
-| `mm recall` | `--format`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
+| `mm recall` | `--format`, `--json`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
 | `mm reset` | `--backup`, `--force`, `--json`, `--yes` |
 | `mm review` | — |
 | `mm review approve` | `--reason`, `--reviewer` |
@@ -693,7 +703,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm schedule delete` | — |
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
-| `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm search` | `--as-of`, `--format`, `--json`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
 | `mm serve` | — |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--json`, `--summary` |
