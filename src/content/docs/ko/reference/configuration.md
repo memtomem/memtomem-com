@@ -621,7 +621,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `selective.pending_ttl_seconds` | 진행 중인 선택 기록의 TTL | `300.0` |
 | `selective.json_depth` | JSON 개요의 깊이 | `1` |
 | `selective.min_section_chars` | 유지할 섹션 최소 길이 | `50` |
-| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite`. `sqlite`에서는 자격 증명 패턴이 있는 응답을 기록하지 않고 잘라낸(`truncate_on_sensitive`) 응답이나 전체(`passthrough_on_sensitive`) 응답으로 캐시 없이 반환 | `memory` |
+| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite`. `sqlite`에서는 저장 대상 응답에 자격 증명 패턴이 있으면 기록하지 않고 잘라낸(`truncate_on_sensitive`) 응답이나 전체(`passthrough_on_sensitive`) 응답으로 캐시 없이 반환 | `memory` |
 | `selective.pending_store_path` | 진행 중인 선택 기록을 저장할 SQLite 경로 | `~/.memtomem/pending_selections.db` |
 | `hybrid.head_chars` | 선두 콘텐츠 선호 예산 | `5000` |
 | `hybrid.tail_mode` | `toc` 또는 `truncate` | `toc` |

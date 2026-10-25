@@ -101,6 +101,6 @@ progressive → hybrid → truncate
 
 ## 복구 범위
 
-점진 전달은 업스트림 제한 적용 후 정리된 소스를 보관합니다. 원본 응답 전체를 무제한·바이트 단위로 보존하는 기능은 아닙니다. 대기 중 선택 항목은 기본적으로 메모리에 저장되며 SQLite 영속 저장은 옵트인입니다. `pending_store: "sqlite"`에서는 자격 증명 패턴이 들어 있는 SELECTIVE·HYBRID·PROGRESSIVE 응답을 `pending_selections.db`에 기록하지 않습니다. 이런 응답은 SELECTIVE·HYBRID에서는 경계를 고려한 잘라내기(`truncate_on_sensitive`)로, PROGRESSIVE에서는 정리된 응답 전체(`passthrough_on_sensitive`)로 캐시 없이 반환됩니다. 이메일 주소는 이 처리 대상이 아닙니다. `progressive.ttl_seconds: 0`이면 즉시 만료되어 첫 청크가 만료 안내와 함께 전달됩니다. TTL이 지나 만료된 ID는 오류를 반환하고 업스트림을 자동 재호출하지 않습니다. 원래의 읽기 전용 호출을 다시 수행하는 것은 별도 명시적 동작입니다. 콘텐츠 복구를 위해 쓰기 작업을 반복하지 마세요.
+점진 전달은 업스트림 제한 적용 후 정리된 소스를 보관합니다. 원본 응답 전체를 무제한·바이트 단위로 보존하는 기능은 아닙니다. 대기 중 선택 항목은 기본적으로 메모리에 저장되며 SQLite 영속 저장은 옵트인입니다. `pending_store: "sqlite"`에서는 저장 대상이 된 SELECTIVE·HYBRID·PROGRESSIVE 응답에 자격 증명 패턴이 들어 있으면 그 응답을 `pending_selections.db`에 기록하지 않습니다. 이런 응답은 SELECTIVE·HYBRID에서는 경계를 고려한 잘라내기(`truncate_on_sensitive`)로, PROGRESSIVE에서는 정리된 응답 전체(`passthrough_on_sensitive`)로 캐시 없이 반환됩니다. 이메일 주소는 이 처리 대상이 아닙니다. `progressive.ttl_seconds: 0`이면 즉시 만료되어 첫 청크가 만료 안내와 함께 전달됩니다. TTL이 지나 만료된 ID는 오류를 반환하고 업스트림을 자동 재호출하지 않습니다. 원래의 읽기 전용 호출을 다시 수행하는 것은 별도 명시적 동작입니다. 콘텐츠 복구를 위해 쓰기 작업을 반복하지 마세요.
 
 캐시 스키마 6은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정(URL, header, transport, command)에 묶으므로 연결 설정을 바꾸면 이전 연결의 응답을 다시 내보내지 않습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만(metrics와 피드백은 유지), 이는 LTM 기억 삭제와는 별개입니다.

@@ -553,7 +553,7 @@ The same sub-config shapes are used under an upstream and, where noted, inside e
 | `selective.pending_ttl_seconds` | pending selection TTL | `300.0` |
 | `selective.json_depth` | JSON outline depth | `1` |
 | `selective.min_section_chars` | minimum retained section size | `50` |
-| `selective.pending_store` | `memory` or `sqlite`. With `sqlite`, a response matching credential patterns is not stored; it returns uncached, truncated (`truncate_on_sensitive`) or in full (`passthrough_on_sensitive`) | `memory` |
+| `selective.pending_store` | `memory` or `sqlite`. With `sqlite`, a response that would be stored and matches credential patterns is not written; it returns uncached, truncated (`truncate_on_sensitive`) or in full (`passthrough_on_sensitive`) | `memory` |
 | `selective.pending_store_path` | SQLite pending-selection path | `~/.memtomem/pending_selections.db` |
 | `hybrid.head_chars` | preferred leading-content budget | `5000` |
 | `hybrid.tail_mode` | `toc` or `truncate` | `toc` |
