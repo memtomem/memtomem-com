@@ -174,6 +174,16 @@ For MCP tools only:
 
 OpenCode applies the same-name rule to the `mcp` key. An existing `mcp.memtomem` entry wins over the plugin's default and only one server runs. Remove that entry to use the plugin server. A differently named key such as `mcp."memtomem-local"` is not deduplicated, so both servers run.
 
+The plugin also merges default memtomem tool permissions into `permission`. The search, recall, status, stats, list, and read tools are allowed; the other tools, including `mem_add` and `mem_index`, ask each time; and `memtomem_mem_do` is denied. Because the plugin server runs in `core` mode, the actions routed through `mem_do` stay unavailable until you change that rule. A rule you set for the same key replaces the plugin default for that key, while the other defaults stay; a wildcard such as `memtomem_*` does not remove the exact-name defaults. To allow the dispatcher, set its exact key:
+
+```json
+{
+  "permission": {"memtomem_mem_do": "ask"}
+}
+```
+
+A string `permission` value cannot carry that rule: with `"ask"` or `"allow"`, the plugin still denies `memtomem_mem_do`. OpenCode's `--auto` mode approves `ask` decisions, and agent-level permissions can override global settings, so review both before using write tools.
+
 ## Hermes Agent
 
 The official plugin package provides the memtomem MCP server and six memory skills (index, recall, remember, search, setup, status). It requires:

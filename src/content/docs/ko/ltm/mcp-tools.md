@@ -91,7 +91,7 @@ Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 
 OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록하는 방법과, 둘을 함께 설정했을 때 어느 서버가 실행되는지는 [OpenCode 연결 안내](/ko/guides/connect-ai-client/#opencode)에서 다룹니다. 도구 노출과 관련해서는 다음 두 가지를 확인하세요.
 
-- 공개 플러그인은 서버를 `core` 모드로 실행합니다.
+- 공개 플러그인은 서버를 `core` 모드로 실행하고 `memtomem_mem_do`를 기본으로 거부하므로, `mem_do`를 거치는 액션을 사용하려면 먼저 권한을 바꿔야 합니다. 자세한 내용은 [플러그인 권한](/ko/guides/connect-ai-client/#opencode)을 참고하세요.
 - 수동 서버의 도구 모드는 `opencode.json`의 `mcp` 아래 서버 항목에서 `environment` 키에 `MEMTOMEM_TOOL_MODE`로 지정합니다. OpenCode는 `env` 대신 `environment` 키를 사용합니다.
 
 ## 자주 쓰는 액션

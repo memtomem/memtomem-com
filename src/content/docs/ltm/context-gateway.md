@@ -50,7 +50,7 @@ Context Gateway uses the same three tiers as memory writes. The UI shows friendl
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | Team-shared project context committed to git |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | Private drafts for one checkout |
 
-The `user` tier is an actively managed global library. Because these paths live outside the project in your home directory, every user-tier write goes through a "Write outside the project?" confirmation: the gateway first shows the exact home-directory files it will touch and writes only after approval. This confirmation is a host-write safety boundary, not a feature flag.
+The `user` tier is a personal library reused across projects, and its files live in your home directory. In the Web UI, a User-store action that writes outside the project opens a "Write outside the project?" dialog that lists the exact paths and writes only after approval. The CLI has no such dialog for the user tier: `mm context sync` asks before writing settings files outside the project, and `--yes` skips that prompt. `mm context init` and `mm context sync` write user-tier agents, skills, and commands without a prompt.
 
 `project_local` canonical files are gitignored and do not sync to runtime agent / skill / command paths.
 
@@ -74,7 +74,7 @@ mm context init --include skills --scope user
 mm context sync --include skills --scope user
 ```
 
-This writes the canonical skill under `~/.memtomem/skills/` and syncs it out to supported user-level runtime paths (the first write goes through the host-write confirmation).
+This writes the canonical skill under `~/.memtomem/skills/` and syncs it out to supported user-level runtime paths.
 
 ### Draft Locally Before Sharing
 
@@ -114,7 +114,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 - `copy` never touches the source and can rename the copy with `--as`.
 - Every transfer is a dry-run preview by default; pass `--apply` to execute.
 - Destination collisions always refuse, with no `--force` valve.
-- A transfer landing in `project_shared` runs the secret scan and requires `--confirm-project-shared`.
+- A transfer landing in `project_shared` runs the secret scan and, when applied, asks for confirmation. In non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused.
 - Every successful transfer prints the follow-up `mm context sync` command to run.
 
 The `mem_context_artifact_transfer` MCP action performs the same operation headlessly.
