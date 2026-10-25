@@ -99,18 +99,6 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 
 The CLI tokens remain `--preset minimal`, `--preset english`, and `--preset korean`. Remote Ollama or OpenAI-compatible providers are explicit later choices; selecting them can send request data to the configured service.
 
-### File locations
-
-memtomem keeps its local database and configuration under your home directory. The default ONNX path stays on the machine; optional remote embedding, LLM, rerank, and tracing providers send the configured request data to their endpoints.
-
-| Path | What |
-|---|---|
-| `~/.memtomem/memtomem.db` | SQLite store (chunks + vectors) |
-| `~/.memtomem/config.json` | LTM configuration written by `mm init` |
-| `~/.memtomem/logs/web.log` | Web UI log (from `mm web -b`) |
-
-Override the config directory with the `MEMTOMEM_*` env vars (see [Configuration](/ltm/configuration/)).
-
 ## STM Proxy (memtomem-stm)
 
 STM is optional. Install it after the LTM quick-start flow works if you want proactive memory surfacing (presenting relevant memories) or tool-response compression.
@@ -166,15 +154,22 @@ After installation, the following commands are available:
 
 The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client via `mms init --client ...`, `mms register --client ...`, or a generic JSON entry, the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
 
+## File locations
+
+memtomem keeps its local database and configuration under your home directory. The default ONNX path stays on the machine; optional remote embedding, LLM, rerank, and tracing providers send the configured request data to their endpoints.
+
+| Path | What |
+|---|---|
+| `~/.memtomem/memtomem.db` | LTM SQLite store (chunks + vectors) |
+| `~/.memtomem/config.json` | LTM configuration written by `mm init` |
+| `~/.memtomem/stm_proxy.json` | STM proxy configuration managed by `mms init` and `mms add` |
+| `~/.memtomem/logs/web.log` | background Web UI log (from `mm web -b`) |
+
+Override the config directory with the `MEMTOMEM_*` env vars (see [Configuration](/ltm/configuration/)).
+
 ## Embedding Providers
 
-| Provider | Setup | GPU | Cost |
-|---|---|---|---|
-| **ONNX** (fastembed) | Built-in | Not required | Free |
-| **Ollama** | `ollama pull nomic-embed-text` | Not required | Free |
-| **OpenAI** | API key required | — | Paid |
-
-**Not sure which to pick?** Start with **ONNX** — inference is local, free, and needs no extra daemon or API key. You can switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter).
+**Not sure which to pick?** Start with **ONNX** — inference is local, free, and needs no extra daemon or API key. You can switch later by re-running `mm init` or setting `MEMTOMEM_EMBEDDING__PROVIDER` (note the double underscore — nested pydantic-settings keys use `__` as delimiter). For GPU, cost, and setup per provider, see the [embedding provider comparison](/ltm/configuration/#embedding-provider-comparison).
 
 ## Tech Stack
 

@@ -122,6 +122,18 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 
 UI가 없는 환경에서는 MCP 액션 `mem_context_artifact_transfer`로 같은 작업을 실행할 수 있습니다.
 
+## 다른 컴퓨터로 항목 옮기기
+
+`mm context export`는 기준본 하나를 절대 경로와 호스트명이 없는 JSON 파일 한 개로 묶고, `mm context import`는 그 묶음을 기준본 저장소에 반영합니다. 동료에게 항목을 전달할 때 이 두 명령을 사용하고, 파일이 이미 이 컴퓨터에 있다면 `mm context pull`이나 `mm context init`을 사용합니다.
+
+```bash
+mm context export skills deploy-check --out deploy-check.json
+mm context import deploy-check.json --to user            # 미리보기(기본값)
+mm context import deploy-check.json --to user --apply    # 실제 반영
+```
+
+묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
+
 ## 여러 프로젝트 관리
 
 여러 프로젝트를 등록하면 공유 항목을 한꺼번에 동기화하고 프로젝트별 불일치를 확인할 수 있습니다. 다중 프로젝트 작업은 `project_shared` 계층만 대상으로 합니다.
@@ -139,7 +151,7 @@ mm context sync --all-projects
 mm context status --all-projects
 ```
 
-일시 정지된 프로젝트와 동기화 대상이 아닌 프로젝트는 건너뜁니다. 웹 UI에서는 프로젝트를 동기화 대상으로 등록하는 동작이 **Activate**("Project activated for sync")로 표시됩니다.
+일시 정지된 프로젝트와 동기화 대상이 아닌 프로젝트는 건너뜁니다. 한 프로젝트에서 실패해도 나머지 프로젝트의 작업은 계속됩니다. 웹 UI에서는 프로젝트를 동기화 대상으로 등록하는 동작이 **Activate**("Project activated for sync")로 표시됩니다.
 
 ## MCP 서버 정의
 

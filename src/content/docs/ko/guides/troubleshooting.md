@@ -183,11 +183,6 @@ mms eject SERVER_NAME
 - STM 파일 로그는 `MEMTOMEM_STM_LOG_FILE`을 설정해야 생성됩니다.
 - 백그라운드 Web UI 로그는 `~/.memtomem/logs/web.log`에 있습니다.
 
-| 경로 | 내용 |
-|---|---|
-| `~/.memtomem/memtomem.db` | LTM SQLite 저장소 |
-| `~/.memtomem/config.json` | LTM 설정 |
-| `~/.memtomem/stm_proxy.json` | STM 프록시 설정 |
-| `~/.memtomem/logs/web.log` | 백그라운드 Web UI 로그 |
+DB와 설정 파일의 기본 경로는 [설치의 파일 위치](/ko/guides/installation/#파일-위치)를 참고하세요.
 
 현재 릴리스의 전체 설정은 [LTM 환경 변수](/ko/ltm/configuration/)와 [STM 환경 변수](/ko/stm/configuration/)를 참고하세요.

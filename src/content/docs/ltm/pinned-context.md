@@ -41,11 +41,3 @@ mm review show CANDIDATE_ID
 mm review approve CANDIDATE_ID --reviewer "$USER"
 mm review recover --stale-after-minutes 15 --actor "$USER"
 ```
-
-## LangGraph adapters
-
-`MemtomemBaseStore` implements LangGraph's tuple-namespace JSON store.
-`MemtomemStore` is the higher-level async adapter for search, writes, sessions,
-and working memory. Its `config_overrides` apply after ambient config, making
-isolated graph databases explicit and preventing test writes from landing in
-the user's default store.

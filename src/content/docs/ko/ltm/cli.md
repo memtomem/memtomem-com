@@ -232,97 +232,27 @@ mm mem rescan-files --json
 
 ## Context Gateway
 
-Context Gateway는 에이전트·스킬·명령의 기준본을 Store에 보관합니다. `sync`는 Store의 기준본을 AI 도구로 Push합니다. `pull`은 AI 도구의 복사본을 미리 확인한 뒤 Store로 가져옵니다. 프로젝트·계층 간 이동과 여러 프로젝트의 일괄 작업도 지원합니다.
-
-계층은 UI에서 **User**(`--scope user`, 모든 프로젝트에서 사용하는 개인용), **Project (shared)**(`--scope project_shared`, git 추적 대상), **Project (local)**(`--scope project_local`, 로컬 초안)로 표시됩니다.
-
-### `mm context sync`
-
-Store에 저장된 기준본을 감지된 AI 도구의 파일과 동기화합니다.
+`mm context`는 에이전트·스킬·명령·MCP 서버 정의의 기준본을 Store에 보관하고 각 AI 도구로 동기화합니다. 계층은 `--scope user`, `--scope project_shared`, `--scope project_local`로 지정합니다. 계층별 규칙과 작업 흐름은 [Context Gateway 가이드](/ko/ltm/context-gateway/)를, 명령별 전체 옵션은 [명령별 전체 옵션 인덱스](#명령별-전체-옵션-인덱스)를 참고하세요.
 
 ```bash
-mm context detect
-mm context init --scope project_shared --confirm-project-shared
-mm context sync --scope project_shared
-mm context diff --scope project_shared
-```
+mm context detect                                   # 감지된 AI 도구 파일 확인
+mm context init --scope project_shared --confirm-project-shared   # AI 도구 파일로 기준본 생성
+mm context sync --scope project_shared              # Store 기준본을 AI 도구로 Push
+mm context diff --scope project_shared              # 기준본과 AI 도구 복사본 비교
+mm context pull skills reviewer --from claude --diff   # AI 도구 항목 하나를 Store로 가져오기(미리보기)
 
-**Project (shared)**는 git으로 추적하므로 비밀값을 넣으면 안 되며 저장 전 확인이 필요합니다. **User** 계층(`--scope user`)의 기준본은 `~/.memtomem/` 아래에 저장되어 모든 프로젝트에서 사용할 수 있습니다. 프로젝트 밖의 홈 디렉터리에 쓰는 작업이므로 Gateway는 수정할 파일을 먼저 보여 주고 확인을 요청합니다. 입력할 수 없는 환경에서는 `--yes`로 확인을 건너뛸 수 있습니다.
-
-MCP 서버 정의도 같은 방식으로 관리할 수 있습니다. `mm context sync --include=mcp-servers`는 기준본을 프로젝트의 `.mcp.json`으로 보냅니다. 비밀값을 검사하며, `mcp-servers`를 직접 지정했을 때만 실행됩니다.
-
-### `mm context pull`
-
-이름을 지정한 AI 도구의 항목 하나를 Store로 가져옵니다. 기본 동작은 미리보기입니다. `--diff`는 가져올 변경 내용을 보여 주고, 여러 후보가 있으면 `--from`으로 AI 도구를 선택합니다. `--overwrite`는 기존 Store 내용을 버전 이력에 저장한 뒤 교체합니다.
-
-```bash
-mm context pull skills reviewer
-mm context pull skills reviewer --from claude --diff
-mm context pull skills reviewer --from claude --scope project_shared --overwrite --apply
-```
-
-### 다른 프로젝트의 스킬 재사용 (`mm context move` / `copy`)
-
-다른 프로젝트에서 만든 스킬·에이전트·명령을 현재 프로젝트로 가져오거나 계층 사이에서 옮길 때 사용합니다. `copy`는 원본을 남기며 `--as`로 이름을 바꿀 수 있습니다. `move`는 원본을 삭제합니다.
-
-```bash
-# 다른 프로젝트의 스킬을 현재 프로젝트로 복사 (먼저 미리보기)
-mm context copy skills my-skill --to-project ~/work/other-app
-mm context copy skills my-skill --to-project ~/work/other-app --apply
-
-# user 계층으로 이름을 바꿔 복사
-mm context copy agents reviewer --to user --as reviewer-strict --apply
-
-# 계층 이동: 로컬 초안을 공유 계층으로 옮김
+mm context copy skills my-skill --to-project ~/work/other-app   # 프로젝트·계층 간 복사(미리보기)
 mm context move commands deploy --to project_shared --confirm-project-shared --apply
 
-# MCP 서버 정의를 다른 프로젝트로 복사
-mm context copy mcp-servers github --to-project ~/work/other-app --apply
+mm context projects add ~/work/app-a                # 프로젝트 등록(list / pause / resume / remove)
+mm context sync --all-projects                      # 등록된 모든 프로젝트의 Project (shared) 계층 동기화
+mm context status --all-projects                    # 읽기 전용: 어떤 프로젝트가 어긋났는가
+
+mm context export skills deploy-check --out deploy-check.json   # 다른 컴퓨터로 옮길 묶음 생성
+mm context import deploy-check.json --to user                    # 묶음 반영(미리보기)
 ```
 
-기본 동작은 변경 내용을 보여 주는 미리보기입니다. 실제로 옮기거나 복사하려면 `--apply`가 필요합니다. 대상에 같은 이름이 있으면 거부하며 `--force`로 덮어쓸 수 없습니다. **Project (shared)**로 옮길 때는 민감 정보를 검사하고 `--confirm-project-shared`를 추가로 요구합니다. 작업이 끝나면 AI 도구로 보낼 때 사용할 다음 명령(예: `mm context sync`)을 출력합니다.
-
-### 여러 프로젝트 한 번에 다루기 (`mm context projects`)
-
-자주 사용하는 프로젝트를 등록하면 공유 항목을 모든 프로젝트에 한꺼번에 보낼 수 있습니다(`sync --all-projects`). `status --all-projects`는 파일을 바꾸지 않고 프로젝트별 불일치를 확인합니다.
-
-```bash
-mm context projects add ~/work/app-a          # 레지스트리에 등록
-mm context projects list                      # 등록된 프로젝트 + 상태/등록 여부
-mm context projects pause ~/work/app-a        # 일괄 작업에서 제외
-mm context projects resume ~/work/app-a       # 다시 포함
-
-mm context sync --all-projects                # 모든 적격 프로젝트로 일괄 동기화
-mm context status --all-projects              # 읽기 전용: 어떤 프로젝트가 어긋났는가
-```
-
-일괄 동기화는 **Project (shared)** 계층만 대상으로 합니다. 한 프로젝트에서 실패해도 나머지 작업은 계속합니다. `pause` 상태인 프로젝트는 모든 `--all-projects` 작업에서 건너뜁니다.
-
-<a id="기존-런타임-파일에서-시드하기"></a>
-### 기존 AI 도구의 파일을 기준본으로 가져오기
-
-`mm context init`은 이미 이 컴퓨터에 있는 AI 도구의 파일로 기준본을 만듭니다. 항목 종류와 대상 계층을 지정해 실행합니다.
-
-```bash
-mm context detect --include agents,skills
-mm context init --include agents,skills --scope project_shared --confirm-project-shared
-mm context diff --include agents,skills --scope project_shared
-```
-
-Claude Code, Codex CLI, Antigravity CLI 등에서 직접 만든 파일을 앞으로 memtomem으로 관리할 때 사용합니다. 프로젝트 사이에서 재사용하려면 위의 `move`와 `copy`를 사용하세요. 공용 라이브러리에서 설치하려면 `mm wiki`를 사용합니다.
-
-### 다른 컴퓨터로 항목 옮기기
-
-`mm context export`는 기준본 하나를 절대 경로와 호스트명이 없는 JSON 파일 한 개로 묶고, `mm context import`는 그 묶음을 기준본 저장소에 반영합니다(ADR-0037). 동료에게 항목을 전달할 때 이 두 명령을 사용하고, 파일이 이미 이 컴퓨터에 있다면 위의 `context init`을 사용합니다.
-
-```bash
-mm context export skills deploy-check --out deploy-check.json
-mm context import deploy-check.json --to user            # 미리보기(기본값)
-mm context import deploy-check.json --to user --apply    # 실제 반영
-```
-
-묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
-
+`pull`, `move`, `copy`, `import`는 기본적으로 미리보기만 실행하며 `--apply`를 지정해야 반영합니다. `move`나 `copy`를 **Project (shared)**에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전과 `--all-projects`로 일괄 Push하기 전에도 확인을 요청하며, `--yes`로 이 확인을 건너뛸 수 있습니다.
 
 <a id="wiki--정규-아티팩트-라이브러리"></a>
 ## Wiki — 공용 항목 라이브러리

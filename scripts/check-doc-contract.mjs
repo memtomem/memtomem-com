@@ -373,9 +373,6 @@ for (const file of [path.join(docsRoot, 'ltm/mcp-tools.md'), path.join(docsRoot,
   for (const token of ['content', 'source', 'source_ref', 'idempotency_key']) {
     assertContains(file, token, `proposal argument ${token}`);
   }
-  for (const token of ['mcp.memtomem', 'mcp."memtomem-local"']) {
-    assertContains(file, token, `OpenCode coexistence token ${token}`);
-  }
 }
 
 function dataFences(text) {

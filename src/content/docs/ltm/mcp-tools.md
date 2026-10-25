@@ -88,37 +88,10 @@ candidate; reusing it with different content is rejected.
 
 ## OpenCode
 
-The published `opencode-memtomem@0.3.15` plugin bundles Core 0.6.12. OpenCode
-uses the singular `plugin` key; there is no `opencode plugin add` command:
+[Connect an AI Client](/guides/connect-ai-client/#opencode) covers registering memtomem in OpenCode through the published plugin or a manual local server, and which server runs when both are configured. Two points affect tool exposure:
 
-```json
-{"plugin": ["opencode-memtomem@0.3.15"]}
-```
-
-For MCP tools without the plugin's slash commands and skills, configure a local
-server in `opencode.json`:
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "memtomem": {
-      "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.6.12", "memtomem-server"],
-      "enabled": true,
-      "timeout": 60000,
-      "environment": {"MEMTOMEM_TOOL_MODE": "core"}
-    }
-  }
-}
-```
-
-An existing manual `mcp.memtomem` entry takes precedence over the plugin's
-default, so only one server runs. Keep that exact key for a manual server, or
-remove the entry to use the plugin server. A different key such as
-`mcp."memtomem-local"` is not deduplicated and runs both. See the
-[OpenCode connection guide](/guides/connect-ai-client/#opencode) for the full
-set of choices.
+- The published plugin starts the server in `core` mode.
+- For a manual server, set `MEMTOMEM_TOOL_MODE` under the `environment` key of its entry under `mcp` in `opencode.json`. OpenCode uses `environment`, not `env`.
 
 ## Common Actions
 

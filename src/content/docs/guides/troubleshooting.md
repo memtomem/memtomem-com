@@ -182,11 +182,6 @@ See [Add STM to an MCP Server](/stm/first-proxy/) for verification before and af
 - Set `MEMTOMEM_STM_LOG_FILE` to opt into an STM rotating file log.
 - Background Web UI logs live at `~/.memtomem/logs/web.log`.
 
-| Path | What |
-|---|---|
-| `~/.memtomem/memtomem.db` | LTM SQLite store |
-| `~/.memtomem/config.json` | LTM configuration |
-| `~/.memtomem/stm_proxy.json` | STM proxy configuration |
-| `~/.memtomem/logs/web.log` | background Web UI log |
+For the default database and configuration paths, see [File locations](/guides/installation/#file-locations).
 
 For every released setting, see [LTM Environment Variables](/ltm/configuration/) and [STM Environment Variables](/stm/configuration/).

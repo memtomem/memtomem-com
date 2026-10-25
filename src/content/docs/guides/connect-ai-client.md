@@ -147,7 +147,7 @@ mm init --mcp kimi
 
 ## OpenCode
 
-The published plugin provides an exact-pinned MCP server plus commands and skills. Add it to `opencode.json`:
+The published `opencode-memtomem@0.3.15` plugin bundles Core 0.6.12 and provides an exact-pinned MCP server plus commands and skills. OpenCode uses the singular `plugin` key and has no `opencode plugin add` command, so add it to `opencode.json`:
 
 ```json
 {

@@ -239,96 +239,27 @@ mm mem rescan-files --json
 
 ## Context Gateway
 
-The Context Gateway keeps canonical agents, skills, and commands in a Store. `sync` Pushes Store copies out to runtimes; `pull` previews and brings a selected runtime copy back into the Store. Cross-project / cross-tier transfer and fleet-wide operations use the same model.
-
-Tiers are addressed by friendly labels: **User** (`--scope user`, personal, visible in every project), **Project (shared)** (`--scope project_shared`, git-tracked), and **Project (local)** (`--scope project_local`, local drafts).
-
-### `mm context sync`
-
-Sync your stored canonical files out to the detected runtime files.
+`mm context` keeps canonical agents, skills, commands, and MCP server definitions in a Store and syncs them to each AI runtime. Tiers are addressed with `--scope user`, `--scope project_shared`, or `--scope project_local`. See the [Context Gateway guide](/ltm/context-gateway/) for tier rules and workflows, and the [complete option index](#complete-option-index-by-command) for every option.
 
 ```bash
-mm context detect
-mm context init --scope project_shared --confirm-project-shared
-mm context sync --scope project_shared
-mm context diff --scope project_shared
-```
+mm context detect                                   # runtime files memtomem can see
+mm context init --scope project_shared --confirm-project-shared   # seed the Store from runtime files
+mm context sync --scope project_shared              # push Store copies out to runtimes
+mm context diff --scope project_shared              # compare Store and runtime copies
+mm context pull skills reviewer --from claude --diff   # preview one runtime artifact entering the Store
 
-**Project (shared)** is git-tracked, so it requires explicit confirmation and should not contain secrets. Syncing to the **User** tier (`--scope user`) places the canonical files under `~/.memtomem/` so they show up in every project — because that writes outside the project (your home directory), the gateway shows exactly which file paths it will touch and asks for confirmation. In non-interactive contexts, `--yes` skips the prompt.
-
-MCP server definitions move through the same flow. `mm context sync --include=mcp-servers` syncs canonical MCP server definitions into a project's `.mcp.json` (with secret-safety checks) — an opt-in path that only runs when you ask for it.
-
-### `mm context pull`
-
-Pull one named runtime artifact into the Store. Preview is the default; `--diff` shows the would-land change, `--from` selects a runtime when candidates diverge, and `--overwrite` snapshots the current Store payload before replacement.
-
-```bash
-mm context pull skills reviewer
-mm context pull skills reviewer --from claude --diff
-mm context pull skills reviewer --from claude --scope project_shared --overwrite --apply
-```
-
-### Reuse a skill from another project (`mm context move` / `copy`)
-
-Use this when you want to bring a skill, agent, or command you already built in another project into this one, or shift it between tiers. `copy` leaves the original in place (rename it with `--as` if needed); `move` cleans up the source.
-
-```bash
-# copy another project's skill into the current one (preview first)
-mm context copy skills my-skill --to-project ~/work/other-app
-mm context copy skills my-skill --to-project ~/work/other-app --apply
-
-# copy to your user tier under a new name
-mm context copy agents reviewer --to user --as reviewer-strict --apply
-
-# tier move: promote a local draft to the shared tier
+mm context copy skills my-skill --to-project ~/work/other-app   # transfer across projects or tiers (preview)
 mm context move commands deploy --to project_shared --confirm-project-shared --apply
 
-# copy an MCP server definition to another project
-mm context copy mcp-servers github --to-project ~/work/other-app --apply
+mm context projects add ~/work/app-a                # register a project (also list / pause / resume / remove)
+mm context sync --all-projects                      # sync Project (shared) in every registered project
+mm context status --all-projects                    # read-only: which projects drifted
+
+mm context export skills deploy-check --out deploy-check.json   # pack a bundle for another machine
+mm context import deploy-check.json --to user                    # land a bundle (preview)
 ```
 
-Both default to a dry-run preview; pass `--apply` to execute. A destination collision always refuses (no `--force` valve). A landing in **Project (shared)** runs a privacy scan and additionally requires `--confirm-project-shared`. After a transfer the command prints the follow-up that pushes the artifact out to your AI tools at the destination (e.g. `mm context sync`) so you can run it next.
-
-### Operate across many projects (`mm context projects`)
-
-Register the projects you work across, then push shared artifacts out to all of them in one call (`sync --all-projects`) or ask read-only which projects have drifted (`status --all-projects`).
-
-```bash
-mm context projects add ~/work/app-a          # register in the registry
-mm context projects list                      # registered projects + health/enrollment
-mm context projects pause ~/work/app-a        # exclude from batch operations
-mm context projects resume ~/work/app-a       # include again
-
-mm context sync --all-projects                # bulk-sync every eligible project
-mm context status --all-projects              # read-only: which projects drifted
-```
-
-The bulk sync targets the **Project (shared)** tier only, and one project's failure does not abort the batch. A `pause`d project is skipped by every `--all-projects` operation.
-
-### Seeding from existing runtime files
-
-`mm context init` seeds canonical files from the runtime-specific files already on this machine. Give it the artifact kinds and the destination tier.
-
-```bash
-mm context detect --include agents,skills
-mm context init --include agents,skills --scope project_shared --confirm-project-shared
-mm context diff --include agents,skills --scope project_shared
-```
-
-This is useful when you already authored files directly in Claude Code, Codex CLI, Antigravity CLI, or another runtime and want memtomem to manage them going forward. For reuse across projects see `move`/`copy` above; to install from a host-global library see `mm wiki`.
-
-### Carrying an artifact to another machine
-
-`mm context export` packs one canonical artifact into a portable bundle — a single JSON file with no absolute paths and no hostnames — and `mm context import` lands a bundle in a canonical store (ADR-0037). Use this pair to hand an artifact to a colleague; use `context init` above when the files are already on this machine.
-
-```bash
-mm context export skills deploy-check --out deploy-check.json
-mm context import deploy-check.json --to user            # preview (the default)
-mm context import deploy-check.json --to user --apply    # write
-```
-
-A bundle is foreign by definition, so every entry is scanned on the way in no matter which tier it lands in, and `--to` is required: a foreign file must not choose where it lands. Export refuses on a secret from every source tier and has no force flag, because a file you have handed over is as unretractable as a pushed commit. On import, `--force-unsafe-import` accepts a secret-shaped value into `user` or `project_local` after review; a `project_shared` landing refuses a secret-shaped value in every case, with or without that flag.
-
+`pull`, `move`, `copy`, and `import` preview by default; pass `--apply` to write. Applying a `move` or `copy` into **Project (shared)** asks for confirmation; in non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused. `mm context sync` also asks before writing settings files outside the project and before an `--all-projects` push; `--yes` skips those prompts.
 
 ## Wiki — a canonical artifact library
 
