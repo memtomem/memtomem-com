@@ -15,6 +15,33 @@ export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`);
 }
 
+// Install pins and release links must name the current version of their own
+// package. STALE_VERSIONS cannot catch a leftover `memtomem==0.6.8`, because
+// prose may truthfully date features to 0.6.8; a pin never may.
+const VERSION = String.raw`(\d+\.\d+\.\d+(?:[-+.]?[0-9A-Za-z]+)*)`;
+const REPO = String.raw`(memtomem-stm|memtomem)`;
+const PIN_FORMS = [
+  [new RegExp(String.raw`(?<![\w.-])${REPO}(?:\[[^\]\s]*\])?==${VERSION}`, 'gi'), 'repo'],
+  [new RegExp(String.raw`github\.com/memtomem/${REPO}(?:\.git)?@v${VERSION}`, 'gi'), 'repo'],
+  [new RegExp(String.raw`github\.com/memtomem/${REPO}/(?:blob|tree)/v${VERSION}`, 'gi'), 'repo'],
+  [new RegExp(String.raw`raw\.githubusercontent\.com/memtomem/${REPO}/v${VERSION}`, 'gi'), 'repo'],
+  // Only `mm upgrade` takes a numeric --version on this site, so every one is Core's.
+  [new RegExp(String.raw`(?<![\w-])--version(?:=|[\s\\]+)["']?${VERSION}["']?`, 'g'), 'core'],
+  [new RegExp(String.raw`(?<![\w.-])opencode-memtomem@${VERSION}`, 'gi'), 'opencode'],
+];
+
+export function stalePins(text, contract) {
+  const current = { memtomem: contract.core.version, 'memtomem-stm': contract.stm.version, core: contract.core.version, opencode: contract.opencode.version };
+  const found = [];
+  for (const [pattern, kind] of PIN_FORMS) {
+    for (const match of text.matchAll(pattern)) {
+      const [pin, repo, version] = kind === 'repo' ? match : [match[0], kind, match[1]];
+      if (version.toLowerCase() !== current[repo.toLowerCase()]) found.push(pin);
+    }
+  }
+  return found;
+}
+
 export function validateUpstream(snapshot, contract, sources) {
   const errors = [];
   const same = (actual, expected, label) => {
@@ -52,6 +79,7 @@ export function validateUpstream(snapshot, contract, sources) {
     if (STALE_VERSIONS.some((version) => staleVersionPattern(version).test(text))) {
       errors.push(file + ': stale release');
     }
+    for (const pin of stalePins(text, contract)) errors.push(file + ': stale pin ' + pin);
   }
   return errors;
 }

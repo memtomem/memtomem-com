@@ -25,6 +25,7 @@ for (const [name, mutate, expected] of [
 ...hermesRefMutations,
 ...['`--ref 0000000000000000000000000000000000000000`', "--ref '0000000000000000000000000000000000000000'", '--ref "0000000000000000000000000000000000000000"', '--ref=0000000000000000000000000000000000000000', '(--ref 0000000000000000000000000000000000000000)'].map(form => [`extra stale Hermes ref ${form}`, extraHermesRef(form), /Hermes commit 0{40} is not the release commit/]),
 ['missing Hermes coexistence rule', async d => { const p=path.join(d,'src/content/docs/guides/connect-ai-client.md'); await writeFile(p,(await readFile(p,'utf8')).replaceAll('mcp_servers.memtomem-local','mcp_servers.other')); }],
+...['src/pages/index.astro', 'src/pages/ko/index.astro'].map(file => [`stale pin in ${file}`, async d => { const p=path.join(d,file); await writeFile(p,(await readFile(p,'utf8'))+'\n<!-- uv tool install memtomem==0.6.8 -->\n'); }, new RegExp(`${file}: stale pin memtomem==0\\.6\\.8`)]),
 ['invalid JSON example', async d => { const p=path.join(d,'src/content/docs/ltm/overview.md'); await writeFile(p,(await readFile(p,'utf8'))+'\n```json\n{"broken": }\n```\n'); }],
 ]) test('full checker rejects '+name, async () => {
 const dir=await mkdtemp(path.join(tmpdir(),'site-contract-'));

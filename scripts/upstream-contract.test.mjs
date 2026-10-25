@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { validateUpstream, staleVersionPattern, STALE_VERSIONS } from './upstream-contract.mjs';
+import { validateUpstream, staleVersionPattern, stalePins, STALE_VERSIONS } from './upstream-contract.mjs';
 const snapshot = JSON.parse(await readFile('src/data/upstream-snapshot.json', 'utf8'));
 const contract = JSON.parse(await readFile('src/data/docs-contract.json', 'utf8'));
 const sources = {};
@@ -39,3 +39,45 @@ for (const [version, text, stale] of [
 ['0.6.4', 'v0.6.4.1', false],
 ['0.6.4', '10.6.4', false],
 ]) { test(`stale pattern ${version} ${stale ? 'flags' : 'ignores'} ${text}`, () => assert.equal(staleVersionPattern(version).test(text), stale)); }
+for (const [text, flagged] of [
+["uv tool install 'memtomem[all]==0.6.8'", ['memtomem[all]==0.6.8']],
+['uvx --from "memtomem-stm[langfuse]==0.6.1" mms', ['memtomem-stm[langfuse]==0.6.1']],
+['pip install memtomem-stm==0.6.8', ['memtomem-stm==0.6.8']],
+['"args": ["--from", "memtomem[onnx]==0.6.8", "memtomem-server"]', ['memtomem[onnx]==0.6.8']],
+["pip install 'git+https://github.com/memtomem/memtomem.git@v0.6.8#subdirectory=packages/memtomem'", ['github.com/memtomem/memtomem.git@v0.6.8']],
+['mm upgrade --version 0.6.8', ['--version 0.6.8']],
+['mm upgrade --version=0.6.8', ['--version=0.6.8']],
+['https://github.com/memtomem/memtomem/blob/v0.6.8/docs/guides/configuration.md', ['github.com/memtomem/memtomem/blob/v0.6.8']],
+['https://github.com/memtomem/memtomem-stm/tree/v0.6.1/docs', ['github.com/memtomem/memtomem-stm/tree/v0.6.1']],
+['https://raw.githubusercontent.com/memtomem/memtomem/v0.6.8/examples/a.ipynb', ['raw.githubusercontent.com/memtomem/memtomem/v0.6.8']],
+['https://raw.githubusercontent.com/memtomem/memtomem-stm/v0.6.1/docs/configuration.md', ['raw.githubusercontent.com/memtomem/memtomem-stm/v0.6.1']],
+['{"plugin": ["opencode-memtomem@0.3.11"]}', ['opencode-memtomem@0.3.11']],
+['memtomem==0.6.12rc1', ['memtomem==0.6.12rc1']],
+['pip install MEMTOMEM==0.6.8', ['MEMTOMEM==0.6.8']],
+['pip install MemToMem-STM==0.6.8', ['MemToMem-STM==0.6.8']],
+['mm upgrade --version "0.6.8"', ['--version "0.6.8"']],
+["mm upgrade --version='0.6.8'", ["--version='0.6.8'"]],
+['mm upgrade --yes --version  0.6.8', ['--version  0.6.8']],
+['mm upgrade --version 0.6.12 --version 0.6.8', ['--version 0.6.8']],
+['mm upgrade --version \\\n  0.6.8', ['--version \\\n  0.6.8']],
+['mm upgrade --version\n0.6.8', ['--version\n0.6.8']],
+['mm upgrade \\\n  --version 0.6.8', ['--version 0.6.8']],
+// No other package on the site takes a numeric --version; one that does needs its own rule.
+['hermes update --version 0.21.5', ['--version 0.21.5']],
+['memtomem==0.6.12.post1', ['memtomem==0.6.12.post1']],
+// Current pins, unversioned links, prose, and other packages pass.
+["uv tool install 'memtomem[all]==0.6.12'", []],
+['uvx --from memtomem-stm==0.6.9 mms', []],
+['{"plugin": ["opencode-memtomem@0.3.15"]}', []],
+['https://github.com/memtomem/memtomem-stm/blob/main/docs/configuration.md', []],
+['https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md', []],
+['Added in 0.6.8; requires memtomem 0.6.8 or later.', []],
+['an exact `memtomem==` pin', []],
+['/plugin install memtomem@memtomem', []],
+['uv tool install "hermes-agent[mcp]==0.21.5"', []],
+['opencode-memtomem-extra@0.1.0 and mymemtomem==0.1.0', []],
+['pip install other.memtomem==0.6.8', []],
+['mm upgrade --version 0.6.12', []],
+['mm --version', []],
+]) test(`stale pins in ${text}`, () => assert.deepEqual(stalePins(text, contract), flagged));
+test('rejects a stale pin in a Korean doc', () => { const d = { ...sources }; const ko = 'src/content/docs/ko/stm/cli.md'; d[ko] += '\nuv tool install memtomem-stm==0.6.8'; assert.deepEqual(validateUpstream(snapshot, contract, d), [ko + ': stale pin memtomem-stm==0.6.8']); });
