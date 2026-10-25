@@ -53,7 +53,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 훑지 않으므로 `mm index <dir>`로 처음 한 번 색인한 뒤 감시 기능에 맡기세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래에 있는 프로젝트 계층 기억의 루트 | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | 색인과 검색에는 사용하지만 memtomem이 절대 다시 쓰지 않는 루트. 쓰기 가능한 루트와 겹치지 않아야 합니다. | `[]` |
-| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 chunk가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아닙니다. (JSON 리스트, APPEND 병합) | `[]` |
+| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 chunk가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아니며, `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. (JSON 리스트, APPEND 병합) | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 인덱싱 대상 파일 확장자 (JSON 리스트) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | 청크당 최대 토큰 수 | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | 짧은 청크 병합 임계값 | `128` |
@@ -277,7 +277,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 상태 모니터
 
-상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다(`indexing.retain_missing_dirs` 아래의 출처는 계속 검색됩니다). 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
+상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다(색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래의 출처는 다른 이유로 보류되지 않은 한 계속 검색됩니다). 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|

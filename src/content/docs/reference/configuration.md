@@ -47,7 +47,7 @@ This public reference tracks the complete `memtomem` 0.6.12 and `memtomem-stm` 0
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | Directories reactively re-indexed by the long-running `memtomem-server` file watcher (JSON list). Pre-existing files are not auto-scanned — seed them once with `mm index <dir>`, then the watcher picks up further edits. Populated by `mm init` when you opt in to AI agent memory enrollment. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | Project-tier memory roots under `.memtomem/memories` or `.memtomem/memories.local` | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | Roots memtomem indexes and searches but never rewrites. Must be disjoint from the writable roots. | `[]` |
-| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | Directories whose files other tools delete on their own (Claude Code plans, Codex memories), where the indexed chunks are the only copy left. A missing source under one of these that is also under an index root stays searchable instead of being held, and is not offered for purge. Not an index root itself. (JSON list, APPEND merge) | `[]` |
+| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | Directories whose files other tools delete on their own (Claude Code plans, Codex memories), where the indexed chunks are the only copy left. A missing source under one of these that is also under an index root stays searchable instead of being held, and is not offered for purge. Not an index root itself, and a source held for another reason (`redaction_blocked`, `scan_unavailable`) stays held. (JSON list, APPEND merge) | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | File extensions to index (JSON list) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | Maximum tokens per chunk | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | Merge threshold for short chunks | `128` |
@@ -241,7 +241,7 @@ Background job that periodically groups near-duplicate memories and compresses t
 
 ### Health watchdog
 
-Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted (a source under `indexing.retain_missing_dirs` stays searchable instead); purging their chunks is an explicit `mm gc orphan-sources --apply`.
+Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted (a source under both an index root and `indexing.retain_missing_dirs` stays searchable instead, unless it is held for another reason); purging their chunks is an explicit `mm gc orphan-sources --apply`.
 
 | Variable | Description | Default |
 |---|---|---|

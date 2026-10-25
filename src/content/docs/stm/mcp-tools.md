@@ -112,7 +112,7 @@ mms add filesystem --command npx \
 # filesystem's read_file becomes fs__read_file
 ```
 
-STM does not advertise every upstream tool 1:1 — it applies an eligibility filter at exposure time. Tools from a disconnected server, tools whose metadata contains credential-looking strings, and tools with colliding names are not advertised to the agent, and a tool whose name falls outside the MCP tool-name grammar (`[A-Za-z0-9._-]`, 1–128 characters) is not proxied at all; the discovered-vs-advertised counts in `stm_admin(action="proxy_health")` make the difference visible.
+STM does not advertise every upstream tool 1:1 — it applies an eligibility filter at exposure time. Tools from a disconnected server, tools whose metadata contains credential-looking strings, and tools with colliding names are not advertised to the agent; the discovered-vs-advertised counts in `stm_admin(action="proxy_health")` make the difference visible. A tool whose name falls outside the MCP tool-name grammar (`[A-Za-z0-9._-]`, 1–128 characters) is not proxied at all, which is separate from the 64-character budget; `proxy_health` counts it as discovered and adds a `not proxied` line for the server.
 
 Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
 

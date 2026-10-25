@@ -48,7 +48,7 @@ STM은 모든 MCP 도구 호출을 다음 순서로 처리합니다.
 2. **COMPRESS** — 응답 크기 축소 (10가지 전략 중 자동 선택)
 3. **SURFACE** — LTM에서 관련 기억 조회·주입 (5단계 관련성 검사)
 
-기본 제공 `mms` 실행 환경은 기억을 LTM에 다시 기록하지 않습니다. 응답 처리 순서는 **CLEAN → COMPRESS → SURFACE**이며, SURFACE 단계에서는 MCP를 통해 LTM의 기억을 읽기만 합니다. 텍스트 블록이 둘 이상이고 그중 하나라도 `annotations`나 `_meta`를 가진 응답은 블록별로 정리한 뒤 예산에 맞춰 자르며, COMPRESS와 SURFACE를 거치지 않습니다([압축 전략](/ko/stm/compression/) 참조).
+기본 제공 `mms` 실행 환경은 기억을 LTM에 다시 기록하지 않습니다. 응답 처리 순서는 **CLEAN → COMPRESS → SURFACE**이며, SURFACE 단계에서는 MCP를 통해 LTM의 기억을 읽기만 합니다. 오류가 아닌 응답 중 텍스트 블록이 둘 이상이고 그중 하나라도 `annotations`나 `_meta`를 가진 응답은 블록별로 정리한 뒤 예산에 맞춰 자르며, COMPRESS와 SURFACE를 거치지 않습니다([압축 전략](/ko/stm/compression/) 참조).
 
 ## LTM과의 관계
 

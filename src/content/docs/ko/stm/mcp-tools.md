@@ -114,7 +114,7 @@ mms add filesystem --command npx \
 # filesystem의 read_file 은 fs__read_file 이 됩니다
 ```
 
-STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다.
+STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 아예 프록시하지 않으며, 이는 64자 제한과는 별개입니다. `proxy_health`는 이런 도구를 발견한 수에 포함하고 해당 서버에 `not proxied` 줄을 추가합니다.
 
 MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 보입니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
 

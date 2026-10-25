@@ -48,7 +48,7 @@ STM runs every MCP tool call through this pipeline:
 2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
 3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
 
-A response with more than one text block, where any text block carries `annotations` or `_meta`, is cleaned per block and cut to its budget instead, without COMPRESS or SURFACE; see [Compression Strategies](/stm/compression/).
+A successful response with more than one text block, where any text block carries `annotations` or `_meta`, is cleaned per block and cut to its budget instead, without COMPRESS or SURFACE; see [Compression Strategies](/stm/compression/).
 
 The bundled `mms` runtime does not write memories back to LTM. Its active response pipeline is **CLEAN → COMPRESS → SURFACE**, and surfacing reads from LTM over MCP.
 

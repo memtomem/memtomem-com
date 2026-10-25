@@ -383,6 +383,8 @@ mms project list --json
 mms project list --prune             # marker가 없거나 디렉터리가 아닌 루트의 항목 정리
 ```
 
+색인된 프로젝트 중 하나라도 설정이 손상되어 있으면 `--prune`은 중단되고 색인은 바뀌지 않습니다.
+
 ### `mms project enable / disable <mcps...>`
 
 프로젝트의 `mcp.enabled` 목록에 MCP 이름을 추가하거나 제거합니다. 대상 프로젝트는 현재 디렉터리에서 자동으로 찾으며 `--project <name>`으로 직접 지정할 수도 있습니다.

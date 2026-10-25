@@ -381,6 +381,8 @@ mms project list --json
 mms project list --prune             # drop entries with missing markers or non-directory roots
 ```
 
+If any indexed project's config is corrupt, `--prune` aborts and leaves the index unchanged.
+
 ### `mms project enable / disable <mcps...>`
 
 Add or remove MCP names from a project's `mcp.enabled` list. Target is auto-detected from cwd; pass `--project <name>` to override.
