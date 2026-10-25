@@ -5,7 +5,7 @@ description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 
 `mms` 명령은 `memtomem-stm` v0.6.9 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
-STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
+STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 만족스럽지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
 <a id="명령어"></a>
 
@@ -94,9 +94,9 @@ mms add --import                     # 별칭
 mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에서 직접 등록 제거
 ```
 
-가져오기에 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트의 직접 경로 양쪽에 보입니다. 직접 경로는 압축·캐시·관련 기억 검색을 거치지 않습니다. 가져온 항목에는 원본 클라이언트 종류와 기존 등록 정보 사본을 함께 기록하므로 [`mms eject`](#mms-eject-name)로 언제든 원래 상태를 복원할 수 있습니다.
+가져오기에 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트의 직접 경로 양쪽에 표시됩니다. 직접 경로는 압축·캐시·관련 기억 검색을 거치지 않습니다. 가져온 항목에는 원본 클라이언트 종류와 기존 등록 정보 사본을 함께 기록하므로 [`mms eject`](#mms-eject-name)로 언제든 원래 상태를 복원할 수 있습니다.
 
-`--prune` 옵션을 주거나 대화형 터미널의 확인 질문에서 동의하면(기본값 **No**), Claude Code 범위별 `claude mcp remove`와 Claude Desktop JSON 파일의 안전한 재작성을 통해 이중 등록을 정리합니다. 제거 전에는 각 항목을 `~/.memtomem/pruned_upstreams.json`에 백업하므로 이 작업도 되돌릴 수 있습니다. 비대화형 환경에서 `--prune` 없이 실행하면 안내 경고와 수동 복구 명령만 출력합니다.
+`--prune` 옵션을 지정하거나 대화형 터미널의 확인 질문에서 동의하면(기본값 **No**), Claude Code 범위별 `claude mcp remove`와 Claude Desktop JSON 파일의 안전한 재작성을 통해 이중 등록을 정리합니다. 제거 전에는 각 항목을 `~/.memtomem/pruned_upstreams.json`에 백업하므로 이 작업도 되돌릴 수 있습니다. 비대화형 환경에서 `--prune` 없이 실행하면 안내 경고와 수동 복구 명령만 출력합니다.
 
 `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. `--prune`은 반드시 `--from-clients` / `--import`와 함께 써야 합니다.
 
@@ -109,7 +109,7 @@ mms list                             # 사람이 읽기 좋은 표
 mms list --json                      # 스크립트용 JSON
 ```
 
-표의 **ORIGIN** 열에는 각 서버를 가져온 위치가 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, `mms add`로 직접 등록한 항목은 `-`로 표시합니다. 값 뒤의 `*`는 클라이언트의 원본 등록을 정리해 현재 STM을 통해서만 호출된다는 뜻입니다. `mms eject <name>`로 복원할 수 있습니다. v0.1.32부터는 **SURFACING** 열도 표시하므로 서버별 `mms surfacing` 설정을 여기서 확인할 수 있습니다.
+표의 **ORIGIN** 열에는 각 서버를 가져온 위치가 표시됩니다. 값은 원본 클라이언트 종류(`mcp-json`, `claude-user`, `claude-project`, `claude-desktop`)이며, `mms add`로 직접 등록한 항목은 `-`로 표시합니다. 값 뒤의 `*`는 클라이언트의 원본 등록을 정리해 현재 STM을 통해서만 호출된다는 의미입니다. `mms eject <name>`로 복원할 수 있습니다. v0.1.32부터는 **SURFACING** 열도 표시하므로 서버별 `mms surfacing` 설정을 여기서 확인할 수 있습니다.
 
 **SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
 
@@ -150,11 +150,11 @@ mms prune --all --dry-run            # 무엇을 지울지만 미리보기
 mms prune --all -y                   # 비대화 — 확인 프롬프트 생략
 ```
 
-제거하기 전에 각 항목은 `~/.memtomem/pruned_upstreams.json`에 백업되므로 작업을 되돌릴 수 있습니다 — 원본 클라이언트 등록으로 복원하려면 [`mms eject`](#mms-eject-name) 를 사용하세요. STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 건드리지 않습니다.
+제거하기 전에 각 항목은 `~/.memtomem/pruned_upstreams.json`에 백업되므로 작업을 되돌릴 수 있습니다 — 원본 클라이언트 등록으로 복원하려면 [`mms eject`](#mms-eject-name) 를 사용하세요. STM 자체 설정 파일(`~/.memtomem/stm_proxy.json`)은 변경하지 않습니다.
 
 ### `mms eject <name>`
 
-`prune`과 반대로 동작합니다. 가져온 서버를 원래 MCP 클라이언트 설정에 복원하고, 복원이 확인된 뒤에만 STM 항목을 제거합니다. STM 프록시를 시험한 뒤 마음에 들지 않으면 안전하게 원래 상태로 돌아갈 수 있습니다. 여러 이름을 한꺼번에 지정할 수도 있습니다.
+`prune`과 반대로 동작합니다. 가져온 서버를 원래 MCP 클라이언트 설정에 복원하고, 복원이 확인된 뒤에만 STM 항목을 제거합니다. STM 프록시를 시험한 뒤 사용하지 않기로 하면 안전하게 원래 상태로 되돌릴 수 있습니다. 여러 이름을 한꺼번에 지정할 수도 있습니다.
 
 ```bash
 mms eject filesystem                 # 원본 클라이언트 설정에 복원 후 STM 항목 제거
@@ -231,7 +231,7 @@ mms daemon restart                   # 이 설정을 중지한 뒤 한 번 새�
 mms daemon run                       # 포그라운드에서 서버 계속 실행
 ```
 
-데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열게 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
+데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열도록 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
 
 훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
@@ -258,7 +258,7 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 - 서버 확인에 실패하면 예외 메시지 대신 `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)`처럼 예외 유형만 표시합니다. `mms add --validate`와 가져오기 검증도 같습니다. 원래 메시지가 필요하면 서버 명령을 직접 실행하거나 엔드포인트에 직접 접속해 확인합니다.
 - URL에서는 쿼리 문자열과 프래그먼트를 지웁니다.
 - 피드백·지표 DB의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 표시합니다.
-- stdio LTM 서버의 실행 인자는 `<command> [args hidden]`으로 가립니다. `--json`의 `surfacing.ltm_server.args`는 인자마다 `<REDACTED>` 하나로 표시하므로 개수는 셀 수 있습니다. 실제 값은 `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` 설정에서 직접 확인합니다.
+- stdio LTM 서버의 실행 인자는 `<command> [args hidden]`으로 가립니다. `--json`의 `surfacing.ltm_server.args`는 인자마다 `<REDACTED>` 하나로 표시하므로 개수는 확인할 수 있습니다. 실제 값은 `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` 설정에서 직접 확인합니다.
 
 `--json`에는 `doctor`가 출력하는 점검 행과 같은 `surfacing.runtime_profile_checks`가 포함됩니다.
 
@@ -296,12 +296,12 @@ mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
 CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의 실시간 횟수는 관찰·관리 MCP 도구에서 확인하세요.
 
 - **압축 통계 측정 기준:** 관련 기억을 덧붙이기 전의 첫 응답 텍스트를 측정하며, 이후 `stm_proxy_read_more` 읽기는 포함하지 않습니다.
-  - 명시적 `progressive` 응답이 여러 조각으로 나뉘면 첫 조각과 footer만 기록합니다. 따라서 해당 도구의 절감률이 이전보다 높게 나옵니다.
+  - 명시적 `progressive` 응답이 여러 조각으로 나뉘면 첫 조각과 footer만 기록합니다. 따라서 해당 도구의 절감률이 이전보다 높게 표시됩니다.
   - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
 - **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
 - **관련 기억 제시 통계:**
-  - 실제로 보여 준 이벤트만 제시 횟수로 셉니다.
+  - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
   - 보류(holdout)된 호출은 `withheld (holdout)` 줄에, 제시 기회 기록은 `opportunities` 줄에 따로 표시합니다. 두 줄 모두 집계할 내용이 있을 때만 나타납니다.
 - **`--json` 오류 필드:** `compression.error`와 `surfacing.error`의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 유형만 표시합니다.
 
@@ -314,15 +314,15 @@ mms tune [--config PATH] [--since-hours 24] [--tool TOOL] [--json]
 mms tune --apply [--yes]
 ```
 
-기본값은 미리보기입니다. `--apply`는 시각을 붙인 백업을 만든 뒤 설정 잠금을 잡고 선택한 `tool_overrides`를 저장합니다. 실행 중인 프록시에도 재시작 없이 반영됩니다. `mms stats`와 달리 `tune`은 기존 저장소에 여러 번 실행해도 결과가 같은 스키마 이전을 수행할 수 있습니다.
+기본값은 미리보기입니다. `--apply`는 시각을 붙인 백업을 만든 뒤 설정 잠금을 획득해 선택한 `tool_overrides`를 저장합니다. 실행 중인 프록시에도 재시작 없이 반영됩니다. `mms stats`와 달리 `tune`은 기존 저장소에 여러 번 실행해도 결과가 같은 스키마 이전을 수행할 수 있습니다.
 
 `--tool ""`처럼 빈 필터는 어떤 도구와도 일치하지 않습니다. 모든 도구를 분석하려면 `--tool`을 생략하세요. 따라서 `mms tune --apply --yes --tool ""`는 아무 도구의 재정의도 쓰지 않습니다.
 
-현재 설정에서 해석한 전략이 `none`이거나 명시적 `progressive`인 도구에는 `max_result_chars` 권장을 내지 않습니다. 두 경로 모두 이 예산을 읽지 않기 때문입니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
+현재 설정에서 해석한 전략이 `none`이거나 명시적 `progressive`인 도구에는 `max_result_chars` 권장을 제시하지 않습니다. 두 경로 모두 이 예산을 읽지 않기 때문입니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
 
 ### `mms selection replay`
 
-민감 정보를 정리한 도구 선택 기록을 다시 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다.
+민감 정보를 정리한 도구 선택 기록을 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다.
 
 ```bash
 mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
@@ -332,7 +332,7 @@ mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
 
 ### `mms selection feedback`
 
-선택 텔레메트리에 운영자의 정정을 기록합니다. 피드백을 쓰며 프록시 설정은 변경하지 않습니다.
+선택 텔레메트리에 운영자의 정정을 기록합니다. 피드백을 기록하며 프록시 설정은 변경하지 않습니다.
 
 ```bash
 mms selection feedback --selection-id SELECTION_ID --operator-override --yes
@@ -390,7 +390,7 @@ mms project disable github
 mms project enable filesystem --project acme
 ```
 
-`enable`은 레지스트리에 등록된 MCP만 받습니다. 레지스트리가 비어 있으면 오류 메시지를 표시하고 중단합니다. `disable`은 레지스트리에 해당 MCP가 없어도 동작합니다.
+`enable`은 레지스트리에 등록된 MCP만 허용합니다. 레지스트리가 비어 있으면 오류 메시지를 표시하고 중단합니다. `disable`은 레지스트리에 해당 MCP가 없어도 동작합니다.
 
 ### `mms project route`
 

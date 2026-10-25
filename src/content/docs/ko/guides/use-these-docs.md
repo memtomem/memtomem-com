@@ -3,7 +3,7 @@ title: 문서를 MCP로 사용하기
 description: memtomem 문서를 AI 에이전트가 직접 읽게 하는 방법 — llms.txt와 로컬 MCP 서버(mcpdoc).
 ---
 
-AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 읽게 할지, MCP 검색 도구를 계속 제공할지, 로컬 memtomem 검색에 넣을지에 따라 고르세요.
+AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 읽게 할지, MCP 검색 도구를 계속 제공할지, 로컬 memtomem 검색에 포함할지에 따라 선택하세요.
 
 | 필요한 결과 | 사용할 방법 | 성공 확인 |
 |---|---|---|
@@ -13,19 +13,19 @@ AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 �
 
 ## llms.txt
 
-사이트를 빌드할 때 함께 만드는 LLM용 문서 목록입니다.
+사이트 빌드 시 함께 생성되는 LLM용 문서 목록입니다.
 
 | 파일 | 용도 |
 |---|---|
 | [`/llms.txt`](https://memtomem.com/llms.txt) | 읽을 수 있는 문서 목록 안내 |
-| [`/llms-full.txt`](https://memtomem.com/llms-full.txt) | 전체 문서를 한 파일로 |
+| [`/llms-full.txt`](https://memtomem.com/llms-full.txt) | 전체 문서를 합친 단일 파일 |
 | [`/llms-small.txt`](https://memtomem.com/llms-small.txt) | 작은 컨텍스트 창용 축약본 |
 
 Claude·ChatGPT·Cursor 등 대부분의 도구는 이 URL을 직접 가져와 읽을 수 있습니다.
 
 ## 로컬 MCP 서버 (mcpdoc)
 
-[`mcpdoc`](https://github.com/langchain-ai/mcpdoc)는 llms.txt를 MCP 도구로 제공하는 오픈소스 서버입니다. **내 컴퓨터에서 실행**되므로 별도 서버가 필요 없습니다. AI 도구는 `list_doc_sources`와 `fetch_docs`로 memtomem 문서를 찾고 읽습니다.
+[`mcpdoc`](https://github.com/langchain-ai/mcpdoc)는 llms.txt를 MCP 도구로 제공하는 오픈소스 서버입니다. **로컬에서 실행**되므로 별도 서버가 필요하지 않습니다. AI 도구는 `list_doc_sources`와 `fetch_docs`로 memtomem 문서를 찾고 읽습니다.
 
 ### 사전 준비
 
@@ -70,15 +70,15 @@ AI 도구가 문서 검색 도구를 자동으로 사용하지 않으면 규칙�
 
 > memtomem 관련 질문에는 `memtomem-docs` MCP 서버를 사용해. 먼저 `list_doc_sources`를 호출하고 `fetch_docs`로 관련 문서를 읽어.
 
-두 도구가 모두 성공해야 연결을 확인한 것입니다. 클라이언트 목록에 `memtomem-docs`가 보이는 것만으로는 전체 흐름을 검증한 것이 아닙니다.
+두 도구 호출이 모두 성공해야 연결이 확인된 것입니다. 클라이언트 목록에 `memtomem-docs`가 표시되는 것만으로는 전체 흐름이 검증되지 않습니다.
 
 :::note[도메인 허용 범위]
-원격 llms.txt URL을 지정하면 mcpdoc은 해당 도메인(`memtomem.com`)만 자동으로 허용합니다. 로컬 파일을 쓰려면 `--allowed-domains`로 도메인을 명시해야 합니다.
+원격 llms.txt URL을 지정하면 mcpdoc은 해당 도메인(`memtomem.com`)만 자동으로 허용합니다. 로컬 파일을 사용하려면 `--allowed-domains`로 도메인을 명시해야 합니다.
 :::
 
 ## memtomem으로 직접 기억하기
 
-문서를 내려받아 memtomem으로 색인할 수도 있습니다. 이후에는 하이브리드 검색으로 필요한 내용을 찾을 수 있습니다.
+문서를 내려받아 memtomem으로 색인하면 하이브리드 검색으로 필요한 내용을 찾을 수 있습니다.
 
 ```bash
 curl -sL https://memtomem.com/llms-full.txt -o memtomem-docs.md

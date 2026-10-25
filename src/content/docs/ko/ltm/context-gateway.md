@@ -51,11 +51,11 @@ Context Gateway는 세 가지 **계층(티어)**에 기준본을 보관합니다
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | git에 커밋할 팀 공유 프로젝트 컨텍스트 |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | 한 체크아웃에서만 쓰는 비공개 초안 |
 
-`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리입니다. 홈 디렉터리에 파일을 쓰기 때문에 먼저 "프로젝트 외부에 쓸까요?"라고 확인합니다. Context Gateway는 수정할 파일 목록을 보여 준 뒤 사용자가 승인해야 저장합니다. 이 단계는 기능 설정이 아니라 프로젝트 밖 쓰기를 보호하는 안전장치입니다.
+`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리입니다. 홈 디렉터리에 파일을 쓰기 때문에 먼저 "프로젝트 외부에 쓸까요?"라고 확인합니다. Context Gateway는 수정할 파일 목록을 표시하고, 사용자가 승인한 경우에만 저장합니다. 이 단계는 기능 설정이 아니라 프로젝트 밖 쓰기를 보호하는 안전장치입니다.
 
 `project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 보내지지 않습니다.
 
-`project_shared`는 git으로 추적되므로 비밀값을 넣으면 안 됩니다. 비밀값이 발견되면 쓰기를 거부하며 `--force`로 우회할 수 없습니다. git 이력에 비밀값이 남을 수 있기 때문입니다. `user`와 `project_local`에서는 내용을 확인한 뒤 다시 시도할 수 있지만 `project_shared`에는 저장할 수 없습니다.
+`project_shared`는 git으로 추적되므로 비밀값을 포함하면 안 됩니다. 비밀값이 발견되면 쓰기를 거부하며 `--force`로 우회할 수 없습니다. git 이력에 비밀값이 남을 수 있기 때문입니다. `user`와 `project_local`에서는 내용을 확인한 뒤 다시 시도할 수 있지만 `project_shared`에는 저장할 수 없습니다.
 
 ## 자주 쓰는 레시피
 
@@ -89,7 +89,7 @@ mm context diff --include agents --scope project_local
 <a id="기존-런타임-파일을-store로-pull"></a>
 ### 기존 AI 도구의 파일을 Store로 Pull
 
-특정 AI 도구에서 직접 만든 에이전트나 스킬은 Pull로 Store에 가져올 수 있습니다. 항목 하나를 Pull하면 기본적으로 변경 내용을 미리 보여 주며, 가져올 AI 도구도 선택할 수 있습니다.
+특정 AI 도구에서 직접 만든 에이전트나 스킬은 Pull로 Store에 가져올 수 있습니다. 항목 하나를 Pull하면 기본적으로 변경 내용을 미리 표시하며, 가져올 AI 도구도 선택할 수 있습니다.
 
 ```bash
 mm context detect --include agents,skills
@@ -103,7 +103,7 @@ Store에 같은 항목이 이미 있다면 `--overwrite`를 추가합니다. 교
 <a id="프로젝트티어-간-이동과-복사"></a>
 ## 프로젝트·계층 간 이동과 복사
 
-기준 항목(`agents` / `commands` / `skills`)은 계층이나 프로젝트 사이에서 옮기고 복사할 수 있습니다.
+기준 항목(`agents` / `commands` / `skills`)은 계층이나 프로젝트 사이에서 이동하거나 복사할 수 있습니다.
 
 ```bash
 # 한 스킬을 user 티어로 옮김 (원본 정리)
@@ -114,11 +114,11 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 ```
 
 - `move`는 원본을 삭제하고 이전 위치에 남은 AI 도구의 복사본도 정리합니다.
-- `copy`는 원본을 건드리지 않으며, `--as`로 이름을 바꿔 복사할 수 있습니다.
-- 모든 전송은 기본적으로 변경 내용을 보여 주는 미리보기 실행입니다. 실제로 적용하려면 `--apply`를 붙입니다.
+- `copy`는 원본을 변경하지 않으며, `--as`로 이름을 바꿔 복사할 수 있습니다.
+- 모든 전송은 기본적으로 변경 내용을 표시하는 미리보기 실행입니다. 실제로 적용하려면 `--apply`를 추가합니다.
 - 대상에 같은 이름이 있으면 거부하며 `--force`로 덮어쓸 수 없습니다.
 - `project_shared`로 들어가는 전송은 비밀값 스캔을 거치고 `--confirm-project-shared`를 요구합니다.
-- 모든 성공한 전송은 이어서 실행할 `mm context sync` 명령을 출력합니다.
+- 전송이 성공하면 이어서 실행할 `mm context sync` 명령을 출력합니다.
 
 UI가 없는 환경에서는 MCP 액션 `mem_context_artifact_transfer`로 같은 작업을 실행할 수 있습니다.
 
@@ -200,7 +200,7 @@ mm web --open
 Web UI의 **Gateway** 아래에는 Overview, Projects, Skills, Commands, Subagents, MCP Servers, Hooks, Wiki 화면이 있습니다. 각 항목은 CLI와 같은 Store 모델을 사용합니다.
 
 - **Push** — 확인 후 Store 기준본을 하나 이상의 AI 도구로 보냅니다.
-- **Pull** — AI 도구의 복사본을 Store로 가져오기 전에 변경 내용을 보여 줍니다. 후보가 겹치면 가져올 도구를 직접 선택합니다.
+- **Pull** — AI 도구의 복사본을 Store로 가져오기 전에 변경 내용을 표시합니다. 후보가 겹치면 가져올 도구를 직접 선택합니다.
 
 상세 표에서는 프로젝트·계층 필터, 대상 AI 도구, 불일치 상태, 다중 프로젝트 활성화 여부를 확인할 수 있습니다. Pull을 마친 뒤에는 Store의 기준본을 수정하고, 검토한 버전을 Push하세요.
 

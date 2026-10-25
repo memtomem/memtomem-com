@@ -5,7 +5,7 @@ description: memtomem(LTM) 환경 변수 설정 레퍼런스.
 
 memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)를 사용합니다. 환경 변수 이름은 `env_prefix` 뒤에 필드명을 붙이며, 중첩된 필드는 `env_nested_delimiter="__"`에 따라 **밑줄 두 개**로 구분합니다. 예를 들어 `MEMTOMEM_EMBEDDING__PROVIDER`는 유효하지만 `MEMTOMEM_EMBEDDING_PROVIDER`는 유효하지 않습니다.
 
-값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
+값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
 이 레퍼런스는 `memtomem` 0.6.12가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
@@ -138,7 +138,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 ### 시간 감쇠
 
-반감기 기반 시간 감쇠 가중. 인덱싱된 지 오래된 청크의 검색 점수를 점진적으로 낮춥니다.
+반감기 기반 시간 감쇠 가중치로, 인덱싱된 지 오래된 청크의 검색 점수를 점진적으로 낮춥니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -149,7 +149,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 ### MMR 다양성 재순위
 
-Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서로 다른 관점을 섞습니다.
+Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 서로 다른 관점의 결과를 함께 반영합니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -160,7 +160,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 접근 빈도 가중
 
-자주 조회된 청크를 상위로 밀어 올리는 빈도 기반 배수.
+자주 조회된 청크의 순위를 높이는 빈도 기반 점수 배수입니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|

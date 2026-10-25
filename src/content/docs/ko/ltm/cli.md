@@ -60,7 +60,7 @@ mm context settings-doctor --json
 
 `doctor`는 실행 환경을 진단하고, `agent debug-resolve`는 검색 범위를 설명합니다.
 `review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
-BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 나올 수 있습니다.
+BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 표시될 수 있습니다.
 `seed-validation`은 검증용 컨텍스트 자료를 만드는 쓰기 작업이므로 도움말을 확인한 뒤 선택적으로 실행하세요.
 `settings-doctor --json`의 `status`는 `duplicates`, `malformed`, `incomplete`, `advisory`, `clean` 중 우선순위가 가장 높은 값입니다. `advisory`는 다른 기기에서 실행되지 않을 수 있는 hook 명령만 발견된 경우이고, `clean`은 모든 항목이 비어 있을 때만 표시됩니다. `duplicates`와 `malformed`는 종료 코드 1, 나머지는 0입니다. `advisory`도 종료 코드가 0이므로 `clean`만 통과로 처리하던 스크립트는 `advisory`도 허용하거나 발견 항목을 직접 확인해야 합니다. 검색 권한이 없는 디렉터리의 설정 파일은 `unreadable`로 표시하고 건너뛰며, 중복이나 잘못된 matcher가 없으면 `incomplete`를 보고합니다.
 
@@ -108,7 +108,7 @@ mm config unset indexing.memory_dirs
 mm config unset rerank.model search.default_top_k
 ```
 
-`mm config unset`은 여러 번 실행해도 결과가 같습니다. 없는 키를 지정해도 오류가 나지 않습니다. 다른 컴퓨터에서 넘어온 `indexing.memory_dirs` 경로나 설정 조각을 덮어쓰는 값을 지울 때 유용합니다.
+`mm config unset`은 여러 번 실행해도 결과가 같습니다. 없는 키를 지정해도 오류가 발생하지 않습니다. 다른 컴퓨터에서 가져온 `indexing.memory_dirs` 경로나 설정 조각을 덮어쓰는 값을 제거할 때 유용합니다.
 
 ## 검색과 회상
 
@@ -135,11 +135,11 @@ mm tags delete deprecated --apply             # 태그 제거 (청크는 그대�
 mm tags merge py python --into python --apply # 여러 태그를 하나로 통합
 ```
 
-`--apply` 없이 실행하면 영향을 받는 청크 수와 샘플을 먼저 보여줍니다. `delete`는 태그만 떼어내며 청크 자체는 인덱스에 남습니다.
+`--apply` 없이 실행하면 영향을 받는 청크 수와 샘플을 먼저 보여줍니다. `delete`는 태그만 제거하며 청크 자체는 인덱스에 남습니다.
 
 ### `mm recall`
 
-최근 기억 청크를 시간순으로 조회합니다. 검색어 없이 날짜 범위, 소스, 네임스페이스로 결과를 거르는 점이 `mm search`와 다릅니다.
+최근 기억 청크를 시간순으로 조회합니다. 검색어 없이 날짜 범위, 소스, 네임스페이스로 결과를 필터링한다는 점에서 `mm search`와 다릅니다.
 
 ```bash
 mm recall                                    # 최근 20개 청크 (기본 table 포맷)
@@ -321,7 +321,7 @@ mm context import deploy-check.json --to user            # 미리보기(기본�
 mm context import deploy-check.json --to user --apply    # 실제 반영
 ```
 
-묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 건넨 파일은 푸시한 커밋만큼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
+묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
 
 
 <a id="wiki--정규-아티팩트-라이브러리"></a>
@@ -448,7 +448,7 @@ mm sync-doctor
 
 ### `mm warmup`
 
-로컬 임베딩·리랭커 모델을 미리 불러옵니다. 첫 검색 때 모델을 불러오느라 지연되는 것을 막을 수 있습니다. 선택 사항이며 실행하지 않으면 처음 사용할 때 모델을 불러옵니다.
+로컬 임베딩·리랭커 모델을 미리 불러옵니다. 첫 검색 시 모델 로딩으로 인한 지연을 방지할 수 있습니다. 선택 사항이며 실행하지 않으면 처음 사용할 때 모델을 불러옵니다.
 
 ```bash
 mm warmup                            # 지금 모델 로드 (일회성)
@@ -469,7 +469,7 @@ mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
 
 `--fix`는 대상 파일이 사라진 인덱스 포인터만 제거합니다. `--apply`가 없으면 변경 내용을 보여 주기만 합니다. error 등급 문제가 있으면 종료 코드 1을 반환하므로 CI에서도 사용할 수 있습니다. 보류된 자료 출처는 warning 등급인 `held_source`로 보고되므로, 이것만 발견되면 종료 코드는 0입니다. `indexing.retain_missing_dirs`가 검색 가능하게 유지하는 사라진 출처는 info 등급인 `archived_source`로 보고됩니다.
 
-`dangling_wikilink`는 참고 정보입니다. 앞으로 만들 문서를 미리 가리키거나 이전 이름이 남은 경우일 수 있으므로 검사를 실패시키지 않고 `--fix`로도 제거하지 않습니다.
+`dangling_wikilink`는 참고 정보입니다. 앞으로 만들 문서를 미리 가리키거나 이전 이름이 남은 경우일 수 있으므로 검사 실패로 처리하지 않으며 `--fix`로도 제거하지 않습니다.
 
 ### `mm quality`
 
@@ -560,7 +560,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ### `mm upgrade`
 
-실행 중인 `memtomem-server`를 멈춘 뒤 `uv tool`로 다시 설치합니다. `uv tool install --reinstall memtomem`만 실행하면 설치 파일은 바뀌지만 MCP 클라이언트가 이미 불러온 서버는 이전 버전으로 계속 동작할 수 있습니다. `mm upgrade`는 실행 중인 프로세스까지 정리합니다.
+실행 중인 `memtomem-server`를 중지한 뒤 `uv tool`로 다시 설치합니다. `uv tool install --reinstall memtomem`만 실행하면 설치 파일은 바뀌지만 MCP 클라이언트가 이미 불러온 서버는 이전 버전으로 계속 동작할 수 있습니다. `mm upgrade`는 실행 중인 프로세스까지 정리합니다.
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
@@ -576,7 +576,7 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이 검사 없이 메모리 도구가 저장한 내용은 blocked로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
 - **PKCS#8 형식의 개인 키**(`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`)는 0.6.12 이전에는 쓰기 검사(write guard)를 통과했으며, 업그레이드해도 이미 저장된 내용은 다시 검사하지 않습니다. `mm mem rescan --scope <tier> --json`으로 키가 들어 있는 저장 청크를 확인하고, 보고된 각 파일에서 키를 제거한 뒤 `mm index <dir>`를 실행합니다. rescan을 다시 실행해 아무것도 보고되지 않는지 확인합니다. 계속 보고되는 출처는 다시 색인되지 않은 것입니다. 삭제한 파일, 제외된 경로, 10 MB를 넘는 파일, `mm index` 실행에서 오류가 보고된 파일이 해당합니다. 이런 청크를 제거하는 방법은 [보안 권고](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8)에 있습니다. 호스팅 서비스나 git 기록에 들어간 키는 교체(rotate)합니다.
 
-0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 건드리지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 멈춥니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 올려야 합니다.
+0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 
 ### `mm uninstall`
 

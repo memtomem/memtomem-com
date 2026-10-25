@@ -3,11 +3,11 @@ title: STM MCP 도구
 description: STM 프록시가 제공하는 모델용 도구 5개와 관찰 액션 8개를 담은 stm_admin, 선택형 기억 제안 도구를 설명합니다.
 ---
 
-memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고, 관련 기억 제시와 압축을 조정할 수 있는 **관리 도구**를 MCP로 제공합니다. 모델이 작업에 쓰는 도구는 **5개**이며, 여기에 `stm_admin` 디스패처와 사용자가 직접 켜야 하는 `stm_memory_propose`가 있습니다.
+memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고, 관련 기억 제시와 압축을 조정할 수 있는 **관리 도구**를 MCP로 제공합니다. 모델이 작업에 사용하는 도구는 **5개**이며, 이 외에 `stm_admin` 디스패처와 사용자가 직접 활성화해야 하는 `stm_memory_propose`가 있습니다.
 
 ## 관찰 도구 노출 제어
 
-모델용 도구 5개는 처음부터 보입니다. 관찰·관리 기능은 별도 도구가 아니라 **`stm_admin` 디스패처 하나에 담긴 액션 8개**이며, 이 디스패처 자체가 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정하기 전까지 MCP 목록에서 숨겨집니다. `stm_memory_propose`는 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 따로 켭니다. 도구를 표시할지는 이 플래그만으로 정합니다. 연결한 LTM이 검토 후 저장 방식을 지원하는지는 호출할 때 확인하며, 지원하지 않으면 `{"ok": false, "reason": "formation_unsupported"}`를 반환합니다.
+모델용 도구 5개는 기본으로 노출됩니다. 관찰·관리 기능은 별도 도구가 아니라 **`stm_admin` 디스패처 하나에 포함된 액션 8개**이며, 이 디스패처 자체가 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정하기 전까지 MCP 목록에서 숨겨집니다. `stm_memory_propose`는 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도로 활성화합니다. 도구 노출 여부는 이 플래그로만 결정됩니다. 연결한 LTM이 검토 후 저장 방식을 지원하는지는 호출할 때 확인하며, 지원하지 않으면 `{"ok": false, "reason": "formation_unsupported"}`를 반환합니다.
 
 | 분류 | 기본 노출 | 플래그를 켰을 때 노출 |
 |---|---|---|
@@ -50,15 +50,15 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 | `limit` | integer | 아니오 | 페이지당 문자 수, 1–16000 (기본 `4000`) |
 | `generation` | string | 아니오 | 이전 페이지가 돌려준 연속 토큰 |
 
-모든 페이지에는 `text`, `format`, `total_chars`, `generation`, `next_offset`이 담깁니다. 같은 `name`·`part`·`generation`으로 `next_offset`을 다음 `offset`에 넣어 이어 읽고, `next_offset`이 null이면 끝입니다. `generation`이 바뀌었다면 메타데이터가 변경된 것이므로 `generation` 없이 오프셋 `0`부터 다시 시작합니다. 인자 설명과 예시까지 복구하려면 `input_schema`를 명시적으로 선택해 각 페이지의 `text`를 이어 붙인 뒤 JSON으로 파싱합니다. `limit`은 상한일 뿐이며, 전체 응답 16384바이트 예산 때문에 페이지가 더 짧아질 수 있습니다.
+모든 페이지에는 `text`, `format`, `total_chars`, `generation`, `next_offset`이 포함됩니다. 같은 `name`·`part`·`generation`으로 `next_offset`을 다음 `offset`에 넣어 이어 읽고, `next_offset`이 null이면 마지막 페이지입니다. `generation`이 바뀌었다면 메타데이터가 변경된 것이므로 `generation` 없이 오프셋 `0`부터 다시 시작합니다. 인자 설명과 예시까지 복구하려면 `input_schema`를 명시적으로 선택해 각 페이지의 `text`를 이어 붙인 뒤 JSON으로 파싱합니다. `limit`은 상한일 뿐이며, 전체 응답 16384바이트 예산 때문에 페이지가 더 짧아질 수 있습니다.
 
-`upstream_description`은 `description_override`가 대체한 원본 문구를 돌려주며, 운영자가 `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION=true`를 설정하고 재정의를 구성했을 때만 사용할 수 있습니다. 기본값이 꺼짐인 이유는, 재정의가 모델에게 무엇을 알릴지 결정하는 장치이므로 원본을 그대로 돌려주면 그 재정의가 겨냥한 바로 그 독자에게 원문이 다시 전달되기 때문입니다.
+`upstream_description`은 `description_override`가 대체한 원본 문구를 돌려주며, 운영자가 `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION=true`를 설정하고 재정의를 구성했을 때만 사용할 수 있습니다. 재정의는 모델에 전달할 내용을 결정하는 장치이므로, 원본을 그대로 돌려주면 재정의의 대상인 모델에 원문이 다시 전달됩니다. 이 때문에 기본값은 꺼짐입니다.
 
 ## 피드백
 
 ### `stm_surfacing_feedback`
 
-자동 튜너가 임계값을 조정할 수 있도록 서피싱된 기억을 평가합니다. 서피싱된 각 기억에는 고유한 `memory_id`가 부여되므로 기억을 하나씩 평가할 수 있으며, `not_relevant` 또는 `already_known`으로 표시한 기억은 다음 서피싱 호출에서 해당 기억만 무효화됩니다.
+자동 튜너가 임계값을 조정할 수 있도록 서피싱된 기억을 평가합니다. 서피싱된 각 기억에는 고유한 `memory_id`가 부여되므로 기억을 하나씩 평가할 수 있으며, `not_relevant` 또는 `already_known`으로 표시하면 다음 서피싱 호출에서 해당 기억만 무효화됩니다.
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
@@ -81,7 +81,7 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 
 ## 관찰·관리 — `stm_admin`
 
-관찰 기능 8가지는 예전에는 각각 별도의 MCP 도구였습니다. 지금은 디스패처 하나의 액션이므로, 관찰 기능을 켠 운영자가 에이전트 도구 목록에서 차지하는 자리는 8개가 아니라 1개입니다.
+관찰 기능 8가지는 예전에는 각각 별도의 MCP 도구였습니다. 지금은 디스패처 하나의 액션이므로, 관찰 기능을 활성화해도 에이전트 도구 목록에서 차지하는 항목은 8개가 아니라 1개입니다.
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
@@ -114,9 +114,9 @@ mms add filesystem --command npx \
 # filesystem의 read_file 은 fs__read_file 이 됩니다
 ```
 
-STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 아예 프록시하지 않으며, 이는 64자 제한과는 별개입니다. `proxy_health`는 이런 도구를 발견한 수에 포함하고 해당 서버에 `not proxied` 줄을 추가합니다.
+STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 프록시하지 않으며, 이는 64자 제한과는 별개입니다. `proxy_health`는 이런 도구를 발견한 수에 포함하고 해당 서버에 `not proxied` 줄을 추가합니다.
 
-MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 보입니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
+MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 표시됩니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
 
 에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다. 메타데이터가 붙은 여러 블록 응답은 예외입니다([압축 전략](/ko/stm/compression/) 참조).
 

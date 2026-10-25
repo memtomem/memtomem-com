@@ -12,14 +12,14 @@ description: AI 클라이언트를 연결하기 전에 10분 안에 memtomem을 
 <a id="1-설치"></a>
 ## 1. 사전 준비 확인
 
-memtomem은 Python 3.12 이상이 필요합니다. 이 가이드에서는 CLI를 계속 사용할 수 있도록 `uv` 설치를 권장합니다.
+memtomem은 Python 3.12 이상이 필요합니다. CLI를 어느 터미널에서나 실행할 수 있도록 `uv`로 설치하는 방법을 권장합니다.
 
 ```bash
 python --version
 uv --version
 ```
 
-Windows에서 `python`을 찾지 못하면 `py --version`을 사용하세요. `uv`가 없다면 [uv 공식 설치 안내](https://docs.astral.sh/uv/getting-started/installation/)에 따라 설치하고 터미널을 다시 연 뒤 `uv --version`을 확인합니다.
+Windows에서 `python`을 찾지 못하면 `py --version`을 사용하세요. `uv`가 없으면 [uv 공식 설치 안내](https://docs.astral.sh/uv/getting-started/installation/)에 따라 설치한 뒤, 터미널을 다시 열고 `uv --version`으로 확인합니다.
 
 <a id="2-초기-설정"></a>
 ## 2. 설치·초기화
@@ -30,9 +30,9 @@ mm --version
 mm init --preset minimal --non-interactive --mcp skip
 ```
 
-Minimal 프리셋은 키워드 검색을 사용하며 임베딩 모델을 내려받지 않습니다. `--mcp skip`은 첫 검증이 클라이언트 설정과 무관하게 동작하도록 MCP 등록을 건너뜁니다.
+Minimal 프리셋은 키워드 검색만 사용하므로 임베딩 모델을 내려받지 않습니다. `--mcp skip`은 MCP 등록을 건너뛰어, 클라이언트 설정과 무관하게 첫 검증을 진행합니다.
 
-셸에서 `mm`을 찾지 못하면 `uv tool update-shell`을 실행하고 터미널을 다시 여세요. 버전이 오래되어 보이면 패키지 메타데이터를 새로고침합니다.
+셸에서 `mm`을 찾지 못하면 `uv tool update-shell`을 실행하고 터미널을 다시 여세요. 이전 버전이 설치되면 패키지 메타데이터를 갱신해 다시 설치합니다.
 
 ```bash
 uv tool install 'memtomem[all]' --refresh
@@ -54,10 +54,10 @@ mm add "트래픽 전환 전에 릴리스 smoke test를 실행한다" --tags rel
 mm search "릴리스 smoke test"
 ```
 
-결과에 저장한 문장과 Markdown 출처 경로가 나오면 성공입니다. 로컬 저장소, 쓰기, 색인, 키워드 검색이 모두 동작한다는 뜻입니다.
+저장한 문장과 Markdown 출처 경로가 결과에 표시되면 성공입니다. 로컬 저장소의 쓰기, 색인, 키워드 검색이 모두 정상 동작한다는 의미입니다.
 
-:::tip[첫 성공 완료]
-여기서 멈춰도 됩니다. MCP와 STM은 별도의 다음 선택이며, 기억 저장·검색에 필수는 아닙니다.
+:::tip[기본 검증 완료]
+여기까지가 기본 검증입니다. MCP 연결과 STM은 선택 사항이며, 기억 저장·검색에는 필요하지 않습니다.
 :::
 
 ### 의미 검색은 나중에 추가
@@ -70,13 +70,13 @@ mm search "릴리스 smoke test"
 | English (Recommended) | 영어 프로젝트 대부분 | 로컬 임베딩·리랭커 모델 |
 | Korean-optimized | 한국어 또는 다국어 노트 | 다국어 임베딩·한국어 토크나이저(리랭커 없음) |
 
-첫 성공 뒤 제공자를 바꾸고 싶을 때 `mm init`을 다시 실행하세요. 기존 인덱스의 임베딩 모델을 바꾸기 전에는 [설치](/ko/guides/installation/)를 확인합니다.
+임베딩 제공자를 변경하려면 `mm init`을 다시 실행하세요. 기존 인덱스의 임베딩 모델을 변경하기 전에는 [설치](/ko/guides/installation/)를 먼저 확인하세요.
 
 ## 4. MCP 클라이언트 연결
 
-[AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 사용하는 클라이언트 하나를 고르고 서버를 등록한 뒤 `mem_status`를 확인하세요. Claude Code·Codex 사용자는 공식 플러그인 경로를 우선하고, 다른 클라이언트는 공개된 MCP 설정 형식을 사용합니다.
+[AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 사용하는 클라이언트 하나를 고르고 서버를 등록한 뒤 `mem_status`를 확인하세요. Claude Code와 Codex는 공식 플러그인 설치를 권장하며, 다른 클라이언트는 공개된 MCP 설정 형식을 따릅니다.
 
-플러그인 설치나 MCP 등록만으로 프로젝트 전체 색인, 파일 감시, 내장 기억 가져오기, 대화 저장이 자동 실행되지는 않습니다.
+플러그인을 설치하거나 MCP를 등록해도 프로젝트 전체 색인, 파일 감시, 내장 기억 가져오기, 대화 저장은 자동으로 실행되지 않습니다.
 
 <a id="5-기억-추가와-검색"></a>
 ## 5. 기존 노트 인덱싱
@@ -85,23 +85,23 @@ mm search "릴리스 smoke test"
 
 ## 6. Web UI 열기
 
-첫 성공에는 CLI 저장·검색만으로 충분합니다. 검색 결과, 출처, 태그, 설정, Context Gateway를 브라우저에서 보려면 다음 명령을 실행하세요.
+기본 검증에는 CLI만으로 충분합니다. 검색 결과, 출처, 태그, 설정, Context Gateway를 브라우저에서 확인하려면 다음 명령을 실행하세요.
 
 ```bash
 mm web --open
 ```
 
-개발·유지보수 페이지는 `mm web --dev`에서만 추가됩니다. 일반적인 사용에는 필요하지 않습니다.
+개발·유지보수용 페이지는 `mm web --dev`로 실행할 때만 표시되며, 일반 사용에는 필요하지 않습니다.
 
 ## 선택 사항: STM은 나중에 추가
 
-기존 MCP 흐름에 응답 압축, 캐시, 관련 LTM 기억 자동 제시가 필요해졌을 때만 STM을 추가하세요. [MCP 서버에 STM 추가](/ko/stm/first-proxy/)에서 내장 데모부터 실제 프록시 호출, `mms eject` 원복까지 확인할 수 있습니다.
+기존 MCP 워크플로에 응답 압축, 캐시, 관련 LTM 기억 자동 제시가 필요할 때 STM을 추가하세요. [MCP 서버에 STM 추가](/ko/stm/first-proxy/)에서 내장 데모, 실제 프록시 호출, `mms eject`를 통한 원래 설정 복원까지 확인할 수 있습니다.
 
 ## 다음 단계
 
-- [목적에 맞는 시작 경로](/ko/guides/choose-your-path/) — 원하는 결과로 다음 과업 선택
+- [목적에 맞는 시작 경로](/ko/guides/choose-your-path/) — 목표에 맞는 다음 가이드 선택
 - [세션을 넘나드는 기억](/ko/ltm/memory-persistence/) — 새 세션에서 저장한 결정 찾기
 - [AI 클라이언트 연결](/ko/guides/connect-ai-client/) — Claude Code, Codex, 기타 MCP 클라이언트
 - [기존 자료 색인·가져오기](/ko/ltm/index-and-import/) — 노트·코드·AI 도구 내장 기억
 - [로컬 우선 · 정보 보호](/ko/guides/privacy/) — 로컬 기본값과 선택형 외부 연결
-- [문제 해결](/ko/guides/troubleshooting/) — 실패한 단계로 돌아가는 구체적인 복구 절차
+- [문제 해결](/ko/guides/troubleshooting/) — 실패한 단계별 복구 절차

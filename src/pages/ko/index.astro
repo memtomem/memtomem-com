@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
-	<meta name="description" content="노트·문서·코드를 내 컴퓨터에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<meta name="description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/ko/" />
@@ -18,7 +18,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/ko/" />
 	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta property="og:description" content="노트·문서·코드를 내 컴퓨터에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<meta property="og:description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image.png" />
 	<meta property="og:image:width" content="1200" />
@@ -90,9 +90,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">10분 첫 성공</div>
-		<div class="section-title">기본 흐름을 확인한 뒤 다음 과업 하나를 고르세요</div>
-		<div class="section-desc">먼저 로컬 LTM만 사용합니다. 기억 저장·검색이 동작한 뒤 AI 클라이언트를 연결하거나 STM을 추가하면 됩니다.</div>
+		<div class="section-label">10분 기본 검증</div>
+		<div class="section-title">기본 흐름을 확인한 뒤 다음 작업 하나를 선택하세요</div>
+		<div class="section-desc">먼저 로컬 LTM만으로 시작합니다. 기억 저장·검색이 동작하는지 확인한 뒤 AI 클라이언트를 연결하거나 STM을 추가하세요.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/guides/quickstart/#2-초기-설정`}>
 				<h3>1. 설치·초기화</h3>
@@ -100,10 +100,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/guides/quickstart/#3-기억-저장검색-확인`}>
 				<h3>2. 기억 하나 저장·검색</h3>
-				<p><code>mm status</code>, <code>mm add</code>, <code>mm search</code>를 실행합니다. 출처가 표시된 결과가 완료 기준입니다.</p>
+				<p><code>mm status</code>, <code>mm add</code>, <code>mm search</code>를 실행합니다. 출처와 함께 결과가 표시되면 완료입니다.</p>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/guides/choose-your-path/`}>
-				<h3>3. 다음 결과 선택</h3>
+				<h3>3. 다음 목표 선택</h3>
 				<p>AI 클라이언트 연결, 기존 자료 색인, 새 세션 검증, MCP 서버에 STM 추가 중 하나를 고릅니다.</p>
 			</a>
 		</div>
@@ -139,11 +139,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 			<div class="section-label">해결 방법</div>
 		<div class="section-title">memtomem이 해결합니다</div>
-			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색을 서로 다른 MCP 서버로 나눴습니다. 필요한 계층만 선택해 사용할 수 있습니다.</div>
+			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색을 서로 다른 MCP 서버로 분리했습니다. 필요한 계층만 선택해 사용할 수 있습니다.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
-					<p>노트·문서·코드를 <code>mm index</code>로 색인합니다. 임베딩을 활성화하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합하며, minimal 설정은 키워드 검색만 사용합니다. 정확한 이름과 의미가 비슷한 표현을 함께 찾을 수 있습니다. 문서는 구조에 맞춰 나누고, 다시 색인할 때는 바뀐 부분만 임베딩을 계산합니다.</p>
+					<p>노트·문서·코드를 <code>mm index</code>로 색인합니다. 임베딩을 활성화하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합하며, minimal 설정은 키워드 검색만 사용합니다. 정확한 이름과 의미가 비슷한 표현을 함께 찾을 수 있습니다. 문서는 구조에 맞춰 분할하고, 다시 색인할 때는 변경된 부분만 임베딩을 계산합니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
@@ -158,7 +158,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
-				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 자신을 거치는 MCP 도구 호출에서 실행 조건을 확인하고 관련 기억을 알맞은 순간에 찾아 붙여 줍니다. 붙여 준 기억마다 식별자가 있어, 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
+				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 자신을 거치는 MCP 도구 호출에서 실행 조건을 확인하고 적절한 시점에 관련 기억을 찾아 함께 전달합니다. 전달된 기억마다 식별자가 있어 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
@@ -191,7 +191,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<div class="section-inner">
 			<div class="section-label">구조</div>
 		<div class="section-title">두 계층 구조</div>
-			<div class="section-desc">STM 프록시와 LTM 서버는 MCP로 연결됩니다. AI 도구의 코드를 바꾸지 않고도 관련 기억 자동 제시와 응답 압축을 추가할 수 있습니다.</div>
+			<div class="section-desc">STM 프록시와 LTM 서버는 MCP로 연결됩니다. AI 도구의 코드를 수정하지 않고도 관련 기억 자동 제시와 응답 압축을 추가할 수 있습니다.</div>
 		<div class="arch-diagram">
 			<div class="arch-tier-label">주요 AI 도구 / 기타</div>
 			<div class="arch-row">
@@ -248,8 +248,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">과업 가이드</div>
-		<div class="section-title">원하는 결과부터 이어서 진행하세요</div>
+		<div class="section-label">작업별 가이드</div>
+		<div class="section-title">원하는 결과에 맞는 가이드로 이어서 진행하세요</div>
 		<div class="section-desc">각 가이드는 확인할 결과, 검증 단계, 복구 또는 원복 절차까지 안내합니다.</div>
 		<div class="docs-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
