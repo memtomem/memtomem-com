@@ -51,7 +51,7 @@ Markdown, Python, JavaScript, TypeScript, JSON, YAML, TOML 자료도 같은 `mm 
 
 ## 경로 B: AI 도구 내장 기억 가져오기
 
-항상 미리보기부터 실행하세요. 예시 경로는 실제 자료 경로로 바꾸세요.
+항상 미리보기부터 실행하세요. 예시 경로는 로컬에 실제로 있는 자료 경로로만 바꾸세요.
 
 ### Claude Code
 

@@ -27,7 +27,7 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 검색 결과를 관련도 순으로 다시 정렬해 정확도를 높이는 **재정렬(리랭커)** 단계의 고급 설정입니다. 기본값으로도 충분히 동작하므로, 결과 품질을 세밀하게 조정할 때만 참고하세요.
 
-재정렬을 켜면 후보 수는 `max(min_pool, min(max_pool, int(oversample * response_top_k)))`로 계산합니다. 기본값(oversample `2.0`, min_pool `20`, max_pool `200`)에서 `top_k=10`이면 후보 20개를 선택합니다. `top_k`가 커지면 후보 수도 함께 늘어납니다.
+재정렬을 활성화하면 후보 수는 `max(min_pool, min(max_pool, int(oversample * response_top_k)))`로 계산합니다. 기본값(oversample `2.0`, min_pool `20`, max_pool `200`)에서 `top_k=10`이면 후보 20개를 선택합니다. `top_k`가 커지면 후보 수도 함께 늘어납니다.
 
 | 키 | 환경 변수 | 기본값 | 비고 |
 |---|---|---|---|

@@ -51,7 +51,7 @@ mm init --preset minimal --non-interactive --mcp skip
 mm status
 ```
 
-Minimal은 BM25 키워드 검색만 사용하므로 임베딩 모델을 내려받지 않습니다. 이 경로가 정상 동작하면 English (Recommended) 또는 Korean-optimized 의미 검색을 추가하세요.
+Minimal은 BM25 키워드 검색만 사용하므로 임베딩 모델을 내려받지 않습니다. 이 경로가 정상 동작하는 것을 확인한 뒤에 English (Recommended) 또는 Korean-optimized 의미 검색을 추가하세요.
 
 ### 설정이나 데이터베이스가 만들어지지 않음
 
