@@ -1,5 +1,5 @@
 ---
-title: CLI 레퍼런스
+title: STM CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
@@ -9,7 +9,9 @@ STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다.
 
 <a id="명령어"></a>
 
-## 명령
+<a id="명령"></a>
+
+## 설정·등록
 
 ### `mms init`
 
@@ -126,18 +128,6 @@ v0.1.32부터 `status`는 설정 경로, `enabled` 값, 스키마 검증 경고,
 
 `list`와 `status`는 서버 시작 시와 같은 기준으로 설정을 검증하므로, 시작 시 거부되는 환경 변수가 있으면 설정을 유효하지 않은 것으로 표시합니다. `config_error`에는 값 없이 오류 위치와 유형 코드만 표시합니다. 위치에는 환경 변수나 헤더 이름 같은 키가 포함될 수 있지만 값은 포함되지 않습니다. 파일 오류의 자세한 내용은 `mms config validate`로 확인합니다.
 
-### `mms surfacing <server> [on|off]`
-
-특정 서버의 관련 기억 자동 제시를 켜거나 끕니다. 상태 인수를 생략하면 현재 값만 출력합니다.
-
-```bash
-mms surfacing filesystem             # 현재 상태 확인
-mms surfacing filesystem off         # 이 서버의 서피싱 비활성화
-mms surfacing filesystem on          # 다시 활성화
-```
-
-`surfacing_enabled` 값은 공용 프록시 설정(`stm_proxy.json`)에 기록됩니다. 실행 중인 프록시에도 재시작 없이 즉시 반영되며, 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 이 설정을 공유합니다. 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
-
 ### `mms remove <name>`
 
 등록한 서버를 제거합니다.
@@ -148,31 +138,6 @@ mms remove filesystem -y             # 확인 생략
 ```
 
 가져온 서버를 제거하면 원본 클라이언트 등록을 잃지 않고 복원할 수 있도록 `mms eject` 안내도 함께 출력합니다.
-
-### `mms health`
-
-등록한 모든 서버의 MCP 연결 상태를 점검합니다. 출력 형식은 `status` / `list`와 일관됩니다.
-
-```bash
-mms health                           # 사람이 읽기 좋은 출력
-mms health --json                    # 스크립트용 JSON
-mms health --timeout 5               # 서버별 연결 타임아웃(초)
-mms health --names                   # 64자 MCP 도구명 한도를 넘는 도구도 함께 보고
-```
-
-`--names`는 `mcp__<server>__<prefix>__<tool>`의 전체 길이가 MCP의 64자 제한(#261)을 넘어 등록 후 표시되지 않는 도구를 찾을 때 사용합니다.
-
-`health`는 서버별 **회로 차단기** 상태도 표시합니다. v0.1.32부터 기본으로 활성화됩니다. 연속 3회 호출에 실패하면 해당 서버의 도구는 약 60초 동안 `circuit_open`을 바로 반환하므로 호출할 때마다 재시도와 제한 시간을 모두 소진하지 않습니다. 캐시된 응답은 계속 제공하고 다른 서버에는 영향을 주지 않습니다. `stm_proxy.json`에서 해당 서버에 `circuit_max_failures: 0`을 지정하면 매번 다시 시도하는 이전 동작으로 돌아갑니다.
-
-`health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 오류 표시에는 거부된 값과 예외 메시지를 포함하지 않으며, 일부 항목은 다음과 같이 가립니다.
-
-- 설정 오류는 오류 위치와 유형만 표시합니다.
-- 서버 확인에 실패하면 예외 메시지 대신 `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)`처럼 예외 유형만 표시합니다. `mms add --validate`와 가져오기 검증도 같습니다. 원래 메시지가 필요하면 서버 명령을 직접 실행하거나 엔드포인트에 직접 접속해 확인합니다.
-- URL에서는 쿼리 문자열과 프래그먼트를 지웁니다.
-- 피드백·지표 DB의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 표시합니다.
-- stdio LTM 서버의 실행 인자는 `<command> [args hidden]`으로 가립니다. `--json`의 `surfacing.ltm_server.args`는 인자마다 `<REDACTED>` 하나로 표시하므로 개수는 셀 수 있습니다. 실제 값은 `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` 설정에서 직접 확인합니다.
-
-`--json`에는 `doctor`가 출력하는 점검 행과 같은 `surfacing.runtime_profile_checks`가 포함됩니다.
 
 ### `mms prune`
 
@@ -210,6 +175,20 @@ mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 | `--accept-schema-loss` | 복원한 클라이언트 항목이 원본과 구조적으로 일치하지 않아도 STM 항목 제거. 기본값은 STM 항목을 유지하고 실패 처리 |
 | `--dry-run` | 계획만 출력, 쓰기 없음 |
 | `--yes` / `-y` | 확인 프롬프트 생략 (스크립트 / CI / 비-TTY) |
+
+## 관련 기억 제시·훅
+
+### `mms surfacing <server> [on|off]`
+
+특정 서버의 관련 기억 자동 제시를 켜거나 끕니다. 상태 인수를 생략하면 현재 값만 출력합니다.
+
+```bash
+mms surfacing filesystem             # 현재 상태 확인
+mms surfacing filesystem off         # 이 서버의 서피싱 비활성화
+mms surfacing filesystem on          # 다시 활성화
+```
+
+`surfacing_enabled` 값은 공용 프록시 설정(`stm_proxy.json`)에 기록됩니다. 실행 중인 프록시에도 재시작 없이 즉시 반영되며, 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 이 설정을 공유합니다. 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
 
 ### `mms hook`
 
@@ -256,6 +235,33 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
+## 진단·튜닝
+
+### `mms health`
+
+등록한 모든 서버의 MCP 연결 상태를 점검합니다. 출력 형식은 `status` / `list`와 일관됩니다.
+
+```bash
+mms health                           # 사람이 읽기 좋은 출력
+mms health --json                    # 스크립트용 JSON
+mms health --timeout 5               # 서버별 연결 타임아웃(초)
+mms health --names                   # 64자 MCP 도구명 한도를 넘는 도구도 함께 보고
+```
+
+`--names`는 `mcp__<server>__<prefix>__<tool>`의 전체 길이가 MCP의 64자 제한(#261)을 넘어 등록 후 표시되지 않는 도구를 찾을 때 사용합니다.
+
+`health`는 서버별 **회로 차단기** 상태도 표시합니다. v0.1.32부터 기본으로 활성화됩니다. 연속 3회 호출에 실패하면 해당 서버의 도구는 약 60초 동안 `circuit_open`을 바로 반환하므로 호출할 때마다 재시도와 제한 시간을 모두 소진하지 않습니다. 캐시된 응답은 계속 제공하고 다른 서버에는 영향을 주지 않습니다. `stm_proxy.json`에서 해당 서버에 `circuit_max_failures: 0`을 지정하면 매번 다시 시도하는 이전 동작으로 돌아갑니다.
+
+`health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 오류 표시에는 거부된 값과 예외 메시지를 포함하지 않으며, 일부 항목은 다음과 같이 가립니다.
+
+- 설정 오류는 오류 위치와 유형만 표시합니다.
+- 서버 확인에 실패하면 예외 메시지 대신 `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)`처럼 예외 유형만 표시합니다. `mms add --validate`와 가져오기 검증도 같습니다. 원래 메시지가 필요하면 서버 명령을 직접 실행하거나 엔드포인트에 직접 접속해 확인합니다.
+- URL에서는 쿼리 문자열과 프래그먼트를 지웁니다.
+- 피드백·지표 DB의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 표시합니다.
+- stdio LTM 서버의 실행 인자는 `<command> [args hidden]`으로 가립니다. `--json`의 `surfacing.ltm_server.args`는 인자마다 `<REDACTED>` 하나로 표시하므로 개수는 셀 수 있습니다. 실제 값은 `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` 설정에서 직접 확인합니다.
+
+`--json`에는 `doctor`가 출력하는 점검 행과 같은 `surfacing.runtime_profile_checks`가 포함됩니다.
+
 ### `mms doctor`
 
 상태, 연결, 설정 검사를 하나의 PASS/WARN/FAIL 보고서로 실행합니다. 기본 실행은 상태를 바꾸지 않으며 LTM도 검색하지 않습니다. FAIL이 있으면 종료 코드 1, WARN만 있으면 종료 코드 0을 반환합니다.
@@ -277,40 +283,6 @@ mms doctor --measure-ltm             # 이미 실행 중인 데몬으로 읽기 
 ```bash
 mms config validate
 mms config validate --config ./stm_proxy.json --json
-```
-
-### `mms gateway`
-
-선택형 Toolgraph 정책의 출처를 확인하고 설정합니다.
-
-```bash
-mms gateway status [--config PATH] [--json]
-mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
-mms gateway explain server::tool [--config PATH] [--json]
-```
-
-`mode`는 기본적으로 변경 계획만 보여 줍니다. `--apply`를 지정하면 번들 정책을 켜고 Toolgraph 조회 프로필과 STM 노출 정책을 한 번에 맞춥니다. `explain`은 번들에 기록된 특정 판단의 이유를 보여 줍니다.
-
-### `mms host`
-
-프로젝트 레지스트리의 원본이 되는 MCP 클라이언트 설정을 검사하고 조정합니다.
-
-```bash
-mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
-mms host status [--json]
-mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
-```
-
-`scan`은 클라이언트 설정을 읽기만 하며 등록 항목을 조사합니다. `status`는 레지스트리와 실제 설정의 차이를 비교합니다. `sync`는 기본적으로 변경 계획만 보여 주며, 새 항목 추가, 모든 클라이언트에서 사라진 항목 제거, 별도 기준 파일 보강을 수행할 수 있습니다. 클라이언트 항목의 구조가 달라졌다면 `--force`, JSON 파일을 실제로 바꾸려면 `--yes`가 필요합니다. `--allow-project-configs`는 프로젝트 내부 설정 탐색을 명시적으로 허용합니다.
-
-### `mms selection replay`
-
-민감 정보를 정리한 도구 선택 기록을 다시 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다.
-
-```bash
-mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
-                     [--active-only] [--no-telemetry]
-                     [--output-dir DIR] [--json]
 ```
 
 ### `mms stats`
@@ -348,7 +320,30 @@ mms tune --apply [--yes]
 
 현재 설정에서 해석한 전략이 `none`이거나 명시적 `progressive`인 도구에는 `max_result_chars` 권장을 내지 않습니다. 두 경로 모두 이 예산을 읽지 않기 때문입니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
 
-## 프로젝트 관리
+### `mms selection replay`
+
+민감 정보를 정리한 도구 선택 기록을 다시 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다.
+
+```bash
+mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
+                     [--active-only] [--no-telemetry]
+                     [--output-dir DIR] [--json]
+```
+
+### `mms selection feedback`
+
+선택 텔레메트리에 운영자의 정정을 기록합니다. 피드백을 쓰며 프록시 설정은 변경하지 않습니다.
+
+```bash
+mms selection feedback --selection-id SELECTION_ID --operator-override --yes
+mms selection feedback --last --user-corrected --yes
+```
+
+필터·출력 옵션은 `--config`, `--log`, `--active-only`, `--server`, `--tool`, `--json`입니다. 명시적 해제 플래그는 `--no-operator-override`, `--no-user-corrected`입니다.
+
+<a id="프로젝트-관리"></a>
+
+## 프로젝트·호스트
 
 `.mms/project.toml` 표시 파일로 프로젝트별 활성 MCP 목록을 관리합니다. 디렉터리마다 다른 MCP 구성을 쓰고 싶을 때 유용합니다. 예를 들어 회사 코드에서는 GitHub MCP를 켜고 개인 프로젝트에서는 filesystem만 켤 수 있습니다. 프로젝트 목록은 `~/.mms/projects.toml`에 기록하므로 어느 위치에서 명령을 실행해도 같은 설정을 찾을 수 있습니다.
 
@@ -411,7 +406,7 @@ mms project route --json
 
 <a id="호스트-설정-일괄-가져오기"></a>
 
-## 클라이언트 설정 일괄 가져오기
+<a id="클라이언트-설정-일괄-가져오기"></a>
 
 ### `mms import`
 
@@ -425,6 +420,30 @@ mms import --plan --show-imported    # 계획에서 비밀값을 가리지 않�
 ```
 
 먼저 가져온 항목이 우선합니다. 레지스트리에 같은 이름으로 다른 내용이 등록되어 있으면 충돌로 처리해 건너뛰고, 내용까지 같으면 바꾸지 않습니다.
+
+### `mms gateway`
+
+선택형 Toolgraph 정책의 출처를 확인하고 설정합니다.
+
+```bash
+mms gateway status [--config PATH] [--json]
+mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
+mms gateway explain server::tool [--config PATH] [--json]
+```
+
+`mode`는 기본적으로 변경 계획만 보여 줍니다. `--apply`를 지정하면 번들 정책을 켜고 Toolgraph 조회 프로필과 STM 노출 정책을 한 번에 맞춥니다. `explain`은 번들에 기록된 특정 판단의 이유를 보여 줍니다.
+
+### `mms host`
+
+프로젝트 레지스트리의 원본이 되는 MCP 클라이언트 설정을 검사하고 조정합니다.
+
+```bash
+mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
+mms host status [--json]
+mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
+```
+
+`scan`은 클라이언트 설정을 읽기만 하며 등록 항목을 조사합니다. `status`는 레지스트리와 실제 설정의 차이를 비교합니다. `sync`는 기본적으로 변경 계획만 보여 주며, 새 항목 추가, 모든 클라이언트에서 사라진 항목 제거, 별도 기준 파일 보강을 수행할 수 있습니다. 클라이언트 항목의 구조가 달라졌다면 `--force`, JSON 파일을 실제로 바꾸려면 `--yes`가 필요합니다. `--allow-project-configs`는 프로젝트 내부 설정 탐색을 명시적으로 허용합니다.
 
 ## 운영 통계
 
@@ -461,17 +480,6 @@ mms register --client claude
 이제 MCP 클라이언트는 개별 서버 대신 `memtomem-stm`에 연결됩니다. 등록한 서버의 도구는 프록시를 통해 제공되며 관련 기억 자동 제시, 응답 압축, 점진적 전달이 적용됩니다.
 
 > 설정 방법은 [설치 가이드](/ko/guides/installation/), 관련 기억을 붙이는 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
-
-### `mms selection feedback`
-
-선택 텔레메트리에 운영자의 정정을 기록합니다. 피드백을 쓰며 프록시 설정은 변경하지 않습니다.
-
-```bash
-mms selection feedback --selection-id SELECTION_ID --operator-override --yes
-mms selection feedback --last --user-corrected --yes
-```
-
-필터·출력 옵션은 `--config`, `--log`, `--active-only`, `--server`, `--tool`, `--json`입니다. 명시적 해제 플래그는 `--no-operator-override`, `--no-user-corrected`입니다.
 
 ## 명령별 전체 옵션 인덱스
 

@@ -147,16 +147,16 @@
     "pairedTaskSlugs": [
       "guides/choose-your-path",
       "guides/connect-ai-client",
-      "guides/index-and-import",
-      "guides/stm-first-proxy"
+      "ltm/index-and-import",
+      "stm/first-proxy"
     ],
     "landingTaskSlugs": [
       "guides/choose-your-path",
       "guides/quickstart",
       "guides/connect-ai-client",
-      "guides/index-and-import",
-      "guides/memory-persistence",
-      "guides/stm-first-proxy",
+      "ltm/index-and-import",
+      "ltm/memory-persistence",
+      "stm/first-proxy",
       "guides/troubleshooting"
     ],
     "quickstartSequence": [

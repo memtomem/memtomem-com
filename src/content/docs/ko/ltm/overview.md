@@ -1,5 +1,5 @@
 ---
-title: 개요
+title: LTM 개요
 description: 세션이나 AI 도구가 바뀌어도 기억을 저장하고 검색할 수 있는 로컬 MCP 서버.
 ---
 
@@ -9,7 +9,7 @@ memtomem은 **세션이나 AI 도구가 바뀌어도 남는 기억**을 제공�
 
 ## 이럴 때 씁니다
 
-- **어제 정한 내용을 새 세션에서 다시 설명해야 할 때** — 세션이 끝나도 중요한 내용을 저장해 두고 다시 찾을 수 있습니다. [세션을 넘나드는 기억](/ko/guides/memory-persistence/)에서 직접 확인해 보세요.
+- **어제 정한 내용을 새 세션에서 다시 설명해야 할 때** — 세션이 끝나도 중요한 내용을 저장해 두고 다시 찾을 수 있습니다. [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)에서 직접 확인해 보세요.
 - **노트·문서를 AI 도구가 검색하게 만들고 싶을 때** — Markdown이나 구조화 파일이 있는 폴더를 `mm index ~/notes`로 색인하면 MCP를 지원하는 AI 도구에서 검색할 수 있습니다.
 - **여러 AI 도구가 같은 지식을 공유해야 할 때** — Claude Code, Cursor, Codex CLI 등이 하나의 기억 저장소를 함께 사용할 수 있습니다.
 
@@ -23,7 +23,7 @@ mm add "전환 전에 릴리스 smoke test를 실행한다" --tags release,decis
 mm search "릴리스 smoke test"
 ```
 
-클라이언트를 연결하기 전에 저장과 검색이 동작하는지 확인하는 흐름입니다. [빠른 시작](/ko/guides/quickstart/)을 완료한 뒤 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)로 이어가세요.
+클라이언트를 연결하기 전에 저장과 검색이 동작하는지 확인하는 흐름입니다. 아직 진행하지 않았다면 [빠른 시작](/ko/guides/quickstart/)과 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 먼저 완료하세요. 클라이언트를 연결했다면 [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)으로 이어가세요.
 
 ## 핵심 개념
 
@@ -68,7 +68,7 @@ SQLite 저장과 ONNX 임베딩은 내 컴퓨터에서 처리하므로 GPU나 �
 ## 다음 단계
 
 - [빠른 시작](/ko/guides/quickstart/) — 10분 안에 설치하고 첫 기억 저장·검색 확인
-- [세션을 넘나드는 기억](/ko/guides/memory-persistence/) — 세션 A에서 저장 → 세션 B에서 불러오기
+- [세션을 넘나드는 기억](/ko/ltm/memory-persistence/) — 세션 A에서 저장 → 세션 B에서 불러오기
 - [하이브리드 검색](/ko/ltm/hybrid-search/) — 검색 엔진 작동 원리
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 네임스페이스 설계와 공유 워크플로우
 - [Context Gateway](/ko/ltm/context-gateway/) — 에이전트·스킬·명령의 기준본을 프로젝트와 실행 환경 사이에서 관리

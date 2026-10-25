@@ -43,7 +43,7 @@ The `auto` strategy (default) analyzes content to pick the optimal strategy:
 
 ## Query-Aware Budget Allocation
 
-During compression, the agent's current query is taken into account — relevant sections receive a larger token budget. The `selective` / `hybrid` / `schema_pruning` / `skeleton` strategies also rank table-of-contents entries by BM25 relevance to the active query. The deterministic BM25 score used here is recorded by selection telemetry for offline analysis (see [Configuration](/reference/configuration/)).
+During compression, the agent's current query is taken into account — relevant sections receive a larger token budget. The `selective` / `hybrid` / `schema_pruning` / `skeleton` strategies also rank table-of-contents entries by BM25 relevance to the active query. The deterministic BM25 score used here is recorded by selection telemetry for offline analysis (see [Configuration](/stm/configuration/)).
 
 Budgets can be expressed as `max_result_chars` or `max_result_tokens`. Token budgets use `chars_per_token` plus `token_estimation_mode` (`static` or Unicode-aware `unicode`), while `consumer_model` and `context_budget_ratio` can cap a result against the receiving model's context window. Per-upstream and per-tool values override proxy defaults.
 

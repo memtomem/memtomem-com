@@ -305,11 +305,11 @@ The setup is complete when:
 5. If a GUI-launched client cannot resolve a manual command, run `command -v memtomem-server` and use that absolute executable path in its configuration.
 6. Continue with [Troubleshooting](/guides/troubleshooting/) if the database path or namespace differs.
 
-Installing a client plugin does not index the project, import built-in memory, watch files, or save entire conversations. Use [Index and Import Existing Content](/guides/index-and-import/) for those explicit operations.
+Installing a client plugin does not index the project, import built-in memory, watch files, or save entire conversations. Use [Index and Import Existing Content](/ltm/index-and-import/) for those explicit operations.
 
 ## Next
 
-- [Memory Across Sessions](/guides/memory-persistence/)
-- [Index and Import Existing Content](/guides/index-and-import/)
+- [Memory Across Sessions](/ltm/memory-persistence/)
+- [Index and Import Existing Content](/ltm/index-and-import/)
 - [LTM MCP Tools](/ltm/mcp-tools/)
 - [LTM Operations & API](/ltm/operations/)

@@ -1,5 +1,5 @@
 ---
-title: CLI Reference
+title: LTM CLI Reference
 description: mm CLI commands for memtomem LTM server management.
 ---
 
@@ -96,7 +96,7 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 ### Running the MCP server
 
-memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Quick Start](/guides/quickstart/) for the config snippets.
+memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Connect an AI Client](/guides/connect-ai-client/) for the per-client registration steps.
 
 To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 100 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 

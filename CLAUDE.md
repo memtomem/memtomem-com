@@ -31,12 +31,13 @@ src/
   pages/ko/index.astro    # Korean landing-page mirror
   data/docs-contract.json # Reviewed upstream versions/counts/hashes
   content/docs/           # Starlight docs pages (Markdown)
-    guides/               # Quick Start, Installation
-    ltm/                  # memtomem (LTM) docs
-    stm/                  # memtomem-stm (STM) docs
-    reference/            # API reference
+    guides/               # Product-neutral: Get Started + Help pages
+    ltm/                  # memtomem (LTM): guides, concepts, reference (incl. configuration)
+    stm/                  # memtomem-stm (STM): guides, concepts, reference (incl. configuration)
+    use-cases/            # Scenario walkthroughs
   styles/custom.css       # Starlight theme overrides + brand tokens
   assets/                 # Logo SVGs
+public/guides/, public/reference/, public/ko/…  # Hash-preserving redirects for moved doc URLs
 ```
 
 **Key distinction**: `src/pages/index.astro` is a standalone Astro page with its own HTML/CSS (not a Starlight doc). All other pages under `src/content/docs/` use the Starlight docs layout with sidebar, search, and table of contents.

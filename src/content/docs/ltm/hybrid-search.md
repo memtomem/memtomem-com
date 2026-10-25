@@ -3,7 +3,7 @@ title: Hybrid Search
 description: How BM25 keyword + dense vector + RRF fusion search works and how to tune it.
 ---
 
-> New to memtomem? Start with the [Memory Persistence Across Sessions](/guides/memory-persistence/) tutorial to see the basic search flow in action first.
+> New to memtomem? Start with the [Memory Persistence Across Sessions](/ltm/memory-persistence/) tutorial to see the basic search flow in action first.
 
 memtomem's hybrid search combines keyword search and semantic search, leveraging both exact term matching and meaning-based similarity in a single query.
 
@@ -33,7 +33,7 @@ When reranking is enabled, the reranker sees a candidate pool of size `max(min_p
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | Floor — reranker never sees fewer candidates |
 | `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | Cap — prevents runaway cost on large `top_k` |
 
-Runtime-tunable via `mm config set rerank.oversample 3.0` etc. The remaining `rerank.*` keys, including reranker model selection, are covered in the [configuration reference](/reference/configuration/).
+Runtime-tunable via `mm config set rerank.oversample 3.0` etc. The remaining `rerank.*` keys, including reranker model selection, are covered in the [configuration reference](/ltm/configuration/).
 
 ## Semantic Chunking
 
@@ -67,7 +67,7 @@ Structured search responses identify the active `score_scale` (`rrf`, `bm25`, `d
 
 `mem_search`'s structured response always carries a top-level `recorded` key, empty responses included: `true` in the default recording mode and `false` under `record=false`. It reports which mode applied, not that a write happened. Compact and verbose output are unchanged, and servers before 0.6.8 omit the key.
 
-Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/reference/configuration/).
+Maintenance behaviors that affect search quality — near-duplicate detection, time-based decay, TTL expiration, and auto-tagging — are documented alongside their environment variables in the [configuration reference](/ltm/configuration/).
 
 ## Retrieval benchmark v2
 

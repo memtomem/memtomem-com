@@ -7,7 +7,8 @@ const contract = JSON.parse(await readFile('src/data/docs-contract.json', 'utf8'
 const sources = {};
 async function walk(dir) { for (const entry of await readdir(dir, { withFileTypes: true })) { const file = dir + '/' + entry.name; if (entry.isDirectory()) await walk(file); else if (/\.mdx?$/.test(file)) sources[file] = await readFile(file, 'utf8'); } }
 await walk('src/content/docs');
-const config = 'src/content/docs/reference/configuration.md';
+const config = 'src/content/docs/ltm/configuration.md';
+const stmConfig = 'src/content/docs/stm/configuration.md';
 test('pinned website passes', () => assert.deepEqual(validateUpstream(snapshot, contract, sources), []));
 test('no current release is listed as stale', () => { for (const version of [contract.core.version, contract.stm.version, contract.claudePlugin.version, contract.opencode.version]) assert.ok(!STALE_VERSIONS.includes(version), version + ' is current but listed in STALE_VERSIONS'); });
 for (const [name, mutate] of [
@@ -15,13 +16,15 @@ for (const [name, mutate] of [
 ['wrong source revision', (s, c) => { c.sourceSnapshots.coreMain = 'bad'; }],
 ['missing setting', (s, c, d) => { d[config] = d[config].replaceAll('MEMTOMEM_EMBEDDING__PROVIDER', 'MEMTOMEM_REMOVED'); }],
 ['default value changed', (s, c, d) => { d[config] = d[config].replace('| `"none"` |', '| `"onnx"` |'); }],
-['Korean default drift', (s, c, d) => { d['src/content/docs/ko/reference/configuration.md'] = ''; }],
+['Korean default drift', (s, c, d) => { d['src/content/docs/ko/ltm/configuration.md'] = ''; }],
+['Korean STM default drift', (s, c, d) => { d['src/content/docs/ko/stm/configuration.md'] = ''; }],
 ['CLI option omitted', (s, c, d) => { d['src/content/docs/stm/cli.md'] = d['src/content/docs/stm/cli.md'].replaceAll('--inherit-runtime-env', '--fake-option'); }],
 ['public tool catalog drift', (s, c, d) => { d['src/content/docs/ko/ltm/mcp-tools.md'] = ''; }],
 ['stale release', (s, c, d) => { d[config] += '\nmemtomem 0.3.12'; }],
 ['private repository link', (s, c, d) => { d[config] += '\nhttps://github.com/memtomem/memtomem-docs/blob/main/audit.md'; }],
 ['private audit path', (s, c, d) => { d[config] += '\n/docs/audits/internal.md'; }],
 ]) { test('rejects ' + name, () => { const s = structuredClone(snapshot), c = structuredClone(contract), d = { ...sources }; mutate(s, c, d); assert.ok(validateUpstream(s, c, d).length > 0); }); }
+test('rejects STM default drift', () => { const d = { ...sources }; const row = '| `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | Enable response caching | `true` |'; assert.ok(d[stmConfig].includes(row)); d[stmConfig] = d[stmConfig].replace(row, row.replace('`true`', '`false`')); assert.deepEqual(validateUpstream(snapshot, contract, d), ['MEMTOMEM_STM_PROXY__CACHE__ENABLED: default mismatch']); });
 test('rejects stale release at sentence end', () => { const d = { ...sources }; d[config] += '\nThis targets memtomem v0.3.12. Next'; assert.deepEqual(validateUpstream(snapshot, contract, d), [config + ': stale release']); });
 for (const [version, text, stale] of [
 ['0.6.4', 'targets memtomem v0.6.4. Commands', true],

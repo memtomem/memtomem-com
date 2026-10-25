@@ -1,5 +1,5 @@
 ---
-title: 개요
+title: STM 개요
 description: memtomem-stm이란 — 관련 기억을 자동으로 제시하고 도구 응답을 압축해 주는 MCP 프록시.
 ---
 
@@ -22,7 +22,7 @@ mms init --demo --client auto                            # 2. 실행 가능한 �
 mms doctor                                               # 3. 전체 설정 진단
 ```
 
-`mms init --demo`는 실행 결과가 일정한 내장 읽기 전용 MCP 서버를 구성합니다. `--client auto`는 감지한 지원 클라이언트에 STM을 등록합니다. 이후에는 `mms register --client claude`, `--client codex`, `--client auto`로 등록 대상을 바꿀 수 있습니다. 실제 호출, 지표, 중복 경로 정리, 원복까지는 [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/)를 참고하세요.
+`mms init --demo`는 실행 결과가 일정한 내장 읽기 전용 MCP 서버를 구성합니다. `--client auto`는 감지한 지원 클라이언트에 STM을 등록합니다. 이후에는 `mms register --client claude`, `--client codex`, `--client auto`로 등록 대상을 바꿀 수 있습니다. 실제 호출, 지표, 중복 경로 정리, 원복까지는 [MCP 서버에 STM 추가](/ko/stm/first-proxy/)를 참고하세요.
 
 ## 핵심 기능
 
@@ -70,16 +70,16 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |
 
-## 다음 단계
-
-- [MCP 서버에 STM 추가](/ko/guides/stm-first-proxy/) — 데모, 실제 프록시 호출, 지표, 원복
-- [능동적 서피싱](/ko/stm/surfacing/) — 5단계 관련성 검사와 피드백 기반 자동 조정
-- [압축 전략](/ko/stm/compression/) — 10가지 전략과 자동 선택 과정
-- [MCP 도구](/ko/stm/mcp-tools/) — STM 관리 도구와 관찰성 도구
-- [CLI 레퍼런스](/ko/stm/cli/) — `mms` 명령 전체 목록
-
 ## 제한과 안전한 재시도
 
 기본 `proxy.max_upstream_bytes`는 디코딩 후 compact JSON 기준 40 MiB(41,943,040바이트)입니다. 메타데이터·비텍스트 블록·오류 콘텐츠를 포함하며, 전송 바이트나 최대 메모리 사용량을 보장하는 제한은 아닙니다.
 
-시간 초과나 연결 끊김이 발생해도 업스트림에서는 실행되었을 수 있습니다. 결과가 불명확한 실패의 재시도는 재실행 안전 정책과 남은 재시도·시간 예산을 모두 충족해야 합니다. 주석 없는 도구를 자동으로 안전하다고 간주하지 않습니다. 세션 재시작은 부작용을 되돌리지 않습니다. 종료 감시와 부모 프로세스 생존 확인 설정은 [환경 변수 레퍼런스](/ko/reference/configuration/)에서 확인하세요.
+시간 초과나 연결 끊김이 발생해도 업스트림에서는 실행되었을 수 있습니다. 결과가 불명확한 실패의 재시도는 재실행 안전 정책과 남은 재시도·시간 예산을 모두 충족해야 합니다. 주석 없는 도구를 자동으로 안전하다고 간주하지 않습니다. 세션 재시작은 부작용을 되돌리지 않습니다. 종료 감시와 부모 프로세스 생존 확인 설정은 [환경 변수 레퍼런스](/ko/stm/configuration/)에서 확인하세요.
+
+## 다음 단계
+
+- [MCP 서버에 STM 추가](/ko/stm/first-proxy/) — 데모, 실제 프록시 호출, 지표, 원복
+- [능동적 서피싱](/ko/stm/surfacing/) — 5단계 관련성 검사와 피드백 기반 자동 조정
+- [압축 전략](/ko/stm/compression/) — 10가지 전략과 자동 선택 과정
+- [MCP 도구](/ko/stm/mcp-tools/) — STM 관리 도구와 관찰성 도구
+- [CLI 레퍼런스](/ko/stm/cli/) — `mms` 명령 전체 목록

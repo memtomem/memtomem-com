@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: LTM Overview
 description: What memtomem is — an MCP-native long-term memory server for AI agents.
 ---
 
@@ -9,7 +9,7 @@ memtomem gives your AI agent **memory that persists across sessions and across a
 
 ## Use It When
 
-- **You keep re-explaining yesterday's decisions in today's session** — memtomem solves the "every new session is a blank slate" problem. Walk through the flow in [Memory Persistence Across Sessions](/guides/memory-persistence/).
+- **You keep re-explaining yesterday's decisions in today's session** — memtomem solves the "every new session is a blank slate" problem. Walk through the flow in [Memory Persistence Across Sessions](/ltm/memory-persistence/).
 - **You want notes or docs to be searchable by your agent** — point `mm index ~/notes` at a folder of Markdown / structured files and every MCP-connected agent can query it.
 - **Multiple agents need to share the same knowledge** — Claude Code, Cursor, Codex CLI, and any other MCP client share one memory store.
 
@@ -23,7 +23,7 @@ mm add "Release smoke tests run before cutover" --tags release,decision
 mm search "release smoke tests"
 ```
 
-This proves storage and search before a client is involved. Continue with [Quick Start](/guides/quickstart/) and then [Connect an AI Client](/guides/connect-ai-client/).
+This proves storage and search before a client is involved. If you have not done so yet, complete [Quick Start](/guides/quickstart/) and [Connect an AI Client](/guides/connect-ai-client/); once a client is connected, continue with [Memory Across Sessions](/ltm/memory-persistence/).
 
 ## Core Concepts
 
@@ -66,7 +66,7 @@ The default setup is LTM alone. If you want token-optimized responses with proac
 ## Next Steps
 
 - [Quick Start](/guides/quickstart/) — Install and verify your first memory in 10 minutes
-- [Memory Persistence Across Sessions](/guides/memory-persistence/) — Save in session A, recall in session B
+- [Memory Persistence Across Sessions](/ltm/memory-persistence/) — Save in session A, recall in session B
 - [Hybrid Search](/ltm/hybrid-search/) — How the search engine works
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — Namespace design and sharing workflows
 - [Context Gateway](/ltm/context-gateway/) — Define agents / skills / commands once, then sync, move, or copy them across projects and runtimes

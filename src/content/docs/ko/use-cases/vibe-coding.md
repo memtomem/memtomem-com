@@ -20,7 +20,7 @@ description: 코딩 에이전트 사용자를 위한 가상 프로젝트 실습.
 3. 실제로 새 세션을 열고 기억 검색을 요청합니다.
 4. 결정·이유·원본 경로가 함께 나오는지 확인합니다.
 
-전체 저장·재시작·검색 절차는 [세션을 넘나드는 기억](/ko/guides/memory-persistence/)을 따릅니다. Claude Code와 Codex용 지시문을 각각 제공하며, 다른 클라이언트에서는 `mem_add`·`mem_search`를 직접 요청합니다.
+전체 저장·재시작·검색 절차는 [세션을 넘나드는 기억](/ko/ltm/memory-persistence/)을 따릅니다. Claude Code와 Codex용 지시문을 각각 제공하며, 다른 클라이언트에서는 `mem_add`·`mem_search`를 직접 요청합니다.
 
 ## 샘플 실행
 
@@ -65,4 +65,4 @@ mm search "legacy callback" --format context
 
 자동 대화 수집·다른 컴퓨터 동기화·코딩 오류 감소율은 이 데모가 입증하지 않습니다. 코딩 에이전트 구독은 API 없는 CLI 샘플과 별개입니다. 막힌 단계는 [문제 해결](/ko/guides/troubleshooting/)로 돌아가 확인하세요.
 
-**다음:** [기존 자료 색인](/ko/guides/index-and-import/) 또는 [LangGraph 활용](/ko/use-cases/langgraph/).
+**다음:** [기존 자료 색인](/ko/ltm/index-and-import/) 또는 [LangGraph 활용](/ko/use-cases/langgraph/).

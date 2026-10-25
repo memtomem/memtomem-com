@@ -193,6 +193,7 @@ a { color: inherit; text-decoration: none; }
 /* Two-card sections: without this the row leaves an empty third column. */
 .feature-grid-2 { grid-template-columns: repeat(2, 1fr); }
 .feature-card {
+	display: flex; flex-direction: column;
 	padding: 28px 24px;
 	border-radius: var(--radius-lg);
 	background: var(--bg-2);
@@ -212,7 +213,7 @@ a { color: inherit; text-decoration: none; }
 .feature-card.blue   { border-top-color: var(--blue); }
 .feature-card.green  { border-top-color: var(--green); }
 .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; word-break: keep-all; }
-.feature-card p  { font-size: 14px; color: var(--text-2); line-height: 1.7; }
+.feature-card p  { font-size: 14px; color: var(--text-2); line-height: 1.7; flex: 1; }
 
 /* ── Architecture diagram ─────────────── */
 .arch-diagram {
@@ -318,6 +319,8 @@ a { color: inherit; text-decoration: none; }
 .tag-ltm   { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent-border); }
 .tag-stm   { background: var(--teal-glow);   color: var(--teal);   border: 1px solid var(--teal-border); }
 .tag-guide { background: var(--coral-glow);  color: var(--coral);  border: 1px solid var(--coral-border); }
+.arch-links { display: flex; justify-content: center; gap: 12px; margin-top: 28px; }
+.arch-links .tag { margin-top: 0; font-size: 13px; padding: 6px 14px; }
 
 /* ── CTA ──────────────────────────────── */
 .cta-section {

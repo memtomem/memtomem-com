@@ -20,7 +20,7 @@ npm run build
 
 - `src/data/docs-contract.json` is the reviewed version/count snapshot used by landing pages and CI checks.
 - `src/data/upstream-snapshot.json` pins schema defaults, complete CLI long-option catalogs, and tool membership to exact public source commits. Checks compare names and values, not counts alone.
-- `src/content/docs/reference/configuration.md` intentionally mirrors the complete supported Core and STM option surfaces. Do not replace the tables with a curated subset.
+- `src/content/docs/ltm/configuration.md` and `src/content/docs/stm/configuration.md` intentionally mirror the complete supported Core and STM option surfaces. Do not replace the tables with a curated subset.
 - Every English document under `src/content/docs/` has the same-path Korean mirror under `src/content/docs/ko/`.
 - Update both languages in one change, then update manifest counts/hashes only after reviewing the upstream schema or CLI.
 - Keep local connector files such as `.mcp.json` untracked and out of site commits.

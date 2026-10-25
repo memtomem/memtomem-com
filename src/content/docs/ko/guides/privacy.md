@@ -77,7 +77,7 @@ STM은 기존 MCP 서버를 가져와 앞단에서 중계합니다. 이 변경�
 
 ## 관련 문서
 
-- [환경 변수](/ko/reference/configuration/) — 프라이버시 관련 설정 전체
+- [LTM 환경 변수](/ko/ltm/configuration/), [STM 환경 변수](/ko/stm/configuration/) — 프라이버시 관련 설정 전체
 - [능동적 서피싱](/ko/stm/surfacing/) — 검색어 보호와 관련성 검사
 - [Context Gateway](/ko/ltm/context-gateway/) — 계층별 비밀값 차단
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 공유할 때 민감 정보 차단

@@ -47,7 +47,7 @@ memtomem-stm은 MCP 도구 응답을 내용의 형식에 맞춰 자동으로 압
 
 ## 검색어를 반영한 예산 배분
 
-압축할 때 현재 검색어나 요청을 반영해 관련 섹션에 더 많은 토큰 예산을 배정합니다. 예를 들어 “인증 모듈”을 묻는 상황에서 API 문서를 압축하면 인증 관련 엔드포인트에 더 많은 공간을 줍니다. `selective` / `hybrid` / `schema_pruning` / `skeleton`의 목차 항목도 현재 검색어와의 BM25 관련성 순으로 정렬합니다. 이때 계산한 BM25 점수는 선택 기록에 남으므로 나중에 분석할 수 있습니다([설정](/ko/reference/configuration/) 참고).
+압축할 때 현재 검색어나 요청을 반영해 관련 섹션에 더 많은 토큰 예산을 배정합니다. 예를 들어 “인증 모듈”을 묻는 상황에서 API 문서를 압축하면 인증 관련 엔드포인트에 더 많은 공간을 줍니다. `selective` / `hybrid` / `schema_pruning` / `skeleton`의 목차 항목도 현재 검색어와의 BM25 관련성 순으로 정렬합니다. 이때 계산한 BM25 점수는 선택 기록에 남으므로 나중에 분석할 수 있습니다([설정](/ko/stm/configuration/) 참고).
 
 예산은 `max_result_chars` 또는 `max_result_tokens`로 지정합니다. 토큰 수는 `chars_per_token`과 `token_estimation_mode`(`static` 또는 유니코드를 고려하는 `unicode`)로 추정합니다. `consumer_model`과 `context_budget_ratio`를 설정하면 응답을 받을 모델의 컨텍스트 크기에 맞춰 상한을 정할 수 있습니다. 서버별·도구별 값이 프록시 기본값보다 우선합니다.
 

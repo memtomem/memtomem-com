@@ -12,10 +12,10 @@ You do not need every memtomem feature at once. Pick the outcome you need now, f
 | Try a coding-agent scenario | [Coding decisions and source recall](/use-cases/vibe-coding/) | a saved reason and ADR source are retrieved |
 | Add memory to LangGraph | [Model-free beginner notebooks](/use-cases/langgraph/) | both Korean notebooks print six PASS checks without an API key |
 | Prove that memory storage and search work | [Quick Start](/guides/quickstart/) | `mm search` returns the memory you just added |
-| Recall a decision in a new AI session | [Memory Across Sessions](/guides/memory-persistence/) | a new session returns the saved reason and source |
+| Recall a decision in a new AI session | [Memory Across Sessions](/ltm/memory-persistence/) | a new session returns the saved reason and source |
 | Connect Claude Code, Codex, or another MCP client | [Connect an AI Client](/guides/connect-ai-client/) | the client can call `mem_status` |
-| Search existing notes, docs, code, or built-in AI memory | [Index and Import Existing Content](/guides/index-and-import/) | a known phrase returns with its source path |
-| Add response compression or proactive memory surfacing | [Add STM to an MCP Server](/guides/stm-first-proxy/) | one proxied call appears in `mms stats --source mcp` |
+| Search existing notes, docs, code, or built-in AI memory | [Index and Import Existing Content](/ltm/index-and-import/) | a known phrase returns with its source path |
+| Add response compression or proactive memory surfacing | [Add STM to an MCP Server](/stm/first-proxy/) | one proxied call appears in `mms stats --source mcp` |
 | Separate personal, agent, and shared memory | [Multi-Agent Collaboration](/ltm/multi-agent/) | one agent shares a reviewed memory and another retrieves it |
 | Maintain skills and commands across runtimes | [Context Gateway](/ltm/context-gateway/) | a previewed Store version is pushed to a selected runtime |
 | Check local storage and external-service boundaries | [Local-First & Privacy](/guides/privacy/) | you know which enabled integrations can send data off-device |
@@ -64,6 +64,7 @@ Task guides recommend one safe path. The reference pages retain the full release
 
 - [LTM CLI Reference](/ltm/cli/)
 - [LTM MCP Tools](/ltm/mcp-tools/)
+- [LTM Environment Variables](/ltm/configuration/)
 - [STM CLI Reference](/stm/cli/)
 - [STM MCP Tools](/stm/mcp-tools/)
-- [Environment Variables](/reference/configuration/)
+- [STM Environment Variables](/stm/configuration/)

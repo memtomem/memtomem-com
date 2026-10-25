@@ -20,7 +20,7 @@ Our sample keeps an old authentication callback during a staged rollout. Its ADR
 3. Open a genuinely new session and request memory search.
 4. Check the returned decision, reason, and original source path.
 
-Use [Memory Across Sessions](/guides/memory-persistence/) for the full save/reopen/recall procedure. Claude Code and Codex have separate copyable instructions there; other clients can request `mem_add` and `mem_search` directly.
+Use [Memory Across Sessions](/ltm/memory-persistence/) for the full save/reopen/recall procedure. Claude Code and Codex have separate copyable instructions there; other clients can request `mem_add` and `mem_search` directly.
 
 ## Try the sample
 
@@ -65,4 +65,4 @@ The result should identify `/api/auth/legacy-callback`, older-client compatibili
 
 This does not demonstrate automatic conversation capture, cross-machine synchronization, or a measured reduction in coding errors. Agent subscriptions are separate from the no-API CLI sample. For a failed step, use [Troubleshooting](/guides/troubleshooting/).
 
-**Next:** [Index existing content](/guides/index-and-import/) or [learn the LangGraph path](/use-cases/langgraph/).
+**Next:** [Index existing content](/ltm/index-and-import/) or [learn the LangGraph path](/use-cases/langgraph/).

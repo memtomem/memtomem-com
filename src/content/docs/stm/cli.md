@@ -1,5 +1,5 @@
 ---
-title: CLI Reference
+title: STM CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
@@ -7,7 +7,9 @@ The `mms` command is installed with the `memtomem-stm` v0.6.9 package. This page
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
-## Commands
+<a id="commands"></a>
+
+## Setup & Registration
 
 ### `mms init`
 
@@ -124,18 +126,6 @@ As of v0.1.32 `status` is a summary: config path, the `enabled` flag, any schema
 
 `list` and `status` validate the configuration the way server startup does, so an environment variable that startup rejects marks the configuration invalid. `config_error` reports the location and type code of each error without values; a location can name a key, such as an env or header name, but never its value. Run `mms config validate` for the details of a file error.
 
-### `mms surfacing <server> [on|off]`
-
-Toggle proactive memory surfacing for a single upstream server. Omit the state argument to print the current value.
-
-```bash
-mms surfacing filesystem             # show current state
-mms surfacing filesystem off         # disable surfacing for this upstream
-mms surfacing filesystem on          # re-enable
-```
-
-`surfacing_enabled` is written into the shared proxy config (`stm_proxy.json`). A running proxy hot-reloads it without a restart, and because the flag lives in the shared config rather than per-client env, every MCP client that proxies through this `mms` sees the same scope. See [Proactive Surfacing](/stm/surfacing/) for how surfacing works.
-
 ### `mms remove <name>`
 
 Remove a registered upstream server.
@@ -146,31 +136,6 @@ mms remove filesystem -y             # skip confirmation
 ```
 
 Removing an imported server emits a hint pointing at `mms eject`, so the original host registration can be restored rather than lost.
-
-### `mms health`
-
-Probe every registered upstream server and report MCP connectivity status. Output is pretty-printed to match `status` / `list`.
-
-```bash
-mms health                           # human-readable
-mms health --json                    # scriptable JSON
-mms health --timeout 5               # per-server connect timeout (seconds)
-mms health --names                   # also flag tools whose proxied name overflows the 64-char MCP limit
-```
-
-`--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
-
-`health` also renders a per-upstream **circuit breaker** line. As of v0.1.32 the breaker is on by default: after 3 consecutive failed calls an upstream's tools fast-fail with `circuit_open` for ~60s instead of each call burning the full retry/deadline budget; cached responses keep serving and other upstreams are unaffected. Set `circuit_max_failures: 0` on an upstream in `stm_proxy.json` to restore the old always-retry behavior.
-
-`health` and `doctor` validate the configuration the way server startup does: an environment that startup rejects, such as `MEMTOMEM_STM_PROXY='[1]'`, reports `config_valid: false` in `health`. Their error text omits rejected values and exception messages, and a few fields are redacted:
-
-- Configuration errors show only their location and type.
-- A failed probe reads as its exception type — `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)` — instead of the exception text, which could quote a URL, argument or header back. The same applies to `mms add --validate` and import validation. Run the server command or reach the endpoint directly for the underlying message.
-- URLs drop their query string and fragment.
-- SQLite errors from the feedback or metrics DB read e.g. `DatabaseError (SQLITE_CORRUPT)`.
-- A stdio LTM server's launch arguments show as `<command> [args hidden]`. In `--json`, `surfacing.ltm_server.args` holds one `<REDACTED>` per argument, so scripts can still count them; read `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` directly for the values.
-
-`--json` also carries `surfacing.runtime_profile_checks`, the same rows `doctor` prints.
 
 ### `mms prune`
 
@@ -208,6 +173,20 @@ It writes the verbatim host entry captured at import time (the provenance) back 
 | `--accept-schema-loss` | Proceed with STM removal even when the restored host entry does not structurally match the original (default keeps the STM entry and fails) |
 | `--dry-run` | Print the plan; no writes |
 | `--yes` / `-y` | Skip the confirm prompt (scripts / CI / non-TTY) |
+
+## Surfacing & Hooks
+
+### `mms surfacing <server> [on|off]`
+
+Toggle proactive memory surfacing for a single upstream server. Omit the state argument to print the current value.
+
+```bash
+mms surfacing filesystem             # show current state
+mms surfacing filesystem off         # disable surfacing for this upstream
+mms surfacing filesystem on          # re-enable
+```
+
+`surfacing_enabled` is written into the shared proxy config (`stm_proxy.json`). A running proxy hot-reloads it without a restart, and because the flag lives in the shared config rather than per-client env, every MCP client that proxies through this `mms` sees the same scope. See [Proactive Surfacing](/stm/surfacing/) for how surfacing works.
 
 ### `mms hook`
 
@@ -254,6 +233,33 @@ The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_S
 
 The hook↔daemon protocol version is part of the daemon fingerprint. It became v8 in 0.6.0, so after an upgrade the hook starts a new v8 daemon, and a daemon from the earlier version keeps running beside it until it idles out. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
 
+## Diagnostics & Tuning
+
+### `mms health`
+
+Probe every registered upstream server and report MCP connectivity status. Output is pretty-printed to match `status` / `list`.
+
+```bash
+mms health                           # human-readable
+mms health --json                    # scriptable JSON
+mms health --timeout 5               # per-server connect timeout (seconds)
+mms health --names                   # also flag tools whose proxied name overflows the 64-char MCP limit
+```
+
+`--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
+
+`health` also renders a per-upstream **circuit breaker** line. As of v0.1.32 the breaker is on by default: after 3 consecutive failed calls an upstream's tools fast-fail with `circuit_open` for ~60s instead of each call burning the full retry/deadline budget; cached responses keep serving and other upstreams are unaffected. Set `circuit_max_failures: 0` on an upstream in `stm_proxy.json` to restore the old always-retry behavior.
+
+`health` and `doctor` validate the configuration the way server startup does: an environment that startup rejects, such as `MEMTOMEM_STM_PROXY='[1]'`, reports `config_valid: false` in `health`. Their error text omits rejected values and exception messages, and a few fields are redacted:
+
+- Configuration errors show only their location and type.
+- A failed probe reads as its exception type — `ConnectError`, `HTTP 401 (HTTPStatusError)`, `MCPError -32602 (Invalid params)` — instead of the exception text, which could quote a URL, argument or header back. The same applies to `mms add --validate` and import validation. Run the server command or reach the endpoint directly for the underlying message.
+- URLs drop their query string and fragment.
+- SQLite errors from the feedback or metrics DB read e.g. `DatabaseError (SQLITE_CORRUPT)`.
+- A stdio LTM server's launch arguments show as `<command> [args hidden]`. In `--json`, `surfacing.ltm_server.args` holds one `<REDACTED>` per argument, so scripts can still count them; read `MEMTOMEM_STM_SURFACING__LTM_MCP_ARGS` directly for the values.
+
+`--json` also carries `surfacing.runtime_profile_checks`, the same rows `doctor` prints.
+
 ### `mms doctor`
 
 Run the status, health, and config checks as one PASS/WARN/FAIL report. The default is passive and never edits state or searches LTM; FAIL exits 1 and WARN-only exits 0.
@@ -275,40 +281,6 @@ Strictly lint the JSON file as written, without environment overlay. Missing fil
 ```bash
 mms config validate
 mms config validate --config ./stm_proxy.json --json
-```
-
-### `mms gateway`
-
-Inspect and configure the optional Toolgraph policy source.
-
-```bash
-mms gateway status [--config PATH] [--json]
-mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
-mms gateway explain server::tool [--config PATH] [--json]
-```
-
-`mode` previews by default. `--apply` enables the bundle source and atomically aligns the Toolgraph query profile with STM exposure; `explain` reports one bundle decision.
-
-### `mms host`
-
-Inspect and reconcile the host MCP configurations that feed the project registry.
-
-```bash
-mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
-mms host status [--json]
-mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
-```
-
-`scan` is a host-anchored, read-only inventory; `status` is a registry-anchored drift comparison. `sync` previews by default, adds new entries, removes entries absent from every host, and backfills sidecar baselines. Changed host shapes require `--force`; mutating JSON runs require `--yes`. `--allow-project-configs` explicitly acknowledges project-local discoveries.
-
-### `mms selection replay`
-
-Replay sanitized selection telemetry and evaluate deterministic risk penalties. Recommendations are previews and never update proxy config.
-
-```bash
-mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
-                     [--active-only] [--no-telemetry]
-                     [--output-dir DIR] [--json]
 ```
 
 ### `mms stats`
@@ -346,7 +318,30 @@ An empty filter such as `--tool ""` matches no tools; omit `--tool` to analyze a
 
 A tool whose strategy, resolved from the current configuration, is `none` or an explicit `progressive` gets no `max_result_chars` recommendation, because neither path reads that budget. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
 
-## Project Management (W1)
+### `mms selection replay`
+
+Replay sanitized selection telemetry and evaluate deterministic risk penalties. Recommendations are previews and never update proxy config.
+
+```bash
+mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
+                     [--active-only] [--no-telemetry]
+                     [--output-dir DIR] [--json]
+```
+
+### `mms selection feedback`
+
+Record an operator correction for selection telemetry; this writes feedback, not proxy configuration.
+
+```bash
+mms selection feedback --selection-id SELECTION_ID --operator-override --yes
+mms selection feedback --last --user-corrected --yes
+```
+
+Filters and output options: `--config`, `--log`, `--active-only`, `--server`, `--tool`, `--json`. Explicit negative flags are `--no-operator-override` and `--no-user-corrected`.
+
+<a id="project-management-w1"></a>
+
+## Projects & Hosts
 
 `.mms/project.toml` markers let you scope which MCPs are active per directory — for example, GitHub MCP only when working in your work repo, filesystem only in side projects. Project markers are indexed at `~/.mms/projects.toml` so the active set is consistent regardless of where you invoke `mms` from.
 
@@ -407,11 +402,11 @@ mms project route --json
 
 Options are `--project`, `--config`, `--apply`, and `--json`. Routing is additive: existing entries remain, conflicts are reported and skipped, and source host configs are never pruned.
 
-## Importing host configs (W1)
+<a id="importing-host-configs-w1"></a>
 
 ### `mms import`
 
-Discover MCP definitions in host MCP clients (Claude Code, Claude Desktop, Cursor, …) and copy them into `~/.mms/registry.toml`. This populates the registry used by project management (W1) — a different target file and purpose from [`mms add --from-clients`](#bulk-import-from-mcp-clients), which imports upstreams into the proxy config. **`--plan` is the default** — pass `--apply` to actually write.
+Discover MCP definitions in host MCP clients (Claude Code, Claude Desktop, Cursor, …) and copy them into `~/.mms/registry.toml`. This populates the registry used by project management — a different target file and purpose from [`mms add --from-clients`](#bulk-import-from-mcp-clients), which imports upstreams into the proxy config. **`--plan` is the default** — pass `--apply` to actually write.
 
 ```bash
 mms import --plan                    # default: show what would be imported (secrets redacted)
@@ -421,6 +416,30 @@ mms import --plan --show-imported    # reveal secret values in the plan output (
 ```
 
 First import wins: identical names with different definitions are flagged as conflicts and skipped; identical definitions are left unchanged.
+
+### `mms gateway`
+
+Inspect and configure the optional Toolgraph policy source.
+
+```bash
+mms gateway status [--config PATH] [--json]
+mms gateway mode strict|review|explore [--config PATH] [--bundle PATH] [--apply|--dry-run]
+mms gateway explain server::tool [--config PATH] [--json]
+```
+
+`mode` previews by default. `--apply` enables the bundle source and atomically aligns the Toolgraph query profile with STM exposure; `explain` reports one bundle decision.
+
+### `mms host`
+
+Inspect and reconcile the host MCP configurations that feed the project registry.
+
+```bash
+mms host scan [--from claude-code|cursor|codex|claude-desktop|all] [--json]
+mms host status [--json]
+mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
+```
+
+`scan` is a host-anchored, read-only inventory; `status` is a registry-anchored drift comparison. `sync` previews by default, adds new entries, removes entries absent from every host, and backfills sidecar baselines. Changed host shapes require `--force`; mutating JSON runs require `--yes`. `--allow-project-configs` explicitly acknowledges project-local discoveries.
 
 ## Operational statistics
 
@@ -457,17 +476,6 @@ mms register --client claude
 Your MCP client now connects to `memtomem-stm` instead of each individual upstream. All upstream tools are available through the proxy, with automatic memory surfacing, response compression, and progressive delivery.
 
 > See [Installation](/guides/installation/) for setup details, and [Proactive Surfacing](/stm/surfacing/) for how surfacing works.
-
-### `mms selection feedback`
-
-Record an operator correction for selection telemetry; this writes feedback, not proxy configuration.
-
-```bash
-mms selection feedback --selection-id SELECTION_ID --operator-override --yes
-mms selection feedback --last --user-corrected --yes
-```
-
-Filters and output options: `--config`, `--log`, `--active-only`, `--server`, `--tool`, `--json`. Explicit negative flags are `--no-operator-override` and `--no-user-corrected`.
 
 ## Complete option index by command
 

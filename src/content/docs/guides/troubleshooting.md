@@ -88,7 +88,7 @@ Return to [Quick Start → Verify a Memory Round Trip](/guides/quickstart/#3-ver
 mm search "EXACT_WORDS_FROM_THE_SOURCE"
 ```
 
-See [Index and Import Existing Content](/guides/index-and-import/) for source and repeat-run checks.
+See [Index and Import Existing Content](/ltm/index-and-import/) for source and repeat-run checks.
 
 ## 4. Plugin and MCP Connection
 
@@ -173,7 +173,7 @@ mms eject SERVER_NAME --dry-run
 mms eject SERVER_NAME
 ```
 
-See [Add STM to an MCP Server](/guides/stm-first-proxy/) for verification before and after restoration.
+See [Add STM to an MCP Server](/stm/first-proxy/) for verification before and after restoration.
 
 ## 7. Logs and Files
 
@@ -189,4 +189,4 @@ See [Add STM to an MCP Server](/guides/stm-first-proxy/) for verification before
 | `~/.memtomem/stm_proxy.json` | STM proxy configuration |
 | `~/.memtomem/logs/web.log` | background Web UI log |
 
-For every released setting, see [Environment Variables](/reference/configuration/).
+For every released setting, see [LTM Environment Variables](/ltm/configuration/) and [STM Environment Variables](/stm/configuration/).
