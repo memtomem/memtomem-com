@@ -17,7 +17,6 @@ for (const [name, mutate] of [
 ['missing setting', (s, c, d) => { d[config] = d[config].replaceAll('MEMTOMEM_EMBEDDING__PROVIDER', 'MEMTOMEM_REMOVED'); }],
 ['default value changed', (s, c, d) => { d[config] = d[config].replace('| `"none"` |', '| `"onnx"` |'); }],
 ['Korean default drift', (s, c, d) => { d['src/content/docs/ko/ltm/configuration.md'] = ''; }],
-['STM default drift', (s, c, d) => { d[stmConfig] = d[stmConfig].replace('| `MEMTOMEM_STM_PROXY__CACHE__ENABLED` |', '| `MEMTOMEM_STM_PROXY__CACHE__REMOVED` |'); }],
 ['Korean STM default drift', (s, c, d) => { d['src/content/docs/ko/stm/configuration.md'] = ''; }],
 ['CLI option omitted', (s, c, d) => { d['src/content/docs/stm/cli.md'] = d['src/content/docs/stm/cli.md'].replaceAll('--inherit-runtime-env', '--fake-option'); }],
 ['public tool catalog drift', (s, c, d) => { d['src/content/docs/ko/ltm/mcp-tools.md'] = ''; }],
@@ -25,6 +24,7 @@ for (const [name, mutate] of [
 ['private repository link', (s, c, d) => { d[config] += '\nhttps://github.com/memtomem/memtomem-docs/blob/main/audit.md'; }],
 ['private audit path', (s, c, d) => { d[config] += '\n/docs/audits/internal.md'; }],
 ]) { test('rejects ' + name, () => { const s = structuredClone(snapshot), c = structuredClone(contract), d = { ...sources }; mutate(s, c, d); assert.ok(validateUpstream(s, c, d).length > 0); }); }
+test('rejects STM default drift', () => { const d = { ...sources }; const row = '| `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | Enable response caching | `true` |'; assert.ok(d[stmConfig].includes(row)); d[stmConfig] = d[stmConfig].replace(row, row.replace('`true`', '`false`')); assert.deepEqual(validateUpstream(snapshot, contract, d), ['MEMTOMEM_STM_PROXY__CACHE__ENABLED: default mismatch']); });
 test('rejects stale release at sentence end', () => { const d = { ...sources }; d[config] += '\nThis targets memtomem v0.3.12. Next'; assert.deepEqual(validateUpstream(snapshot, contract, d), [config + ': stale release']); });
 for (const [version, text, stale] of [
 ['0.6.4', 'targets memtomem v0.6.4. Commands', true],
