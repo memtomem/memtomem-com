@@ -235,6 +235,8 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
+`mms daemon status --json`은 다른 설정 fingerprint로 실행 중인 데몬을 `foreign` 목록으로 보여 줍니다. 각 항목에는 `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds`, `exits_when_idle`이 포함되며 인증 토큰은 포함되지 않습니다. `exits_when_idle`은 유휴 시 스스로 종료하는 데몬이면 `true`, 종료하지 않는 데몬(`idle_shutdown_seconds`가 `null`)이면 `false`이고, 값이 없거나 데몬이 쓰지 않는 값이면 알 수 없다는 뜻으로 `null`입니다. `queue` 객체에는 `pre_auth_evictions`가 있습니다. 데몬은 인증 전 연결을 최대 64개까지 유지하며, 이를 넘으면 가장 오래된 인증 전 연결을 끊고 이 값을 1 늘립니다.
+
 ## 진단·튜닝
 
 ### `mms health`
@@ -303,6 +305,8 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
 - **관련 기억 제시 통계:**
   - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
   - 보류(holdout)된 호출은 `withheld (holdout)` 줄에, 제시 기회 기록은 `opportunities` 줄에 따로 표시합니다. 두 줄 모두 집계할 내용이 있을 때만 나타납니다.
+- **도구별 `tuner_calls`:** `--json`의 도구별 `calls`는 해당하는 모든 행을 세고, `tuner_calls`는 자동 튜너가 사용하는 행만 셉니다. metadata bypass로 표시된 행은 튜너 프로필에서 제외되므로 `tuner_calls`에서도 빠집니다. `compression_strategy` 열이 없는 이전 DB에서는 모든 행을 셉니다.
+- **알 수 없는 값:** STM이 기록하지 않는 평가나 제시 결정 값은 `other`로 집계합니다.
 - **`--json` 오류 필드:** `compression.error`와 `surfacing.error`의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 유형만 표시합니다.
 
 ### `mms tune`
@@ -452,6 +456,34 @@ mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-confi
 ## 프록시 서버 실행
 
 프록시 서버는 표준 입출력이 파이프로 연결된 환경에서 `memtomem-stm`, `memtomem-stm-proxy`, 인자 없는 `mms` 명령으로 시작할 수 있습니다. 보통은 사용자가 직접 실행하지 않고 등록된 MCP 클라이언트가 시작합니다. 대화형 터미널에서 인자 없이 `mms`를 실행하면 서버 대신 CLI 도움말을 표시합니다.
+
+## `--json` 실패 문서
+
+`add`, `remove`, `prune`, `eject`, `list`, `status`, `health`, `tune`, `gateway`, `project route` 등 여러 `--json` 명령은 운영 중 실패를 stdout에 JSON 문서 하나로 출력하고, 사람이 읽는 오류는 그대로 stderr에 출력합니다. 이 형식을 사용하는 명령과 실패 경로는 upstream CLI 문서에 정확히 정리되어 있습니다.
+
+```json
+{"action": "add", "ok": false, "error": "<code>", "message": "...", "path": "..."}
+```
+
+`error`에 안정적인 식별자가 들어가며, 명령에 따라 `path`, `stores` 같은 필드가 추가됩니다. 운영 중 실패는 종료 코드 1이고, 동의가 필요한 작업을 거부한 경우(`confirmation_required`, `project_config_ack_required`)는 종료 코드 2입니다.
+
+| 계열 | 코드 | 발생 상황 |
+|---|---|---|
+| 설정 파일 읽기 | `config_unreadable`, `config_invalid` | 파일을 읽을 수 없을 때 / UTF-8·JSON·JSON 객체가 아니거나 검증에 실패할 때 |
+| 설정 쓰기 | `config_lock_timeout`, `config_lock_unavailable`, `config_write_failed` | 쓰기 잠금 대기 시간 초과 / 잠금 파일을 만들거나 열 수 없을 때 / 적용 전 백업이나 원자적 교체가 실패할 때(실패한 쓰기는 파일을 바꾸지 않지만, 여러 번 저장하는 명령은 앞선 저장이 이미 반영되었을 수 있음) |
+| `~/.mms` 상태(`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | 상태 파일 잠금 시간 초과·사용 불가 / 쓰기 실패 / 스키마 버전 불일치 / 손상된 상태 파일 |
+| 지표 저장소(`mms tune`) | `store_invalid` | SQLite가 지표나 피드백 DB 파일을 열거나 읽을 수 없을 때(`stores`에 해당 파일) |
+
+`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md)에서 확인하세요.
+
+다음 경우는 이 형식을 따르지 않습니다.
+
+- 잘못된 호출(알 수 없는 플래그, 누락된 인자 등)은 Click의 사용법 오류를 stderr에 출력하고 종료 코드 2로 끝나며 stdout은 비어 있습니다. 설정 쓰기 잠금은 명령 실행 전에 잡으므로, 잠금 경합 중에는 설정을 바꾸는 명령이 종료 코드 1의 잠금 오류를 먼저 보고할 수 있습니다.
+- `mms doctor --json`과 `mms config validate --json`은 실패할 때도 각자의 결과 문서(`status`와 `checks`, `status`와 `errors`)를 출력합니다.
+- `mms list`, `mms status`, `mms health`는 설정 파일이 없으면 `{"error": "config_not_found", "path": ...}`만 출력하고 종료 코드 0으로 끝납니다.
+- `mms tune --json`은 미리보기 전용이므로 설정 잠금 실패를 일반 텍스트로 출력합니다.
+- `mms init`과 `mms register`는 `config_path`, `servers`, `client`를 담은 결과 문서를 출력하며, 설정 작업 자체가 실패하면 `error`에 `setup_failed`나 쓰기 실패 코드를 넣습니다. `mms init`은 설정 작업 전에 설정 쓰기 잠금을 잡으므로, 이 단계의 잠금 실패(`config_lock_timeout`, `config_lock_unavailable`)는 표준 형식으로 출력합니다.
+- `mms stats --json`의 저장소 오류는 [`mms stats`](#mms-stats)에서 설명한 `compression.error`, `surfacing.error` 필드에 들어갑니다.
 
 ## 예제 워크플로우
 

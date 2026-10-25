@@ -233,6 +233,8 @@ The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_S
 
 The hook↔daemon protocol version is part of the daemon fingerprint. It became v8 in 0.6.0, so after an upgrade the hook starts a new v8 daemon, and a daemon from the earlier version keeps running beside it until it idles out. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
 
+`mms daemon status --json` lists daemons running under a different config fingerprint as `foreign` entries. Each entry carries `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds` and `exits_when_idle`, never the auth token. `exits_when_idle` is `true` for a daemon that shuts down when idle, `false` for one that never does (`idle_shutdown_seconds` is `null`), and `null` when the handshake does not say or holds a value no daemon writes. The `queue` object reports `pre_auth_evictions`: the daemon keeps at most 64 connections that have not authenticated yet, and past that it drops the oldest one and counts it here.
+
 ## Diagnostics & Tuning
 
 ### `mms health`
@@ -301,6 +303,8 @@ The CLI sees disk-backed metrics only; process-local live counters remain availa
 - **Surfacing:**
   - Only shown events count as surfacings.
   - Withheld (holdout) calls appear on a separate `withheld (holdout)` line, and the opportunity log on an `opportunities` line. Each line appears only when there is something to count.
+- **Per-tool `tuner_calls`:** in `--json`, a tool's `calls` counts every matching row and `tuner_calls` counts the rows the auto-tuner uses. Rows annotated as metadata bypass are dropped from the tuner's profiles, so they are left out of `tuner_calls`. A database without the `compression_strategy` column counts every row.
+- **Unknown values:** a rating or surfacing decision outside STM's own vocabulary is counted under `other`.
 - **`--json` errors:** a SQLite error in `compression.error` or `surfacing.error` reads as its type, e.g. `DatabaseError (SQLITE_CORRUPT)`.
 
 ### `mms tune`
@@ -448,6 +452,34 @@ To inspect proxy, surfacing, selection, and compression behavior at runtime, STM
 ## Running the proxy server
 
 The proxy server accepts `memtomem-stm`, `memtomem-stm-proxy`, or a bare `mms` command over piped stdio. You normally do not launch it by hand: a registered MCP client spawns it. A bare interactive `mms` invocation displays CLI help instead.
+
+## `--json` failure documents
+
+Many `--json` commands, such as `add`, `remove`, `prune`, `eject`, `list`, `status`, `health`, `tune`, `gateway` and `project route`, report an operational failure as one JSON document on stdout, while the human-readable error still goes to stderr. The upstream CLI documentation lists exactly which commands and failure paths use it.
+
+```json
+{"action": "add", "ok": false, "error": "<code>", "message": "...", "path": "..."}
+```
+
+`error` holds a stable identifier, and some commands add fields such as `path` or `stores`. An operational failure exits 1; a refused consent (`confirmation_required`, `project_config_ack_required`) exits 2.
+
+| Family | Codes | When |
+|---|---|---|
+| Config read | `config_unreadable`, `config_invalid` | The file cannot be read / it is not UTF-8, JSON, or a JSON object, or fails validation |
+| Config write | `config_lock_timeout`, `config_lock_unavailable`, `config_write_failed` | The write lock timed out / the lock file cannot be created or opened / the pre-apply backup or atomic replace failed (that write leaves the file as it was, but a command that saves more than once may already have applied an earlier save) |
+| `~/.mms` state (`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | The state lock timed out or is unavailable / a write failed / the schema version does not match / a state file is corrupt |
+| Metrics store (`mms tune`) | `store_invalid` | SQLite cannot open or read the metrics or feedback database file (listed in `stores`) |
+
+For the command-specific codes of `add`, `gateway explain`, `project route`, `selection feedback` and others, see the upstream [CLI documentation](https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md).
+
+These cases do not use the envelope:
+
+- A malformed invocation (unknown flag, missing argument) prints Click's usage error on stderr, exits 2, and leaves stdout empty. The config write lock is taken before the command runs, so under contention a mutating command can report the exit-1 lock error first.
+- `mms doctor --json` and `mms config validate --json` print their own result documents (`status` with `checks`, and `status` with `errors`), also on failure.
+- `mms list`, `mms status` and `mms health` print only `{"error": "config_not_found", "path": ...}` when the config file is missing, and exit 0.
+- `mms tune --json` is preview-only and keeps config-lock failures as plain text.
+- `mms init` and `mms register` print a result document with `config_path`, `servers` and `client`; when setup itself fails, its `error` holds `setup_failed` or a write-failure code. `mms init` takes the config write lock before setup starts, so a lock failure there (`config_lock_timeout`, `config_lock_unavailable`) uses the standard envelope instead.
+- `mms stats --json` reports store errors in the `compression.error` and `surfacing.error` fields described under [`mms stats`](#mms-stats).
 
 ## Example Workflow
 
