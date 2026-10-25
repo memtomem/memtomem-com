@@ -7,8 +7,9 @@ import assert from 'node:assert/strict';
 // document contract checker imports this list too.
 // The match ignores which package a version belongs to, so a version that
 // any package in the contract currently ships must not be listed (0.3.11 was
-// a Core release and is now the OpenCode plugin); a test enforces this.
-export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9'];
+// a Core release and later the OpenCode plugin); a test enforces this.
+// 0.6.8 stays out: the docs truthfully date features to it ("0.6.8 or later").
+export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11'];
 
 export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`);

@@ -73,8 +73,8 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `server` | string | 예 | 업스트림 서버 |
-| `tool` | string | 예 | 도구 이름 |
+| `server` | string | 예 | 업스트림 서버 이름 |
+| `tool` | string | 예 | 업스트림 도구 이름. 클라이언트에 보이는 `prefix__tool` 이름이 아니라 업스트림 이름이어야 하며, 이 프록시가 등록한 도구가 아니면 거부됩니다 |
 | `missing` | string | 예 | 필요했지만 받지 못한 내용 |
 | `kind` | string | 아니오 | 분류 힌트 |
 | `trace_id` | string | 아니오 | 가능한 경우 Langfuse trace ID |
@@ -114,10 +114,10 @@ mms add filesystem --command npx \
 # filesystem의 read_file 은 fs__read_file 이 됩니다
 ```
 
-STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다.
+STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 아예 프록시하지 않으며, 이는 64자 제한과는 별개입니다. `proxy_health`는 이런 도구를 발견한 수에 포함하고 해당 서버에 `not proxied` 줄을 추가합니다.
 
 MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 보입니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
 
-에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다.
+에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다. 메타데이터가 붙은 여러 블록 응답은 예외입니다([압축 전략](/ko/stm/compression/) 참조).
 
 > 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참고하세요.

@@ -7,7 +7,7 @@ Both memtomem (LTM) and memtomem-stm (STM) use [pydantic-settings](https://docs.
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.6.8 and `memtomem-stm` 0.6.1 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
+This public reference tracks the complete `memtomem` 0.6.12 and `memtomem-stm` 0.6.9 configuration surfaces. Options are intentionally mirrored here rather than reduced to a curated subset.
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -47,6 +47,7 @@ This public reference tracks the complete `memtomem` 0.6.8 and `memtomem-stm` 0.
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | Directories reactively re-indexed by the long-running `memtomem-server` file watcher (JSON list). Pre-existing files are not auto-scanned — seed them once with `mm index <dir>`, then the watcher picks up further edits. Populated by `mm init` when you opt in to AI agent memory enrollment. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | Project-tier memory roots under `.memtomem/memories` or `.memtomem/memories.local` | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | Roots memtomem indexes and searches but never rewrites. Must be disjoint from the writable roots. | `[]` |
+| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | Directories whose files other tools delete on their own (Claude Code plans, Codex memories), where the indexed chunks are the only copy left. A missing source under one of these that is also under an index root stays searchable instead of being held, and is not offered for purge. Not an index root itself, and a source held for another reason (`redaction_blocked`, `scan_unavailable`) stays held. (JSON list, APPEND merge) | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | File extensions to index (JSON list) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | Maximum tokens per chunk | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | Merge threshold for short chunks | `128` |
@@ -218,6 +219,8 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 | `MEMTOMEM_WEBHOOK__EVENTS` | Event types to send (JSON list, APPEND merge) | `["add","delete","search"]` |
 | `MEMTOMEM_WEBHOOK__SECRET` | HMAC signing secret | `""` |
 | `MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS` | HTTP timeout | `10` |
+| `MEMTOMEM_WEBHOOK__ALLOW_PRIVATE_HOSTS` | Allow delivery to a receiver on this machine or LAN. When off, the URL's host must not resolve to a private, loopback, link-local or reserved address, checked where the socket opens and not only at startup. | `false` |
+| `MEMTOMEM_WEBHOOK__PROXY` | Explicit forward proxy (`http://` or `https://`). Webhooks never use an ambient `HTTP(S)_PROXY`; with a proxy set, the proxy connects to the receiver and the address policy is the proxy's to enforce. | `""` |
 
 ### Consolidation schedule
 
@@ -238,7 +241,7 @@ Background job that periodically groups near-duplicate memories and compresses t
 
 ### Health watchdog
 
-Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted; purging their chunks is an explicit `mm gc orphan-sources --apply`.
+Background loop for periodic health checks and automatic maintenance. Missing sources are held out of search rather than deleted (a source under both an index root and `indexing.retain_missing_dirs` stays searchable instead, unless it is held for another reason); purging their chunks is an explicit `mm gc orphan-sources --apply`.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -327,7 +330,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.8/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.12/docs/guides/configuration.md) in the upstream repo.
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -342,6 +345,8 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_DATA_DIR` | Daemon handshake, ownership lock, and detached log directory | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | Optional rotating log file; files use `0600`, 2 MiB rotation, and three backups | `null` |
+| `MEMTOMEM_STM_LOG_DEPENDENCIES` | Let records below WARNING from loggers outside `memtomem_stm` (the MCP SDK, `httpx`, `httpcore`, `urllib3` and others) through to the server and daemon logs. Off by default because those lines carry upstream URLs with their query strings, the MCP session id, response headers, and whole MCP messages including tool arguments and results. Read at startup. | `false` |
+| `MEMTOMEM_STM_LOG_EXCEPTION_TEXT` | Render logged tracebacks with their exception messages in the server and daemon logs. By default STM logs the frames and each exception's class and code and replaces the message with `[message withheld]`, because an upstream, the LTM server or an LLM provider writes that text and can quote a URL query, a tool argument or part of a header in it. Read at startup. | `false` |
 | `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | When `true`, advertises the `stm_admin` dispatcher and its eight observability/admin actions (`proxy_stats`, `proxy_cache_clear`, `proxy_health`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`). The five model-facing tools remain visible when false. | `false` |
 | `MEMTOMEM_STM_FORMATION__ENABLED` | Advertise the opt-in `stm_memory_propose` tool. This flag alone controls advertisement; upstream LTM support for review-first proposals is checked at call time (an incompatible core returns `formation_unsupported`). | `false` |
 | `MEMTOMEM_STM_FORMATION__MAX_CONTENT_CHARS` | Maximum review-first candidate content size; larger proposals are rejected | `2000` |
@@ -377,7 +382,7 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | Cache eviction ceiling | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | How MCP tool annotations affect caching: `conservative`, `strict`, or `ignore` | `"conservative"` |
 
-Cache schema 5 stores the canonical MCP content envelope, including `structuredContent` and `_meta`. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
+Cache schema 6 stores the canonical MCP content envelope, including `structuredContent` and `_meta`. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
 
 ### Proxy → Auto-Index (Stage 4)
 
@@ -548,7 +553,7 @@ The same sub-config shapes are used under an upstream and, where noted, inside e
 | `selective.pending_ttl_seconds` | pending selection TTL | `300.0` |
 | `selective.json_depth` | JSON outline depth | `1` |
 | `selective.min_section_chars` | minimum retained section size | `50` |
-| `selective.pending_store` | `memory` or `sqlite` | `memory` |
+| `selective.pending_store` | `memory` or `sqlite`. With `sqlite`, a response that would be stored and matches credential patterns is not written; it returns uncached, truncated (`truncate_on_sensitive`) or in full (`passthrough_on_sensitive`) | `memory` |
 | `selective.pending_store_path` | SQLite pending-selection path | `~/.memtomem/pending_selections.db` |
 | `hybrid.head_chars` | preferred leading-content budget | `5000` |
 | `hybrid.tail_mode` | `toc` or `truncate` | `toc` |
@@ -557,7 +562,7 @@ The same sub-config shapes are used under an upstream and, where noted, inside e
 | `hybrid.head_ratio` | fraction assigned to leading content | `0.6` |
 | `progressive.chunk_size` | characters per progressive chunk | `4000` |
 | `progressive.max_stored` | pending progressive payload cap | `200` |
-| `progressive.ttl_seconds` | pending payload TTL | `1800.0` |
+| `progressive.ttl_seconds` | pending payload TTL; `0` expires immediately | `1800.0` |
 | `progressive.include_structure_hint` | include remaining-content structure metadata | `true` |
 | `cleaning.enabled` | enable the cleaning stage | `true` |
 | `cleaning.strip_html` | remove HTML markup | `true` |
@@ -617,7 +622,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS` | Content cap per compact preview | `300` |
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | Days to retain raw query text in the feedback DB before clearing the column; `0` disables cleanup | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | Aggregated surfacing-stat retention | `90` |
-| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `sha256:<16-hex>` digests when `false` | `true` |
+| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `sha256:<16-hex>` digests when `false`. The `surface` webhook's `query` carries the same stored value | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | Record one `surfacing_opportunities` row per call that entered surfacing, labelled with how it ended (surfaced, skipped and why, errored, cancelled). Rows carry the shape of the arguments (their number, a path's depth and, for a common file type, its extension), never their keys or values; `false` turns the log off completely. Only engines with a feedback tracker write them (the daemon, and the proxy with `feedback_enabled`) | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | Share of opportunity rows kept (`0.0`–`1.0`); dropped rows are counted in `stm_surfacing_stats` but not stored. A call that drew a holdout arm is never sampled out, so `0.0` can still store rows while `HOLDOUT_RATE` is above `0` | `1.0` |
 | `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | Share of eligible injections withheld at random to measure whether surfacing changes what the agent does next. Values outside `[0, 0.5]` are clamped, not rejected. Only Claude Code hook calls carrying both `tool_use_id` and `session_id` are eligible; the proxy path never withholds | `0.0` |
@@ -641,7 +646,7 @@ Surfacing applies only to calls routed through STM or supported host hooks. It i
 |---|---|---|
 | `MEMTOMEM_STM_HOOK__USE_DAEMON` | Route `mms hook` surfacing through a resident local daemon instead of a fresh in-process path each call | `true` |
 | `MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS` | Hook-to-daemon round-trip timeout | `2.5` |
-| `MEMTOMEM_STM_HOOK__FALLBACK` | Behavior when daemon is unavailable: `skip` (skip surfacing) or `cold` (handle via the in-process path) | `"skip"` |
+| `MEMTOMEM_STM_HOOK__FALLBACK` | Behavior when daemon is unavailable: `skip` (skip surfacing) or `cold` (handle via the in-process path). A `busy` or `expired` daemon reply skips surfacing either way | `"skip"` |
 | `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | Start a daemon asynchronously on the first eligible hook call (does not wait for it) | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | Persist hook surfacing feedback/query events; default keeps dedup without storing raw query text | `false` |
 | `MEMTOMEM_STM_HOOK__METRICS_ENABLED` | Record size/timing-only hook metrics | `true` |
@@ -719,4 +724,4 @@ Defaults above are schema declarations before initialization presets. `mm init` 
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | Embedding relevance cache entry limit | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | Shutdown watchdog deadline in seconds | `60` |
 
-Cache schema 5 uses length-prefixed key framing and Unicode serialization. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.
+Cache schema 6 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.

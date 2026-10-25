@@ -3,7 +3,7 @@ title: CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.6.1 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.6.9 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 마음에 들지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -247,12 +247,12 @@ mms daemon status                    # 데몬 실행 여부 확인
 mms daemon status --json             # 스크립트용 상태
 mms daemon start                     # 직접 시작
 mms daemon stop                      # 현재 설정의 데몬 중지
-mms daemon stop --all                # 오래된 설정에서 남은 데몬도 함께 중지
+mms daemon stop --all                # 다른 설정 fingerprint의 데몬도 함께 중지
 mms daemon restart                   # 이 설정을 중지한 뒤 한 번 새로 시작
 mms daemon run                       # 포그라운드에서 서버 계속 실행
 ```
 
-데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열게 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다.
+데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열게 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
 
 훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
@@ -380,8 +380,10 @@ mms project show --json
 ```bash
 mms project list
 mms project list --json
-mms project list --prune             # 더 이상 존재하지 않는 경로 항목 정리
+mms project list --prune             # marker가 없거나 디렉터리가 아닌 루트의 항목 정리
 ```
+
+색인된 프로젝트 중 하나라도 설정이 손상되어 있으면 `--prune`은 중단되고 색인은 바뀌지 않습니다.
 
 ### `mms project enable / disable <mcps...>`
 

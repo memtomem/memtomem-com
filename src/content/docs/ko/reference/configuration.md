@@ -7,7 +7,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem` 0.6.8과 `memtomem-stm` 0.6.1이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
+이 레퍼런스는 `memtomem` 0.6.12와 `memtomem-stm` 0.6.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -53,6 +53,7 @@ memtomem(LTM)과 memtomem-stm(STM)은 모두 [pydantic-settings](https://docs.py
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 훑지 않으므로 `mm index <dir>`로 처음 한 번 색인한 뒤 감시 기능에 맡기세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래에 있는 프로젝트 계층 기억의 루트 | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | 색인과 검색에는 사용하지만 memtomem이 절대 다시 쓰지 않는 루트. 쓰기 가능한 루트와 겹치지 않아야 합니다. | `[]` |
+| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 chunk가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아니며, `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. (JSON 리스트, APPEND 병합) | `[]` |
 | `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 인덱싱 대상 파일 확장자 (JSON 리스트) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | 청크당 최대 토큰 수 | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | 짧은 청크 병합 임계값 | `128` |
@@ -248,6 +249,8 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 | `MEMTOMEM_WEBHOOK__EVENTS` | 전송 이벤트 유형 (JSON 리스트, APPEND 병합) | `["add","delete","search"]` |
 | `MEMTOMEM_WEBHOOK__SECRET` | HMAC 서명에 사용할 비밀값 | `""` |
 | `MEMTOMEM_WEBHOOK__TIMEOUT_SECONDS` | HTTP 제한 시간 | `10` |
+| `MEMTOMEM_WEBHOOK__ALLOW_PRIVATE_HOSTS` | 이 컴퓨터나 LAN의 수신자에게 전송 허용. 끄면 URL 호스트가 private, loopback, link-local, 예약 주소로 해석되지 않아야 하며, 시작 시점뿐 아니라 소켓을 여는 시점에도 확인합니다. | `false` |
+| `MEMTOMEM_WEBHOOK__PROXY` | 명시적 전달 프록시(`http://` 또는 `https://`). 웹훅은 환경의 `HTTP(S)_PROXY`를 사용하지 않습니다. 프록시를 지정하면 프록시가 수신자에 연결하므로 주소 정책은 프록시가 적용합니다. | `""` |
 
 <a id="consolidation-schedule-통합-스케줄"></a>
 
@@ -274,7 +277,7 @@ Maximal Marginal Relevance 재순위. 상위 결과 간 중복을 줄이고 서�
 
 ### 상태 모니터
 
-상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다. 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
+상태 확인과 자동 유지보수를 주기적으로 수행하는 백그라운드 작업입니다. 원본이 사라진 자료 출처는 삭제하지 않고 보류하여 검색에서만 제외합니다(색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래의 출처는 다른 이유로 보류되지 않은 한 계속 검색됩니다). 청크 삭제는 `mm gc orphan-sources --apply`로 직접 실행해야 합니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -375,7 +378,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.8/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.12/docs/guides/configuration.md)를 참고하세요.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -392,6 +395,8 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_DATA_DIR` | 데몬 연결 정보, 소유권 잠금, 백그라운드 실행 로그를 저장할 디렉터리 | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | 선택적 회전 로그 파일. `0600` 권한, 2 MiB 회전, 백업 3개 사용 | `null` |
+| `MEMTOMEM_STM_LOG_DEPENDENCIES` | `memtomem_stm` 밖의 logger(MCP SDK, `httpx`, `httpcore`, `urllib3` 등)가 남기는 WARNING 미만 기록을 서버와 daemon 로그에 통과시킵니다. 이 기록에는 query string이 포함된 upstream URL, MCP session id, 응답 header, 도구 인자와 결과가 담긴 MCP 메시지가 들어 있어 기본값은 꺼짐입니다. 시작 시 읽습니다. | `false` |
+| `MEMTOMEM_STM_LOG_EXCEPTION_TEXT` | 서버와 daemon 로그의 traceback에 예외 메시지를 함께 기록합니다. 기본값에서는 frame과 예외 class·code만 남기고 메시지는 `[message withheld]`로 가립니다. upstream, LTM 서버, LLM provider가 쓴 메시지에 URL query, 도구 인자, header 일부가 들어갈 수 있기 때문입니다. 시작 시 읽습니다. | `false` |
 | `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS` | `true`이면 `stm_admin` 디스패처와 그 관찰·관리 액션 8개(`proxy_stats`, `proxy_health`, `proxy_cache_clear`, `surfacing_stats`, `selection_stats`, `compression_stats`, `progressive_stats`, `tuning_recommendations`)를 표시. `false`여도 모델용 도구 5개는 계속 표시 | `false` |
 | `MEMTOMEM_STM_FORMATION__ENABLED` | 선택형 `stm_memory_propose` 도구 표시. 표시 여부는 이 값만으로 결정하며, 연결한 LTM이 검토 후 저장 방식을 지원하는지는 호출할 때 확인. 지원하지 않으면 `formation_unsupported` 반환 | `false` |
 | `MEMTOMEM_STM_FORMATION__MAX_CONTENT_CHARS` | 검토 후 저장할 후보 내용의 최대 길이. 넘으면 제안을 거부 | `2000` |
@@ -431,7 +436,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | 캐시 엔트리 상한 | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | MCP 도구 주석을 반영하는 캐시 정책: `conservative`, `strict`, `ignore` | `"conservative"` |
 
-캐시 스키마 5는 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장합니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
+캐시 스키마 6은 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장합니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
 
 <a id="proxy--auto-index-stage-4"></a>
 
@@ -616,7 +621,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `selective.pending_ttl_seconds` | 진행 중인 선택 기록의 TTL | `300.0` |
 | `selective.json_depth` | JSON 개요의 깊이 | `1` |
 | `selective.min_section_chars` | 유지할 섹션 최소 길이 | `50` |
-| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite` | `memory` |
+| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite`. `sqlite`에서는 저장 대상 응답에 자격 증명 패턴이 있으면 기록하지 않고 잘라낸(`truncate_on_sensitive`) 응답이나 전체(`passthrough_on_sensitive`) 응답으로 캐시 없이 반환 | `memory` |
 | `selective.pending_store_path` | 진행 중인 선택 기록을 저장할 SQLite 경로 | `~/.memtomem/pending_selections.db` |
 | `hybrid.head_chars` | 선두 콘텐츠 선호 예산 | `5000` |
 | `hybrid.tail_mode` | `toc` 또는 `truncate` | `toc` |
@@ -625,7 +630,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `hybrid.head_ratio` | 선두 콘텐츠 배분 비율 | `0.6` |
 | `progressive.chunk_size` | `progressive` 조각 하나의 문자 수 | `4000` |
 | `progressive.max_stored` | 보관할 진행 중인 `progressive` 응답 수 상한 | `200` |
-| `progressive.ttl_seconds` | 진행 중인 응답의 TTL | `1800.0` |
+| `progressive.ttl_seconds` | 진행 중인 응답의 TTL. `0`이면 즉시 만료 | `1800.0` |
 | `progressive.include_structure_hint` | 남은 콘텐츠 구조 메타데이터 포함 | `true` |
 | `cleaning.enabled` | 응답 정리 단계 활성화 | `true` |
 | `cleaning.strip_html` | HTML 마크업 제거 | `true` |
@@ -687,7 +692,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS` | `compact` 미리보기 하나의 내용 길이 상한 | `300` |
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | 피드백 DB에 검색어 원문을 보존할 일수. 기간이 지나면 해당 열의 값만 비움. `0`이면 정리하지 않음 | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | 집계한 관련 기억 검색 통계의 보존 일수 | `90` |
-| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 `sha256:<16-hex>` 해시 저장 | `true` |
+| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 `sha256:<16-hex>` 해시 저장. `surface` 웹훅의 `query`도 저장된 값과 같음 | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | 관련 기억 검색에 진입한 호출마다 결과(표시, 건너뜀과 그 사유, 오류, 취소)를 `surfacing_opportunities` 행으로 기록. 행에는 인자 개수, 경로 깊이, 흔한 파일 형식의 확장자 같은 인자 형태만 담기며 키와 값은 담기지 않음. `false`이면 기록을 완전히 끔. 피드백 추적기가 있는 엔진(daemon, `feedback_enabled`가 켜진 proxy)만 기록 | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | 저장할 opportunity 행의 비율(`0.0`~`1.0`). 제외된 행은 `stm_surfacing_stats`에서 개수로만 집계. 보류(holdout) 추첨을 거친 호출은 샘플링에서 제외하지 않으므로 `HOLDOUT_RATE`가 `0`보다 크면 `0.0`이어도 행이 저장될 수 있음 | `1.0` |
 | `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | 효과 측정을 위해 무작위로 주입을 보류할 비율. `[0, 0.5]` 밖의 값은 거부하지 않고 범위 안으로 조정함. Claude Code hook 경로에서 `tool_use_id`와 `session_id`가 모두 있는 호출만 대상이며 proxy 경로는 보류하지 않음 | `0.0` |
@@ -713,7 +718,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 |---|---|---|
 | `MEMTOMEM_STM_HOOK__USE_DAEMON` | `mms hook`의 관련 기억 검색을 매번 새 프로세스에서 처리하지 않고 상주하는 로컬 데몬으로 처리 | `true` |
 | `MEMTOMEM_STM_HOOK__DAEMON_TIMEOUT_SECONDS` | 훅과 데몬 사이 왕복 제한 시간 | `2.5` |
-| `MEMTOMEM_STM_HOOK__FALLBACK` | 데몬을 사용할 수 없을 때의 동작: `skip`(건너뜀) 또는 `cold`(현재 프로세스에서 처리) | `"skip"` |
+| `MEMTOMEM_STM_HOOK__FALLBACK` | 데몬을 사용할 수 없을 때의 동작: `skip`(건너뜀) 또는 `cold`(현재 프로세스에서 처리). 데몬이 `busy`나 `expired`로 응답하면 이 값과 관계없이 건너뜀 | `"skip"` |
 | `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | 조건을 충족하는 첫 훅 호출에서 응답을 기다리지 않고 데몬 시작 | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | 훅의 관련 기억 피드백과 검색어 기록 저장. 기본값은 중복 제거 정보만 유지하며 검색어 원문은 저장하지 않음 | `false` |
 | `MEMTOMEM_STM_HOOK__METRICS_ENABLED` | 크기와 소요 시간만 포함하는 훅 지표 기록 | `true` |
@@ -791,4 +796,4 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | 임베딩 관련도 캐시 항목 상한 | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | 종료 감시 제한 시간(초) | `60` |
 
-캐시 스키마 5는 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용합니다. 이전 캐시 행은 최초 초기화 시 삭제되지만, 이는 LTM 기억 삭제와는 별개입니다.
+캐시 스키마 6은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정에 묶습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만, 이는 LTM 기억 삭제와는 별개입니다.

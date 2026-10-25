@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.6.8. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.6.12. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.8 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.12 binary.
 
 | Group | Commands |
 |---|---|
@@ -32,8 +32,8 @@ All command-group subcommands are mirrored below.
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
-| `mem` | `init`, `rescan`, `rescan-files` |
-| `memory` | `doctor` |
+| `mem` | `doctor`, `init`, `rescan`, `rescan-files` |
+| `memory` | `doctor`, `init`, `rescan`, `rescan-files` |
 | `pinned` | `compose`, `delete`, `get`, `list`, `set` |
 | `quality` | `cases`, `compare`, `experiment`, `export`, `gate`, `import`, `promote`, `replay`, `show`, `status` |
 | `review` | `approve`, `evidence`, `list`, `recover`, `reject`, `scan`, `show` |
@@ -73,7 +73,7 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.6.8, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.6.12, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -128,7 +128,7 @@ mm search "how does the auth middleware work"
 mm search "deployment config" --namespace project-x --top-k 5
 ```
 
-`--top-k` / `-k` caps results (default 10). Other filters: `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (point-in-time bound, `YYYY-MM-DD` / `YYYY-QN`), and `--format` (`table` / `json` / `plain` / `context` / `smart`).
+`--top-k` / `-k` caps results (default 10). Other filters: `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (point-in-time bound, `YYYY-MM-DD` / `YYYY-QN`), and `--format` (`table` / `json` / `plain` / `context` / `smart`); `--json` is shorthand for `--format json`.
 
 ### `mm tags list / rename / delete / merge`
 
@@ -155,7 +155,7 @@ mm recall --source-filter "postmortems/" --format json
 mm recall --namespace project-x --format plain
 ```
 
-`--format` picks `table` (default, human), `json` (scripting), or `plain` (text pipe). Date arguments accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, and ISO datetimes.
+`--format` picks `table` (default, human), `json` (scripting), or `plain` (text pipe); `--json` is shorthand for `--format json`. Date arguments accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, and ISO datetimes.
 
 ### `mm web`
 
@@ -472,7 +472,7 @@ mm memory doctor --fix               # preview removal of broken index links (dr
 mm memory doctor --fix --apply       # actually remove broken links
 ```
 
-`--fix` only removes index pointer lines whose target is missing on disk, and it is a dry-run unless `--apply` is also passed. It exits 1 when any error-severity finding exists, so it works as a CI check. A held missing source is reported as `held_source`, a warning, so it exits 0 when held sources are the only finding.
+`--fix` only removes index pointer lines whose target is missing on disk, and it is a dry-run unless `--apply` is also passed. It exits 1 when any error-severity finding exists, so it works as a CI check. A held missing source is reported as `held_source`, a warning, so it exits 0 when held sources are the only finding. A missing source that `indexing.retain_missing_dirs` keeps searchable is reported as `archived_source`, at info severity.
 
 `dangling_wikilink` is informational: it may be a deliberate forward reference or a stale name. It never fails the run and `--fix` never removes it.
 
@@ -519,13 +519,14 @@ mm schedule delete <sched-id>
 
 ### `mm gc orphan-sources`
 
-Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks permanently.
+Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks permanently. Orphans are grouped by the configured memory dir that owns them, plus one group for sources outside every root, and `--apply` deletes a group only after you confirm it; `--yes` skips those prompts. `--under DIR` (repeatable) considers only sources under the directories named, so `--apply --yes` deletes only there.
 
-The watcher, scheduled compaction and health maintenance never delete a missing source on their own: they **hold** it. A held source is hidden from search while its chunks are kept for recovery. To delete those chunks, review with `mm gc orphan-sources`, then run it with `--apply`. Over MCP, `cleanup_orphans` purges only when both `dry_run=false` and `confirm_purge=true` are passed. One case still deletes on its own: a path that now holds a directory or another non-regular file loses its chunks on the next event for it.
+The watcher, scheduled compaction and health maintenance never delete a missing source on their own: they **hold** it. A held source is hidden from search while its chunks are kept for recovery. To delete those chunks, review with `mm gc orphan-sources`, then run it with `--apply`. Over MCP, `cleanup_orphans` purges only when both `dry_run=false` and `confirm_purge=true` are passed, and takes `under` to narrow the scan. A missing source under both an index root and `indexing.retain_missing_dirs` is the exception: its absence hold is released, so it stays searchable (`Archived:` in `mm status`) and is not offered for purge. A source held for another reason, such as `redaction_blocked` or `scan_unavailable`, stays held. One case still deletes on its own: a path that now holds a directory or another non-regular file loses its chunks on the next event for it.
 
 ```bash
 mm gc orphan-sources
 mm gc orphan-sources --apply
+mm gc orphan-sources --apply --under ~/notes
 ```
 
 `mm gc orphan-projects` handles a separate case: chunks whose recorded `project_root` no longer exists. It previews by default; use `--apply` for per-root confirmation or `--apply --yes` for an explicitly non-interactive deletion. Review removable or temporarily unmounted roots before confirming.
@@ -568,12 +569,17 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.6.8           # pin a specific version
+mm upgrade --version 0.6.12          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
 
 Extras are auto-detected from the current uv-tool install by default, so a `memtomem[all]` user keeps `[all]`. If uv's install receipt is missing or unreadable, none are detected; check the `Extras:` line of `--dry-run` and pass `--extras` when it says none were found.
+
+Two checks after upgrading from a release before 0.6.12:
+
+- **From before 0.6.9:** run `mm index` over your memory directories once. It judges every file with the redaction guard, so content the memory tools stored without that check is reported as blocked and held until the file is cleaned and re-indexed. Chunks whose text and context are unchanged keep their vectors, so `--force` is not needed.
+- **Private keys in PKCS#8 form** (`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`) pass the write guard before 0.6.12, and upgrading does not rescan what is already stored. Run `mm mem rescan --scope <tier> --json` to list stored chunks that carry a key, take the key out of each reported file, and run `mm index <dir>`. Re-run the rescan: it should report nothing. A source it still reports was not reindexed: a file you deleted, an excluded path, a file over 10 MB, or a file whose `mm index` run reported an error. The [advisory](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8) lists how to remove those chunks. Rotate any key that reached a hosted service or a git history.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 
@@ -652,7 +658,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |
-| `mm gc orphan-sources` | `--apply`, `--yes` |
+| `mm gc orphan-sources` | `--apply`, `--under`, `--yes` |
 | `mm index` | `--debounce-window`, `--flush`, `--force`, `--force-unsafe`, `--json`, `--namespace`, `--no-recursive`, `--reassign-namespaces`, `--recursive`, `--status` |
 | `mm ingest` | — |
 | `mm ingest claude-memory` | `--dry-run`, `--source` |
@@ -660,11 +666,15 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm ingest gemini-memory` | `--dry-run`, `--source` |
 | `mm init` | `--advanced`, `--api-key`, `--auto-ns`, `--db-path`, `--decay`, `--fresh`, `--include-provider`, `--mcp`, `--memory-dir`, `--model`, `--namespace`, `--non-interactive`, `--preset`, `--provider`, `--tokenizer`, `--top-k` |
 | `mm mem` | — |
+| `mm mem doctor` | `--apply`, `--fix`, `--json` |
 | `mm mem init` | `--confirm-project-shared`, `--scope` |
 | `mm mem rescan` | `--json`, `--quiet`, `--scope`, `--source` |
 | `mm mem rescan-files` | `--json` |
 | `mm memory` | — |
 | `mm memory doctor` | `--apply`, `--fix`, `--json` |
+| `mm memory init` | `--confirm-project-shared`, `--scope` |
+| `mm memory rescan` | `--json`, `--quiet`, `--scope`, `--source` |
+| `mm memory rescan-files` | `--json` |
 | `mm pinned` | — |
 | `mm pinned compose` | `--agent`, `--agent-id`, `--max-chars`, `--no-rerank`, `--top-k` |
 | `mm pinned delete` | `--agent`, `--agent-id`, `--confirm-project-shared`, `--scope` |
@@ -683,7 +693,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm quality replay` | `--as-of`, `--case`, `--format`, `--out` |
 | `mm quality show` | — |
 | `mm quality status` | — |
-| `mm recall` | `--format`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
+| `mm recall` | `--format`, `--json`, `--limit`, `--namespace`, `--scope`, `--since`, `--source-filter`, `--tag-filter`, `--until` |
 | `mm reset` | `--backup`, `--force`, `--json`, `--yes` |
 | `mm review` | — |
 | `mm review approve` | `--reason`, `--reviewer` |
@@ -698,7 +708,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm schedule delete` | — |
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
-| `mm search` | `--as-of`, `--format`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
+| `mm search` | `--as-of`, `--format`, `--json`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
 | `mm serve` | — |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--json`, `--summary` |

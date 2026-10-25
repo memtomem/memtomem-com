@@ -3,7 +3,7 @@ title: CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.6.1 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
+The `mms` command is installed with the `memtomem-stm` v0.6.9 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -245,12 +245,12 @@ mms daemon status                    # show whether the warm daemon is running
 mms daemon status --json             # scriptable status
 mms daemon start                     # start it explicitly
 mms daemon stop                      # stop the daemon for this config
-mms daemon stop --all                # include stale-config daemon orphans
+mms daemon stop --all                # also stop daemons under other config fingerprints
 mms daemon restart                   # stop this config, then start it once
 mms daemon run                       # foreground long-lived server loop
 ```
 
-The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable.
+The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable. A `busy` or `expired` daemon reply skips surfacing for that call either way. A daemon under a different config fingerprint can belong to a running STM process with a different `MEMTOMEM_STM_*` environment (the MCP-launched server versus your shell or hook), so check `mms daemon status` before stopping it with `--all`.
 
 The hook↔daemon protocol version is part of the daemon fingerprint. It became v8 in 0.6.0, so after an upgrade the hook starts a new v8 daemon, and a daemon from the earlier version keeps running beside it until it idles out. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
 
@@ -378,8 +378,10 @@ List indexed projects. The current cwd's project is marked with `*`.
 ```bash
 mms project list
 mms project list --json
-mms project list --prune             # drop entries whose path is gone
+mms project list --prune             # drop entries with missing markers or non-directory roots
 ```
+
+If any indexed project's config is corrupt, `--prune` aborts and leaves the index unchanged.
 
 ### `mms project enable / disable <mcps...>`
 
