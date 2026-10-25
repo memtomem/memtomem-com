@@ -23,7 +23,7 @@ mms init --demo --client auto
 mms doctor
 ```
 
-내장 데모는 결과가 일정한 읽기 전용 서버이며 Node.js나 네트워크가 필요하지 않습니다. `mms doctor`가 종료 코드 0이면 성공이고 WARN은 허용됩니다. LTM 경고는 관련 기억 자동 제시만 사용할 수 없다는 뜻이며 프록시·압축·캐시는 계속 동작합니다.
+내장 데모는 결과가 일정한 읽기 전용 서버이며 Node.js나 네트워크가 필요하지 않습니다. `mms doctor`의 종료 코드가 0이면 성공이며, WARN은 허용됩니다. LTM 경고는 관련 기억 자동 제시만 사용할 수 없다는 의미이며 프록시·압축·캐시는 계속 동작합니다.
 
 자동 감지가 STM을 등록하지 못했다면 사용하는 클라이언트 하나를 선택합니다.
 
@@ -56,7 +56,7 @@ memtomem-stm MCP의 demo__demo_search 도구를 topic="privacy"로 호출해줘.
 클라이언트 내장 파일·셸 도구는 사용하지 마.
 ```
 
-클라이언트에는 전체 이름이 `mcp__memtomem-stm__demo__demo_search`처럼 표시될 수 있습니다. `memtomem-stm` 아래에 있고 `demo__` prefix가 붙어 있으면 됩니다.
+클라이언트에는 전체 이름이 `mcp__memtomem-stm__demo__demo_search`처럼 표시될 수 있습니다. `memtomem-stm` 아래에 있고 `demo__` prefix가 붙어 있으면 정상입니다.
 
 호출 기록을 확인합니다.
 
@@ -65,11 +65,11 @@ mms doctor
 mms stats --source mcp
 ```
 
-다음 조건을 모두 만족하면 데모가 끝났습니다.
+다음 조건을 모두 충족하면 데모 확인이 완료됩니다.
 
 - `mms doctor` 종료 코드가 0임
 - 클라이언트에 `memtomem-stm`과 `demo__demo_search`가 표시됨
-- 호출 결과에 정해진 privacy 데모 문장이 나옴
+- 호출 결과에 정해진 privacy 데모 문장이 표시됨
 - `mms stats --source mcp`에 해당 MCP 호출이 기록됨
 
 ## 3. 실제 MCP 서버 추가
@@ -116,9 +116,9 @@ mms eject SERVER_NAME --dry-run
 mms eject SERVER_NAME
 ```
 
-`mms eject`는 기록해 둔 원래 호스트 항목을 복원하고 검증한 뒤 STM 항목을 제거합니다. 복원이 실패하면 STM 항목을 남겨 서버가 소리 없이 사라지지 않게 합니다.
+`mms eject`는 기록해 둔 원래 호스트 항목을 복원하고 검증한 뒤 STM 항목을 제거합니다. 복원에 실패하면 STM 항목을 유지해 서버가 알림 없이 누락되지 않도록 합니다.
 
-내장 데모는 설정 전에 원래 호스트 항목이 없었습니다. 일반 서버 제거 명령으로 STM에서 삭제하세요.
+내장 데모는 설정 전에 원래 호스트 항목이 없었으므로 일반 서버 제거 명령으로 STM에서 삭제하세요.
 
 ```bash
 mms remove demo

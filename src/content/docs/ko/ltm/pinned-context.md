@@ -3,7 +3,7 @@ title: 고정 컨텍스트와 검토 우선 기억
 description: 검색 결과 앞에 고정 지침을 붙이고, 제안된 기억은 검토 후 저장합니다.
 ---
 
-고정 컨텍스트(Pinned Context)는 검색 결과보다 앞에 넣을 짧은 Markdown
+고정 컨텍스트(Pinned Context)는 검색 결과 앞에 배치하는 짧은 Markdown
 사실·지침입니다. 사용자, 프로젝트 로컬, 프로젝트 공유 블록에는 다른
 memtomem 쓰기와 같은 민감 정보 검사와 확인 규칙이 적용됩니다.
 
@@ -19,7 +19,7 @@ mm pinned delete response-style --scope user
 Git으로 추적하는 공유 계층에 쓰려면 `--confirm-project-shared`가 필요합니다.
 
 블록 하나에는 최대 2,000자를 저장할 수 있습니다. 6,000자는 전체 저장
-한도가 아니라 한 번의 `compose`에서 고정 블록에 사용할 수 있는 양입니다.
+한도가 아니라 `compose` 1회에서 고정 블록에 사용할 수 있는 분량입니다.
 기본 전체 한도는 12,000자이며 블록 중간을 자르지 않습니다.
 
 `mem_context_compose` schema 4는 검색 결과의 우선순위를 유지하면서 인접한
@@ -47,5 +47,5 @@ mm review recover --stale-after-minutes 15 --actor "$USER"
 `MemtomemBaseStore`는 LangGraph의 tuple-namespace JSON Store를 구현합니다.
 `MemtomemStore`는 검색·쓰기·세션·작업 기억을 다루는 상위 비동기
 어댑터입니다. `config_overrides`는 주변 환경의 기본 설정보다 우선합니다.
-그래프마다 DB를 분리하고 테스트 데이터가 사용자 기본 저장소에 들어가지
-않게 할 수 있습니다.
+그래프마다 DB를 분리하고 테스트 데이터가 사용자 기본 저장소에 저장되지
+않도록 할 수 있습니다.

@@ -47,7 +47,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__STRIP_SCHEMA_DESCRIPTIONS` | 표시하는 도구에서 중첩된 JSON 스키마의 설명 제거 | `false` |
 | `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY` | 관련성 점수 계산에 쓰는 선택형 `_context_query` 인자를 도구 스키마에 표시 | `false` |
 | `MEMTOMEM_STM_PROXY__HOST_DESCRIPTION_CAP` | 호스트가 허용하는 설명 길이(프록시 접두사와 힌트 포함). 지정하지 않으면 알 수 없는 값으로 두며 호스트 한도를 추정하지 않습니다. 다음 도구 등록 시 적용되므로 확실히 반영하려면 재시작합니다. | `null` |
-| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | `description_override`가 대체한 원본 설명을 함께 반환합니다. 복구하면 재정의가 가리려 했던 업스트림 문구가 바로 그 독자에게 다시 전달되므로 기본값은 꺼짐입니다. | `false` |
+| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | `description_override`가 대체한 원본 설명을 함께 반환합니다. 복구하면 재정의가 가리려 했던 업스트림 문구가 재정의의 대상인 모델에 다시 전달되므로 기본값은 꺼짐입니다. | `false` |
 | `MEMTOMEM_STM_PROXY__CONSUMER_MODEL` | 컨텍스트 윈도우 예산 계산에 쓰는 클라이언트 모델 식별자 | `""` |
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | 프록시 결과에 허용할 수신 모델 컨텍스트 크기의 비율 | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | 토큰 예산용 정적 문자/토큰 추정치 | `3.5` |
@@ -171,7 +171,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__COMMAND` | stdio 도구 그래프 MCP 서버 실행 명령 | `"toolgraph"` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__ARGS` | 명령 인자(JSON 목록) | `["serve"]` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__ENV` | 그래프 서버용 추가 환경 변수(예: `NEO4J_*`, JSON object) | `null` |
-| `MEMTOMEM_STM_PROXY__TOOLGRAPH__AGENT_ID` | 그래프에 등록된, 적격성을 판정할 에이전트 식별자 | `"stm-proxy"` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__AGENT_ID` | 적격성 판정 대상으로 그래프에 등록된 에이전트 식별자 | `"stm-proxy"` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__SERVER_NAME_MAP` | STM의 연결 서버 이름을 그래프 서버 식별자에 연결(JSON 객체) | `{}` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__QUERY_PROFILE` | 그래프 조회에 전달할 프로필 | `"strict"` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__ON_UNREACHABLE` | 그래프에 연결할 수 없을 때: `open`(STM 자체 규칙에 따라 표시) / `closed`(그래프가 승인한 도구 외에는 모두 보류) | `"open"` |
@@ -294,7 +294,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 검색 결과 기억의 최대 수. Core가 `context_compose`로 반환하는 고정(pinned) 컨텍스트는 별도이며 이 수에 포함되지 않음 | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | 응답이 이보다 짧으면 관련 기억 검색 생략 | `5000` |
 | `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수 | `3` |
-| `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | 관련 기억 검색을 반복할 때 둘 사이의 최소 간격 | `5` |
+| `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | 반복되는 관련 기억 검색 사이의 최소 간격 | `5` |
 | `MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS` | LTM 관련 기억 검색의 제한 시간 | `3` |
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | 배치 위치: `prepend`, `append`, `section` | `"append"` |
 | `MEMTOMEM_STM_SURFACING__SECTION_HEADER` | `section` 주입 모드에서 사용할 제목 | `"## Relevant Memories"` |
@@ -337,7 +337,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_URL` | `sse` / `streamable_http` LTM 엔드포인트 URL | `""` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_HEADERS` | 네트워크 LTM 전송용 정적 헤더(JSON object) | `null` |
 
-관련 기억 자동 제시는 STM을 거친 호출이나 지원되는 클라이언트 훅에만 적용됩니다. 각 AI 도구가 자체로 관리하는 기억 계층이 아니며, STM과 관계없는 직접 MCP 호출에 몰래 내용을 넣지 않습니다.
+관련 기억 자동 제시는 STM을 거친 호출이나 지원되는 클라이언트 훅에만 적용됩니다. 각 AI 도구가 자체로 관리하는 기억 계층이 아니며, STM과 무관한 직접 MCP 호출에 내용을 암묵적으로 주입하지 않습니다.
 
 <a id="hook--daemon"></a>
 
@@ -370,7 +370,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_LANGFUSE__HOST` | Langfuse 호스트 URL | `""` |
 | `MEMTOMEM_STM_LANGFUSE__SAMPLING_RATE` | 0.0–1.0 | `1` |
 
-`MEMTOMEM_STM_LANGFUSE__ENABLED=true`인데 `[langfuse]` 추가 패키지가 설치되어 있지 않으면 시작할 때 `ValueError`가 발생합니다(v0.1.16부터 즉시 실패). 추가 패키지를 먼저 설치하거나 `enabled=false`로 두세요. 이제는 경고만 남기고 조용히 비활성화하지 않으므로 설정 오류 때문에 추적 기능이 모르게 꺼지지 않습니다.
+`MEMTOMEM_STM_LANGFUSE__ENABLED=true`인데 `[langfuse]` 추가 패키지가 설치되어 있지 않으면 시작할 때 `ValueError`가 발생합니다(v0.1.16부터 즉시 실패). 추가 패키지를 먼저 설치하거나 `enabled=false`로 두세요. 경고만 남긴 채 비활성화하지 않으므로, 설정 오류로 추적 기능이 알림 없이 꺼지는 일이 없습니다.
 
 ### 압축 전략 (`MEMTOMEM_STM_PROXY__DEFAULT_COMPRESSION`)
 
