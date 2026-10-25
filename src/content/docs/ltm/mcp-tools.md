@@ -90,7 +90,7 @@ candidate; reusing it with different content is rejected.
 
 [Connect an AI Client](/guides/connect-ai-client/#opencode) covers registering memtomem in OpenCode through the published plugin or a manual local server, and which server runs when both are configured. Two points affect tool exposure:
 
-- The published plugin starts the server in `core` mode.
+- The published plugin starts the server in `core` mode and denies `memtomem_mem_do` by default, so the actions routed through `mem_do` need a permission change first. See [the plugin permissions](/guides/connect-ai-client/#opencode).
 - For a manual server, set `MEMTOMEM_TOOL_MODE` under the `environment` key of its entry under `mcp` in `opencode.json`. OpenCode uses `environment`, not `env`.
 
 ## Common Actions

@@ -51,7 +51,7 @@ Context Gateway는 세 가지 **계층(티어)**에 기준본을 보관합니다
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | git에 커밋할 팀 공유 프로젝트 컨텍스트 |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | 한 체크아웃에서만 쓰는 비공개 초안 |
 
-`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리입니다. 홈 디렉터리에 파일을 쓰기 때문에 먼저 "프로젝트 외부에 쓸까요?"라고 확인합니다. Context Gateway는 수정할 파일 목록을 표시하고, 사용자가 승인한 경우에만 저장합니다. 이 단계는 기능 설정이 아니라 프로젝트 밖 쓰기를 보호하는 안전장치입니다.
+`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리이며 파일은 홈 디렉터리에 저장됩니다. Web UI에서는 User 저장소 작업이 프로젝트 밖에 파일을 쓰기 전에 "Write outside the project?" 확인 창을 띄우고, 수정할 경로를 보여 준 뒤 승인한 경우에만 저장합니다. CLI에는 `user` 계층용 확인 창이 없습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전에 확인을 요청하며 `--yes`로 이 확인을 건너뛸 수 있습니다. `mm context init`과 `mm context sync`가 `user` 계층의 에이전트·스킬·명령을 쓸 때는 확인을 요청하지 않습니다.
 
 `project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 보내지지 않습니다.
 
@@ -75,7 +75,7 @@ mm context init --include skills --scope user
 mm context sync --include skills --scope user
 ```
 
-스킬 기준본은 `~/.memtomem/skills/`에 저장되고 지원되는 AI 도구의 사용자 경로로 전송됩니다. 처음 저장할 때는 홈 디렉터리에 쓸 파일을 확인합니다.
+스킬 기준본은 `~/.memtomem/skills/`에 저장되고 지원되는 AI 도구의 사용자 경로로 전송됩니다.
 
 ### 공유 전 로컬에서 초안 작성
 
@@ -117,7 +117,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 - `copy`는 원본을 변경하지 않으며, `--as`로 이름을 바꿔 복사할 수 있습니다.
 - 모든 전송은 기본적으로 변경 내용을 표시하는 미리보기 실행입니다. 실제로 적용하려면 `--apply`를 추가합니다.
 - 대상에 같은 이름이 있으면 거부하며 `--force`로 덮어쓸 수 없습니다.
-- `project_shared`로 들어가는 전송은 비밀값 스캔을 거치고 `--confirm-project-shared`를 요구합니다.
+- `project_shared`로 들어가는 전송은 비밀값 스캔을 거치며, `--apply`로 실행할 때 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다.
 - 전송이 성공하면 이어서 실행할 `mm context sync` 명령을 출력합니다.
 
 UI가 없는 환경에서는 MCP 액션 `mem_context_artifact_transfer`로 같은 작업을 실행할 수 있습니다.

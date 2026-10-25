@@ -174,6 +174,16 @@ MCP 도구만 필요한 경우:
 
 OpenCode는 `mcp` 키의 정확한 이름으로 판정합니다. 기존 `mcp.memtomem` 항목이 플러그인의 기본 서버보다 우선하므로 서버 하나만 실행합니다. 플러그인 서버를 사용하려면 이 수동 항목을 제거하세요. `mcp."memtomem-local"`처럼 다른 키를 사용하면 중복 제거되지 않아 서버 두 개가 실행됩니다.
 
+플러그인은 `permission` 설정에 memtomem 도구의 기본 권한도 추가합니다. 검색·회상·상태·통계·목록·읽기 도구는 허용하고, 저장(`mem_add`)과 색인(`mem_index`)을 포함한 나머지 도구는 매번 확인을 요청하며, `memtomem_mem_do`는 거부합니다. 플러그인 서버는 `core` 모드로 실행되므로 `mem_do`를 거치는 나머지 액션은 권한을 바꾸기 전까지 사용할 수 없습니다. 같은 키로 직접 지정한 규칙은 해당 키의 플러그인 기본값만 대체하며 나머지 기본값은 유지됩니다. `memtomem_*` 같은 와일드카드는 개별 도구 이름의 기본값을 지우지 않으므로, dispatcher를 허용하려면 정확한 키를 지정하세요.
+
+```json
+{
+  "permission": {"memtomem_mem_do": "ask"}
+}
+```
+
+`permission` 전체를 문자열로 지정하면 위 규칙을 추가할 수 없습니다. `"ask"`나 `"allow"`로 지정해도 플러그인은 `memtomem_mem_do`를 계속 거부합니다. OpenCode의 `--auto` 모드는 `ask` 결정을 자동으로 승인하고, 에이전트별 권한이 전역 설정보다 우선할 수 있으므로 쓰기 도구를 사용하기 전에 해당 설정을 확인하세요.
+
 ## Hermes Agent
 
 공식 플러그인 패키지는 memtomem MCP 서버와 기억 스킬 6개(index, recall, remember, search, setup, status)를 함께 제공합니다. 다음 조건이 필요합니다.
