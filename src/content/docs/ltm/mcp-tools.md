@@ -44,7 +44,7 @@ In `core` mode, the agent sees the tools needed for daily memory work:
 | `mem_search` | Hybrid search over indexed memory |
 | `mem_recall` | Browse recent or date-filtered memory |
 | `mem_index` | Index a file or directory |
-| `mem_list` | List indexed memories / sources |
+| `mem_list` | List indexed memories / sources, `limit` per page (1–500, default 50). Pass the `cursor` from the previous page's "More:" line for the next page. |
 | `mem_read` | Read an indexed source file |
 | `mem_do` | Route all non-core actions by name |
 
@@ -132,6 +132,21 @@ Most common MCP operations have CLI equivalents:
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 If an agent is struggling to call the right tool, run the CLI command once yourself and then ask the agent to follow the same operation.
+
+## MCP Resources
+
+Alongside the tools, memtomem serves read-only data as MCP resources. Each one returns JSON.
+
+| URI | Contents |
+|---|---|
+| `memtomem://sources` | The first page of visible source files (50, the same as `mem_list`'s default) with chunk counts |
+| `memtomem://sources{?cursor,limit,namespace}` | Later pages. `limit` is 1–500 (default 50); as with `mem_list`, only `namespace` lists files that live solely in a system namespace |
+| `memtomem://namespaces` | Namespaces and their chunk counts |
+| `memtomem://tags` | Tags visible in the caller's project boundary and their counts |
+| `memtomem://stats` | Current index statistics |
+| `memtomem://chunks/{chunk_id}` | One chunk by UUID. As with `mem_read`, an id from another project reads as not found |
+
+A sources page is `{"sources": [...], "page_size": N, "next": ...}`. `next` is the full URI of the following page, or `null` on the last page.
 
 ## Full-mode tool names
 

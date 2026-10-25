@@ -84,7 +84,7 @@ Raises are capped at `min(auto_tune_score_ceiling, max(batch reference, min_scor
 - Results without a `score_scale`, or with a label STM does not recognize: `2/61` at 2 places (`0.03`).
 - An empty batch, or a recognized non-RRF scale: no extra cap.
 
-Stored adjustments are not rewritten: a tool already tuned above the cap filters at the cap from its next search on, while `stm_surfacing_stats` keeps showing the stored value. This applies to the proxy, and to the daemon when `hook.record_feedback_events` is on.
+Stored adjustments are not rewritten: a tool already tuned above the cap filters at the cap from its next search on, while `stm_admin(action="surfacing_stats")` keeps showing the stored value. This applies to the proxy, and to the daemon when `hook.record_feedback_events` is on.
 
 Rating an individual memory `not_relevant` or `already_known` invalidates exactly that memory on the next cache hit, excluding only those memories from injection rather than the whole event.
 

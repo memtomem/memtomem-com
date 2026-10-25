@@ -128,7 +128,7 @@ mm search "how does the auth middleware work"
 mm search "deployment config" --namespace project-x --top-k 5
 ```
 
-`--top-k` / `-k` caps results (default 10). Other filters: `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (point-in-time bound, `YYYY-MM-DD` / `YYYY-QN`), and `--format` (`table` / `json` / `plain` / `context` / `smart`); `--json` is shorthand for `--format json`.
+`--top-k` / `-k` caps results (default 10). Other filters: `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (point-in-time bound, `YYYY-MM-DD` / `YYYY-QN`), and `--format` (`table` / `json` / `plain` / `context` / `smart`); `--json` is shorthand for `--format json`. In JSON rows, `content` holds the whole chunk and `content_preview` its first 200 characters.
 
 ### `mm tags list / rename / delete / merge`
 
@@ -155,7 +155,7 @@ mm recall --source-filter "postmortems/" --format json
 mm recall --namespace project-x --format plain
 ```
 
-`--format` picks `table` (default, human), `json` (scripting), or `plain` (text pipe); `--json` is shorthand for `--format json`. Date arguments accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, and ISO datetimes.
+`--format` picks `table` (default, human), `json` (scripting), or `plain` (text pipe); `--json` is shorthand for `--format json`. JSON rows carry `id`, `source`, `content` (the whole chunk), `content_preview` (its first 200 characters) and `created_at`. Date arguments accept `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, and ISO datetimes.
 
 ### `mm web`
 

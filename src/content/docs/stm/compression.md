@@ -41,6 +41,8 @@ The `auto` strategy (default) analyzes content to pick the optimal strategy:
 
 `selective`, `progressive`, and `llm_summary` are opt-in only. `auto` never chooses them because they change the interaction pattern or add external latency.
 
+JSON nested more than 512 levels deep is not treated as JSON. The JSON-aware compression paths fall back to their text handling, so such a response is compressed like any other text instead of failing the call.
+
 ## Query-Aware Budget Allocation
 
 During compression, the agent's current query is taken into account — relevant sections receive a larger token budget. The `selective` / `hybrid` / `schema_pruning` / `skeleton` strategies also rank table-of-contents entries by BM25 relevance to the active query. The deterministic BM25 score used here is recorded by selection telemetry for offline analysis (see [Configuration](/stm/configuration/)).

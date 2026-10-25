@@ -121,7 +121,7 @@ mm search "how does the auth middleware work"
 mm search "deployment config" --namespace project-x --top-k 5
 ```
 
-`--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다. `--json`은 `--format json`의 축약형입니다.
+`--top-k` / `-k` 가 결과 수를 제한합니다(기본 10). `--source-filter` / `-s`, `--tag-filter` / `-t`, `--namespace` / `-n`, `--as-of` (시점 한정, `YYYY-MM-DD` / `YYYY-QN`), `--format` (`table`·`json`·`plain`·`context`·`smart`)도 함께 사용할 수 있습니다. `--json`은 `--format json`의 축약형입니다. JSON 결과의 각 항목에서 `content`는 청크 전체이고, `content_preview`는 앞 200자입니다.
 
 ### `mm tags list / rename / delete / merge`
 
@@ -148,7 +148,7 @@ mm recall --source-filter "postmortems/" --format json
 mm recall --namespace project-x --format plain
 ```
 
-`--format`은 `table`(기본), `json`(스크립트용), `plain`(텍스트 연결용) 중에서 선택합니다. `--json`은 `--format json`의 축약형입니다. 날짜는 `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, ISO datetime 형식을 지원합니다.
+`--format`은 `table`(기본), `json`(스크립트용), `plain`(텍스트 연결용) 중에서 선택합니다. `--json`은 `--format json`의 축약형입니다. JSON 결과의 각 항목은 `id`, `source`, `content`(청크 전체), `content_preview`(앞 200자), `created_at`을 포함합니다. 날짜는 `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, ISO datetime 형식을 지원합니다.
 
 ### `mm web`
 

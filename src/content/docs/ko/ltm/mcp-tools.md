@@ -45,7 +45,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 | `mem_search` | 인덱싱된 기억 하이브리드 검색 |
 | `mem_recall` | 최근 또는 날짜 필터 기반 기억 조회 |
 | `mem_index` | 파일 또는 디렉터리 인덱싱 |
-| `mem_list` | 인덱싱된 기억 / 소스 목록 |
+| `mem_list` | 인덱싱된 기억 / 소스 목록. 한 페이지에 `limit`개(1–500, 기본 50)를 보여 주며, 다음 페이지는 이전 결과의 "More:" 줄에 있는 `cursor`를 넘겨 조회합니다. |
 | `mem_read` | 인덱싱된 원본 파일 읽기 |
 | `mem_do` | 나머지 기능으로 요청 전달 |
 
@@ -135,6 +135,21 @@ MCP 클라이언트가 `mem_do`보다 개별 도구를 직접 호출하는 방�
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 실행한 뒤 같은 작업을 다시 요청해 보세요.
+
+## MCP 리소스
+
+도구와 별도로 MCP 리소스로도 읽기 전용 데이터를 제공합니다. 모든 리소스는 JSON을 반환합니다.
+
+| URI | 내용 |
+|---|---|
+| `memtomem://sources` | 표시 대상 소스 파일의 첫 페이지(`mem_list` 기본값과 같은 50개)와 파일별 청크 수 |
+| `memtomem://sources{?cursor,limit,namespace}` | 이어지는 페이지. `limit`은 1–500(기본 50)이며, `namespace`를 지정해야 시스템 네임스페이스에만 있는 파일도 표시됩니다(`mem_list`와 같음) |
+| `memtomem://namespaces` | 네임스페이스와 청크 수 |
+| `memtomem://tags` | 호출한 프로젝트 범위에서 보이는 태그와 청크 수 |
+| `memtomem://stats` | 현재 인덱스 통계 |
+| `memtomem://chunks/{chunk_id}` | UUID로 지정한 청크 하나. `mem_read`와 같이 다른 프로젝트의 ID는 찾을 수 없는 것으로 처리합니다 |
+
+소스 페이지는 `{"sources": [...], "page_size": N, "next": ...}` 형식입니다. `next`는 다음 페이지의 전체 URI이며 마지막 페이지에서는 `null`입니다.
 
 ## 전체 모드 도구 이름
 
