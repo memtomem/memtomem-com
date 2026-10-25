@@ -252,7 +252,15 @@ Antigravity IDE와 Antigravity CLI(`agy`)는 서로 다른 파일을 사용합�
 
 - IDE 내장 Gemini 에이전트: `~/.gemini/antigravity/mcp_config.json`에 위 `mcpServers` 항목 사용
 - IDE의 VS Code 기반 연동: `~/Library/Application Support/Antigravity/User/mcp.json`에 해당 연동의 `servers` 형식 사용
-- Antigravity CLI: `~/.gemini/antigravity-cli/mcp_config.json`
+- Antigravity CLI: `~/.gemini/config/mcp_config.json`
+
+Antigravity CLI에서는 `agy`가 항목을 직접 작성하도록 하는 방법이 가장 간단합니다.
+
+```bash
+agy mcp add memtomem memtomem-server
+```
+
+파일을 직접 편집하는 경우 `~/.gemini/config/mcp_config.json`에 다음 항목을 추가합니다.
 
 ```json
 {
@@ -265,6 +273,8 @@ Antigravity IDE와 Antigravity CLI(`agy`)는 서로 다른 파일을 사용합�
   }
 }
 ```
+
+이전 경로인 `~/.gemini/antigravity-cli/mcp_config.json`은 더 이상 읽히지 않습니다. 이 파일에 memtomem 항목이 있다면 `~/.gemini/config/mcp_config.json`으로 옮기거나 `agy mcp add`로 다시 추가하고, `agy mcp list`로 CLI가 서버를 인식하는지 확인합니다.
 
 파일을 바꾼 뒤 에이전트 세션을 다시 시작합니다. Antigravity는 별도로 설치된 VS Code의 MCP 항목을 물려받지 않습니다.
 
