@@ -252,7 +252,15 @@ Antigravity IDE and Antigravity CLI (`agy`) use separate files.
 
 - IDE built-in Gemini agent: `~/.gemini/antigravity/mcp_config.json`, with the generic `mcpServers` entry above.
 - IDE VS Code-side integrations: `~/Library/Application Support/Antigravity/User/mcp.json`, using that integration's `servers` schema.
-- Antigravity CLI: `~/.gemini/antigravity-cli/mcp_config.json`:
+- Antigravity CLI: `~/.gemini/config/mcp_config.json`.
+
+For the Antigravity CLI, the quickest way is to let `agy` write the entry:
+
+```bash
+agy mcp add memtomem memtomem-server
+```
+
+To edit the file yourself, add this entry to `~/.gemini/config/mcp_config.json`:
 
 ```json
 {
@@ -265,6 +273,8 @@ Antigravity IDE and Antigravity CLI (`agy`) use separate files.
   }
 }
 ```
+
+The older `~/.gemini/antigravity-cli/mcp_config.json` is no longer read. If it holds a memtomem entry, move the entry to `~/.gemini/config/mcp_config.json` or re-add it with `agy mcp add`, then run `agy mcp list` to confirm the CLI sees the server.
 
 Restart the agent session after editing. Antigravity does not inherit MCP entries from a separate VS Code installation.
 
