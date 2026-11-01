@@ -58,7 +58,7 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 | `prepend` | 기억을 응답 앞에 붙임. `stm_proxy_read_more`의 `offset`을 바꾸므로 legacy `progressive` 전달에서는 건너뜀 |
 | `section` | 기억을 별도 섹션에 배치. `progressive`로 이어 읽을 때도 관련 기억 검색을 실행 |
 
-[구조화 전달](/ko/stm/compression/#structured-chunk-delivery)에서는 기억이 별도 필드 `stm.supplements.surfacing`으로 전달되고 응답 텍스트는 바뀌지 않으므로 `prepend`를 포함한 모든 모드가 적용됩니다.
+실험 기능인 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)에서는 기억이 별도 필드 `stm.supplements.surfacing`으로 전달되고 응답 텍스트는 바뀌지 않으므로 `prepend`를 포함한 모든 모드가 적용됩니다.
 
 ## 모델 인식 기본값
 

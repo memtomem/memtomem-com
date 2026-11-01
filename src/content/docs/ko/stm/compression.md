@@ -79,7 +79,11 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 
 ## 구조화 청크 전달
 
-구조화 전달은 실험 기능이며 기본값은 꺼져 있습니다. 전체(`MEMTOMEM_STM_PROXY__DELIVERY_FORMAT`), 연결 서버, `tool_overrides` 항목 중 한 곳에 `delivery_format: "structured"`를 설정하며, 가장 가까운 설정이 우선합니다. `progressive`, `selective`, `hybrid` 키는 발행될 때의 형식을 유지하고, 이어 읽기 도구는 호출마다 `response_format`(`legacy` 또는 `structured`)으로 형식을 바꿀 수 있습니다.
+:::caution[Experimental]
+구조화 청크 전달(`delivery_format: "structured"`)은 0.7.0부터 제공되는 실험적(experimental) 기능이며 기본값은 꺼져 있습니다. 동작하며 테스트도 거쳤지만, 실제 사용 경험이 아직 충분하지 않아 동작이 확정되지 않았습니다. 따라서 기본 `legacy` 전달보다 큰 변경이 있을 수 있습니다.
+:::
+
+전체(`MEMTOMEM_STM_PROXY__DELIVERY_FORMAT`), 연결 서버, `tool_overrides` 항목 중 한 곳에 `delivery_format: "structured"`를 설정하며, 가장 가까운 설정이 우선합니다. `progressive`, `selective`, `hybrid` 키는 발행될 때의 형식을 유지하고, 이어 읽기 도구는 호출마다 `response_format`(`legacy` 또는 `structured`)으로 형식을 바꿀 수 있습니다.
 
 - **페이로드:** 조건을 만족하는 텍스트 전용 응답이면 STM은 버전이 붙은 JSON 봉투(envelope)를 텍스트 블록에 넣고, 이어 읽기 응답은 이를 텍스트와 `structuredContent` 양쪽으로 반환합니다. 내용과 제어 필드는 `stm.payload`에서 읽습니다. `progressive`로 이어 읽을 때는 `content` 필드를 그대로 이어 붙이고 각 `next_offset`을 바꾸지 않고 다시 전달합니다. 위의 바닥글 규칙은 legacy 전달에만 적용되며, 본문에 바닥글 문자열이 들어 있어도 됩니다. 오프셋과 한도는 유니코드 코드 포인트 단위로 셉니다.
 - **원래 페이로드 유지:** 업스트림 `structuredContent`나 텍스트가 아닌 콘텐츠가 있는 성공 응답(`isError`가 아닌 응답)은 그대로 유지됩니다. 텍스트 블록마다 따로 정리하고 전체 텍스트 길이를 도구의 문자 예산으로 제한하며, 압축·관련 기억 추가·색인·캐시를 건너뛰며 이어 읽기 키도 발급하지 않습니다.
