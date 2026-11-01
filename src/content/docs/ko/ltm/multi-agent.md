@@ -5,6 +5,10 @@ description: 네임스페이스, 세션, 명시적 공유로 검토한 기억을
 
 memtomem은 각 에이전트가 기록하는 기억을 이름이 지정된 네임스페이스로 라우팅하고, 선택한 기억만 `shared`에 복사할 수 있습니다. 여러 AI 클라이언트나 에이전트 역할이 같은 로컬 저장소를 사용하되 모든 중간 결과를 한 공간에 공개하고 싶지 않을 때 유용합니다.
 
+:::caution[Experimental]
+멀티 에이전트 기억(`mem_agent_register`, `mem_agent_search`, `mem_agent_share`, 그리고 `agent_id`를 지정한 `mem_session_start`의 에이전트별 세션 범위)은 0.7.0부터 실험적(experimental) 기능입니다. 동작이나 형식이 사용 중단 유예 기간 없이 바뀔 수 있습니다.
+:::
+
 ## 네임스페이스 구조
 
 ```text
@@ -75,7 +79,7 @@ mem_do(action="session_end", params={"summary": "인증 분석 완료"})
 | `standard` | 개별 `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | 개별 세션 도구 | 개별 `mem_agent_search` / `mem_agent_share` |
 
-클라이언트에 더 큰 도구 목록이 꼭 필요하지 않다면 `core`를 유지하세요. dispatcher는 full 모드의 도구 100개를 모두 노출하지 않으면서 현재 릴리스의 전체 작업을 제공합니다.
+클라이언트에 더 큰 도구 목록이 꼭 필요하지 않다면 `core`를 유지하세요. dispatcher는 full 모드의 도구 101개를 모두 노출하지 않으면서 현재 릴리스의 전체 작업을 제공합니다.
 
 ## `agent_id` 설정
 

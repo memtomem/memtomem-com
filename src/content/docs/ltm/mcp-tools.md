@@ -12,8 +12,8 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 | Mode | Tools exposed | Use when |
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
-| `standard` | 38, including `mem_do` | You want common management tools directly visible |
-| `full` | 100 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
+| `standard` | 39, including `mem_do` | You want common management tools directly visible |
+| `full` | 101 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
 
 The following example is for a manual MCP-only connection. If a client plugin
 already supplies memtomem, check that client's coexistence rule in
@@ -65,9 +65,8 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.6.12 registry has 100 current tools and 94 `mem_do` actions.
-`mem_context_migrate` was removed and `mem_candidate_evidence` was added;
-the unchanged total does not imply unchanged membership. Pinned Context adds `mem_pinned_list/get/set/delete` and
+The v0.7.1 registry has 101 current tools and 95 `mem_do` actions; 0.7.1 adds
+`mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
 `mem_formation_scan` and `mem_candidate_propose/list/review/recover/evidence`. The new
 full-mode surface also includes `mem_context_pull` for preview-first runtime
@@ -99,12 +98,29 @@ candidate; reusing it with different content is rejected.
 |---|---|
 | Namespace | `ns_list`, `ns_set`, `ns_assign`, `ns_update`, `ns_rename`, `ns_delete` |
 | Tags | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
-| Sessions | `session_start`, `session_end`, `session_list` |
+| Sessions | `session_start`, `session_end`, `session_list`, `project_bind` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
 | Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
 | Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
+
+## Project Binding
+
+The project context comes from the server's working directory. A host can start a stdio server somewhere else, as the Hermes Agent and Antigravity CLI plugins do in the plugin's directory, and then `project_local` never resolves. `mem_project_bind` (0.7.1) pins such a server to a project whose tier is registered:
+
+```text
+mem_do(action="project_bind", params={"project_root": "/absolute/path/to/project"})
+```
+
+After binding, the memory tools that use the project context use that project: search, recall, add, read and edit by id, and pinned context. `mem_list` stays store-wide, and the Context Gateway `context_*` actions and the health watchdog keep using the working directory.
+
+- It works only on a stdio server, because streamable HTTP shares one context across clients.
+- `project_root` must be an absolute path inside a project whose tier is registered (`mm mem init --scope project_local`); otherwise the call is refused.
+- The binding is set once per server process, and binding another project needs a restart. It is refused when the server's working directory already lies in another registered project.
+- If the tier is unregistered later, reads stay on the bound project, adds to the tier are refused, and pinned context is not re-checked until the server restarts. Until then `mem_status` warns `bound_project_unregistered`; restart the server or register the tier again with `mm mem init`.
+
+The workflows bundled with the Hermes Agent and Antigravity CLI plugins do not bind a project on their own, and their `remember` workflow always saves at user scope.
 
 ## When to Change Modes
 
@@ -150,7 +166,7 @@ A sources page is `{"sources": [...], "page_size": N, "next": ...}`. `next` is t
 
 ## Full-mode tool names
 
-These are the 100 current names in full mode, distinct from the nine tools exposed by default in core mode.
+These are the 101 current names in full mode, distinct from the nine tools exposed by default in core mode.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -223,6 +239,7 @@ These are the 100 current names in full mode, distinct from the nine tools expos
 - `mem_policy_run`
 - `mem_procedure_list`
 - `mem_procedure_save`
+- `mem_project_bind`
 - `mem_quality_replay`
 - `mem_read`
 - `mem_recall`

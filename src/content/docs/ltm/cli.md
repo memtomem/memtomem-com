@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.6.12. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.1. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.6.12 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.1 binary.
 
 | Group | Commands |
 |---|---|
@@ -51,6 +51,9 @@ Bare `mm web` launches the UI; `status` and `stop` manage it.
 
 ```bash
 mm doctor --json
+mm doctor --mcp-client claude
+mm doctor --mcp-client claude --reconcile keep-manual
+mm doctor --mcp-client claude --reconcile keep-manual --apply
 mm agent debug-resolve --agent-id alice
 mm review evidence CANDIDATE_ID --top-k 5
 mm context seed-validation --help
@@ -58,7 +61,22 @@ mm context version --help
 mm context settings-doctor --json
 ```
 
-`doctor` diagnoses runtime configuration; `agent debug-resolve` explains search
+`doctor` diagnoses runtime configuration and lists the memtomem server processes
+on the machine. With `--mcp-client claude`, `agy` or `codex` it checks registrations
+instead: whether a manual MCP registration and that client's memtomem plugin would
+start two servers (`--claude-mcp` remains an alias for the Claude check). In that
+mode it exits `0` on a pass, `1` on a duplicate risk and `2` when the inspection is
+incomplete. `--reconcile keep-manual`
+keeps the manual registration and the plugin's skills and suppresses the plugin's
+bundled server; `--reconcile keep-plugin` removes the manual entry instead. Both
+only preview, so a preview can exit `1` while proposing a valid repair. `--apply`
+makes the edit: it backs up the original file beside it as `<filename>.mm-backup-*`
+with private permissions (the backup can contain credentials), replaces that one
+file atomically and runs the check again. Close every Claude session before
+applying a Claude edit, and rerun the check after updating or reinstalling a
+plugin, which can restore its bundled server. Malformed or shadowed configurations,
+several manual registrations and managed policies are reported for manual review
+and never edited. `agent debug-resolve` explains search
 scope. `review evidence` compares a candidate with indexed memories but never
 approves it. BM25-only or unindexed dense stores may report evidence unavailable.
 `seed-validation` writes validation context assets; inspect its help before
@@ -73,7 +91,7 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.6.12, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.1, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -98,7 +116,7 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Connect an AI Client](/guides/connect-ai-client/) for the per-client registration steps.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 100 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 101 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
 
@@ -212,7 +230,7 @@ mm index ~/docs/architecture         # index a specific directory
 mm index README.md                   # index a single file
 ```
 
-Paths listed in `indexing.memory_dirs` are watched by the long-running `memtomem-server` process, but the watcher is **reactive only**. It reindexes modify/create/move events after startup; pre-existing files are not scanned automatically. Seed once with `mm index <dir>` (or `mem_index(path="<dir>")`), then let the MCP server watcher handle later edits. `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true` is an opt-in one-shot backfill for the Web UI startup path.
+Paths listed in `indexing.memory_dirs` are watched by the long-running `memtomem-server` process, but the watcher is **reactive only**. It reindexes modify/create/move events after startup; pre-existing files are not scanned automatically. Each start does check the files already indexed once, and hides the chunks of a file that has since been replaced by a symlink; it indexes nothing new. Seed once with `mm index <dir>` (or `mem_index(path="<dir>")`), then let the MCP server watcher handle later edits. `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true` is an opt-in one-shot backfill for the Web UI startup path.
 
 ### `mm ingest`
 
@@ -259,7 +277,7 @@ mm context export skills deploy-check --out deploy-check.json   # pack a bundle 
 mm context import deploy-check.json --to user                    # land a bundle (preview)
 ```
 
-`pull`, `move`, `copy`, and `import` preview by default; pass `--apply` to write. Applying a `move` or `copy` into **Project (shared)** asks for confirmation; in non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused. `mm context sync` also asks before writing settings files outside the project and before an `--all-projects` push; `--yes` skips those prompts.
+`pull`, `move`, `copy`, and `import` preview by default; pass `--apply` to write. Applying a `pull`, `move` or `copy` into **Project (shared)** asks for confirmation; in non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused. `mm context sync` also asks before writing settings files outside the project and before an `--all-projects` push; `--yes` skips those prompts.
 
 ## Wiki — a canonical artifact library
 
@@ -450,7 +468,7 @@ mm schedule delete <sched-id>
 
 ### `mm gc orphan-sources`
 
-Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks permanently. Orphans are grouped by the configured memory dir that owns them, plus one group for sources outside every root, and `--apply` deletes a group only after you confirm it; `--yes` skips those prompts. `--under DIR` (repeatable) considers only sources under the directories named, so `--apply --yes` deletes only there.
+Find indexed source records whose files no longer exist. Preview is the default; pass `--apply` to remove the orphaned source records and their chunks permanently. Orphans are grouped by the configured memory dir that owns them, plus one group for sources outside every root, and `--apply` deletes a group only after you confirm it; `--yes` skips those prompts. `--under DIR` (repeatable) considers only sources under the directories named, so `--apply --yes` deletes only there. A source matches by the path it was indexed under, so a file that has since become a symlink matches where the link sits; `DIR` itself is resolved.
 
 The watcher, scheduled compaction and health maintenance never delete a missing source on their own: they **hold** it. A held source is hidden from search while its chunks are kept for recovery. To delete those chunks, review with `mm gc orphan-sources`, then run it with `--apply`. Over MCP, `cleanup_orphans` purges only when both `dry_run=false` and `confirm_purge=true` are passed, and takes `under` to narrow the scan. A missing source under both an index root and `indexing.retain_missing_dirs` is the exception: its absence hold is released, so it stays searchable (`Archived:` in `mm status`) and is not offered for purge. A source held for another reason, such as `redaction_blocked` or `scan_unavailable`, stays held. One case still deletes on its own: a path that now holds a directory or another non-regular file loses its chunks on the next event for it.
 
@@ -476,7 +494,7 @@ mm embedding-reset --mode revert-to-stored    # switch runtime embedder to DB st
 
 ### `mm purge --matching-excluded`
 
-Remove already-indexed chunks whose source paths match the built-in credential denylist or your `indexing.exclude_patterns`. Runs as a dry-run by default — pass `--apply` to actually delete.
+Remove already-indexed chunks whose source paths match the built-in credential denylist or your `indexing.exclude_patterns`. Runs as a dry-run by default — pass `--apply` to actually delete. A stored path that now resolves somewhere else (the file became a symlink after it was indexed) is neither judged nor deleted: it is skipped and listed on stderr, or with `--json` reported in `moved` and `moved_sample`.
 
 ```bash
 mm purge --matching-excluded          # dry-run — shows what would be removed
@@ -500,17 +518,19 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.6.12          # pin a specific version
+mm upgrade --version 0.7.1          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
 
 Extras are auto-detected from the current uv-tool install by default, so a `memtomem[all]` user keeps `[all]`. If uv's install receipt is missing or unreadable, none are detected; check the `Extras:` line of `--dry-run` and pass `--extras` when it says none were found.
 
-Two checks after upgrading from a release before 0.6.12:
+Checks after upgrading from an earlier release:
 
 - **From before 0.6.9:** run `mm index` over your memory directories once. It judges every file with the redaction guard, so content the memory tools stored without that check is reported as blocked and held until the file is cleaned and re-indexed. Chunks whose text and context are unchanged keep their vectors, so `--force` is not needed.
 - **Private keys in PKCS#8 form** (`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`) pass the write guard before 0.6.12, and upgrading does not rescan what is already stored. Run `mm mem rescan --scope <tier> --json` to list stored chunks that carry a key, take the key out of each reported file, and run `mm index <dir>`. Re-run the rescan: it should report nothing. A source it still reports was not reindexed: a file you deleted, an excluded path, a file over 10 MB, or a file whose `mm index` run reported an error. The [advisory](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8) lists how to remove those chunks. Rotate any key that reached a hosted service or a git history.
+- **From before 0.7.0:** frontmatter in memory files, and in Context Gateway agent and command files, is read as YAML. After a re-index an unquoted ` #` suffix is a comment and is dropped with a warning, and a key needs a space after its colon; quote a literal hash. Back up again after upgrading: export now writes bundle v4, and only 0.7.0 or later restores it fully, because an earlier import ignores the scope, project and validity fields v4 adds.
+- **From before 0.7.1:** `namespace="!system"` now selects every namespace except the system ones, so a namespace literally named `!system` (possible in 0.7.0 through `mm index --namespace`, namespace rules or a raw `mem_add`) can no longer be selected by that name. On `mem_search`, `mem_recall`, `mm search` and `mm recall` a comma list that includes it, such as `"!system,work"`, is refused; drop it from saved filters. Find such a namespace with `mem_do(action="ns_list")`, move it with `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`, then change the rule or flag that produced it, or a later re-index can write it again.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 
@@ -526,7 +546,7 @@ mm uninstall --keep-data      # preserve the SQLite DB + ~/.memtomem/memories/
 mm uninstall --force          # limited POSIX heuristics only; stop live writers first
 ```
 
-Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first. `--force` cannot bypass live instance-registry evidence, the lifecycle barrier, untrusted registry state, or an open SQLite database on Windows. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
+Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first. `--force` cannot bypass live instance-registry evidence, the lifecycle barrier, untrusted registry state, or an open SQLite database on Windows. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. For Antigravity that covers the CLI's `~/.gemini/config/mcp_config.json`, the older `~/.gemini/antigravity-cli/mcp_config.json`, the IDE's `~/.gemini/antigravity/mcp_config.json`, and its VS Code-side `~/Library/Application Support/Antigravity/User/mcp.json`. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
 
 > See [Quick Start](/guides/quickstart/) for the full getting-started walkthrough.
 
@@ -585,7 +605,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
-| `mm doctor` | `--claude-mcp`, `--json` |
+| `mm doctor` | `--apply`, `--claude-mcp`, `--json`, `--mcp-client`, `--reconcile` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |

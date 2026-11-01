@@ -5,6 +5,10 @@ description: Use namespaces, sessions, and explicit sharing to pass reviewed mem
 
 memtomem can route each agent's writes to a named namespace and copy selected memories into `shared`. This is useful when several AI clients or agent roles use the same local store but should not publish every intermediate result to one common space.
 
+:::caution[Experimental]
+Multi-agent memory (`mem_agent_register`, `mem_agent_search`, `mem_agent_share`, and per-agent session scopes from `mem_session_start` with `agent_id`) is experimental since 0.7.0: its behavior or format can change without a deprecation window.
+:::
+
 ## Namespace Structure
 
 ```text
@@ -75,7 +79,7 @@ Success means Agent A can find the item in its own scope, the item is not cross-
 | `standard` | direct `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | direct session tools | direct `mem_agent_search` / `mem_agent_share` |
 
-Use `core` unless a client genuinely benefits from a larger exposed tool list. The dispatcher preserves the full released action surface without exposing the full-mode catalog of 100 tools.
+Use `core` unless a client genuinely benefits from a larger exposed tool list. The dispatcher preserves the full released action surface without exposing the full-mode catalog of 101 tools.
 
 ## Setting `agent_id`
 

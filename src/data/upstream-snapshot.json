@@ -204,7 +204,7 @@
         "promote"
       ]
     },
-    "commit": "a45c11d5d5dc5840d589a0bbe08b562897907f0e",
+    "commit": "e67c706d23be7a76ebed85ccc7f3e48d2280fe3a",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -613,8 +613,11 @@
         "--version"
       ],
       "doctor": [
+        "--apply",
         "--claude-mcp",
-        "--json"
+        "--json",
+        "--mcp-client",
+        "--reconcile"
       ],
       "embedding-reset": [
         "--mode",
@@ -1100,6 +1103,7 @@
       "mem_policy_run",
       "mem_procedure_list",
       "mem_procedure_save",
+      "mem_project_bind",
       "mem_quality_replay",
       "mem_reflect",
       "mem_reflect_save",
@@ -1198,6 +1202,7 @@
       "mem_policy_run",
       "mem_procedure_list",
       "mem_procedure_save",
+      "mem_project_bind",
       "mem_quality_replay",
       "mem_read",
       "mem_recall",

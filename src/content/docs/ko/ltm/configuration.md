@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.6.12가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.1이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -132,7 +132,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | `MEMTOMEM_SEARCH__RRF_WEIGHTS` | `[BM25, Dense]` RRF 가중치 (JSON 리스트, REPLACE 병합) | `[1,1]` |
 | `MEMTOMEM_SEARCH__TOKENIZER` | FTS 토크나이저: `unicode61` 또는 `kiwipiepy` | `"unicode61"` |
 | `MEMTOMEM_SEARCH__CACHE_TTL` | 검색 결과 캐시 TTL(초) | `30` |
-| `MEMTOMEM_SEARCH__SYSTEM_NAMESPACE_PREFIXES` | 기본 `namespace=None` 검색에서 숨길 네임스페이스 접두사 (JSON 리스트, APPEND 병합) | `["archive:","agent-runtime:"]` |
+| `MEMTOMEM_SEARCH__SYSTEM_NAMESPACE_PREFIXES` | 기본 `namespace=None` 검색에서 숨길 네임스페이스 접두사 (JSON 리스트, APPEND 병합). `namespace="!system"`은 같은 제외를 명시적으로 적용하므로 활성 세션이나 에이전트 네임스페이스보다 우선하며, 단독 값으로만 사용할 수 있습니다 | `["archive:","agent-runtime:"]` |
 
 <a id="decay-시간-감쇠"></a>
 
@@ -224,7 +224,7 @@ Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 �
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 38개) / `full`(현재 도구 100개, 폐기 예정 별칭 없음) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 101개, 폐기 예정 별칭 없음) | `core` |
 
 ### Web UI
 
@@ -378,7 +378,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.12/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.1/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

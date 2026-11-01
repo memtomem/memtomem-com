@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.6.12를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.1을 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -51,6 +51,9 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 ```bash
 mm doctor --json
+mm doctor --mcp-client claude
+mm doctor --mcp-client claude --reconcile keep-manual
+mm doctor --mcp-client claude --reconcile keep-manual --apply
 mm agent debug-resolve --agent-id alice
 mm review evidence CANDIDATE_ID --top-k 5
 mm context seed-validation --help
@@ -58,7 +61,8 @@ mm context version --help
 mm context settings-doctor --json
 ```
 
-`doctor`는 실행 환경을 진단하고, `agent debug-resolve`는 검색 범위를 설명합니다.
+`doctor`는 실행 환경을 진단하고 이 컴퓨터에서 실행 중인 memtomem 서버 프로세스를 보여 줍니다. `--mcp-client claude`, `agy`, `codex`를 지정하면 프로세스 대신 등록 상태를 확인하여, 수동 MCP 등록과 해당 클라이언트의 memtomem 플러그인이 서버 두 개를 실행하게 되는지 보고합니다(`--claude-mcp`는 Claude 확인의 별칭으로 계속 사용할 수 있습니다). 이 모드의 종료 코드는 통과 시 `0`, 중복 위험 시 `1`, 검사를 끝내지 못했을 때 `2`입니다. `--reconcile keep-manual`은 수동 등록과 플러그인 스킬을 유지하고 플러그인에 포함된 서버를 비활성화하며, `--reconcile keep-plugin`은 반대로 수동 항목을 제거합니다. 두 옵션 모두 미리보기만 실행하므로, 올바른 복구안을 제시하는 미리보기도 종료 코드 `1`을 반환할 수 있습니다. `--apply`를 지정해야 실제로 수정합니다. 이때 원본 파일을 같은 위치에 `<filename>.mm-backup-*`로 백업하고(백업에는 자격 증명이 들어 있을 수 있으므로 비공개 권한으로 저장), 해당 파일 하나를 원자적으로 교체한 뒤 검사를 다시 실행합니다. Claude 설정을 수정하기 전에는 모든 Claude 세션을 종료하세요. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로 그 뒤에 검사를 다시 실행합니다. 형식이 잘못되었거나 가려진 설정, 여러 개의 수동 등록, 관리 정책은 수동 검토 대상으로 보고하며 수정하지 않습니다.
+`agent debug-resolve`는 검색 범위를 설명합니다.
 `review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
 BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 표시될 수 있습니다.
 `seed-validation`은 검증용 컨텍스트 자료를 만드는 쓰기 작업이므로 도움말을 확인한 뒤 선택적으로 실행하세요.
@@ -66,7 +70,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.6.12에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.1에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -91,7 +95,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 클라이언트별 등록 방법은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
 
-MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 100개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
+MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 101개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
 v0.1.25부터 MCP 연결만으로는 `~/.memtomem/memtomem.db`를 만들지 않습니다. DB는 도구를 처음 호출할 때 엽니다. 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`에 두며, 플랫폼에 따라 `$TMPDIR/memtomem-$UID/`를 사용합니다. 도구를 호출하지 않으면 홈 디렉터리에 파일을 남기지 않습니다.
 
@@ -205,7 +209,7 @@ mm index ~/docs/architecture         # 특정 디렉터리 색인
 mm index README.md                   # 단일 파일 인덱싱
 ```
 
-`memtomem-server`는 `indexing.memory_dirs`에 등록된 경로를 계속 감시하지만 **새로 생긴 변경만 처리**합니다. 서버를 시작한 뒤 발생한 파일 수정·생성·이동만 다시 색인하며 기존 파일은 자동으로 읽지 않습니다. 기존 파일은 `mm index <dir>` 또는 `mem_index(path="<dir>")`로 처음 한 번 색인하세요. Web UI를 시작할 때 기존 파일도 자동으로 확인하려면 `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true`를 직접 설정합니다.
+`memtomem-server`는 `indexing.memory_dirs`에 등록된 경로를 계속 감시하지만 **새로 생긴 변경만 처리**합니다. 서버를 시작한 뒤 발생한 파일 수정·생성·이동만 다시 색인하며 기존 파일은 자동으로 읽지 않습니다. 다만 시작할 때마다 이미 색인된 파일을 한 번 확인하여, 이후 symlink로 바뀐 파일의 청크를 검색에서 숨깁니다. 이 확인은 새 파일을 색인하지 않습니다. 기존 파일은 `mm index <dir>` 또는 `mem_index(path="<dir>")`로 처음 한 번 색인하세요. Web UI를 시작할 때 기존 파일도 자동으로 확인하려면 `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true`를 직접 설정합니다.
 
 ### `mm ingest`
 
@@ -252,7 +256,7 @@ mm context export skills deploy-check --out deploy-check.json   # 다른 컴퓨�
 mm context import deploy-check.json --to user                    # 묶음 반영(미리보기)
 ```
 
-`pull`, `move`, `copy`, `import`는 기본적으로 미리보기만 실행하며 `--apply`를 지정해야 반영합니다. `move`나 `copy`를 **Project (shared)**에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전과 `--all-projects`로 일괄 Push하기 전에도 확인을 요청하며, `--yes`로 이 확인을 건너뛸 수 있습니다.
+`pull`, `move`, `copy`, `import`는 기본적으로 미리보기만 실행하며 `--apply`를 지정해야 반영합니다. `pull`, `move`, `copy`를 **Project (shared)**에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전과 `--all-projects`로 일괄 Push하기 전에도 확인을 요청하며, `--yes`로 이 확인을 건너뛸 수 있습니다.
 
 <a id="wiki--정규-아티팩트-라이브러리"></a>
 ## Wiki — 공용 항목 라이브러리
@@ -446,7 +450,7 @@ mm schedule delete <sched-id>
 
 원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 영구히 제거합니다.
 
-파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 소유한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
+파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 소유한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. 출처는 색인할 때의 경로를 기준으로 판정하므로, 이후 symlink로 바뀐 파일은 링크가 있는 위치를 기준으로 일치합니다. `DIR` 자체는 실제 경로로 해석합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
 
 ```bash
 mm gc orphan-sources
@@ -470,7 +474,7 @@ mm embedding-reset --mode revert-to-stored    # 실행 중인 임베더를 DB �
 
 ### `mm purge --matching-excluded`
 
-내장 자격 증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요.
+내장 자격 증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요. 저장된 경로가 이제 다른 곳을 가리키는 출처(색인한 뒤 symlink로 바뀐 파일)는 판정하지도 삭제하지도 않습니다. 이런 출처는 건너뛰고 stderr에 표시하며, `--json`에서는 `moved`와 `moved_sample`로 보고합니다.
 
 ```bash
 mm purge --matching-excluded              # 삭제 대상 미리보기
@@ -494,17 +498,19 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.6.12          # 특정 버전 고정
+mm upgrade --version 0.7.1          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
 
 선택 기능(extras)은 현재 `uv tool` 설치 내역에서 자동으로 찾습니다. `memtomem[all]`을 사용했다면 `[all]` 설정을 유지합니다. 설치 기록이 없거나 읽을 수 없으면 extras를 찾지 못하므로, `--dry-run` 출력의 `Extras:` 줄을 확인하고 필요하면 `--extras`를 지정하세요.
 
-0.6.12 이전 릴리스에서 업그레이드했다면 다음 두 가지를 확인합니다.
+이전 릴리스에서 업그레이드했다면 다음 항목을 확인합니다.
 
 - **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이 검사 없이 메모리 도구가 저장한 내용은 blocked로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
 - **PKCS#8 형식의 개인 키**(`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`)는 0.6.12 이전에는 쓰기 검사(write guard)를 통과했으며, 업그레이드해도 이미 저장된 내용은 다시 검사하지 않습니다. `mm mem rescan --scope <tier> --json`으로 키가 들어 있는 저장 청크를 확인하고, 보고된 각 파일에서 키를 제거한 뒤 `mm index <dir>`를 실행합니다. rescan을 다시 실행해 아무것도 보고되지 않는지 확인합니다. 계속 보고되는 출처는 다시 색인되지 않은 것입니다. 삭제한 파일, 제외된 경로, 10 MB를 넘는 파일, `mm index` 실행에서 오류가 보고된 파일이 해당합니다. 이런 청크를 제거하는 방법은 [보안 권고](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8)에 있습니다. 호스팅 서비스나 git 기록에 들어간 키는 교체(rotate)합니다.
+- **0.7.0 이전에서 업그레이드한 경우:** 기억 파일과 Context Gateway의 agent·command 파일의 frontmatter를 YAML로 읽습니다. 다시 색인하면 따옴표 없는 ` #` 뒤의 내용은 주석으로 처리되어 경고와 함께 제외되고, 키 뒤의 콜론 다음에는 공백이 있어야 합니다. `#` 문자를 값에 포함하려면 따옴표로 감쌉니다. 업그레이드한 뒤에는 백업을 다시 만드세요. 내보내기는 이제 bundle v4로 저장하며, 이전 버전의 가져오기는 v4가 추가한 범위·프로젝트·유효 기간 필드를 무시하므로 0.7.0 이상에서만 완전히 복원됩니다.
+- **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 그대로 두면 이후 다시 색인할 때 같은 이름이 다시 생길 수 있습니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 
@@ -520,7 +526,7 @@ mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
 mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 있는 프로세스는 먼저 종료
 ```
 
-기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하세요. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
+기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하세요. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. Antigravity의 경우 CLI의 `~/.gemini/config/mcp_config.json`, 이전 경로인 `~/.gemini/antigravity-cli/mcp_config.json`, IDE의 `~/.gemini/antigravity/mcp_config.json`, VS Code 기반 연동의 `~/Library/Application Support/Antigravity/User/mcp.json`을 확인합니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
 
 > 전체 시작 과정은 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
@@ -579,7 +585,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 �
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
-| `mm doctor` | `--claude-mcp`, `--json` |
+| `mm doctor` | `--apply`, `--claude-mcp`, `--json`, `--mcp-client`, `--reconcile` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
 | `mm gc orphan-projects` | `--apply`, `--yes` |

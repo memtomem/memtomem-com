@@ -98,6 +98,8 @@ mm context pull skills reviewer --from claude --diff
 mm context pull skills reviewer --from claude --scope project_shared --apply
 ```
 
+Pull을 `project_shared`에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다.
+
 Store에 같은 항목이 이미 있다면 `--overwrite`를 추가합니다. 교체하기 전에 현재 기준본을 버전 이력에 저장합니다. 실제로 적용하기 전에 생성될 파일을 확인하세요. 처음 항목을 찾을 때는 종류별 일괄 Pull이나 `mm context init`도 사용할 수 있습니다. 여러 AI 도구에 같은 이름이 있다면 항목 이름과 가져올 도구를 직접 지정하는 편이 안전합니다.
 
 <a id="프로젝트티어-간-이동과-복사"></a>
