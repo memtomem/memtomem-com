@@ -25,7 +25,7 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 |---|---|---|---|
 | `key` | string | 예 | 이전 응답의 TOC 키 |
 | `sections` | string[] | 예 | 펼쳐 볼 목차 항목의 정확한 키. 내부 청크 ID나 표시용 이름은 사용할 수 없습니다. 유효한 키에서 일치하는 항목이 없으면 구조화 전달은 `no_matching_sections`를, legacy 전달은 사용할 수 있는 키 목록이 담긴 메시지를 반환합니다 |
-| `response_format` | string | 아니오 | `legacy` 또는 `structured`. 생략하면 키에 저장된 형식을 사용합니다([구조화 전달](/ko/stm/compression/#structured-chunk-delivery) 참고) |
+| `response_format` | string | 아니오 | `legacy` 또는 `structured`(실험 기능). 생략하면 키에 저장된 형식을 사용합니다([구조화 전달](/ko/stm/compression/#structured-chunk-delivery) 참고) |
 
 ### `stm_proxy_read_more`
 
@@ -36,7 +36,7 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 | `key` | string | 예 | Progressive 응답 키 |
 | `offset` | integer | 아니오 | 재개할 문자 오프셋 (기본 `0`) |
 | `limit` | integer | 아니오 | 이번 턴에 반환할 문자 수. 구조화 전달에서는 유니코드 코드 포인트 단위이며, 직렬화된 결과 예산에 맞추기 위해 더 짧게 반환될 수 있습니다 |
-| `response_format` | string | 아니오 | `legacy` 또는 `structured`. 생략하면 키에 저장된 형식을 사용합니다 |
+| `response_format` | string | 아니오 | `legacy` 또는 `structured`(실험 기능). 생략하면 키에 저장된 형식을 사용합니다 |
 
 두 도구는 같은 출력 스키마 `ContinuationOutput`을 선언합니다. 선택 키의 TTL은 선택에 성공했을 때만 연장됩니다.
 

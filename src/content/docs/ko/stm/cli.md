@@ -318,7 +318,7 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
   - 명시적 `progressive` 응답이 여러 조각으로 나뉘면 첫 조각과 footer만 기록합니다. 따라서 해당 도구의 절감률이 이전보다 높게 표시됩니다.
   - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
-  - [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
+  - 실험 기능인 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
 - **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
 - **관련 기억 제시 통계:**
   - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
@@ -340,7 +340,7 @@ mms tune --apply [--yes]
 
 `--tool ""`처럼 빈 필터는 어떤 도구와도 일치하지 않습니다. 모든 도구를 분석하려면 `--tool`을 생략하세요. 따라서 `mms tune --apply --yes --tool ""`는 아무 도구의 재정의도 쓰지 않습니다.
 
-현재 설정에서 해석한 전략이 `none`인 도구에는 `max_result_chars` 권장을 제시하지 않습니다. 이 경로는 예산을 읽지 않기 때문입니다. 명시적 `progressive` 도구는 예산이 직렬화된 각 프레임의 상한이 되는 `delivery_format: "structured"`에서만, `missing_example` 피드백에 따른 상향 권장을 받습니다. 이 상향 권장은 현재 예산보다 클 때만 제시하며 현재 값을 `current`로 보여 줍니다. 세 건 이상의 피드백에서 `missing_example`이 가장 많은 도구에는 예산 축소를 권장하지 않습니다. `token_estimation_mode: "unicode"`에서 서버의 토큰 예산을 물려받는 도구는 예산 권장을 받지 않습니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
+현재 설정에서 해석한 전략이 `none`인 도구에는 `max_result_chars` 권장을 제시하지 않습니다. 이 경로는 예산을 읽지 않기 때문입니다. 명시적 `progressive` 도구는 예산이 직렬화된 각 프레임의 상한이 되는 실험 기능 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)(`delivery_format: "structured"`)에서만, `missing_example` 피드백에 따른 상향 권장을 받습니다. 이 상향 권장은 현재 예산보다 클 때만 제시하며 현재 값을 `current`로 보여 줍니다. 세 건 이상의 피드백에서 `missing_example`이 가장 많은 도구에는 예산 축소를 권장하지 않습니다. `token_estimation_mode: "unicode"`에서 서버의 토큰 예산을 물려받는 도구는 예산 권장을 받지 않습니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
 
 ### `mms selection replay`
 

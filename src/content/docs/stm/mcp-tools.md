@@ -25,7 +25,7 @@ Pick specific sections from a `selective` / `hybrid` TOC returned by an earlier 
 |---|---|---|---|
 | `key` | string | Yes | TOC key from the previous response |
 | `sections` | string[] | Yes | Exact TOC entry keys to expand, not internal chunk IDs or display labels. When none matches a live key, structured delivery returns `no_matching_sections` and legacy delivery returns a message listing the available keys |
-| `response_format` | string | No | `legacy` or `structured`; omitted, the key's stored format is used (see [structured delivery](/stm/compression/#structured-chunk-delivery)) |
+| `response_format` | string | No | `legacy` or `structured` (experimental); omitted, the key's stored format is used (see [structured delivery](/stm/compression/#structured-chunk-delivery)) |
 
 ### `stm_proxy_read_more`
 
@@ -36,7 +36,7 @@ Read the next chunk of a `progressive` response.
 | `key` | string | Yes | Progressive response key |
 | `offset` | integer | No | Character offset to resume from (default `0`) |
 | `limit` | integer | No | Chars to return this turn. Under structured delivery they are Unicode code points, and a read can be shortened to fit the serialized result budget |
-| `response_format` | string | No | `legacy` or `structured`; omitted, the key's stored format is used |
+| `response_format` | string | No | `legacy` or `structured` (experimental); omitted, the key's stored format is used |
 
 Both tools declare the shared `ContinuationOutput` output schema. A selection key's TTL is renewed only when a selection succeeds.
 

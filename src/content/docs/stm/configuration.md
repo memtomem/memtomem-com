@@ -188,7 +188,7 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 | `max_result_tokens` | optional token-equivalent result budget | `null` |
 | `chars_per_token` | optional per-upstream character/token estimate | `null` (inherits proxy) |
 | `token_estimation_mode` | optional `static` / `unicode` estimator override | `null` (inherits proxy) |
-| `delivery_format` | optional `legacy` / `structured` delivery override for this upstream | `null` (inherits proxy) |
+| `delivery_format` | optional `legacy` / `structured` (experimental) delivery override for this upstream | `null` (inherits proxy) |
 | `retention_floor` | optional minimum compression-retention fraction; applies even when the global `min_result_retention` is `0`, and an explicit `0` opts this level out | `null` (inherits proxy) |
 | `llm` | per-upstream LLM compressor settings | `null` |
 | `selective` | selective-compressor settings | `null` |

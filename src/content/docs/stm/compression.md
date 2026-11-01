@@ -73,7 +73,11 @@ The response cache uses schema 6 and preserves the canonical MCP envelope, inclu
 
 ## Structured chunk delivery
 
-Structured delivery is experimental and off by default. Set `delivery_format: "structured"` globally (`MEMTOMEM_STM_PROXY__DELIVERY_FORMAT`), on an upstream, or in a `tool_overrides` entry; the closest setting wins. A progressive, selective or hybrid key keeps the format it was published with, and the continuation tools can override it per call with `response_format` (`legacy` or `structured`).
+:::caution[Experimental]
+Structured chunk delivery (`delivery_format: "structured"`) is experimental since 0.7.0 and off by default. It works and is tested, but it has not yet seen enough real-world use to settle its behavior, so expect larger changes here than in the default `legacy` delivery.
+:::
+
+Set `delivery_format: "structured"` globally (`MEMTOMEM_STM_PROXY__DELIVERY_FORMAT`), on an upstream, or in a `tool_overrides` entry; the closest setting wins. A progressive, selective or hybrid key keeps the format it was published with, and the continuation tools can override it per call with `response_format` (`legacy` or `structured`).
 
 - **Payload:** for an eligible text-only response, STM puts a versioned JSON envelope in the text block, and continuations return it both in text and in `structuredContent`. Read content and control fields from `stm.payload`. For progressive reads, concatenate the `content` fields exactly and pass each `next_offset` back unchanged; the footer rule above applies only to legacy delivery, and body text may contain the footer token. Offsets and limits count Unicode code points.
 - **Native payloads:** a successful (non-`isError`) response that carries upstream `structuredContent` or non-text content keeps it as is. Each text block is cleaned on its own, their total text is capped at the tool's character budget, and the response skips compression, surfacing, indexing and caching and gets no continuation key.

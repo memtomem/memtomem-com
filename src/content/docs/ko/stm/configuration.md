@@ -208,7 +208,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `max_result_tokens` | 선택적 토큰 환산 결과 예산 | `null` |
 | `chars_per_token` | 서버별 문자/토큰 추정치 | `null`(프록시 값 상속) |
 | `token_estimation_mode` | 선택형 `static` / `unicode` 추정 방식 재정의 | `null`(프록시 값 상속) |
-| `delivery_format` | 이 연결 서버의 선택형 `legacy` / `structured` 전달 형식 재정의 | `null`(프록시 값 상속) |
+| `delivery_format` | 이 연결 서버의 선택형 `legacy` / `structured`(실험 기능) 전달 형식 재정의 | `null`(프록시 값 상속) |
 | `retention_floor` | 선택형 최소 압축 보존 비율. 전역 `min_result_retention`이 `0`이어도 적용되며, `0`이면 이 수준에서 하한을 끔 | `null`(프록시 값 상속) |
 | `llm` | 서버별 LLM 압축 설정 | `null` |
 | `selective` | selective 압축 설정 | `null` |

@@ -54,7 +54,7 @@ How surfaced memories are stitched into the response is controlled by `MEMTOMEM_
 | `prepend` | Memories prepended as a header. Skipped on legacy progressive delivery because it would shift `stm_proxy_read_more` offsets. |
 | `section` | Memories placed in a dedicated section. Triggers surfacing on progressive continuations. |
 
-Under [structured delivery](/stm/compression/#structured-chunk-delivery), memories arrive in a separate `stm.supplements.surfacing` field and the response text is left unchanged, so every mode applies, `prepend` included.
+Under the experimental [structured delivery](/stm/compression/#structured-chunk-delivery), memories arrive in a separate `stm.supplements.surfacing` field and the response text is left unchanged, so every mode applies, `prepend` included.
 
 ## Model-Aware Defaults
 

@@ -314,7 +314,7 @@ The CLI sees disk-backed metrics only; process-local live counters remain availa
   - When an explicit `progressive` response is chunked, its row records the first chunk plus footer, so saved percentages rise for those tools.
   - `mms stats` warns about successful MCP rows recorded before this accounting.
   - The `--json` summary adds `initial_response_calls`, `unclassified_mcp_calls` and a `measurement` description.
-  - Calls that used [structured delivery](/stm/compression/#structured-chunk-delivery) are counted on a separate `Structured delivery:` line (calls, serialized base characters, measured MCP bytes; `--json`: `compression.structured_delivery`) and stay out of the saved ratio.
+  - Calls that used the experimental [structured delivery](/stm/compression/#structured-chunk-delivery) are counted on a separate `Structured delivery:` line (calls, serialized base characters, measured MCP bytes; `--json`: `compression.structured_delivery`) and stay out of the saved ratio.
 - **Error counts:** `lock_timeout` and `internal_error` rows recorded by the proxy's own call path count as errors. Rows recorded before the upgrade are not rewritten.
 - **Surfacing:**
   - Only shown events count as surfacings.
@@ -336,7 +336,7 @@ Preview is the default. `--apply` takes a timestamped backup and writes accepted
 
 An empty filter such as `--tool ""` matches no tools; omit `--tool` to analyze all of them. In particular, `mms tune --apply --yes --tool ""` writes no overrides.
 
-A tool whose strategy, resolved from the current configuration, is `none` gets no `max_result_chars` recommendation, because that path does not read the budget. An explicit `progressive` tool gets one only under `delivery_format: "structured"`, where the budget caps each serialized frame: a raise, from `missing_example` feedback. Such a raise is suggested only when it exceeds the current budget, which it shows as `current`, and a tool whose dominant feedback over three or more reports is `missing_example` gets no cut. A tool that inherits a server token budget under `token_estimation_mode: "unicode"` gets no budget suggestion. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
+A tool whose strategy, resolved from the current configuration, is `none` gets no `max_result_chars` recommendation, because that path does not read the budget. An explicit `progressive` tool gets one only under the experimental [structured delivery](/stm/compression/#structured-chunk-delivery) (`delivery_format: "structured"`), where the budget caps each serialized frame: a raise, from `missing_example` feedback. Such a raise is suggested only when it exceeds the current budget, which it shows as `current`, and a tool whose dominant feedback over three or more reports is `missing_example` gets no cut. A tool that inherits a server token budget under `token_estimation_mode: "unicode"` gets no budget suggestion. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
 
 ### `mms selection replay`
 
