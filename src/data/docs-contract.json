@@ -1,13 +1,13 @@
 {
   "core": {
-    "version": "0.6.12",
+    "version": "0.7.1",
     "python": ">=3.12",
     "tools": {
       "core": 9,
-      "standard": 38,
-      "fullCurrent": 100,
+      "standard": 39,
+      "fullCurrent": 101,
       "deprecatedAliases": 0,
-      "actions": 94
+      "actions": 95
     },
     "toolNames": [
       "mem_activity",
@@ -80,6 +80,7 @@
       "mem_policy_run",
       "mem_procedure_list",
       "mem_procedure_save",
+      "mem_project_bind",
       "mem_quality_replay",
       "mem_read",
       "mem_recall",
@@ -121,16 +122,16 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.18",
-    "bundledCore": "0.6.12",
-    "requirement": "memtomem[onnx]==0.6.12"
+    "version": "0.5.23",
+    "bundledCore": "0.7.1",
+    "requirement": "memtomem[onnx]==0.7.1"
   },
   "opencode": {
-    "version": "0.3.15",
-    "bundledCore": "0.6.12"
+    "version": "0.3.20",
+    "bundledCore": "0.7.1"
   },
   "sourceSnapshots": {
-    "coreMain": "a45c11d5d5dc5840d589a0bbe08b562897907f0e",
+    "coreMain": "e67c706d23be7a76ebed85ccc7f3e48d2280fe3a",
     "stmMain": "68661e5d43ff95f5eb273b8034a7e2f334dcb7e9"
   },
   "configuration": {
@@ -223,6 +224,15 @@
             "mcp_servers.memtomem",
             "mcp_servers.memtomem-local",
             "hermes mcp list"
+          ]
+        },
+        "antigravity": {
+          "heading": "Antigravity",
+          "requiredTokens": [
+            "memtomem_memtomem",
+            "agy mcp remove memtomem",
+            "agy mcp list",
+            "agy plugin list"
           ]
         }
       },
@@ -589,5 +599,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-10-25"
+  "reviewedOn": "2026-11-01"
 }

@@ -52,7 +52,7 @@ SQLite 저장과 ONNX 임베딩은 로컬에서 처리하므로 GPU나 계정이
 | | |
 |---|---|
 | **PyPI** | [`memtomem`](https://pypi.org/project/memtomem/) |
-| **최신 릴리스** | `0.6.12` |
+| **최신 릴리스** | `0.7.1` |
 | **CLI** | `mm` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem](https://github.com/memtomem/memtomem) |

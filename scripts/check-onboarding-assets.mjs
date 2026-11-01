@@ -25,6 +25,7 @@ export const REQUIRED_ASSET_PATHS = [
 export const UNPINNED_CORE_PATHS = [
   'docs/guides/configuration.md',
   'packages/memtomem-hermes-memory/README.md',
+  'packages/memtomem-antigravity-plugin/README.md',
 ];
 
 // A ref is either shorthand (`v0.6.4`, `main`) or fully qualified

@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.6.12 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.1 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -120,7 +120,7 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 | `MEMTOMEM_SEARCH__RRF_WEIGHTS` | RRF weights for `[BM25, Dense]` (JSON list, REPLACE merge) | `[1,1]` |
 | `MEMTOMEM_SEARCH__TOKENIZER` | FTS tokenizer: `unicode61` or `kiwipiepy` | `"unicode61"` |
 | `MEMTOMEM_SEARCH__CACHE_TTL` | Search result cache TTL in seconds | `30` |
-| `MEMTOMEM_SEARCH__SYSTEM_NAMESPACE_PREFIXES` | Namespace prefixes hidden from default `namespace=None` search (JSON list, APPEND merge) | `["archive:","agent-runtime:"]` |
+| `MEMTOMEM_SEARCH__SYSTEM_NAMESPACE_PREFIXES` | Namespace prefixes hidden from default `namespace=None` search (JSON list, APPEND merge). `namespace="!system"` applies the same exclusion explicitly, so it also overrides an active session or agent namespace; it is valid only as the whole value | `["archive:","agent-runtime:"]` |
 
 ### Decay (time-based scoring)
 
@@ -196,7 +196,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (38) / `full` (100 current tools; no deprecated aliases) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (101 current tools; no deprecated aliases) | `core` |
 
 ### Web UI
 
@@ -330,7 +330,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.6.12/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.1/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

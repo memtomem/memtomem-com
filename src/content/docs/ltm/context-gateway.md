@@ -96,6 +96,8 @@ mm context pull skills reviewer --from claude --diff
 mm context pull skills reviewer --from claude --scope project_shared --apply
 ```
 
+Applying a Pull into `project_shared` asks for confirmation. In non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused.
+
 If the Store already owns the artifact, add `--overwrite`; memtomem snapshots the current Store payload under its version history before replacement. Review generated files before committing. Section-level batch Pull and `mm context init` remain available for initial discovery, but a named Pull is the unambiguous path when several runtimes contain the same artifact.
 
 ## Move or Copy Across Projects and Tiers
