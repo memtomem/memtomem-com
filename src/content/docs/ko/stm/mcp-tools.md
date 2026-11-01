@@ -24,7 +24,8 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 | 파라미터 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `key` | string | 예 | 이전 응답의 TOC 키 |
-| `sections` | string[] | 예 | 펼쳐 볼 섹션 ID |
+| `sections` | string[] | 예 | 펼쳐 볼 목차 항목의 정확한 키. 내부 청크 ID나 표시용 이름은 사용할 수 없습니다. 유효한 키에서 일치하는 항목이 없으면 구조화 전달은 `no_matching_sections`를, legacy 전달은 사용할 수 있는 키 목록이 담긴 메시지를 반환합니다 |
+| `response_format` | string | 아니오 | `legacy` 또는 `structured`. 생략하면 키에 저장된 형식을 사용합니다([구조화 전달](/ko/stm/compression/#structured-chunk-delivery) 참고) |
 
 ### `stm_proxy_read_more`
 
@@ -34,9 +35,12 @@ memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고,
 |---|---|---|---|
 | `key` | string | 예 | Progressive 응답 키 |
 | `offset` | integer | 아니오 | 재개할 문자 오프셋 (기본 `0`) |
-| `limit` | integer | 아니오 | 이번 턴에 반환할 문자 수 |
+| `limit` | integer | 아니오 | 이번 턴에 반환할 문자 수. 구조화 전달에서는 유니코드 코드 포인트 단위이며, 직렬화된 결과 예산에 맞추기 위해 더 짧게 반환될 수 있습니다 |
+| `response_format` | string | 아니오 | `legacy` 또는 `structured`. 생략하면 키에 저장된 형식을 사용합니다 |
 
-> 에이전트는 `\n---\n`만 사용하지 말고 정식 `PROGRESSIVE_FOOTER_TOKEN`(`\n---\n[progressive: chars=`)을 기준으로 나눠야 합니다. `\n---\n`는 Markdown 수평선이나 YAML 구분선과 겹칠 수 있습니다.
+두 도구는 같은 출력 스키마 `ContinuationOutput`을 선언합니다. 선택 키의 TTL은 선택에 성공했을 때만 연장됩니다.
+
+> legacy 전달에서는 에이전트가 `\n---\n`만 사용하지 말고 정식 `PROGRESSIVE_FOOTER_TOKEN`(`\n---\n[progressive: chars=`)을 기준으로 나눠야 합니다. `\n---\n`는 Markdown 수평선이나 YAML 구분선과 겹칠 수 있습니다.
 
 ### `stm_proxy_describe_tool`
 
@@ -118,6 +122,6 @@ STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을
 
 MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 표시됩니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
 
-에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다. 메타데이터가 붙은 여러 블록 응답은 예외입니다([압축 전략](/ko/stm/compression/) 참조).
+에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다. 메타데이터가 붙은 여러 블록 응답과, 실험 기능인 구조화 전달에서 업스트림 `structuredContent`나 텍스트가 아닌 콘텐츠가 있는 성공 응답은 예외입니다([압축 전략](/ko/stm/compression/) 참조).
 
 > 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참고하세요.

@@ -3,7 +3,7 @@ title: STM CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.6.9 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.7.5 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 만족스럽지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -100,6 +100,19 @@ mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에�
 
 `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. `--prune`은 반드시 `--from-clients` / `--import`와 함께 써야 합니다.
 
+<a id="host-discovery"></a>
+
+#### 클라이언트 설정 탐색
+
+`mms init`, `mms add --from-clients`, `mms prune`은 Claude Code와 같은 방식으로 Claude Code 설정을 읽습니다. `CLAUDE_CONFIG_DIR`가 절대 경로이면 `$CLAUDE_CONFIG_DIR/.claude.json`, 아니면 `~/.claude.json`을 읽고, 그 안에서는 저장소 루트의 프로젝트 항목을 사용하므로 하위 디렉터리에서도 루트에 등록한 서버를 찾습니다. 연결된 worktree, submodule, 심볼릭 링크로 연결된 `.git` 안에서는 프로젝트 항목을 읽지 않습니다. Claude Code가 어느 파일을 읽는지 STM이 판단할 수 없으면(예: 상대 경로이거나 비어 있는 `CLAUDE_CONFIG_DIR`, 설정된 `CLAUDE_CODE_CUSTOM_OAUTH_URL`, Claude Code 설정 디렉터리의 이전 형식 `.config.json`) Claude Code의 사용자·프로젝트 서버를 읽지 않고 안내를 출력합니다. `<cwd>/.mcp.json`은 이 경우에도 읽습니다. `mms import`, `mms host`, `mms eject`도 같은 규칙을 따릅니다.
+
+`mms init`, `mms add --from-clients`, `mms prune`은 STM을 거치지 않는 서버도 가져오지 않고 이름만 알려 줍니다.
+
+- **Claude Code 플러그인 서버:** `claude`가 `PATH`에 있으면 현재 디렉터리에서 `claude plugin list --json`을 실행하고, 활성화된 플러그인이 등록한 MCP 서버를 `/mcp`에 표시되는 이름(`plugin:<plugin>:<server>`)으로 보여 줍니다. STM은 이 서버를 중계하지 않습니다. STM을 거치게 하려면 `mms add … --validate`로 추가한 뒤 플러그인 쪽 서버를 비활성화합니다. `--json`은 이 목록을 `plugin_bypass`에 담고, `/mcp`에서 비활성화한 서버를 확인하지 못한 이유를 `plugin_bypass_disables_unread`에 담습니다(`"no_key"`, `"no_config"`, 기록된 이유가 없으면 `null`).
+- **Codex 등록 서버:** 해당 명령의 탐색 범위 밖에 있는 Codex MCP 등록을 이름만 보여 줍니다(`--json`: `codex_extra_servers`, 목록을 가져오지 못하면 `null`).
+
+`mms import`와 `mms host status|scan|sync`는 같은 서버를 이 JSON 필드 없이 stderr에 출력하며, 플러그인 서버를 가져오거나 제거하지 않습니다. `mms doctor`는 이 서버들을 WARN 항목으로 보고합니다. 이 클라이언트 CLI 조회는 선택 사항이며 네트워크 요청을 보낼 수 있습니다. 건너뛰려면 `MMS_NO_HOST_PROBE=1`을 설정합니다.
+
 ### `mms list`
 
 등록한 모든 서버의 상세 정보를 보여 줍니다.
@@ -113,7 +126,7 @@ mms list --json                      # 스크립트용 JSON
 
 **SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
 
-표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 이 값들은 실행 설정을 만들 수 없을 때뿐 아니라 실제 설정에 서버가 하나도 없을 때도 빈 객체(`{}`)가 되므로, 설정 실패 여부는 `config_valid`와 `config_error`로 판단합니다.
+표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 이 값들은 실행 설정을 만들 수 없을 때뿐 아니라 실제 설정에 서버가 하나도 없을 때도 빈 객체(`{}`)가 되므로, 설정 실패 여부는 `config_valid`와 `config_error`로 판단합니다. 각 `effective_servers` 항목에는 서버에 적용되는 `delivery_format`과, `tool_overrides` 항목이 있는 도구별 적용 형식인 `tool_delivery_overrides`도 포함됩니다.
 
 ### `mms status`
 
@@ -166,13 +179,15 @@ mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 
 가져올 때 기록한 원본 등록 정보를 클라이언트에 다시 쓰고, 설정을 재확인한 뒤에만 STM 항목을 삭제합니다. 어느 단계에서 실패해도 서버는 적어도 한 곳에 남습니다. 최악의 경우에도 이중으로 등록될 뿐 서버가 사라지지는 않습니다.
 
+복원 대상 클라이언트 설정을 읽을 수 없거나 형식이 잘못되었을 때, 또는 Claude Code 프로젝트 항목이 연결된 worktree, submodule, 심볼릭 링크로 연결된 `.git`에서 기록되었을 때는 `--force`를 지정해도 `eject`가 거부됩니다. Claude Code가 어느 설정 파일을 읽는지 STM이 판단할 수 없을 때도 Claude Code 대상 복원은 거부됩니다([클라이언트 설정 탐색](#host-discovery) 참고). 이런 경우에는 `stm_proxy.json`의 `upstream_servers.<name>.origin.original`을 참고해 직접 복원합니다.
+
 | 플래그 | 설명 |
 |------|-------------|
 | `--to TARGET` | 출처가 기록되지 않은 항목의 복원 대상 지정 (`claude-user` / `claude-project[:PATH]` / `mcp-json[:PATH]` / `claude-desktop`). 출처가 있는 항목은 무시됩니다 |
 | `--keep` | 클라이언트에 복원하되 STM 항목 유지(이중 등록) |
 | `--force` | 같은 이름이지만 내용이 다른 클라이언트 항목 덮어쓰기 |
 | `--allow-argv-secrets` | 비밀값으로 분류된 내용을 포함한 `claude mcp add-json` 실행 허용. `argv`가 프로세스 목록에 노출될 수 있음 |
-| `--accept-schema-loss` | 복원한 클라이언트 항목이 원본과 구조적으로 일치하지 않아도 STM 항목 제거. 기본값은 STM 항목을 유지하고 실패 처리 |
+| `--accept-schema-loss` | 복원한 클라이언트 항목이 원본과 구조적으로 일치하지 않아도 STM 항목 제거. 기본값은 STM 항목을 유지하고 실패 처리. 복원 후 확인 단계에서 클라이언트 설정을 읽을 수 없거나 항목을 찾지 못하면 이 옵션을 지정해도 STM 항목을 유지 |
 | `--dry-run` | 계획만 출력, 쓰기 없음 |
 | `--yes` / `-y` | 확인 프롬프트 생략 (스크립트 / CI / 비-TTY) |
 
@@ -233,9 +248,11 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열도록 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
 
-훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함됩니다. 0.6.0에서 프로토콜이 v8로 바뀌었으므로 업그레이드 후 훅은 새 v8 데몬을 시작합니다. 실행 중이던 이전 데몬은 유휴 시간이 지나면 종료됩니다. 그러나 `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
+훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함되며, 0.7.0부터 v9입니다. 릴리스의 업그레이드 안내에 프로토콜 변경이 있으면, STM을 실행하는 MCP 클라이언트를 종료하고 **업그레이드 전에** 이전 빌드로 `mms daemon stop`을 실행합니다. 새 빌드는 이전 빌드가 시작한 데몬에 접근할 수 없고, pending SQLite 저장소를 함께 쓰는 프로세스는 같은 버전이어야 하기 때문입니다. 전체 절차는 upstream [업그레이드 안내](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/guides/operations.md#upgrading)를 참고하세요. `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
-`mms daemon status --json`은 다른 설정 fingerprint로 실행 중인 데몬을 `foreign` 목록으로 보여 줍니다. 각 항목에는 `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds`, `exits_when_idle`이 포함되며 인증 토큰은 포함되지 않습니다. `exits_when_idle`은 유휴 시 스스로 종료하는 데몬이면 `true`, 종료하지 않는 데몬(`idle_shutdown_seconds`가 `null`)이면 `false`이고, 값이 없거나 데몬이 쓰지 않는 값이면 알 수 없다는 뜻으로 `null`입니다. `queue` 객체에는 `pre_auth_evictions`가 있습니다. 데몬은 인증 전 연결을 최대 64개까지 유지하며, 이를 넘으면 가장 오래된 인증 전 연결을 끊고 이 값을 1 늘립니다.
+`mms daemon stop`은 처리한 모든 데몬이 종료를 마쳤거나, 실행 중인 데몬이 없거나, 발견한 기록이 오래된 것일 때만 종료 코드 0을 반환합니다. 그 밖의 경우에는 stderr에 이유를 출력하고 종료 코드 1을 반환합니다. 예를 들어 5초를 기다린 뒤에도 데몬의 lifetime lock이 잡혀 있거나, 프로세스에 신호를 보낼 수 없거나, Windows에서 신호 방식으로만 멈출 수 있는 데몬이 아직 연결을 받고 있는 경우입니다. `--all`은 모두 합쳐 최대 10초까지 기다리며, `data_dir`가 있지만 목록을 읽을 수 없으면 다른 설정의 데몬을 하나도 중지하지 않고 종료 코드 1을 반환합니다. `mms daemon restart`는 중지 단계가 성공한 경우에만 새 데몬을 시작합니다.
+
+`mms daemon status`는 handshake가 없지만 lifetime lock이 잡혀 있거나 확인할 수 없으면 현재 설정의 데몬을 `starting` 또는 `unknown`으로 표시합니다. `mms daemon status --json`은 다른 설정 fingerprint로 실행 중인 데몬을 `foreign` 목록으로 보여 줍니다. 각 항목에는 `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds`, `exits_when_idle`이 포함되며 인증 토큰은 포함되지 않습니다. `exits_when_idle`은 유휴 시 스스로 종료하는 데몬이면 `true`, 종료하지 않는 데몬(`idle_shutdown_seconds`가 `null`)이면 `false`이고, 값이 없거나 데몬이 쓰지 않는 값이면 알 수 없다는 뜻으로 `null`입니다. 각 항목에는 `listening`과 `lock`도 포함됩니다. 기록을 읽을 수 없는 데몬은 lock이 잡혀 있거나 확인할 수 없는 동안에만 목록에 나타나며, `handshake_unreadable: true`와 함께 `pid`, `host`, `port`, `idle_shutdown_seconds`, `exits_when_idle`이 `null`로 표시됩니다. `data_dir`가 있지만 목록을 읽을 수 없으면 `foreign`은 `null`이고 `foreign_error`에 오류 종류가 담깁니다. `queue` 객체와 텍스트 출력의 `queue:` 줄에는 `pre_auth_evictions`가 있습니다. 데몬은 인증 전 연결을 최대 64개까지 유지하며, 이를 넘으면 가장 오래된 인증 전 연결을 끊고 이 값을 1 늘립니다.
 
 ## 진단·튜닝
 
@@ -276,7 +293,7 @@ mms doctor --measure-ltm             # 이미 실행 중인 데몬으로 읽기 
 
 옵션은 `--config`, `--json`, `--timeout`, `--measure-ltm`입니다. 측정 모드는 데몬이 없을 때 새로 시작하지 않습니다.
 
-시작 시 거부되는 환경 변수가 있으면 `config schema` 검사가 FAIL이 되어 종료 코드 1을 반환합니다. 관련 기억 제시 기회 기록에 집계할 내용이 있으면 참고용 `surfacing opportunities` 검사를 표시합니다. 업그레이드한 프로세스가 `stm_feedback.db`를 처음 열기 전까지는 새 테이블이 없다고 보고합니다. 오류 표시 방식은 [`mms health`](#mms-health)와 같습니다.
+시작 시 거부되는 환경 변수가 있으면 `config schema` 검사가 FAIL이 되어 종료 코드 1을 반환합니다. 관련 기억 제시 기회 기록에 집계할 내용이 있으면 참고용 `surfacing opportunities` 검사를 표시합니다. 업그레이드한 프로세스가 `stm_feedback.db`를 처음 열기 전까지는 새 테이블이 없다고 보고합니다. 오류 표시 방식은 [`mms health`](#mms-health)와 같습니다. WARN 항목에는 STM 밖의 Codex MCP 등록(`codex_extra_servers`)과 STM을 거치지 않는 Claude Code 플러그인 서버(`plugin_bypass`)도 표시되며, `MMS_NO_HOST_PROBE=1`이면 이 조회를 건너뜁니다.
 
 ### `mms config validate`
 
@@ -301,6 +318,7 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
   - 명시적 `progressive` 응답이 여러 조각으로 나뉘면 첫 조각과 footer만 기록합니다. 따라서 해당 도구의 절감률이 이전보다 높게 표시됩니다.
   - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
+  - [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
 - **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
 - **관련 기억 제시 통계:**
   - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
@@ -322,11 +340,11 @@ mms tune --apply [--yes]
 
 `--tool ""`처럼 빈 필터는 어떤 도구와도 일치하지 않습니다. 모든 도구를 분석하려면 `--tool`을 생략하세요. 따라서 `mms tune --apply --yes --tool ""`는 아무 도구의 재정의도 쓰지 않습니다.
 
-현재 설정에서 해석한 전략이 `none`이거나 명시적 `progressive`인 도구에는 `max_result_chars` 권장을 제시하지 않습니다. 두 경로 모두 이 예산을 읽지 않기 때문입니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
+현재 설정에서 해석한 전략이 `none`인 도구에는 `max_result_chars` 권장을 제시하지 않습니다. 이 경로는 예산을 읽지 않기 때문입니다. 명시적 `progressive` 도구는 예산이 직렬화된 각 프레임의 상한이 되는 `delivery_format: "structured"`에서만, `missing_example` 피드백에 따른 상향 권장을 받습니다. 이 상향 권장은 현재 예산보다 클 때만 제시하며 현재 값을 `current`로 보여 줍니다. 세 건 이상의 피드백에서 `missing_example`이 가장 많은 도구에는 예산 축소를 권장하지 않습니다. `token_estimation_mode: "unicode"`에서 서버의 토큰 예산을 물려받는 도구는 예산 권장을 받지 않습니다. 압축률 기반 권장은 새 측정 기준으로 기록된 행만 사용하므로, 이전 행만 있는 도구는 새 호출이 쌓일 때까지 이 권장을 받지 않습니다.
 
 ### `mms selection replay`
 
-민감 정보를 정리한 도구 선택 기록을 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다.
+민감 정보를 정리한 도구 선택 기록을 재생해, 같은 입력에서 같은 결과가 나오는 위험 감점 규칙을 평가합니다. 권장 사항만 보여 줄 뿐 프록시 설정은 바꾸지 않습니다. 디코딩한 내용이 STM의 민감 정보 패턴과 일치하는 `--dataset`은 거부됩니다(`dataset matched sensitive-content patterns`, 종료 코드 1).
 
 ```bash
 mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
@@ -447,7 +465,7 @@ mms host status [--json]
 mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
 ```
 
-`scan`은 클라이언트 설정을 읽기만 하며 등록 항목을 조사합니다. `status`는 레지스트리와 실제 설정의 차이를 비교합니다. `sync`는 기본적으로 변경 계획만 보여 주며, 새 항목 추가, 모든 클라이언트에서 사라진 항목 제거, 별도 기준 파일 보강을 수행할 수 있습니다. 클라이언트 항목의 구조가 달라졌다면 `--force`, JSON 파일을 실제로 바꾸려면 `--yes`가 필요합니다. `--allow-project-configs`는 프로젝트 내부 설정 탐색을 명시적으로 허용합니다.
+`scan`은 클라이언트 설정을 읽기만 하며 등록 항목을 조사합니다. `status`는 레지스트리와 실제 설정의 차이를 비교합니다. `sync`는 기본적으로 변경 계획만 보여 주며, 새 항목 추가, 모든 클라이언트에서 사라진 항목 제거, 별도 기준 파일 보강을 수행할 수 있습니다. STM이 확인하지 못한 출처는 비어 있는 것으로 보지 않습니다. 어느 Claude Code 설정이나 프로젝트 항목을 쓰는지 판단할 수 없거나, 그 파일 또는 `<cwd>/.mcp.json`이 있지만 읽을 수 있는 JSON 객체가 아니면, 그 출처에서 기준을 가져왔고 어떤 탐색에서도 발견되지 않은 레지스트리 항목은 `not_inspected`로 표시되어 유지됩니다. `status --json`은 이런 행에 `reason`을 붙이고 `summary.not_inspected`로 개수를 세며, `scan --json`은 건너뛴 출처를 `not_inspected`에 나열하고, `sync --json`은 `plan.not_inspected`와 `summary.not_inspected`에 담습니다. 클라이언트 항목의 구조가 달라졌다면 `--force`, JSON 파일을 실제로 바꾸려면 `--yes`가 필요합니다. `--allow-project-configs`는 프로젝트 내부 설정 탐색을 명시적으로 허용합니다.
 
 ## 운영 통계
 
@@ -474,7 +492,7 @@ mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-confi
 | `~/.mms` 상태(`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | 상태 파일 잠금 시간 초과·사용 불가 / 쓰기 실패 / 스키마 버전 불일치 / 손상된 상태 파일 |
 | 지표 저장소(`mms tune`) | `store_invalid` | SQLite가 지표나 피드백 DB 파일을 열거나 읽을 수 없을 때(`stores`에 해당 파일) |
 
-`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md)에서 확인하세요.
+`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/cli.md)에서 확인하세요.
 
 다음 경우는 이 형식을 따르지 않습니다.
 

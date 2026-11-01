@@ -7,9 +7,9 @@ description: 10 compression strategies, auto-selection logic, and query-aware bu
 
 Every MCP tool response routed through STM passes through its compression gate before it reaches your agent. Direct upstream calls bypass STM. When a routed response exceeds its configured budget, STM compresses it — and the method depends on the content type.
 
-**Exception — annotated multi-block responses:** when a successful (non-`isError`) response has more than one text block and any text block carries metadata (`annotations` or `_meta`), STM keeps the block boundaries instead of compressing the response as one string. Each text block is cleaned on its own, the raw text is capped at `max_upstream_chars`, and the cleaned text is cut to the tool's character budget (`max_result_chars`, or `max_result_tokens` when a token budget is set) with no retention floor. Block metadata, non-text content, `structuredContent` and `_meta` are kept, and the response is returned without compression, surfacing or caching (metrics strategy `none→metadata_bypass`). To receive more, raise the tool's budget, and `max_upstream_chars` if that is the lower limit.
+**Exception — annotated multi-block responses:** when a successful (non-`isError`) response has more than one text block and any text block carries metadata (`annotations` or `_meta`), STM keeps the block boundaries instead of compressing the response as one string. Each text block is cleaned on its own, the raw text is capped at `max_upstream_chars`, and the cleaned text is cut to the tool's character budget (`max_result_chars`, or `max_result_tokens` when a token budget is set) with no retention floor. Block metadata, non-text content, `structuredContent` and `_meta` are kept, and the response is returned without compression, surfacing or caching (metrics strategy `none→metadata_bypass`). To receive more, raise the tool's budget, and `max_upstream_chars` if that is the lower limit. Under [structured delivery](#structured-chunk-delivery), the same path also takes any successful response that carries upstream `structuredContent` or non-text content.
 
-memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It ships 10 strategies in total — 8 content-type reducers plus the `auto` selector and the `none` passthrough — reducing response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses the right reducer per response from the immediate-response strategies.
+memtomem-stm automatically compresses MCP tool responses by content type to save tokens. It ships 10 strategies in total — 8 content-type reducers plus the `auto` selector and the `none` passthrough — reducing response size while preserving the information the agent needs. If you're not sure which to pick, leave the setting on `auto` — it chooses the right reducer per response from the immediate-response strategies. The STM pages describe the default `legacy` delivery; the experimental structured format is covered in [Structured chunk delivery](#structured-chunk-delivery).
 
 ## Compression Strategies
 
@@ -25,6 +25,8 @@ memtomem-stm automatically compresses MCP tool responses by content type to save
 | **llm_summary** | Complex text | LLM-based summarization (OpenAI/Anthropic/Ollama) — timeout-bound (default 60s) |
 | **auto** | All types | Analyze content and auto-select optimal strategy |
 | **none** | — | Pass through original without compression |
+
+In a `selective` TOC, each Markdown section keeps its heading line. Headings follow Markdown rules: a `#` line inside a code fence is not a heading, a heading may be indented up to three spaces, and a closing `#` sequence is not part of the key (`## Title ##` is keyed `Title`). JSON TOC entries report each value's real type, such as `number`, `boolean` or `null`.
 
 ## Auto-Selection Logic
 
@@ -51,7 +53,7 @@ Budgets can be expressed as `max_result_chars` or `max_result_tokens`. Token bud
 
 ## JSON Safety
 
-JSON-aware tiers re-serialize strict JSON after compression. Non-finite values such as `NaN`, `Infinity`, and `-Infinity` are mapped to `null` before JSON output so downstream parsers do not receive Python extension tokens. The JSON tiers degrade monotonically as budgets shrink. The documented exception is standalone `selective`: it shrinks per-entry previews first, but a zero-preview TOC envelope can still exceed budget at very high section counts because dropping entries would break the selection contract.
+JSON-aware tiers re-serialize strict JSON after compression. Non-finite values such as `NaN`, `Infinity`, and `-Infinity` are mapped to `null` before JSON output so downstream parsers do not receive Python extension tokens. The JSON tiers degrade monotonically as budgets shrink. Under legacy delivery, the documented exception is standalone `selective`: it shrinks per-entry previews first, but a zero-preview TOC envelope can still exceed budget at very high section counts because dropping entries would break the selection contract.
 
 <a id="zero-information-loss-progressive-delivery"></a>
 
@@ -63,11 +65,24 @@ The `progressive` strategy delivers retained content sequentially, subject to th
 2. Agent calls `stm_proxy_read_more(key, offset)` → cursor-based delivery of subsequent chunks
 3. Full content can be inspected sequentially
 
-Every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
+Under legacy delivery, every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)).
 
 The response cache uses schema 6 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
+
+## Structured chunk delivery
+
+Structured delivery is experimental and off by default. Set `delivery_format: "structured"` globally (`MEMTOMEM_STM_PROXY__DELIVERY_FORMAT`), on an upstream, or in a `tool_overrides` entry; the closest setting wins. A progressive, selective or hybrid key keeps the format it was published with, and the continuation tools can override it per call with `response_format` (`legacy` or `structured`).
+
+- **Payload:** for an eligible text-only response, STM puts a versioned JSON envelope in the text block, and continuations return it both in text and in `structuredContent`. Read content and control fields from `stm.payload`. For progressive reads, concatenate the `content` fields exactly and pass each `next_offset` back unchanged; the footer rule above applies only to legacy delivery, and body text may contain the footer token. Offsets and limits count Unicode code points.
+- **Native payloads:** a successful (non-`isError`) response that carries upstream `structuredContent` or non-text content keeps it as is. Each text block is cleaned on its own, their total text is capped at the tool's character budget, and the response skips compression, surfacing, indexing and caching and gets no continuation key.
+- **Budget:** the character budget covers the serialized MCP result, including JSON escapes and, on continuations, both representations. Optional surfacing and index supplements are added after that check, so the final result can be larger. A TOC that cannot fit with all its keys falls back to progressive delivery, and a budget too small to deliver even one character of content returns `budget_exceeded`. Structured selective and TOC-mode hybrid delivery do not widen the budget to meet a `retention_floor`, because their keys keep the source recoverable.
+- **Selection:** a chosen section is never truncated; if the selected keys exceed the stored budget, ask for fewer keys or for `response_format: "legacy"`.
+- **Surfacing:** memories arrive in `stm.supplements.surfacing` instead of the response text, so every `injection_mode` works, including `prepend`.
+- **Cache and stats:** the response-cache key includes the delivery format. `mms stats` reports structured calls on a separate `Structured delivery:` line (`--json`: `compression.structured_delivery`), apart from the legacy saved ratio, and the tuner's retention ratios leave them out.
+
+The upstream [structured chunk delivery reference](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/compression.md#structured-chunk-delivery) lists the envelope fields and error codes.
 
 ## Fallback Ladder
 

@@ -7,7 +7,7 @@ memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/con
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem-stm` 0.6.9 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
+This public reference tracks the complete `memtomem-stm` 0.7.5 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -48,6 +48,7 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | Fraction of the consumer context window available to a proxied result | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | Static character-to-token estimate used for token budgets | `3.5` |
 | `MEMTOMEM_STM_PROXY__TOKEN_ESTIMATION_MODE` | Token estimate mode: `static` or Unicode-aware `unicode` | `"static"` |
+| `MEMTOMEM_STM_PROXY__DELIVERY_FORMAT` | How chunked responses are delivered: `legacy` text, or experimental `structured` JSON (see [Structured chunk delivery](/stm/compression/#structured-chunk-delivery)) | `"legacy"` |
 
 ### Proxy → Cache
 
@@ -174,9 +175,9 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 
 | Field | Description | Default |
 |---|---|---|
-| `command` | stdio server executable | `""` |
+| `command` | stdio server executable. STM drops `PATH` entries that are not fully qualified (relative, empty, drive-relative or root-relative), so a bare name must resolve through an absolute `PATH` entry; otherwise give an absolute path | `""` |
 | `args` | stdio server arguments | `[]` |
-| `env` | additional server environment | `null` |
+| `env` | additional server environment. The server inherits STM's cleaned `PATH` unless `env.PATH` is set here, which is used as given, so keep its entries fully qualified | `null` |
 | `cwd` | server working directory | `null` |
 | `prefix` | required namespace segment used in composed tool names | required |
 | `transport` | `stdio`, `sse`, or `streamable_http` | `stdio` |
@@ -187,6 +188,7 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 | `max_result_tokens` | optional token-equivalent result budget | `null` |
 | `chars_per_token` | optional per-upstream character/token estimate | `null` (inherits proxy) |
 | `token_estimation_mode` | optional `static` / `unicode` estimator override | `null` (inherits proxy) |
+| `delivery_format` | optional `legacy` / `structured` delivery override for this upstream | `null` (inherits proxy) |
 | `retention_floor` | optional minimum compression-retention fraction; applies even when the global `min_result_retention` is `0`, and an explicit `0` opts this level out | `null` (inherits proxy) |
 | `llm` | per-upstream LLM compressor settings | `null` |
 | `selective` | selective-compressor settings | `null` |
@@ -214,7 +216,7 @@ These live on per-upstream `UpstreamServerConfig` entries in `~/.memtomem/stm_pr
 
 #### Compression sub-configs
 
-The same sub-config shapes are used under an upstream and, where noted, inside each `tool_overrides.<tool>` entry.
+The same sub-config shapes are used under an upstream and, where noted, inside each `tool_overrides.<tool>` entry. TTL values (`progressive.ttl_seconds`, `selective.pending_ttl_seconds`, `cache_ttl_seconds` and the cache `default_ttl_seconds`) must be finite: `inf` fails validation.
 
 | Block / field | Description | Default |
 |---|---|---|
@@ -248,7 +250,7 @@ The same sub-config shapes are used under an upstream and, where noted, inside e
 
 #### Per-tool overrides
 
-Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_result_tokens`, `chars_per_token`, `token_estimation_mode`, `retention_floor`, and the `llm`, `selective`, `hybrid`, `progressive`, and `cleaning` blocks above. It also accepts every field below.
+Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_result_tokens`, `chars_per_token`, `token_estimation_mode`, `delivery_format`, `retention_floor`, and the `llm`, `selective`, `hybrid`, `progressive`, and `cleaning` blocks above. It also accepts every field below.
 
 | Field | Description | Default |
 |---|---|---|
@@ -363,7 +365,7 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/main/docs/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

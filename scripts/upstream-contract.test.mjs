@@ -67,10 +67,10 @@ for (const [text, flagged] of [
 ['memtomem==0.7.1.post1', ['memtomem==0.7.1.post1']],
 // Current pins, unversioned links, prose, and other packages pass.
 ["uv tool install 'memtomem[all]==0.7.1'", []],
-['uvx --from memtomem-stm==0.6.9 mms', []],
+['uvx --from memtomem-stm==0.7.5 mms', []],
 ['{"plugin": ["opencode-memtomem@0.3.20"]}', []],
 ['https://github.com/memtomem/memtomem-stm/blob/main/docs/configuration.md', []],
-['https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md', []],
+['https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/cli.md', []],
 ['Added in 0.6.8; requires memtomem 0.6.8 or later.', []],
 ['an exact `memtomem==` pin', []],
 ['/plugin install memtomem@memtomem', []],

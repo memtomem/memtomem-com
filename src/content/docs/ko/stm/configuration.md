@@ -7,7 +7,7 @@ memtomem-stm(STM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concep
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem-stm` 0.6.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.5가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -52,6 +52,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | 프록시 결과에 허용할 수신 모델 컨텍스트 크기의 비율 | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | 토큰 예산용 정적 문자/토큰 추정치 | `3.5` |
 | `MEMTOMEM_STM_PROXY__TOKEN_ESTIMATION_MODE` | 토큰 추정 모드: `static` 또는 유니코드 인식 `unicode` | `"static"` |
+| `MEMTOMEM_STM_PROXY__DELIVERY_FORMAT` | 분할 응답의 전달 형식: `legacy` 텍스트 또는 실험 기능인 `structured` JSON([구조화 청크 전달](/ko/stm/compression/#structured-chunk-delivery) 참고) | `"legacy"` |
 
 <a id="proxy--cache"></a>
 
@@ -194,9 +195,9 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 | 필드 | 설명 | 기본값 |
 |---|---|---|
-| `command` | stdio 서버 실행 파일 | `""` |
+| `command` | stdio 서버 실행 파일. STM은 완전한 경로가 아닌 `PATH` 항목(상대 경로, 빈 항목, 드라이브 상대·루트 상대 경로)을 제외하므로, 이름만 적은 명령은 절대 경로 `PATH` 항목에서 찾을 수 있어야 합니다. 그렇지 않으면 절대 경로를 지정합니다 | `""` |
 | `args` | stdio 서버 인자 | `[]` |
-| `env` | 서버 추가 환경 변수 | `null` |
+| `env` | 서버 추가 환경 변수. 여기서 `env.PATH`를 지정하지 않으면 서버는 STM이 정리한 `PATH`를 물려받습니다. 지정한 `env.PATH`는 그대로 사용되므로 항목을 완전한 경로로 적습니다 | `null` |
 | `cwd` | 서버 작업 디렉터리 | `null` |
 | `prefix` | 조합된 도구 이름에 쓰는 필수 네임스페이스 구간 | 필수 |
 | `transport` | `stdio`, `sse`, `streamable_http` | `stdio` |
@@ -207,6 +208,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `max_result_tokens` | 선택적 토큰 환산 결과 예산 | `null` |
 | `chars_per_token` | 서버별 문자/토큰 추정치 | `null`(프록시 값 상속) |
 | `token_estimation_mode` | 선택형 `static` / `unicode` 추정 방식 재정의 | `null`(프록시 값 상속) |
+| `delivery_format` | 이 연결 서버의 선택형 `legacy` / `structured` 전달 형식 재정의 | `null`(프록시 값 상속) |
 | `retention_floor` | 선택형 최소 압축 보존 비율. 전역 `min_result_retention`이 `0`이어도 적용되며, `0`이면 이 수준에서 하한을 끔 | `null`(프록시 값 상속) |
 | `llm` | 서버별 LLM 압축 설정 | `null` |
 | `selective` | selective 압축 설정 | `null` |
@@ -234,7 +236,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 #### 압축 하위 설정
 
-연결 서버와 `tool_overrides.<tool>` 항목은 같은 하위 설정 구조를 사용합니다.
+연결 서버와 `tool_overrides.<tool>` 항목은 같은 하위 설정 구조를 사용합니다. TTL 값(`progressive.ttl_seconds`, `selective.pending_ttl_seconds`, `cache_ttl_seconds`, 캐시 `default_ttl_seconds`)은 유한한 수여야 하며 `inf`는 검증에서 거부됩니다.
 
 | 블록 / 필드 | 설명 | 기본값 |
 |---|---|---|
@@ -268,7 +270,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 #### 도구별 재정의
 
-각 `tool_overrides.<tool>`은 `compression`, `max_result_chars`, `max_result_tokens`, `chars_per_token`, `token_estimation_mode`, `retention_floor`와 위의 `llm`, `selective`, `hybrid`, `progressive`, `cleaning` 블록을 받습니다. 다음 필드도 모두 받습니다.
+각 `tool_overrides.<tool>`은 `compression`, `max_result_chars`, `max_result_tokens`, `chars_per_token`, `token_estimation_mode`, `delivery_format`, `retention_floor`와 위의 `llm`, `selective`, `hybrid`, `progressive`, `cleaning` 블록을 받습니다. 다음 필드도 모두 받습니다.
 
 | 필드 | 설명 | 기본값 |
 |---|---|---|
@@ -387,7 +389,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/main/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

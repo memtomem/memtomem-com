@@ -24,7 +24,8 @@ Pick specific sections from a `selective` / `hybrid` TOC returned by an earlier 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `key` | string | Yes | TOC key from the previous response |
-| `sections` | string[] | Yes | Section ids to expand |
+| `sections` | string[] | Yes | Exact TOC entry keys to expand, not internal chunk IDs or display labels. When none matches a live key, structured delivery returns `no_matching_sections` and legacy delivery returns a message listing the available keys |
+| `response_format` | string | No | `legacy` or `structured`; omitted, the key's stored format is used (see [structured delivery](/stm/compression/#structured-chunk-delivery)) |
 
 ### `stm_proxy_read_more`
 
@@ -34,9 +35,12 @@ Read the next chunk of a `progressive` response.
 |---|---|---|---|
 | `key` | string | Yes | Progressive response key |
 | `offset` | integer | No | Character offset to resume from (default `0`) |
-| `limit` | integer | No | Chars to return this turn |
+| `limit` | integer | No | Chars to return this turn. Under structured delivery they are Unicode code points, and a read can be shortened to fit the serialized result budget |
+| `response_format` | string | No | `legacy` or `structured`; omitted, the key's stored format is used |
 
-> Agents should split on the canonical `PROGRESSIVE_FOOTER_TOKEN` (`\n---\n[progressive: chars=`) rather than `\n---\n` alone — the latter collides with Markdown HR / YAML fences.
+Both tools declare the shared `ContinuationOutput` output schema. A selection key's TTL is renewed only when a selection succeeds.
+
+> Under legacy delivery, agents should split on the canonical `PROGRESSIVE_FOOTER_TOKEN` (`\n---\n[progressive: chars=`) rather than `\n---\n` alone — the latter collides with Markdown HR / YAML fences.
 
 ### `stm_proxy_describe_tool`
 
@@ -116,6 +120,6 @@ STM does not advertise every upstream tool 1:1 — it applies an eligibility fil
 
 Proxied tool **titles** — the `annotations.title` field rendered by MCP tool-picker UIs (e.g. Claude Code's `/mcp`) — are automatically prefixed with `[{server}]` for attribution: a `filesystem` server's `Read file` tool appears as `[filesystem] Read file`. This is separate from the `{prefix}__{tool}` name used when calling the tool, and applies only when the upstream tool provides an `annotations.title`.
 
-When the agent calls `fs__read_file`, the bundled proxy runs **CLEAN → COMPRESS → SURFACE**. It returns the compressed response plus any surfaced memories and does not write the response back into LTM. Annotated multi-block responses are the exception (see [Compression Strategies](/stm/compression/)).
+When the agent calls `fs__read_file`, the bundled proxy runs **CLEAN → COMPRESS → SURFACE**. It returns the compressed response plus any surfaced memories and does not write the response back into LTM. Annotated multi-block responses, and under the experimental structured delivery any successful response with upstream `structuredContent` or non-text content, are the exception (see [Compression Strategies](/stm/compression/)).
 
 > See [Proactive Surfacing](/stm/surfacing/) and [Compression Strategies](/stm/compression/) for mechanism details.

@@ -3,7 +3,7 @@ title: STM CLI Reference
 description: mms CLI commands for memtomem-stm proxy management.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.6.9 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
+The `mms` command is installed with the `memtomem-stm` v0.7.5 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -98,6 +98,17 @@ After a successful import, the same server is advertised on two paths — direct
 
 Incompatible with `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`. `--prune` requires `--from-clients` / `--import`.
 
+#### Host discovery
+
+`mms init`, `mms add --from-clients` and `mms prune` read Claude Code's config the way Claude Code does: `$CLAUDE_CONFIG_DIR/.claude.json` when `CLAUDE_CONFIG_DIR` is an absolute path, otherwise `~/.claude.json`, and within it the project entry of the repository root, so a subdirectory finds the servers registered at the root. In a linked worktree, a submodule or behind a symlinked `.git`, no project entry is read. When STM cannot tell which file Claude Code reads (for example a relative or empty `CLAUDE_CONFIG_DIR`, a set `CLAUDE_CODE_CUSTOM_OAUTH_URL`, or a legacy `.config.json` in Claude Code's config directory), it reads no Claude Code user or project servers and prints a note; `<cwd>/.mcp.json` is still read. `mms import`, `mms host` and `mms eject` follow the same rules.
+
+`mms init`, `mms add --from-clients` and `mms prune` also name servers that bypass STM, without importing them:
+
+- **Claude Code plugin servers:** when `claude` is on `PATH`, they run `claude plugin list --json` in the current directory and list each MCP server an enabled plugin registers, as `/mcp` shows it (`plugin:<plugin>:<server>`). STM does not proxy those servers. To route one through STM, add it with `mms add … --validate` and then disable the plugin's copy. `--json` carries the rows in `plugin_bypass`, and `plugin_bypass_disables_unread` says why servers disabled in `/mcp` could not be checked (`"no_key"`, `"no_config"`, or `null` when no reason was recorded).
+- **Codex registrations** outside the command's discovery, by name only (`--json`: `codex_extra_servers`, `null` when the listing was unavailable).
+
+`mms import` and `mms host status|scan|sync` print the same servers on stderr, without these JSON fields, and never import or remove a plugin's server; `mms doctor` reports them as WARN rows. These host CLI listings are optional and can make network requests; set `MMS_NO_HOST_PROBE=1` to skip them.
+
 ### `mms list`
 
 List all registered upstream servers — the per-server view.
@@ -111,7 +122,7 @@ The table includes an **ORIGIN** column reporting each upstream's import source.
 
 The **SOURCE** column reports where each server definition comes from — `file`, `env`, or `file+env` — and servers defined only in the environment get rows too. **COMPRESSION** shows the resolved server default rather than the file's value: a server that omits `compression` inherits `default_compression`, `MEMTOMEM_STM_PROXY__*` environment overrides are applied. When the file fails validation, the table shows the environment/default fallback that startup actually uses; `unknown` appears only when no runtime configuration can be built, such as an environment that startup rejects. Tables with at least one server end with `COMPRESSION shows the resolved server default; tool overrides may differ.` followed by one `"server"/"tool": strategy (tool override)` line per explicit tool-level `compression`. The table strips URL userinfo, query strings and fragments, and shows the arguments of rows the environment touches (`env`, `file+env`) as `[args hidden]`. Per-server `max_result_chars` has no column, because tool overrides can make it misleading; read it from `--json` or the config file.
 
-Scripts should read `--json` rather than parse the table. Its `servers` map still describes the file, while `effective_servers`, `server_sources` and `effective_compression` (keyed by server name, with `strategy`, `source` — `server` or `global` — and `tool_overrides`) describe the runtime view. They are `{}` when no runtime configuration can be built, and also when the effective configuration simply has no servers, so an empty map alone does not mean the configuration failed; read `config_valid` and `config_error` for that.
+Scripts should read `--json` rather than parse the table. Its `servers` map still describes the file, while `effective_servers`, `server_sources` and `effective_compression` (keyed by server name, with `strategy`, `source` — `server` or `global` — and `tool_overrides`) describe the runtime view. They are `{}` when no runtime configuration can be built, and also when the effective configuration simply has no servers, so an empty map alone does not mean the configuration failed; read `config_valid` and `config_error` for that. Each `effective_servers` entry also carries the server's resolved `delivery_format` and `tool_delivery_overrides`, the resolved format of each tool that has a `tool_overrides` entry.
 
 ### `mms status`
 
@@ -164,13 +175,15 @@ mms eject filesystem --yes           # non-interactive — skip the confirm prom
 
 It writes the verbatim host entry captured at import time (the provenance) back where it came from, verifies the restore against the host config, and only then removes the STM entry. If any step fails, the server stays registered in at least one place — worst case is dual registration, never a disappeared server.
 
+`eject` refuses, even with `--force`, when the target host config is unreadable or malformed, or when a Claude Code project entry was recorded in a linked worktree, a submodule or behind a symlinked `.git`. A Claude Code target also refuses when STM cannot tell which config file Claude Code reads ([host discovery](#host-discovery)). In those cases, restore the entry manually from `upstream_servers.<name>.origin.original` in `stm_proxy.json`.
+
 | Flag | Description |
 |------|-------------|
 | `--to TARGET` | Restore target for entries without a recorded origin (`claude-user` / `claude-project[:PATH]` / `mcp-json[:PATH]` / `claude-desktop`). Entries with a recorded origin ignore this |
 | `--keep` | Restore to the host but keep the STM entry (dual registration) |
 | `--force` | Overwrite a same-name host entry whose identity differs |
 | `--allow-argv-secrets` | Permit `claude mcp add-json` shell-outs whose payload carries secret-classified values (argv is visible in the process list) |
-| `--accept-schema-loss` | Proceed with STM removal even when the restored host entry does not structurally match the original (default keeps the STM entry and fails) |
+| `--accept-schema-loss` | Proceed with STM removal even when the restored host entry does not structurally match the original (default keeps the STM entry and fails). A restore whose verify cannot read the host config, or finds no entry there, keeps the STM entry even with this flag |
 | `--dry-run` | Print the plan; no writes |
 | `--yes` / `-y` | Skip the confirm prompt (scripts / CI / non-TTY) |
 
@@ -231,9 +244,11 @@ mms daemon run                       # foreground long-lived server loop
 
 The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable. A `busy` or `expired` daemon reply skips surfacing for that call either way. A daemon under a different config fingerprint can belong to a running STM process with a different `MEMTOMEM_STM_*` environment (the MCP-launched server versus your shell or hook), so check `mms daemon status` before stopping it with `--all`.
 
-The hook↔daemon protocol version is part of the daemon fingerprint. It became v8 in 0.6.0, so after an upgrade the hook starts a new v8 daemon, and a daemon from the earlier version keeps running beside it until it idles out. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
+The hook↔daemon protocol version is part of the daemon fingerprint; it is v9 since 0.7.0. When a release's upgrade notes say the protocol changes, quit the MCP hosts that run STM and run `mms daemon stop` with the old build **before** upgrading: the new build cannot reach a daemon the old one started, and processes that share the pending SQLite store must run the same version. The upstream [Upgrading runbook](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/guides/operations.md#upgrading) has the full sequence. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
 
-`mms daemon status --json` lists daemons running under a different config fingerprint as `foreign` entries. Each entry carries `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds` and `exits_when_idle`, never the auth token. `exits_when_idle` is `true` for a daemon that shuts down when idle, `false` for one that never does (`idle_shutdown_seconds` is `null`), and `null` when the handshake does not say or holds a value no daemon writes. The `queue` object reports `pre_auth_evictions`: the daemon keeps at most 64 connections that have not authenticated yet, and past that it drops the oldest one and counts it here.
+`mms daemon stop` exits 0 only when every daemon it acted on finished shutting down, none was running, or the record it found was stale. Otherwise it exits 1 with the reason on stderr: for example, the daemon's lifetime lock is still held after a 5-second wait, a pid cannot be signalled, or, on Windows, a daemon that would need the signal fallback is still listening. `--all` waits up to 10 seconds in total, and when `data_dir` exists but cannot be listed it stops none of the foreign daemons and exits 1. `mms daemon restart` starts a replacement only after its stop step succeeds.
+
+`mms daemon status` reports this config's daemon as `starting` or `unknown` when there is no handshake but its lifetime lock is held or cannot be checked. `mms daemon status --json` lists daemons running under a different config fingerprint as `foreign` entries. Each entry carries `fingerprint`, `pid`, `host`, `port`, `idle_shutdown_seconds` and `exits_when_idle`, never the auth token. `exits_when_idle` is `true` for a daemon that shuts down when idle, `false` for one that never does (`idle_shutdown_seconds` is `null`), and `null` when the handshake does not say or holds a value no daemon writes. Entries also carry `listening` and `lock`. A foreign daemon whose record cannot be read is listed only while its lock is held or cannot be checked, with `handshake_unreadable: true` and `pid`, `host`, `port`, `idle_shutdown_seconds` and `exits_when_idle` set to `null`. When `data_dir` exists but cannot be listed, `foreign` is `null` and `foreign_error` names the error class. The `queue` object, and the `queue:` line of the text output, report `pre_auth_evictions`: the daemon keeps at most 64 connections that have not authenticated yet, and past that it drops the oldest one and counts it here.
 
 ## Diagnostics & Tuning
 
@@ -274,7 +289,7 @@ mms doctor --measure-ltm             # five read-only searches through an alread
 
 Options: `--config`, `--json`, `--timeout`, and `--measure-ltm`. Measurement never starts a missing daemon.
 
-An environment variable that startup rejects FAILs the `config schema` check, so `doctor` exits 1. An informational `surfacing opportunities` check appears when the opportunity log has something to count. Until an upgraded process opens `stm_feedback.db`, `doctor` reports the new table as missing. Errors are rendered as in [`mms health`](#mms-health).
+An environment variable that startup rejects FAILs the `config schema` check, so `doctor` exits 1. An informational `surfacing opportunities` check appears when the opportunity log has something to count. Until an upgraded process opens `stm_feedback.db`, `doctor` reports the new table as missing. Errors are rendered as in [`mms health`](#mms-health). WARN rows also name Codex MCP registrations outside STM (`codex_extra_servers`) and Claude Code plugin servers that bypass STM (`plugin_bypass`); `MMS_NO_HOST_PROBE=1` skips those listings.
 
 ### `mms config validate`
 
@@ -299,6 +314,7 @@ The CLI sees disk-backed metrics only; process-local live counters remain availa
   - When an explicit `progressive` response is chunked, its row records the first chunk plus footer, so saved percentages rise for those tools.
   - `mms stats` warns about successful MCP rows recorded before this accounting.
   - The `--json` summary adds `initial_response_calls`, `unclassified_mcp_calls` and a `measurement` description.
+  - Calls that used [structured delivery](/stm/compression/#structured-chunk-delivery) are counted on a separate `Structured delivery:` line (calls, serialized base characters, measured MCP bytes; `--json`: `compression.structured_delivery`) and stay out of the saved ratio.
 - **Error counts:** `lock_timeout` and `internal_error` rows recorded by the proxy's own call path count as errors. Rows recorded before the upgrade are not rewritten.
 - **Surfacing:**
   - Only shown events count as surfacings.
@@ -320,11 +336,11 @@ Preview is the default. `--apply` takes a timestamped backup and writes accepted
 
 An empty filter such as `--tool ""` matches no tools; omit `--tool` to analyze all of them. In particular, `mms tune --apply --yes --tool ""` writes no overrides.
 
-A tool whose strategy, resolved from the current configuration, is `none` or an explicit `progressive` gets no `max_result_chars` recommendation, because neither path reads that budget. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
+A tool whose strategy, resolved from the current configuration, is `none` gets no `max_result_chars` recommendation, because that path does not read the budget. An explicit `progressive` tool gets one only under `delivery_format: "structured"`, where the budget caps each serialized frame: a raise, from `missing_example` feedback. Such a raise is suggested only when it exceeds the current budget, which it shows as `current`, and a tool whose dominant feedback over three or more reports is `missing_example` gets no cut. A tool that inherits a server token budget under `token_estimation_mode: "unicode"` gets no budget suggestion. Ratio-based advice reads only rows recorded with the current accounting, so a tool with only older rows gets none until new calls accumulate.
 
 ### `mms selection replay`
 
-Replay sanitized selection telemetry and evaluate deterministic risk penalties. Recommendations are previews and never update proxy config.
+Replay sanitized selection telemetry and evaluate deterministic risk penalties. Recommendations are previews and never update proxy config. A `--dataset` whose decoded text matches STM's sensitive-content patterns is refused (`dataset matched sensitive-content patterns`, exit 1).
 
 ```bash
 mms selection replay [--config PATH] [--log FILE] [--dataset FILE]
@@ -443,7 +459,7 @@ mms host status [--json]
 mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-configs]
 ```
 
-`scan` is a host-anchored, read-only inventory; `status` is a registry-anchored drift comparison. `sync` previews by default, adds new entries, removes entries absent from every host, and backfills sidecar baselines. Changed host shapes require `--force`; mutating JSON runs require `--yes`. `--allow-project-configs` explicitly acknowledges project-local discoveries.
+`scan` is a host-anchored, read-only inventory; `status` is a registry-anchored drift comparison. `sync` previews by default, adds new entries, removes entries absent from every host, and backfills sidecar baselines. A source STM could not inspect is not read as empty: when STM cannot tell which Claude Code config or project entry is in use, or that file or `<cwd>/.mcp.json` exists but is not a readable JSON object, a registry entry whose baseline came from that source and that no scan found is `not_inspected` and kept. `status --json` gives such a row a `reason` and counts it in `summary.not_inspected`, `scan --json` lists the skipped sources under `not_inspected`, and `sync --json` carries them in `plan.not_inspected` and `summary.not_inspected`. Changed host shapes require `--force`; mutating JSON runs require `--yes`. `--allow-project-configs` explicitly acknowledges project-local discoveries.
 
 ## Operational statistics
 
@@ -470,7 +486,7 @@ Many `--json` commands, such as `add`, `remove`, `prune`, `eject`, `list`, `stat
 | `~/.mms` state (`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | The state lock timed out or is unavailable / a write failed / the schema version does not match / a state file is corrupt |
 | Metrics store (`mms tune`) | `store_invalid` | SQLite cannot open or read the metrics or feedback database file (listed in `stores`) |
 
-For the command-specific codes of `add`, `gateway explain`, `project route`, `selection feedback` and others, see the upstream [CLI documentation](https://github.com/memtomem/memtomem-stm/blob/v0.6.9/docs/cli.md).
+For the command-specific codes of `add`, `gateway explain`, `project route`, `selection feedback` and others, see the upstream [CLI documentation](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/cli.md).
 
 These cases do not use the envelope:
 
