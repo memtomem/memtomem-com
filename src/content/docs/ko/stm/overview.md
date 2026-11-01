@@ -48,7 +48,7 @@ STM은 모든 MCP 도구 호출을 다음 순서로 처리합니다.
 2. **COMPRESS** — 응답 크기 축소 (10가지 전략 중 자동 선택)
 3. **SURFACE** — LTM에서 관련 기억 조회·주입 (5단계 관련성 검사)
 
-기본 제공 `mms` 실행 환경은 기억을 LTM에 다시 기록하지 않습니다. 응답 처리 순서는 **CLEAN → COMPRESS → SURFACE**이며, SURFACE 단계에서는 MCP를 통해 LTM의 기억을 읽기만 합니다. 오류가 아닌 응답 중 텍스트 블록이 둘 이상이고 그중 하나라도 `annotations`나 `_meta`가 있는 응답은 블록별로 정리한 뒤 예산에 맞춰 자르며, COMPRESS와 SURFACE를 거치지 않습니다([압축 전략](/ko/stm/compression/) 참조).
+기본 제공 `mms` 실행 환경은 기억을 LTM에 다시 기록하지 않습니다. 응답 처리 순서는 **CLEAN → COMPRESS → SURFACE**이며, SURFACE 단계에서는 MCP를 통해 LTM의 기억을 읽기만 합니다. 오류가 아닌 응답 중 텍스트 블록이 둘 이상이고 그중 하나라도 `annotations`나 `_meta`가 있는 응답은 블록별로 정리한 뒤 예산에 맞춰 자르며, COMPRESS와 SURFACE를 거치지 않습니다. 실험 기능인 구조화 전달에서는 업스트림 `structuredContent`나 텍스트가 아닌 콘텐츠가 있는 성공 응답도 같은 방식으로 처리합니다([압축 전략](/ko/stm/compression/) 참조).
 
 ## LTM과의 관계
 
@@ -65,7 +65,7 @@ STM과 LTM은 **독립적인 패키지**로, Python 종속성 없이 MCP 프로�
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **최신 릴리스** | `0.6.9` |
+| **최신 릴리스** | `0.7.5` |
 | **CLI** | `mms` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

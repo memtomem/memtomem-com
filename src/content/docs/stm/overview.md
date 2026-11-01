@@ -48,7 +48,7 @@ STM runs every MCP tool call through this pipeline:
 2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
 3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
 
-A successful response with more than one text block, where any text block carries `annotations` or `_meta`, is cleaned per block and cut to its budget instead, without COMPRESS or SURFACE; see [Compression Strategies](/stm/compression/).
+A successful response with more than one text block, where any text block carries `annotations` or `_meta`, is cleaned per block and cut to its budget instead, without COMPRESS or SURFACE. Under the experimental structured delivery, so is any successful response that carries upstream `structuredContent` or non-text content; see [Compression Strategies](/stm/compression/).
 
 The bundled `mms` runtime does not write memories back to LTM. Its active response pipeline is **CLEAN → COMPRESS → SURFACE**, and surfacing reads from LTM over MCP.
 
@@ -67,7 +67,7 @@ STM and LTM are **independent packages** — no Python dependency between them. 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **Latest release** | `0.6.9` |
+| **Latest release** | `0.7.5` |
 | **CLI** | `mms` |
 | **License** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

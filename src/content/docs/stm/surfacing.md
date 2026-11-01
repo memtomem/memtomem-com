@@ -51,8 +51,10 @@ How surfaced memories are stitched into the response is controlled by `MEMTOMEM_
 | Mode | Behavior |
 |---|---|
 | `append` (default) | Memories appended below the response. Preserves progressive-delivery offsets and works on the continuing read path. |
-| `prepend` | Memories prepended as a header. Skipped on progressive delivery because it would shift `stm_proxy_read_more` offsets. |
+| `prepend` | Memories prepended as a header. Skipped on legacy progressive delivery because it would shift `stm_proxy_read_more` offsets. |
 | `section` | Memories placed in a dedicated section. Triggers surfacing on progressive continuations. |
+
+Under [structured delivery](/stm/compression/#structured-chunk-delivery), memories arrive in a separate `stm.supplements.surfacing` field and the response text is left unchanged, so every mode applies, `prepend` included.
 
 ## Model-Aware Defaults
 
@@ -106,8 +108,8 @@ For tool-grained or cross-server glob scope, set `MEMTOMEM_STM_SURFACING__EXCLUD
 
 Surfacing runs under the following safeguards for resilience and privacy:
 
-- **Circuit breaker** (3-state: closed / open / half-open) — Opens after `circuit_max_failures` consecutive failures (default `3`) and transitions to half-open after `circuit_reset_seconds` (default `60s`)
-- **Surfacing timeout** — `3s` hard ceiling per call
+- **Circuit breaker** (3-state: closed / open / half-open) — Opens after `circuit_max_failures` consecutive failures (default `3`) and transitions to half-open after `circuit_reset_seconds` (default `60s`). A malformed LTM response counts as a failure: `{}`, a reply without `results`, an item of the wrong shape, or a whitespace-only reply (`{"results": []}` is a healthy empty result)
+- **Surfacing timeout** — `3s` hard ceiling per call. A call that arrives while the LTM connection is still starting waits for it within this timeout, then uses the context composition the connected Core supports
 - **Rate limit** — `15 calls / minute` ceiling across all tools
 - **Write-tool skip** — Disables surfacing for tools with side effects (file writes, deletes)
 - **Query cooldown** — Skips surfacing when the extracted query has Jaccard similarity `> 0.95` with one seen in the last 5 seconds

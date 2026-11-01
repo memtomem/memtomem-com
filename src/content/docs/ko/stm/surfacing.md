@@ -55,8 +55,10 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 | 모드 | 동작 |
 |---|---|
 | `append` (기본값) | 기억을 응답 아래에 덧붙임. `progressive`의 `offset`을 유지하며 이어 읽을 때도 동작 |
-| `prepend` | 기억을 응답 앞에 붙임. `stm_proxy_read_more`의 `offset`을 바꾸므로 `progressive`에서는 건너뜀 |
+| `prepend` | 기억을 응답 앞에 붙임. `stm_proxy_read_more`의 `offset`을 바꾸므로 legacy `progressive` 전달에서는 건너뜀 |
 | `section` | 기억을 별도 섹션에 배치. `progressive`로 이어 읽을 때도 관련 기억 검색을 실행 |
+
+[구조화 전달](/ko/stm/compression/#structured-chunk-delivery)에서는 기억이 별도 필드 `stm.supplements.surfacing`으로 전달되고 응답 텍스트는 바뀌지 않으므로 `prepend`를 포함한 모든 모드가 적용됩니다.
 
 ## 모델 인식 기본값
 
@@ -112,8 +114,8 @@ mms surfacing <server> on       # 다시 활성화
 
 관련 기억 자동 제시에는 안정성과 정보 보호를 위한 다음 안전장치가 있습니다.
 
-- **회로 차단기** — 반복 실패 시 호출을 일시 중단해 장애 전파를 막는 장치입니다(3상태: closed / open / half-open). `circuit_max_failures`(기본 `3`)회 연속 실패하면 open 상태가 되고, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환됩니다.
-- **서피싱 시간 제한** — 호출당 최대 `3s`
+- **회로 차단기** — 반복 실패 시 호출을 일시 중단해 장애 전파를 막는 장치입니다(3상태: closed / open / half-open). `circuit_max_failures`(기본 `3`)회 연속 실패하면 open 상태가 되고, `circuit_reset_seconds`(기본 `60s`) 경과 후 half-open으로 전환됩니다. 형식이 잘못된 LTM 응답도 실패로 셉니다. `{}`, `results`가 없는 응답, 형식이 맞지 않는 항목, 공백뿐인 응답이 이에 해당합니다(`{"results": []}`는 정상적인 빈 결과입니다).
+- **서피싱 시간 제한** — 호출당 최대 `3s`. LTM 연결이 아직 시작 중일 때 들어온 호출은 이 시간 안에서 연결을 기다린 뒤, 연결된 Core가 지원하는 컨텍스트 구성 방식을 사용합니다.
 - **호출 빈도 제한** — 모든 도구를 합해 분당 최대 `15`회
 - **쓰기 도구 제외** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
 - **반복 검색 방지** — 최근 5초 안에 처리한 검색어와 거의 같으면(Jaccard 유사도 `> 0.95`) 관련 기억 검색을 건너뜀

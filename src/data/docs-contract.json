@@ -114,7 +114,7 @@
     ]
   },
   "stm": {
-    "version": "0.6.9",
+    "version": "0.7.5",
     "python": ">=3.12",
     "tools": {
       "modelFacing": 5,
@@ -132,7 +132,7 @@
   },
   "sourceSnapshots": {
     "coreMain": "e67c706d23be7a76ebed85ccc7f3e48d2280fe3a",
-    "stmMain": "68661e5d43ff95f5eb273b8034a7e2f334dcb7e9"
+    "stmMain": "9363ecb95cd3baa3e7ecec99000962035b64547b"
   },
   "configuration": {
     "coreEnvironment": {
@@ -140,8 +140,8 @@
       "sha256": "95ed71d08b94b71352a5dd646763b983525f08a19130258590156bc130947bfe"
     },
     "stmEnvironment": {
-      "count": 181,
-      "sha256": "3abe50b4ed87a17e664a36c2dec492d69cdc497e6a253f979ca24bc0ef9d3f1d"
+      "count": 182,
+      "sha256": "1353d93bb3f5a73d47061f386a596c28205cd516095c0ddf8805c7c07ecb8e52"
     }
   },
   "guides": {
