@@ -72,19 +72,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="hero">
 	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
-	<h1>잊지 않는 AI —<br />에이전트를 위한 <em>장단기 기억 인프라</em></h1>
+	<h1>새 세션도<br /><em>지난 작업이 끝난 곳에서</em> 시작합니다</h1>
 	<p class="hero-sub">
-			매 세션마다 프로젝트를 다시 설명하지 않아도 됩니다. memtomem은 노트·문서·코드를
-			검색 가능한 기억으로 바꿉니다. MCP를 지원하는 AI 도구라면 세션이나 도구가 바뀌어도
-			같은 기억을 다시 사용할 수 있습니다. 기본 저장소는 로컬이며 외부 서비스 연결은 선택 사항입니다.
+		memtomem은 프로젝트의 기억을 사용자가 직접 소유하는 Markdown 파일로 보관합니다. 세션을
+		마칠 때 handoff로 진행 상황을 남기고, 다음 세션은 같은 AI 도구든 다른 도구든 brief로
+		시작합니다. 정한 내용은 update로 저장합니다. 각 단계는 사용자가 호출할 때만 실행됩니다.
 	</p>
-	<div class="hero-install">
-		<span class="dollar">$</span> uv tool install 'memtomem[all]'
-	</div>
-	<div class="hero-stats">
-		<div><strong>9</strong>Core MCP 도구</div>
-		<div><strong>10</strong>압축 전략</div>
-		<div><strong>5</strong>기본 STM 도구</div>
+	<ol class="loop" role="list">
+		<li class="loop-step accent">
+			<div class="loop-when">세션 종료 · Claude Code</div>
+			<code class="loop-cmd">/memtomem:handoff save</code>
+			<p>프로젝트의 <code>.memtomem/memories.local</code>에 진행 상황 기록 하나를 남깁니다.</p>
+		</li>
+		<li class="loop-step teal">
+			<div class="loop-when">다음 세션 · Codex CLI</div>
+			<code class="loop-cmd">$memtomem-brief</code>
+			<code class="loop-cmd">$memtomem-handoff resume</code>
+			<p>대기 중인 handoff를 확인하고, 하나를 불러와 현재 커밋과 맞는지 검사합니다.</p>
+		</li>
+		<li class="loop-step coral">
+			<div class="loop-when">커밋 몇 개 이후 · Claude Code</div>
+			<code class="loop-cmd">/memtomem:update</code>
+			<p>결정, 버그 원인, 선호를 같은 파일에 다시 저장합니다.</p>
+		</li>
+	</ol>
+	<div class="hero-actions">
+		<div class="hero-install">
+			<span class="dollar">$</span> uv tool install 'memtomem[all]'
+		</div>
+		<a class="hero-link" href={`${base}/ko/ltm/project-workflows/`}>세션 루프 자세히 보기 →</a>
 	</div>
 </section>
 
