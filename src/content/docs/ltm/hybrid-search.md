@@ -18,7 +18,7 @@ With an embedding provider enabled, BM25 and vector retrieval run in parallel, f
 <figure class="flow-diagram">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 542" role="img" aria-labelledby="search-flow-title search-flow-desc">
 <title id="search-flow-title">How memtomem ranks search results</title>
-<desc id="search-flow-desc">A query from mem_search or mm search runs BM25 keyword search and vector search in parallel. RRF fusion combines the two rankings into one. A cross-encoder reranker runs next only when reranking is enabled; it is off by default. The source filter is applied inside both retrievers, before their candidate limits. After reranking, the source filter is checked again, the temporal validity filter runs, and the top results are returned, 10 by default. With embedding.provider=none, only BM25 runs.</desc>
+<desc id="search-flow-desc">A query from mem_search or mm search runs BM25 keyword search and vector search in parallel. RRF fusion combines the two rankings into one. A cross-encoder reranker runs next only when reranking is enabled; it is off by default. Both retrievers apply the source filter: BM25 before its candidate limit, vector search within its nearest-neighbor pool. After reranking, the source filter is checked again, the temporal validity filter runs, and the top results are returned, 10 by default. With embedding.provider=none, only BM25 runs.</desc>
 <defs><marker id="search-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
 <rect class="fd-box" x="140" y="16" width="200" height="48" rx="8"/>
 <text class="fd-title" x="240" y="38" text-anchor="middle">Query</text>
@@ -124,4 +124,4 @@ required before any default change.
 
 Project scope is enforced at retrieval. Tag filters are applied in BM25/recall SQL, while dense retrieval checks tags after its bounded nearest-neighbor pool and may miss a rare tagged match outside that pool. BM25 tag filtering still requires a lexical query match: tag text is not itself indexed by FTS.
 
-The source substring/glob filter is applied inside both retrievers, before their candidate limits, and checked again after reranking. The temporal validity filter runs after reranking. Do not treat every filter as an identical SQL prefilter or assume that filtering guarantees a full `top_k` result set.
+The source substring/glob filter is applied inside both retrievers and checked again after reranking. BM25 applies it in SQL before its candidate limit; vector search checks it within its bounded nearest-neighbor pool, so, as with tags, it may miss a rare matching source outside that pool. The temporal validity filter runs after reranking. Do not treat every filter as an identical SQL prefilter or assume that filtering guarantees a full `top_k` result set.
