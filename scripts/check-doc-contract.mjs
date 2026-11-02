@@ -213,7 +213,7 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   assertSectionContains(
     file,
     claudeSection,
-    `claude mcp add memtomem -- uvx --from "${contract.claudePlugin.requirement}" memtomem-server`,
+    `claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- uvx --from "${contract.claudePlugin.requirement}" memtomem-server`,
     'Claude quoted manual registration'
   );
   const opencodeSection = markdownSection(text, contract.guides.clientGuide.coexistence.opencode.heading, 2);

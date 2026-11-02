@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.7.2를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.3을 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -70,13 +70,13 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.7.2에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.3에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
 대화형 설정 마법사를 실행합니다. 임베딩 제공자, 데이터베이스 경로, 토크나이저, 리랭커, 기본 네임스페이스를 설정합니다.
 
-설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·리랭커·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 입력 없이 실행하려면 `--preset <name> --non-interactive`를 함께 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
+설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 어떤 프리셋도 리랭커를 켜지 않으므로, 리랭커가 필요하면 `mm config set rerank.enabled true`를 실행하거나 고급 마법사의 리랭커 단계에서 추가합니다. 프리셋으로 `mm init`을 다시 실행해도 `config.json`에 이미 있는 `rerank` 섹션은 그대로 유지됩니다. 입력 없이 실행하려면 `--preset <name> --non-interactive`를 함께 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
 
 ```bash
 mm init                              # 대화형 설정 + 프리셋 선택
@@ -410,11 +410,13 @@ mm memory doctor --fix --apply       # 실제로 끊어진 링크 제거
 같은 입력에 같은 결과를 내는 검색 평가 사례를 관리합니다. 평가를 다시 실행하고 보고서를 비교하거나 품질 기준을 검사할 수 있습니다. 실행 기록과 라벨은 dev 모드 Web UI의 Search Runs와 Quality Lab에서도 확인할 수 있습니다.
 
 ```bash
-mm quality cases list
-mm quality replay --output report.json
+mm quality cases
+mm quality replay --out baseline.json
 mm quality compare baseline.json candidate.json
-mm quality gate baseline.json candidate.json
+mm quality gate baseline.json candidate.json --policy policy.json
 ```
+
+`mm quality gate`에는 커밋해 둔 gate-policy JSON 파일을 `--policy`로 반드시 지정해야 합니다. 후보가 기준을 통과하면 0, 정책을 위반하면 1(판정 결과는 먼저 출력됨), 입력이 잘못되면 2로 종료합니다.
 
 ### `mm watchdog`
 
@@ -498,7 +500,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.7.2          # 특정 버전 고정
+mm upgrade --version 0.7.3          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -512,6 +514,7 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.7.0 이전에서 업그레이드한 경우:** 기억 파일과 Context Gateway의 agent·command 파일의 frontmatter를 YAML로 읽습니다. 다시 색인하면 따옴표 없는 ` #` 뒤의 내용은 주석으로 처리되어 경고와 함께 제외되고, 키 뒤의 콜론 다음에는 공백이 있어야 합니다. `#` 문자를 값에 포함하려면 따옴표로 감쌉니다. 업그레이드한 뒤에는 백업을 다시 만드세요. 내보내기는 이제 bundle v4로 저장하며, 이전 버전의 가져오기는 v4가 추가한 범위·프로젝트·유효 기간 필드를 무시하므로 0.7.0 이상에서만 완전히 복원됩니다.
 - **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 0.7.1에서는 그대로 두면 이후 다시 색인할 때 같은 이름이 다시 생길 수 있고, 0.7.2부터는 이 이름이 거부되거나 건너뛰어집니다(다음 항목).
 - **0.7.2 이전에서 업그레이드한 경우:** 검색에서 이름으로 찾을 수 없는 네임스페이스에는 더 이상 쓰지 않습니다. `,`나 `*`를 포함한 이름, `!system`, 공백만 있는 이름, 에이전트 도구가 거부하는 에이전트 ID를 가진 `agent-runtime:` 이름(`agent-runtime:foo:bar`)이 이에 해당합니다. 빈 문자열은 지금도 네임스페이스를 지정하지 않은 것으로 처리됩니다. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, Notion·Obsidian 가져오기, `mm index --namespace`, 웹 추가·색인 경로는 이런 이름을 쓰기 전에 거부합니다. 이 검사는 `mm add --namespace`, 세션 도구, `mem_ns_*` 도구의 검사보다 범위가 좁으므로 `claude:-Users-me-project`처럼 규칙이 만드는 이름은 계속 사용할 수 있습니다. 색인기는 네임스페이스 규칙, 폴더 이름(`enable_auto_ns`), `default_namespace`에서 나온 이런 이름을 건너뛰고 다음 규칙, `enable_auto_ns`, `default_namespace` 순으로 넘어갑니다. 검사를 통과하지 못한 `default_namespace`는 청크를 네임스페이스 없이(`default`) 저장합니다. `mm config set`, `mem_config`, `mm init --namespace`, `mem_policy_add`도 이런 이름을 거부합니다. `config.json`이나 `config.d` 조각에 이미 있는 값은 그대로 로드되지만, `namespace.rules`는 목록 전체를 한 번에 저장하므로 이 경로로 규칙을 수정하려면 해당 항목을 먼저 고쳐야 합니다. 이런 대상으로 이미 저장된 수명 주기 정책은 실행될 때 아무것도 옮기지 않고 오류를 보고합니다. 이미 이런 이름으로 저장된 행은 일반 재색인이나 `--force` 재색인 후에도 이름이 유지됩니다. `mem_do(action="ns_rename", ...)`로 옮기거나(원본 이름이 빈 문자열이면 거부), 규칙을 고친 뒤 `mm index --reassign-namespaces`를 실행합니다.
+- **0.7.3 이전에서 업그레이드한 경우:** [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 실행하는 클라이언트에 직접 작성했거나 이전 `mm init --mcp`가 작성한 MCP 등록에는 `env`(OpenCode는 `environment`)에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점, 즉 `incremental`이나 `full` 모드에서 커밋 메시지를 하나 이상 전부 읽은 뒤에 `update`가 아무것도 쓰지 않고 멈춥니다. `topic` 모드와 `full` 도구 모드로 실행한 서버(이 도구를 원래 노출함)는 영향을 받지 않습니다. `mm init --mcp kimi`를 다시 실행하면 Kimi Code 항목이 이 변수를 포함해 새로 작성됩니다. `mm init --mcp claude`(또는 `json`)는 기존 Claude 등록을 그대로 두므로 직접 추가해야 합니다([수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인) 참고). 수동 등록을 함께 유지하는 Claude 플러그인 사용자는, 0.7.3과 함께 배포된 플러그인이 그 릴리스를 실행하므로 `mm doctor --claude-mcp`를 실행한 뒤 수동 항목의 실행 조합을 플러그인과 맞추거나 항목을 제거하고, 다시 불러온 다음 `/mcp`로 확인합니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 

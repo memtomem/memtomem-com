@@ -1,6 +1,6 @@
 ---
 title: Connect an AI Client
-description: Connect Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi CLI, OpenCode, Hermes Agent, or Antigravity to memtomem.
+description: Connect Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi Code, OpenCode, Hermes Agent, or Antigravity to memtomem.
 ---
 
 **Estimated time:** 5–10 minutes
@@ -19,6 +19,8 @@ Keep the displayed database path. You will compare it with the client result.
 
 Manual MCP-only entries use the `memtomem-server` command. `memtomem` and `mm` are terminal CLIs and must not be used as MCP server commands. Official plugins may supply their own pinned launch command.
 
+For a client that runs memtomem's [`update` workflow](/ltm/project-workflows/#update) (Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI), the manual entries below also set `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`. It is not a setting: it exposes the one tool the workflow needs outside `topic` mode, and the server reads it at launch, before any configuration, so `~/.memtomem/config.json` cannot provide it. Settings still come from that file. The entries for other clients leave it out.
+
 Pick **one** client below. If that client already has both a plugin and a manual MCP entry, use its matching rule instead of assuming that one copy is always removed:
 
 | Client | How entries are matched | Result |
@@ -31,7 +33,7 @@ Pick **one** client below. If that client already has both a plugin and a manual
 
 ## Claude Code
 
-The official plugin is the recommended path. The plugin released with Core 0.7.2 is version 0.5.25 and bundles Core 0.7.2:
+The official plugin is the recommended path. The plugin released with Core 0.7.3 is version 0.5.28 and bundles Core 0.7.3:
 
 ```text
 /plugin marketplace add memtomem/memtomem
@@ -52,7 +54,7 @@ The status should show the same database path as `mm status`, and search should 
 If you previously registered a manual server, run `/mcp` before continuing. Claude Code 2.1.218 matches the exact command and arguments; environment variables are not compared. The plugin signature is:
 
 ```text
-uvx --from memtomem[onnx]==0.7.2 memtomem-server
+uvx --from memtomem[onnx]==0.7.3 memtomem-server
 ```
 
 With that same signature, the manual registration wins and only one server runs under `mcp__memtomem__mem_*`. The bare `memtomem-server` entries below have a different signature, so both servers run and tools appear under both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`.
@@ -64,8 +66,10 @@ With that same signature, the manual registration wins and only one server runs 
 - **Keep the plugin commands with the manual server:** keep the plugin installed and register the manual entry with the exact plugin signature. For example:
 
   ```bash
-  claude mcp add memtomem -- uvx --from "memtomem[onnx]==0.7.2" memtomem-server
+  claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- uvx --from "memtomem[onnx]==0.7.3" memtomem-server
   ```
+
+  The manual entry wins together with its environment, so it needs the variable for the plugin's `update` workflow outside `topic` mode.
 
   Alternatively, keep your existing manual entry and suppress the plugin's bundled server instead: preview with `mm doctor --mcp-client claude --reconcile keep-manual`, close every Claude session, then rerun it with `--apply`. Updating or reinstalling the plugin can restore its bundled server, so run `mm doctor --mcp-client claude` again afterwards. See [`mm doctor`](/ltm/cli/#additional-diagnostics-and-review) for the backup and exit codes.
 
@@ -73,16 +77,19 @@ For MCP-only setup without the plugin's commands and skills, choose one Claude C
 
 | Scope | Command | Visibility |
 |---|---|---|
-| Local | `claude mcp add memtomem -- memtomem-server` | current project and user |
-| User | `claude mcp add memtomem -s user -- memtomem-server` | every project for this user |
+| Local | `claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- memtomem-server` | current project and user |
+| User | `claude mcp add memtomem -s user -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- memtomem-server` | every project for this user |
 | Project | commit a project-root `.mcp.json` | teammates after trust approval |
+
+`-e` must come before the `--`: everything after it is the server's command.
 
 ```json
 {
   "mcpServers": {
     "memtomem": {
       "command": "memtomem-server",
-      "args": []
+      "args": [],
+      "env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
@@ -111,12 +118,13 @@ For MCP-only setup, add this to `~/.codex/config.toml`:
 [mcp_servers.memtomem]
 command = "memtomem-server"
 args = []
+env = { MEMTOMEM_EXTRA_TOOLS = "mem_update_coverage" }
 supports_parallel_tool_calls = true
 ```
 
 Restart Codex after changing the file.
 
-Codex resolves MCP servers by name. If the plugin is also installed, the manual `[mcp_servers.memtomem]` section wins and only one server runs. Remove that section to switch to the plugin's pinned server. Do not rename the manual section to `[mcp_servers.memtomem-local]`: a different name is not deduplicated, so both servers run. Confirm the resolved entry with `codex mcp list`.
+Codex resolves MCP servers by name. If the plugin is also installed, the manual `[mcp_servers.memtomem]` section wins and only one server runs, so the section needs the `env` line above for the plugin's `memtomem-update` skill outside `topic` mode. Remove that section to switch to the plugin's pinned server. Do not rename the manual section to `[mcp_servers.memtomem-local]`: a different name is not deduplicated, so both servers run. Confirm the resolved entry with `codex mcp list`.
 
 ## JSON-Based MCP Clients
 
@@ -140,21 +148,23 @@ Use this server entry unless a client-specific section below says otherwise:
 | Claude Desktop on macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` | quit and reopen the app |
 | Claude Desktop on Windows | `%APPDATA%\Claude\claude_desktop_config.json` | quit and reopen the app |
 | Gemini CLI | `~/.gemini/settings.json` | restart the CLI; new setups should prefer Antigravity CLI |
-| Kimi CLI | `~/.kimi/mcp.json`, or `$KIMI_SHARE_DIR/mcp.json` | restart Kimi CLI |
+| Kimi Code | `~/.kimi-code/mcp.json`, or `mcp.json` under `$KIMI_CODE_HOME` | restart Kimi Code |
 
-Kimi CLI can also be configured by the setup wizard:
+Kimi Code runs the `update` workflow, so its entry also keeps `"env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}` next to `"args"`. The setup wizard writes the entry with it, and re-running the command rewrites an older Kimi entry:
 
 ```bash
 mm init --mcp kimi
 ```
 
+memtomem writes Kimi entries only to the current Kimi Code home. A memtomem entry left in the legacy `~/.kimi/mcp.json` (or under `$KIMI_SHARE_DIR`) is not updated, and `mm uninstall` only reports it, so remove it yourself.
+
 ## OpenCode
 
-The published `opencode-memtomem@0.3.22` plugin bundles Core 0.7.2 and provides an exact-pinned MCP server plus commands and skills. OpenCode uses the singular `plugin` key and has no `opencode plugin add` command, so add it to `opencode.json`:
+The published `opencode-memtomem@0.3.25` plugin bundles Core 0.7.3 and provides an exact-pinned MCP server plus commands and skills. OpenCode uses the singular `plugin` key and has no `opencode plugin add` command, so add it to `opencode.json`:
 
 ```json
 {
-  "plugin": ["opencode-memtomem@0.3.22"]
+  "plugin": ["opencode-memtomem@0.3.25"]
 }
 ```
 
@@ -166,16 +176,16 @@ For MCP tools only:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.7.2", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.7.3", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
-      "environment": {"MEMTOMEM_TOOL_MODE": "core"}
+      "environment": {"MEMTOMEM_TOOL_MODE": "core", "MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
 ```
 
-OpenCode applies the same-name rule to the `mcp` key. An existing `mcp.memtomem` entry wins over the plugin's default and only one server runs. Remove that entry to use the plugin server. A differently named key such as `mcp."memtomem-local"` is not deduplicated, so both servers run.
+OpenCode applies the same-name rule to the `mcp` key. An existing `mcp.memtomem` entry wins over the plugin's default and only one server runs; the plugin keeps that entry instead of adding its own, so it needs the `MEMTOMEM_EXTRA_TOOLS` value above for the plugin's `update` command outside `topic` mode. Remove that entry to use the plugin server. A differently named key such as `mcp."memtomem-local"` is not deduplicated, so both servers run.
 
 The plugin also merges default memtomem tool permissions into `permission`. The search, recall, status, stats, list, and read tools are allowed; the other tools, including `mem_add` and `mem_index`, ask each time; and `memtomem_mem_do` is denied. Because the plugin server runs in `core` mode, the actions routed through `mem_do` stay unavailable until you change that rule. A rule you set for the same key replaces the plugin default for that key, while the other defaults stay; a wildcard such as `memtomem_*` does not remove the exact-name defaults. To allow the dispatcher, set its exact key:
 
@@ -193,7 +203,7 @@ The official plugin package provides the memtomem MCP server and six memory skil
 
 - Hermes Agent 0.21.5 or later;
 - MCP support in Hermes's environment (`hermes-agent[mcp]`). Without it, Hermes loads the skills but starts no MCP server, and logs the reason only at debug level;
-- `uv` on `PATH`. Installed at the 0.7.2 commit below, the plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.7.2' memtomem-server`. Installed from the catalog, it starts the release of the catalog's pinned commit, which can be older;
+- `uv` on `PATH`. Installed at the 0.7.3 commit below, the plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.7.3' memtomem-server`. Installed from the catalog, it starts the release of the catalog's pinned commit, which can be older;
 - Python 3.12. If uv cannot find one, it downloads one on first start. When that download is not possible (offline, or uv's Python downloads turned off), the server does not start; run `uv python install 3.12` once to fix it.
 
 Install it from the Hermes plugin catalog:
@@ -202,10 +212,10 @@ Install it from the Hermes plugin catalog:
 hermes plugins install memtomem --enable
 ```
 
-The catalog pins a reviewed commit, so it can trail the newest release until the catalog entry is updated. To pin a specific release yourself, install from the Git repository. Hermes's `--ref` takes a full 40-character commit SHA and refuses a tag name. For 0.7.2:
+The catalog pins a reviewed commit, so it can trail the newest release until the catalog entry is updated. To pin a specific release yourself, install from the Git repository. Hermes's `--ref` takes a full 40-character commit SHA and refuses a tag name. For 0.7.3:
 
 ```bash
-hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-plugin" --ref d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b --enable
+hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-plugin" --ref 953b3c15a66c0808429d882f7326a381187fa90c --enable
 ```
 
 Look up another release's commit with `git ls-remote --exit-code https://github.com/memtomem/memtomem "refs/tags/v<version>" "refs/tags/v<version>^{}"`. If it prints two lines, use the SHA on the line that ends in `^{}`. If the plugin is already installed, reinstall with `--force --ref <new-commit-sha>`.
@@ -233,13 +243,13 @@ Hermes resolves MCP servers by name. If the plugin is also enabled, the `mcp_ser
 
 It requires:
 
-- a `memtomem` entry (the plugin above or `mcp_servers.memtomem`) running memtomem **0.6.8 or later**. The provider refuses a server whose structured output does not echo `"recorded": false`, a key added in 0.6.8. While the catalog plugin pins an earlier release, recall stays off, so install the plugin at the 0.7.2 commit above or use a manual entry that runs 0.6.8 or later;
+- a `memtomem` entry (the plugin above or `mcp_servers.memtomem`) running memtomem **0.6.8 or later**. The provider refuses a server whose structured output does not echo `"recorded": false`, a key added in 0.6.8. While the catalog plugin pins an earlier release, recall stays off, so install the plugin at the 0.7.3 commit above or use a manual entry that runs 0.6.8 or later;
 - that entry set to `trust: full`. An entry without a `trust` value is treated as `full`.
 
-Install the provider at the same 0.7.2 commit:
+Install the provider at the same 0.7.3 commit:
 
 ```bash
-hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-memory" --ref d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b
+hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-memory" --ref 953b3c15a66c0808429d882f7326a381187fa90c
 ```
 
 It does not need `--enable`, and either answer to the install's enable prompt works: a memory provider is active once `memory.provider` names it. The exception is a provider that `hermes plugins disable` put under `plugins.disabled`; Hermes loads it only after `hermes plugins enable memtomem-memory`.
@@ -257,7 +267,7 @@ plugins:
 
 `hermes memory setup memtomem-memory` writes only the `memory.provider` line, not `mcp_allowlist`. If you set the grant with `hermes config set plugins.entries.memtomem-memory.mcp_allowlist '[memtomem]'`, keep the brackets: without them Hermes stores the string `memtomem`, which grants nothing.
 
-The provider shares the connection, call queue and circuit breaker of the model's own memtomem tools. It therefore sends at most one recall call at a time per MCP entry name across the Hermes process, and after a failed call it waits 15 s, then 60 s, then 300 s before trying again. For the settings (`budget_ms`, `top_k` and others) and further behavior, see the [package README](https://github.com/memtomem/memtomem/blob/v0.7.2/packages/memtomem-hermes-memory/README.md).
+The provider shares the connection, call queue and circuit breaker of the model's own memtomem tools. It therefore sends at most one recall call at a time per MCP entry name across the Hermes process, and after a failed call it waits 15 s, then 60 s, then 300 s before trying again. For the settings (`budget_ms`, `top_k` and others) and further behavior, see the [package README](https://github.com/memtomem/memtomem/blob/v0.7.3/packages/memtomem-hermes-memory/README.md).
 
 ## Antigravity
 
@@ -270,8 +280,10 @@ Antigravity IDE and Antigravity CLI (`agy`) use separate files.
 For the Antigravity CLI, the quickest way is to let `agy` write the entry:
 
 ```bash
-agy mcp add memtomem memtomem-server
+agy mcp add -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage memtomem memtomem-server
 ```
+
+Flags such as `-e` must come before the server name.
 
 To edit the file yourself, add this entry to `~/.gemini/config/mcp_config.json`:
 
@@ -281,7 +293,8 @@ To edit the file yourself, add this entry to `~/.gemini/config/mcp_config.json`:
     "memtomem": {
       "type": "stdio",
       "command": "memtomem-server",
-      "args": []
+      "args": [],
+      "env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
@@ -296,20 +309,20 @@ Restart the agent session after editing. Antigravity does not inherit MCP entrie
 The Antigravity CLI plugin bundles an exact-pinned memtomem MCP server and nine memory skills: six user-scope skills (index, recall, remember, search, setup, status) and, since 0.7.2, the three [project workflows](/ltm/project-workflows/) (handoff, brief, update). It is **experimental** since 0.7.0: its layout and skills can change without a deprecation window. It requires:
 
 - Antigravity CLI (`agy`) 1.4.7 or later;
-- `uv` on `PATH`. The plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.7.2' memtomem-server`;
+- `uv` on `PATH`. The plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.7.3' memtomem-server`;
 - Python 3.12. If uv cannot find one, it downloads one on first start. When that download is not possible, the server does not start; run `uv python install 3.12` once to fix it.
 
-Install the 0.7.2 release:
+Install the 0.7.3 release:
 
 ```bash
-agy plugin install https://github.com/memtomem/memtomem/tree/v0.7.2/packages/memtomem-antigravity-plugin
+agy plugin install https://github.com/memtomem/memtomem/tree/v0.7.3/packages/memtomem-antigravity-plugin
 ```
 
 The plugin is copied to `~/.gemini/config/plugins/memtomem`. Start a new `agy` session to load it. To update, run `agy plugin uninstall memtomem` and install again; your memories stay in `~/.memtomem`.
 
 The plugin's server starts at **user scope**. `agy` starts it in the plugin directory, so it has no project context and paths given to indexing must be absolute. The three project workflows first bind the server to the repository you are working in: they call [`mem_project_bind`](/ltm/mcp-tools/#project-binding) through `mem_do` with the root that `git rev-parse --show-toplevel` prints, and continue only when the tool names that same root. A parent directory, which the server returns when only a parent's tier is registered, stops the workflow, and so does any other result. The repository needs a registered tier (`mm mem init --scope project_local`). A binding lasts until the server process restarts, so working in a second repository needs a restart first. After a binding, search and recall in that server process also see the bound repository's project tiers. The `remember` workflow always saves at user scope. Storage paths in `~/.memtomem/config.json` must be absolute or start with `~`; a relative path resolves against the plugin directory and opens a different store.
 
-`agy` names the plugin's server `memtomem_memtomem`, so it does not replace a hand-registered `memtomem` entry: both servers run. Keep one. Remove the manual entry with `agy mcp remove memtomem` so only one server runs, or keep the manual entry and the plugin's skills with `mm doctor --mcp-client agy --reconcile keep-manual`, then `--apply` (`keep-plugin` removes the manual entry instead). A plugin update can restore the bundled server, so rerun the check after reinstalling. `agy mcp list` shows only the hand-registered entries, not the plugin's server; `agy plugin list` shows the plugin. Compare the database path `mem_status` reports before removing either. See the [plugin README](https://github.com/memtomem/memtomem/blob/v0.7.2/packages/memtomem-antigravity-plugin/README.md) for details.
+`agy` names the plugin's server `memtomem_memtomem`, so it does not replace a hand-registered `memtomem` entry: both servers run. Keep one. Remove the manual entry with `agy mcp remove memtomem` so only one server runs, or keep the manual entry and the plugin's skills with `mm doctor --mcp-client agy --reconcile keep-manual`, then `--apply` (`keep-plugin` removes the manual entry instead). A plugin update can restore the bundled server, so rerun the check after reinstalling. `agy mcp list` shows only the hand-registered entries, not the plugin's server; `agy plugin list` shows the plugin. Compare the database path `mem_status` reports before removing either. See the [plugin README](https://github.com/memtomem/memtomem/blob/v0.7.3/packages/memtomem-antigravity-plugin/README.md) for details.
 
 ## Verify the Connection
 

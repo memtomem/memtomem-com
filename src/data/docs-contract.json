@@ -1,6 +1,6 @@
 {
   "core": {
-    "version": "0.7.2",
+    "version": "0.7.3",
     "python": ">=3.12",
     "tools": {
       "core": 9,
@@ -123,16 +123,16 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.25",
-    "bundledCore": "0.7.2",
-    "requirement": "memtomem[onnx]==0.7.2"
+    "version": "0.5.28",
+    "bundledCore": "0.7.3",
+    "requirement": "memtomem[onnx]==0.7.3"
   },
   "opencode": {
-    "version": "0.3.22",
-    "bundledCore": "0.7.2"
+    "version": "0.3.25",
+    "bundledCore": "0.7.3"
   },
   "sourceSnapshots": {
-    "coreMain": "d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b",
+    "coreMain": "953b3c15a66c0808429d882f7326a381187fa90c",
     "stmMain": "9363ecb95cd3baa3e7ecec99000962035b64547b"
   },
   "configuration": {
@@ -183,7 +183,7 @@
         "Windsurf",
         "Claude Desktop",
         "Gemini CLI",
-        "Kimi CLI",
+        "Kimi Code",
         "OpenCode",
         "Hermes Agent",
         "Antigravity"

@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.7.2. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.3. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.2 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.3 binary.
 
 | Group | Commands |
 |---|---|
@@ -91,13 +91,13 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.7.2, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.3, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
 Run the interactive setup wizard. Configures embedding provider, database path, tokenizer, reranker, and default namespace.
 
-At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, reranker, tokenizer, and namespace defaults. Pass `--preset <name> --non-interactive` to run without prompts, or `--advanced` to force the full 10-step wizard.
+At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, tokenizer, and namespace defaults. No preset turns on a reranker: add one with `mm config set rerank.enabled true` or the Advanced wizard's reranker step. Rerunning `mm init` with a preset leaves an existing `rerank` section in `config.json` as it is. Pass `--preset <name> --non-interactive` to run without prompts, or `--advanced` to force the full 10-step wizard.
 
 ```bash
 mm init                              # interactive setup with preset picker
@@ -430,11 +430,13 @@ mm memory doctor --fix --apply       # actually remove broken links
 Manage deterministic retrieval evaluation cases, replay them, compare reports, and enforce a quality gate. Search runs and labels are also available in the dev-mode Web UI's Search Runs and Quality Lab pages.
 
 ```bash
-mm quality cases list
-mm quality replay --output report.json
+mm quality cases
+mm quality replay --out baseline.json
 mm quality compare baseline.json candidate.json
-mm quality gate baseline.json candidate.json
+mm quality gate baseline.json candidate.json --policy policy.json
 ```
+
+`mm quality gate` requires `--policy`, a committed gate-policy JSON file. It exits 0 when the candidate passes, 1 on a policy violation (the verdict is still printed first), and 2 on invalid input.
 
 ### `mm watchdog`
 
@@ -518,7 +520,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.7.2          # pin a specific version
+mm upgrade --version 0.7.3          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -532,6 +534,7 @@ Checks after upgrading from an earlier release:
 - **From before 0.7.0:** frontmatter in memory files, and in Context Gateway agent and command files, is read as YAML. After a re-index an unquoted ` #` suffix is a comment and is dropped with a warning, and a key needs a space after its colon; quote a literal hash. Back up again after upgrading: export now writes bundle v4, and only 0.7.0 or later restores it fully, because an earlier import ignores the scope, project and validity fields v4 adds.
 - **From before 0.7.1:** `namespace="!system"` now selects every namespace except the system ones, so a namespace literally named `!system` (possible in 0.7.0 through `mm index --namespace`, namespace rules or a raw `mem_add`) can no longer be selected by that name. On `mem_search`, `mem_recall`, `mm search` and `mm recall` a comma list that includes it, such as `"!system,work"`, is refused; drop it from saved filters. Find such a namespace with `mem_do(action="ns_list")`, move it with `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`, then change the rule or flag that produced it. On 0.7.1 a later re-index can write it again; from 0.7.2 the name is refused or skipped (next item).
 - **From before 0.7.2:** writes refuse a namespace that a search could not find by name: one that contains `,` or `*`, is `!system`, is whitespace only, or is an `agent-runtime:` name whose agent id the agent tools refuse (`agent-runtime:foo:bar`). An empty string still means no namespace was given. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, the Notion and Obsidian importers, `mm index --namespace` and the web add and index routes refuse such a name before writing. The check is narrower than the one `mm add --namespace` and the session and `mem_ns_*` tools apply, so rule-generated names such as `claude:-Users-me-project` keep working. The indexer skips such a name from a namespace rule, a folder name (`enable_auto_ns`) or `default_namespace` and moves on to the next rule, then `enable_auto_ns`, then `default_namespace`; a `default_namespace` that fails stores the chunks untagged (`default`). `mm config set`, `mem_config`, `mm init --namespace` and `mem_policy_add` refuse such a name. A value already in `config.json` or a `config.d` fragment still loads, but `namespace.rules` is written as a whole list, so fix such an entry before editing the rules through those surfaces. A lifecycle policy already stored with such a target moves nothing and reports an error when it runs. Rows already stored under such a name keep it, also on a plain or `--force` re-index: move them with `mem_do(action="ns_rename", ...)`, which refuses an empty source name, or fix the rule and run `mm index --reassign-namespaces`.
+- **From before 0.7.3:** a hand-written MCP registration, or one an earlier `mm init --mcp` wrote, for a client that runs the [`update` workflow](/ltm/project-workflows/#review-coverage) needs `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage` in its `env` (OpenCode: `environment`). Without it, `update` stops before writing whenever a coverage call is due: in `incremental` or `full` mode, once it has read at least one commit message in full. `topic` mode, and a server in `full` tool mode (which exposes the tool anyway), are unaffected. Re-running `mm init --mcp kimi` rewrites the Kimi Code entry with the variable; `mm init --mcp claude` (or `json`) leaves an existing Claude registration as it is, so add it there yourself (see the [manual registrations](/guides/connect-ai-client/#before-you-connect)). Claude plugin users who also keep a manual registration: the plugin released with 0.7.3 launches that release, so run `mm doctor --claude-mcp`, align the manual entry's launch with the plugin's or remove the entry, then reload and check `/mcp`.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 

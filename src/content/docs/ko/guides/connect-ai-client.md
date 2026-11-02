@@ -1,6 +1,6 @@
 ---
 title: AI 클라이언트 연결
-description: Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi CLI, OpenCode, Hermes Agent, Antigravity를 memtomem에 연결합니다.
+description: Claude Code, Codex CLI, Cursor, Windsurf, Claude Desktop, Gemini CLI, Kimi Code, OpenCode, Hermes Agent, Antigravity를 memtomem에 연결합니다.
 ---
 
 **예상 시간:** 5~10분
@@ -19,6 +19,8 @@ mm status
 
 MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용합니다. `memtomem`과 `mm`은 터미널용 CLI이므로 MCP 서버 명령으로 사용하면 안 됩니다. 공식 플러그인은 자체적으로 고정한 실행 명령을 사용할 수 있습니다.
 
+memtomem의 [`update` 워크플로](/ko/ltm/project-workflows/#update)를 실행하는 클라이언트(Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI)의 수동 항목에는 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`도 함께 설정합니다. 이 값은 설정 항목이 아닙니다. 워크플로가 `topic` 이외의 모드에서 필요로 하는 도구 하나를 노출하며, 서버가 설정을 읽기 전 실행 시점에 읽으므로 `~/.memtomem/config.json`으로는 지정할 수 없습니다. 설정은 계속 그 파일에서 읽습니다. 다른 클라이언트의 항목에는 넣지 않습니다.
+
 아래에서 사용할 클라이언트 **하나만** 선택하세요. 플러그인과 수동 MCP 항목이 이미 함께 등록되어 있다면, 한쪽이 자동으로 제거된다고 가정하지 말고 클라이언트별 판정 기준을 확인합니다.
 
 | 클라이언트 | 항목을 구분하는 기준 | 결과 |
@@ -31,7 +33,7 @@ MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용�
 
 ## Claude Code
 
-공식 플러그인 설치를 권장합니다. Core 0.7.2와 함께 배포된 플러그인 버전은 0.5.25이며 Core 0.7.2를 포함합니다.
+공식 플러그인 설치를 권장합니다. Core 0.7.3과 함께 배포된 플러그인 버전은 0.5.28이며 Core 0.7.3을 포함합니다.
 
 ```text
 /plugin marketplace add memtomem/memtomem
@@ -52,7 +54,7 @@ MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용�
 이전에 서버를 수동으로 등록했다면 먼저 `/mcp`를 실행하세요. Claude Code 2.1.218은 명령과 인수가 정확히 같은지 비교하며 환경변수는 비교하지 않습니다. 플러그인이 사용하는 실행 조합은 다음과 같습니다.
 
 ```text
-uvx --from memtomem[onnx]==0.7.2 memtomem-server
+uvx --from memtomem[onnx]==0.7.3 memtomem-server
 ```
 
 이 조합이 같으면 수동 등록이 우선하고 `mcp__memtomem__mem_*` 이름으로 서버 하나만 실행합니다. 아래의 단독 `memtomem-server` 등록은 조합이 다르므로 서버 두 개가 실행되고, 도구가 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*`에 모두 표시됩니다.
@@ -64,8 +66,10 @@ uvx --from memtomem[onnx]==0.7.2 memtomem-server
 - **플러그인 명령과 수동 서버를 함께 유지:** 플러그인은 설치된 상태로 두고 수동 항목을 플러그인과 정확히 같은 조합으로 등록합니다. 예:
 
   ```bash
-  claude mcp add memtomem -- uvx --from "memtomem[onnx]==0.7.2" memtomem-server
+  claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- uvx --from "memtomem[onnx]==0.7.3" memtomem-server
   ```
+
+  수동 항목은 환경 변수까지 포함해 우선하므로, 플러그인의 `update` 워크플로를 `topic` 이외의 모드로 실행하려면 이 변수가 필요합니다.
 
   기존 수동 항목을 그대로 두고 플러그인에 포함된 서버를 비활성화하는 방법도 있습니다. `mm doctor --mcp-client claude --reconcile keep-manual`로 미리 확인하고, 모든 Claude 세션을 종료한 뒤 `--apply`를 붙여 다시 실행합니다. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로, 그 뒤에 `mm doctor --mcp-client claude`를 다시 실행합니다. 백업과 종료 코드는 [`mm doctor`](/ko/ltm/cli/#추가-진단검토-명령)를 참고하세요.
 
@@ -73,16 +77,19 @@ uvx --from memtomem[onnx]==0.7.2 memtomem-server
 
 | 범위 | 명령 | 적용 대상 |
 |---|---|---|
-| Local | `claude mcp add memtomem -- memtomem-server` | 현재 프로젝트와 사용자 |
-| User | `claude mcp add memtomem -s user -- memtomem-server` | 이 사용자의 모든 프로젝트 |
+| Local | `claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- memtomem-server` | 현재 프로젝트와 사용자 |
+| User | `claude mcp add memtomem -s user -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- memtomem-server` | 이 사용자의 모든 프로젝트 |
 | Project | 프로젝트 루트의 `.mcp.json` 커밋 | 신뢰 승인 후 팀원과 공유 |
+
+`-e`는 `--`보다 앞에 두어야 합니다. `--` 뒤의 내용은 모두 서버 실행 명령으로 처리됩니다.
 
 ```json
 {
   "mcpServers": {
     "memtomem": {
       "command": "memtomem-server",
-      "args": []
+      "args": [],
+      "env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
@@ -111,12 +118,13 @@ MCP 서버만 연결하려면 `~/.codex/config.toml`에 다음 내용을 추가�
 [mcp_servers.memtomem]
 command = "memtomem-server"
 args = []
+env = { MEMTOMEM_EXTRA_TOOLS = "mem_update_coverage" }
 supports_parallel_tool_calls = true
 ```
 
 파일을 수정한 뒤 Codex를 다시 시작합니다.
 
-Codex는 MCP 서버 이름을 기준으로 판정합니다. 플러그인이 함께 설치되어 있어도 수동 `[mcp_servers.memtomem]` 항목이 우선하므로 서버 하나만 실행합니다. 플러그인에 포함된 고정 버전 서버로 전환하려면 수동 항목을 제거하세요. 수동 항목의 이름을 `[mcp_servers.memtomem-local]`로 바꾸면 중복 제거되지 않아 서버 두 개가 실행되므로 정확히 `memtomem`이라는 이름을 사용합니다. 최종 적용 결과는 `codex mcp list`로 확인합니다.
+Codex는 MCP 서버 이름을 기준으로 판정합니다. 플러그인이 함께 설치되어 있어도 수동 `[mcp_servers.memtomem]` 항목이 우선하므로 서버 하나만 실행합니다. 따라서 플러그인의 `memtomem-update` 스킬을 `topic` 이외의 모드로 실행하려면 이 항목에 위의 `env` 줄이 필요합니다. 플러그인에 포함된 고정 버전 서버로 전환하려면 수동 항목을 제거하세요. 수동 항목의 이름을 `[mcp_servers.memtomem-local]`로 바꾸면 중복 제거되지 않아 서버 두 개가 실행되므로 정확히 `memtomem`이라는 이름을 사용합니다. 최종 적용 결과는 `codex mcp list`로 확인합니다.
 
 ## JSON 방식 MCP 클라이언트
 
@@ -140,21 +148,23 @@ Codex는 MCP 서버 이름을 기준으로 판정합니다. 플러그인이 함�
 | macOS Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` | 앱 완전 종료 후 다시 열기 |
 | Windows Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` | 앱 완전 종료 후 다시 열기 |
 | Gemini CLI | `~/.gemini/settings.json` | CLI 재시작. 새 설정은 Antigravity CLI 권장 |
-| Kimi CLI | `~/.kimi/mcp.json` 또는 `$KIMI_SHARE_DIR/mcp.json` | Kimi CLI 재시작 |
+| Kimi Code | `~/.kimi-code/mcp.json` 또는 `$KIMI_CODE_HOME` 아래의 `mcp.json` | Kimi Code 재시작 |
 
-Kimi CLI는 설정 마법사로 등록할 수도 있습니다.
+Kimi Code는 `update` 워크플로를 실행하므로, 항목의 `"args"` 옆에 `"env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}`도 함께 둡니다. 설정 마법사는 이 값을 포함해 항목을 작성하며, 다시 실행하면 이전 Kimi 항목도 새로 작성합니다.
 
 ```bash
 mm init --mcp kimi
 ```
 
+memtomem은 현재 Kimi Code 홈에만 Kimi 항목을 작성합니다. 이전 경로인 `~/.kimi/mcp.json`(또는 `$KIMI_SHARE_DIR` 아래)에 남은 memtomem 항목은 갱신되지 않고 `mm uninstall`도 보고만 하므로 직접 제거합니다.
+
 ## OpenCode
 
-공개된 `opencode-memtomem@0.3.22` 플러그인에는 Core 0.7.2가 포함되어 있으며, 고정 버전 MCP 서버와 명령·스킬을 함께 제공합니다. OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없으므로 `opencode.json`에 직접 추가하세요.
+공개된 `opencode-memtomem@0.3.25` 플러그인에는 Core 0.7.3이 포함되어 있으며, 고정 버전 MCP 서버와 명령·스킬을 함께 제공합니다. OpenCode는 단수 `plugin` 키를 사용하며 `opencode plugin add` 명령은 없으므로 `opencode.json`에 직접 추가하세요.
 
 ```json
 {
-  "plugin": ["opencode-memtomem@0.3.22"]
+  "plugin": ["opencode-memtomem@0.3.25"]
 }
 ```
 
@@ -166,16 +176,16 @@ MCP 도구만 필요한 경우:
   "mcp": {
     "memtomem": {
       "type": "local",
-      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.7.2", "memtomem-server"],
+      "command": ["uvx", "--isolated", "--from", "memtomem[all]==0.7.3", "memtomem-server"],
       "enabled": true,
       "timeout": 60000,
-      "environment": {"MEMTOMEM_TOOL_MODE": "core"}
+      "environment": {"MEMTOMEM_TOOL_MODE": "core", "MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
 ```
 
-OpenCode는 `mcp` 키의 정확한 이름으로 판정합니다. 기존 `mcp.memtomem` 항목이 플러그인의 기본 서버보다 우선하므로 서버 하나만 실행합니다. 플러그인 서버를 사용하려면 이 수동 항목을 제거하세요. `mcp."memtomem-local"`처럼 다른 키를 사용하면 중복 제거되지 않아 서버 두 개가 실행됩니다.
+OpenCode는 `mcp` 키의 정확한 이름으로 판정합니다. 기존 `mcp.memtomem` 항목이 플러그인의 기본 서버보다 우선하므로 서버 하나만 실행합니다. 플러그인은 자체 항목을 추가하지 않고 이 항목을 그대로 사용하므로, 플러그인의 `update` 명령을 `topic` 이외의 모드로 실행하려면 이 항목에 위의 `MEMTOMEM_EXTRA_TOOLS` 값이 필요합니다. 플러그인 서버를 사용하려면 이 수동 항목을 제거하세요. `mcp."memtomem-local"`처럼 다른 키를 사용하면 중복 제거되지 않아 서버 두 개가 실행됩니다.
 
 플러그인은 `permission` 설정에 memtomem 도구의 기본 권한도 추가합니다. 검색·회상·상태·통계·목록·읽기 도구는 허용하고, 저장(`mem_add`)과 색인(`mem_index`)을 포함한 나머지 도구는 매번 확인을 요청하며, `memtomem_mem_do`는 거부합니다. 플러그인 서버는 `core` 모드로 실행되므로 `mem_do`를 거치는 나머지 액션은 권한을 바꾸기 전까지 사용할 수 없습니다. 같은 키로 직접 지정한 규칙은 해당 키의 플러그인 기본값만 대체하며 나머지 기본값은 유지됩니다. `memtomem_*` 같은 와일드카드는 개별 도구 이름의 기본값을 지우지 않으므로, dispatcher를 허용하려면 정확한 키를 지정하세요.
 
@@ -193,7 +203,7 @@ OpenCode는 `mcp` 키의 정확한 이름으로 판정합니다. 기존 `mcp.mem
 
 - Hermes Agent 0.21.5 이상
 - Hermes 환경의 MCP 지원(`hermes-agent[mcp]`). 없으면 스킬만 로드되고 MCP 서버는 시작되지 않으며, 원인은 디버그 로그에만 남습니다.
-- `PATH`에 있는 `uv`. 아래의 0.7.2 commit으로 설치한 플러그인은 서버를 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.2' memtomem-server`로 시작합니다. 카탈로그로 설치한 플러그인은 카탈로그가 고정한 commit의 릴리스로 시작하며, 이 릴리스는 더 이전일 수 있습니다.
+- `PATH`에 있는 `uv`. 아래의 0.7.3 commit으로 설치한 플러그인은 서버를 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.3' memtomem-server`로 시작합니다. 카탈로그로 설치한 플러그인은 카탈로그가 고정한 commit의 릴리스로 시작하며, 이 릴리스는 더 이전일 수 있습니다.
 - Python 3.12. uv가 3.12를 찾지 못하면 첫 시작 때 내려받습니다. 오프라인이거나 uv의 Python 다운로드가 비활성화되어 있어 내려받을 수 없으면 서버가 시작되지 않으므로, 이때는 `uv python install 3.12`를 한 번 실행합니다.
 
 Hermes 플러그인 카탈로그에서 설치합니다.
@@ -202,10 +212,10 @@ Hermes 플러그인 카탈로그에서 설치합니다.
 hermes plugins install memtomem --enable
 ```
 
-카탈로그는 검토를 거친 commit을 고정하므로, 카탈로그 항목이 갱신되기 전에는 최신 릴리스보다 뒤처질 수 있습니다. 특정 릴리스를 직접 고정하려면 Git 저장소에서 설치합니다. Hermes의 `--ref`는 태그 이름을 받지 않고 40자 commit SHA만 받습니다. 0.7.2의 commit으로 설치하는 명령은 다음과 같습니다.
+카탈로그는 검토를 거친 commit을 고정하므로, 카탈로그 항목이 갱신되기 전에는 최신 릴리스보다 뒤처질 수 있습니다. 특정 릴리스를 직접 고정하려면 Git 저장소에서 설치합니다. Hermes의 `--ref`는 태그 이름을 받지 않고 40자 commit SHA만 받습니다. 0.7.3의 commit으로 설치하는 명령은 다음과 같습니다.
 
 ```bash
-hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-plugin" --ref d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b --enable
+hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-plugin" --ref 953b3c15a66c0808429d882f7326a381187fa90c --enable
 ```
 
 다른 릴리스의 commit은 `git ls-remote --exit-code https://github.com/memtomem/memtomem "refs/tags/v<버전>" "refs/tags/v<버전>^{}"`로 확인합니다. 출력이 두 줄이면 `^{}`로 끝나는 줄의 SHA를 사용합니다. 이미 설치되어 있다면 `--force --ref <새 commit SHA>`로 다시 설치합니다.
@@ -233,13 +243,13 @@ Hermes는 MCP 서버 이름으로 판정합니다. 플러그인이 함께 활성
 
 다음 조건이 필요합니다.
 
-- `memtomem` 항목(위의 플러그인 또는 `mcp_servers.memtomem`)이 memtomem **0.6.8 이상**을 실행해야 합니다. provider는 structured 출력에 `"recorded": false`를 반환하지 않는 서버를 거부하며, 이 키는 0.6.8부터 제공됩니다. 카탈로그 플러그인이 더 이전 릴리스를 고정하고 있으면 기억을 불러오지 않으므로, 위의 0.7.2 commit으로 플러그인을 설치하거나 0.6.8 이상을 실행하는 수동 항목을 사용합니다.
+- `memtomem` 항목(위의 플러그인 또는 `mcp_servers.memtomem`)이 memtomem **0.6.8 이상**을 실행해야 합니다. provider는 structured 출력에 `"recorded": false`를 반환하지 않는 서버를 거부하며, 이 키는 0.6.8부터 제공됩니다. 카탈로그 플러그인이 더 이전 릴리스를 고정하고 있으면 기억을 불러오지 않으므로, 위의 0.7.3 commit으로 플러그인을 설치하거나 0.6.8 이상을 실행하는 수동 항목을 사용합니다.
 - 그 항목은 `trust: full`이어야 합니다. `trust`를 지정하지 않은 항목은 `full`로 처리됩니다.
 
-provider도 같은 0.7.2 commit으로 설치합니다.
+provider도 같은 0.7.3 commit으로 설치합니다.
 
 ```bash
-hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-memory" --ref d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b
+hermes plugins install "https://github.com/memtomem/memtomem#packages/memtomem-hermes-memory" --ref 953b3c15a66c0808429d882f7326a381187fa90c
 ```
 
 `--enable`은 필요하지 않으며, 설치 중 활성화 여부를 묻는 질문에는 어느 쪽으로 답해도 됩니다. memory provider는 `memory.provider`에 지정되면 활성화됩니다. 단, `hermes plugins disable`로 `plugins.disabled`에 추가된 provider는 `hermes plugins enable memtomem-memory`를 실행해야 로드됩니다.
@@ -257,7 +267,7 @@ plugins:
 
 `hermes memory setup memtomem-memory`는 `memory.provider` 줄만 작성하고 `mcp_allowlist`는 작성하지 않습니다. `hermes config set plugins.entries.memtomem-memory.mcp_allowlist '[memtomem]'`로 지정할 때는 대괄호를 유지해야 합니다. 대괄호가 없으면 문자열 `memtomem`으로 저장되어 아무 접근도 허용하지 않습니다.
 
-provider는 모델의 memtomem 도구와 같은 연결, 호출 대기열, circuit breaker를 사용합니다. 따라서 Hermes 프로세스 전체에서 MCP 항목 이름마다 한 번에 호출 하나만 보내고, 호출이 실패하면 15초, 60초, 300초 순으로 기다린 뒤 다시 시도합니다. 설정 항목(`budget_ms`, `top_k` 등)과 세부 동작은 [패키지 README](https://github.com/memtomem/memtomem/blob/v0.7.2/packages/memtomem-hermes-memory/README.md)를 참고하세요.
+provider는 모델의 memtomem 도구와 같은 연결, 호출 대기열, circuit breaker를 사용합니다. 따라서 Hermes 프로세스 전체에서 MCP 항목 이름마다 한 번에 호출 하나만 보내고, 호출이 실패하면 15초, 60초, 300초 순으로 기다린 뒤 다시 시도합니다. 설정 항목(`budget_ms`, `top_k` 등)과 세부 동작은 [패키지 README](https://github.com/memtomem/memtomem/blob/v0.7.3/packages/memtomem-hermes-memory/README.md)를 참고하세요.
 
 ## Antigravity
 
@@ -270,8 +280,10 @@ Antigravity IDE와 Antigravity CLI(`agy`)는 서로 다른 파일을 사용합�
 Antigravity CLI에서는 `agy`가 항목을 직접 작성하도록 하는 방법이 가장 간단합니다.
 
 ```bash
-agy mcp add memtomem memtomem-server
+agy mcp add -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage memtomem memtomem-server
 ```
+
+`-e` 같은 플래그는 서버 이름보다 앞에 두어야 합니다.
 
 파일을 직접 편집하는 경우 `~/.gemini/config/mcp_config.json`에 다음 항목을 추가합니다.
 
@@ -281,7 +293,8 @@ agy mcp add memtomem memtomem-server
     "memtomem": {
       "type": "stdio",
       "command": "memtomem-server",
-      "args": []
+      "args": [],
+      "env": {"MEMTOMEM_EXTRA_TOOLS": "mem_update_coverage"}
     }
   }
 }
@@ -296,20 +309,20 @@ agy mcp add memtomem memtomem-server
 Antigravity CLI 플러그인은 버전이 고정된 memtomem MCP 서버와 기억 스킬 9개를 함께 제공합니다. 사용자 범위 스킬 6개(index, recall, remember, search, setup, status)와 0.7.2부터 추가된 [프로젝트 워크플로](/ko/ltm/project-workflows/) 3개(handoff, brief, update)입니다. 0.7.0부터 제공되는 **실험적(experimental)** 기능이므로 구성과 스킬이 사용 중단 유예 기간 없이 바뀔 수 있습니다. 필요한 조건은 다음과 같습니다.
 
 - Antigravity CLI(`agy`) 1.4.7 이상
-- `PATH`에 있는 `uv`. 플러그인은 서버를 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.2' memtomem-server`로 시작합니다.
+- `PATH`에 있는 `uv`. 플러그인은 서버를 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.3' memtomem-server`로 시작합니다.
 - Python 3.12. uv가 찾지 못하면 처음 시작할 때 내려받습니다. 내려받을 수 없으면 서버가 시작되지 않으므로 `uv python install 3.12`를 한 번 실행합니다.
 
-0.7.2 릴리스를 설치합니다.
+0.7.3 릴리스를 설치합니다.
 
 ```bash
-agy plugin install https://github.com/memtomem/memtomem/tree/v0.7.2/packages/memtomem-antigravity-plugin
+agy plugin install https://github.com/memtomem/memtomem/tree/v0.7.3/packages/memtomem-antigravity-plugin
 ```
 
 플러그인은 `~/.gemini/config/plugins/memtomem`에 복사됩니다. 새 `agy` 세션을 시작하면 불러옵니다. 업데이트하려면 `agy plugin uninstall memtomem`을 실행한 뒤 다시 설치합니다. 기억은 `~/.memtomem`에 그대로 남습니다.
 
 플러그인 서버는 **사용자 범위**로 시작합니다. `agy`가 서버를 플러그인 디렉터리에서 시작하므로 프로젝트 컨텍스트가 없고, 색인할 경로는 절대 경로로 지정해야 합니다. 프로젝트 워크플로 3개는 먼저 작업 중인 저장소에 서버를 바인딩합니다. `git rev-parse --show-toplevel`이 출력한 루트로 `mem_do`를 통해 [`mem_project_bind`](/ko/ltm/mcp-tools/#project-binding)를 호출하고, 도구가 같은 루트를 반환할 때만 계속 진행합니다. 상위 디렉터리의 tier만 등록되어 있으면 서버가 상위 디렉터리를 반환하는데, 이때를 포함해 다른 결과가 나오면 워크플로가 중단됩니다. 저장소에는 등록된 tier가 있어야 합니다(`mm mem init --scope project_local`). 바인딩은 서버 프로세스가 재시작될 때까지 유지되므로 다른 저장소에서 작업하려면 먼저 서버를 재시작해야 합니다. 바인딩한 뒤에는 해당 서버 프로세스의 search와 recall도 바인딩된 저장소의 프로젝트 tier를 함께 조회합니다. `remember` 워크플로는 항상 사용자 범위에 저장합니다. `~/.memtomem/config.json`의 저장소 경로는 절대 경로이거나 `~`로 시작해야 합니다. 상대 경로는 플러그인 디렉터리를 기준으로 해석되어 다른 저장소를 엽니다.
 
-`agy`는 플러그인 서버의 이름을 `memtomem_memtomem`으로 지정하므로, 직접 등록한 `memtomem` 항목을 대체하지 않고 서버 두 개가 실행됩니다. 둘 중 하나만 남기세요. `agy mcp remove memtomem`으로 수동 항목을 제거하면 서버 하나만 실행됩니다. 수동 항목과 플러그인 스킬을 함께 유지하려면 `mm doctor --mcp-client agy --reconcile keep-manual`로 확인한 뒤 `--apply`를 붙여 실행합니다(`keep-plugin`은 반대로 수동 항목을 제거합니다). 플러그인을 업데이트하면 포함된 서버가 복원될 수 있으므로 다시 설치한 뒤 검사를 다시 실행합니다. `agy mcp list`는 직접 등록한 항목만 보여 주고 플러그인 서버는 표시하지 않으며, 플러그인은 `agy plugin list`에서 확인합니다. 어느 쪽을 제거하기 전에 `mem_status`가 보고하는 데이터베이스 경로를 비교하세요. 자세한 내용은 [플러그인 README](https://github.com/memtomem/memtomem/blob/v0.7.2/packages/memtomem-antigravity-plugin/README.md)를 참고하세요.
+`agy`는 플러그인 서버의 이름을 `memtomem_memtomem`으로 지정하므로, 직접 등록한 `memtomem` 항목을 대체하지 않고 서버 두 개가 실행됩니다. 둘 중 하나만 남기세요. `agy mcp remove memtomem`으로 수동 항목을 제거하면 서버 하나만 실행됩니다. 수동 항목과 플러그인 스킬을 함께 유지하려면 `mm doctor --mcp-client agy --reconcile keep-manual`로 확인한 뒤 `--apply`를 붙여 실행합니다(`keep-plugin`은 반대로 수동 항목을 제거합니다). 플러그인을 업데이트하면 포함된 서버가 복원될 수 있으므로 다시 설치한 뒤 검사를 다시 실행합니다. `agy mcp list`는 직접 등록한 항목만 보여 주고 플러그인 서버는 표시하지 않으며, 플러그인은 `agy plugin list`에서 확인합니다. 어느 쪽을 제거하기 전에 `mem_status`가 보고하는 데이터베이스 경로를 비교하세요. 자세한 내용은 [플러그인 README](https://github.com/memtomem/memtomem/blob/v0.7.3/packages/memtomem-antigravity-plugin/README.md)를 참고하세요.
 
 ## 연결 확인
 

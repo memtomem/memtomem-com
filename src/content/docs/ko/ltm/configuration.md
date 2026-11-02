@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.2가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.3이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -110,7 +110,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed`(로컬 ONNX) / `cohere`(외부 API) / `local`(sentence-transformers `CrossEncoder`, 로컬). `local`을 쓰려면 `sentence-transformers`를 별도로 설치해야 하며, memtomem extra에는 포함되어 있지 않습니다. 이때 `MEMTOMEM_RERANK__MODEL`에는 sentence-transformers 모델명(예: `cross-encoder/ms-marco-MiniLM-L-6-v2`)을 지정합니다. 일반적으로는 `fastembed`를 권장합니다 | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | 모델명. 형식은 공급자에 따라 다릅니다(fastembed 카탈로그 ID, Cohere Rerank 모델, sentence-transformers 모델명). `fastembed`에서 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 한국어 최적화 프리셋은 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | 모델명. 형식은 공급자에 따라 다릅니다(fastembed 카탈로그 ID, Cohere Rerank 모델, sentence-transformers 모델명). `fastembed`에서 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 어떤 `mm init` 프리셋도 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | 하한선 — 리랭커가 받는 후보 수의 최솟값 | `20` |
@@ -379,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.2/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.3/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 
