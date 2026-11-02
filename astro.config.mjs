@@ -20,6 +20,8 @@ export default defineConfig({
 				root: { label: 'English', lang: 'en' },
 				ko: { label: '한국어', lang: 'ko' },
 			},
+			// Swaps the link-preview card on Korean pages (the head below is shared).
+			routeMiddleware: './src/routeData.ts',
 			head: [
 				{
 					tag: 'script',
@@ -36,6 +38,14 @@ export default defineConfig({
 				{
 					tag: 'meta',
 					attrs: { property: 'og:image', content: 'https://memtomem.com/og-image.png' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image:width', content: '1200' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image:height', content: '630' },
 				},
 				{
 					tag: 'meta',
