@@ -134,15 +134,59 @@ a { color: inherit; text-decoration: none; }
 	font-size: 14px; color: var(--text-1); letter-spacing: -0.3px;
 }
 .hero-install .dollar { color: var(--text-3); user-select: none; }
-.hero-stats {
-	display: flex; justify-content: center; gap: 48px;
-	margin-top: 44px; font-size: 13px; color: var(--text-2);
+/* ── Hero session loop ────────────────── */
+.loop {
+	list-style: none; counter-reset: loop;
+	display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+	max-width: 920px; margin: 8px auto 40px; padding: 0;
+	text-align: left;
 }
-.hero-stats > div { text-align: center; white-space: nowrap; }
-.hero-stats strong {
-	font-weight: 700; color: var(--text-1);
-	font-size: 26px; display: block;
-	margin-bottom: 2px; letter-spacing: -0.5px;
+.loop-step {
+	position: relative; counter-increment: loop;
+	display: flex; flex-direction: column; gap: 8px;
+	background: var(--bg-1); border: 1px solid var(--border);
+	border-top: 2px solid var(--accent);
+	border-radius: var(--radius-lg); padding: 20px 20px 18px;
+}
+.loop-step.teal  { border-top-color: var(--teal); }
+.loop-step.coral { border-top-color: var(--coral); }
+/* Drawn with borders, not a glyph, so screen readers have nothing to announce. */
+.loop-step:not(:last-child)::after {
+	content: '';
+	position: absolute; right: -18px; top: 50%;
+	width: 7px; height: 7px;
+	border-top: 1.5px solid var(--text-3); border-right: 1.5px solid var(--text-3);
+	transform: translateY(-50%) rotate(45deg);
+}
+.loop-when {
+	font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+	text-transform: uppercase; color: var(--text-2);
+}
+.loop-when::before { content: counter(loop) '  '; color: var(--text-1); }
+.loop-cmd {
+	display: block; width: fit-content;
+	font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+	font-size: 13px; color: var(--text-1);
+	background: var(--bg-2); border: 1px solid var(--border);
+	border-radius: var(--radius-sm); padding: 5px 10px;
+}
+.loop-step.accent .loop-cmd { color: var(--accent); }
+.loop-step.teal .loop-cmd   { color: var(--teal); }
+.loop-step.coral .loop-cmd  { color: var(--coral); }
+.loop-step p { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-top: 2px; }
+.loop-step p code { font-size: 12px; color: var(--text-1); }
+.hero-actions {
+	display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px 24px;
+}
+.hero-link { font-size: 14px; color: var(--accent); transition: color 0.15s; }
+.hero-link:hover { color: var(--text-1); }
+@media (max-width: 768px) {
+	.loop { grid-template-columns: 1fr; gap: 26px; margin-bottom: 32px; }
+	.loop-step:not(:last-child)::after {
+		right: auto; left: 50%; top: auto; bottom: -17px;
+		transform: translateX(-50%) rotate(135deg);
+	}
+	.loop-step { padding: 18px 16px 16px; }
 }
 
 /* ── Sections ─────────────────────────── */
@@ -391,9 +435,6 @@ a { color: inherit; text-decoration: none; }
 	.hero h1 { font-size: 28px; letter-spacing: -0.8px; }
 	.hero-sub { font-size: 14px; margin-bottom: 28px; }
 	.hero-install { font-size: 12px; padding: 10px 16px; }
-	.hero-stats { gap: 28px; flex-wrap: nowrap; justify-content: center; }
-	.hero-stats strong { font-size: 20px; }
-	.hero-stats > div { font-size: 11px; }
 	.section { padding: 48px 20px; }
 	.section-title { font-size: 24px; letter-spacing: -0.5px; }
 	.section-desc { font-size: 14px; margin-bottom: 28px; }

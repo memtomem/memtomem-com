@@ -72,19 +72,35 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="hero">
 	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
-	<h1>AI That Never Forgets —<br /><em>Memory Infrastructure</em> for Agents</h1>
+	<h1>Every session starts<br /><em>where the last one left off</em></h1>
 	<p class="hero-sub">
-		Stop re-explaining your project to your AI every session. memtomem turns your notes,
-		docs, and code into a searchable memory that any MCP-compatible agent can use —
-		across sessions, across agents, with local storage by default.
+		memtomem keeps your project's memory as Markdown files you own. Close a session with a
+		handoff, open the next one with a brief — in the same agent or a different one — and save
+		what you decided with update. Each step runs only when you invoke it.
 	</p>
-	<div class="hero-install">
-		<span class="dollar">$</span> uv tool install 'memtomem[all]'
-	</div>
-	<div class="hero-stats">
-		<div><strong>9</strong>Core MCP Tools</div>
-		<div><strong>10</strong>Compression Strategies</div>
-		<div><strong>5</strong>Default STM Tools</div>
+	<ol class="loop" role="list">
+		<li class="loop-step accent">
+			<div class="loop-when">End of a session · Claude Code</div>
+			<code class="loop-cmd">/memtomem:handoff save</code>
+			<p>Writes one checkpoint record into the project's <code>.memtomem/memories.local</code>.</p>
+		</li>
+		<li class="loop-step teal">
+			<div class="loop-when">Next session · Codex CLI</div>
+			<code class="loop-cmd">$memtomem-brief</code>
+			<code class="loop-cmd">$memtomem-handoff resume</code>
+			<p>Lists active handoffs, then loads one and checks it against the live commit.</p>
+		</li>
+		<li class="loop-step coral">
+			<div class="loop-when">After a few commits · Claude Code</div>
+			<code class="loop-cmd">/memtomem:update</code>
+			<p>Saves decisions, bug causes, and preferences back into the same files.</p>
+		</li>
+	</ol>
+	<div class="hero-actions">
+		<div class="hero-install">
+			<span class="dollar">$</span> uv tool install 'memtomem[all]'
+		</div>
+		<a class="hero-link" href={`${base}/ltm/project-workflows/`}>How the session loop works →</a>
 	</div>
 </section>
 
