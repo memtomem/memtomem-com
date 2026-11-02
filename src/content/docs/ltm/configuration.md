@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.2 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.3 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -100,7 +100,7 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 |---|---|---|
 | `MEMTOMEM_RERANK__ENABLED` | Enable reranking of hybrid search results | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) / `local` (sentence-transformers `CrossEncoder`, local). `local` needs `sentence-transformers` installed separately; no memtomem extra includes it. `MEMTOMEM_RERANK__MODEL` then takes a sentence-transformers model name (e.g. `cross-encoder/ms-marco-MiniLM-L-6-v2`). `fastembed` is usually preferable | `"fastembed"` |
-| `MEMTOMEM_RERANK__MODEL` | Model name; its form depends on the provider (a fastembed catalog ID, a Cohere Rerank model, or a sentence-transformers model name). With `fastembed`, for non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. The Korean-optimized preset leaves reranking off, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
+| `MEMTOMEM_RERANK__MODEL` | Model name; its form depends on the provider (a fastembed catalog ID, a Cohere Rerank model, or a sentence-transformers model name). With `fastembed`, for non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. No `mm init` preset turns reranking on, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | `""` |
 | `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | Floor — reranker never sees fewer candidates than this | `20` |
@@ -331,7 +331,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.2/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.3/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

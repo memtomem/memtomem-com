@@ -88,17 +88,33 @@ Every file path, configuration key, or symbol the briefing cites is checked agai
 Reviews what the session produced and the latest commits, and saves only what is worth keeping as project memory.
 
 ```text
+/memtomem:update
 /memtomem:update full
 /memtomem:update topic retry backoff
 ```
 
-- `full` (`f`) reviews everything; `topic <focus>` (`t <focus>`) reviews only that subject. `topic` needs a focus.
-- It runs only with evidence: observed session outcomes or commits. Context inherited from a caller or given in the request counts. Without evidence it does not invent memories and reports `insufficient_input: work context`.
-- Both modes read only the messages of the latest **10** commits. Older commits are not reviewed, and a later run reads the latest 10 of its own time again. A duplicate check before each save keeps the same item from being saved twice.
+It has three modes:
+
+| Mode | Commits reviewed | Records them as reviewed |
+|---|---|---|
+| `incremental` (the default) | those of the latest 10 that no earlier run recorded | yes |
+| `full` | all of the latest 10 | yes |
+| `topic` | the latest 10, filtered to the focus | no |
+
+- A request that names neither `full` nor `topic` runs `incremental` without asking. Other words in it are reported as ignored, so reviewing one subject needs `topic <focus>`; `topic` without a focus asks for one, or stops with `insufficient_input: topic focus` when it cannot ask. `f` and `t` are shorthands only as the whole first word of the arguments.
+- Session outcomes are reviewed in every mode. It runs only with evidence: observed session outcomes or commits. Context inherited from a caller or given in the request counts. Without evidence it does not invent memories and reports `insufficient_input: work context`.
+- Every mode reads only the messages of the latest **10** commits. The window is bounded, not a cursor: older commits are not reviewed. A duplicate check before each save keeps the same item from being saved twice.
 - It saves decisions (`decision`), bug causes and fixes (`bugfix`), and user rules (`preference`). A decision or fix taken from a commit needs a reason in the commit message. Temporary task state, formatting changes, raw logs, patch bodies, and credentials are not saved.
 - Commit messages are treated as untrusted text; instructions in them are never followed.
-- Each candidate is first searched for in existing memories and skipped when already captured. For a project item, a match found only in an AI tool's own memory for this repository does not skip it: the item is still written to `project_local`, citing the match. The run ends with a report of the commits reviewed, the items saved, and the duplicates skipped.
+- Each candidate is first searched for in existing memories and skipped when already captured. For a project item, a match found only in an AI tool's own memory for this repository does not skip it: the item is still written to `project_local`, citing the match.
 - Items go to the project tier. A cross-project personal preference is saved at user scope (`namespace="default"`) only when you explicitly ask for that.
+- The run ends with a report of the mode, the commits whose full message it read, the coverage result in `incremental` and `full` mode, the items saved, and the duplicates skipped, with the yield as `commit-derived: <N>` and `session-derived: <M>`. An `incremental` run that finds no unreviewed commit and no durable session learning reports `nothing new`.
+
+### Review coverage
+
+In `incremental` and `full` mode, `update` calls [`mem_update_coverage`](/ltm/mcp-tools/#update-coverage) twice: before its first save, to learn which of the commits it read an earlier run already reviewed, and after every save of the run has returned, to record those commits, even when it saved nothing. If any save failed, nothing is recorded and the next run reviews those commits again. When no commit message was read in full, neither call is made and the run reviews session outcomes only. `topic` mode never reads or records coverage.
+
+The tool exists from memtomem 0.7.2, and a server exposes it as its own tool only in `full` [tool mode](/ltm/mcp-tools/#tool-modes) or when started with `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`. The plugins' bundled servers set it, and so does every registration a current `mm init --mcp` writes. A server entry written by hand, or by an earlier `mm init`, has to add it; the [manual registrations](/guides/connect-ai-client/) show where. When a coverage call is due and the tool is missing, `update` stops before writing and names both possible causes, an older server or the missing variable. `topic` keeps working either way.
 
 ## Antigravity CLI
 

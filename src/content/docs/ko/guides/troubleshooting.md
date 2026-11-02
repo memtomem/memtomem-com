@@ -120,10 +120,12 @@ command -v memtomem-server
 
 중복되는 것은 MCP 서버 네임스페이스와 도구이며, 플러그인의 슬래시 명령이나 스킬까지 반드시 중복되는 것은 아닙니다. 클라이언트에 맞게 정리하세요.
 
-- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.7.2 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
+- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.7.3 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
 - **Codex:** `codex mcp list`를 실행합니다. `[mcp_servers.memtomem]`은 플러그인보다 우선하며 서버 하나만 실행합니다. `[mcp_servers.memtomem-local]`처럼 다른 이름을 사용하면 서버 두 개가 실행되므로, 이름을 `memtomem`으로 변경하거나 플러그인 서버를 사용하려면 수동 항목을 제거합니다.
 - **OpenCode:** 수동 항목을 정확한 `mcp.memtomem` 키로 유지하거나, 플러그인 서버를 사용하려면 제거합니다. `mcp."memtomem-local"`처럼 다른 키를 사용하면 서버 두 개가 실행됩니다.
 - **Antigravity CLI:** 플러그인 서버의 이름이 `memtomem_memtomem`이므로 직접 등록한 `memtomem` 항목은 항상 함께 실행됩니다. `agy mcp remove memtomem`으로 수동 항목을 제거하거나, 수동 항목을 유지하고 `mm doctor --mcp-client agy --reconcile keep-manual --apply`로 플러그인 서버를 비활성화합니다.
+
+유지하는 수동 항목은 플러그인의 명령과 스킬이 사용하는 서버이며, 자체 환경 변수를 그대로 가진 채 우선합니다. 플러그인의 [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 `topic` 이외의 모드로 실행하려면 [수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인)처럼 이 항목에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점에 `update`가 아무것도 쓰지 않고 멈춥니다.
 
 Claude Code, Codex, Antigravity CLI에서는 `mm doctor --mcp-client claude`(또는 `codex`, `agy`)가 수동 등록과 플러그인이 서버 두 개를 실행하게 되는지 보고합니다. `--reconcile keep-manual` 또는 `keep-plugin`은 복구안을 미리 보여 주고, `--apply`를 지정하면 수정한 파일의 백업을 남긴 채 반영합니다. 자세한 내용은 [`mm doctor`](/ko/ltm/cli/#추가-진단검토-명령)를 참고하세요.
 
