@@ -33,18 +33,48 @@ mms doctor                                               # 3. 전체 설정 진�
 
 ## 작동 방식
 
-```
-AI 에이전트
-    ↕  MCP 프로토콜
-memtomem-stm (STM 프록시)
-    ├── ↕ 관련 기억 검색 → memtomem (LTM)
-    └── ↕ 중계된 호출 → 연결한 MCP 서버
-                           (filesystem, GitHub, …)
-```
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 430" role="img" aria-labelledby="stm-flow-title stm-flow-desc">
+<title id="stm-flow-title">memtomem-stm을 거치는 도구 호출의 흐름</title>
+<desc id="stm-flow-desc">AI 에이전트가 보낸 도구 호출을 memtomem-stm 프록시가 연결한 MCP 서버로 전달합니다. 돌아온 텍스트 응답은 보통 CLEAN, COMPRESS, SURFACE 세 단계를 거치며, 목록 다음에 설명한 응답은 COMPRESS와 SURFACE를 거치지 않습니다. SURFACE는 memtomem(LTM)을 검색하고, 관련성 검사를 통과한 기억이 있으면 응답에 덧붙입니다. 에이전트는 그 기억과 함께 응답을 받습니다.</desc>
+<defs><marker id="stm-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="90" y="16" width="300" height="56" rx="8"/>
+<text class="fd-title" x="240" y="40" text-anchor="middle">AI 에이전트</text>
+<text class="fd-note" x="240" y="60" text-anchor="middle">Claude Code · Codex CLI · 기타 MCP 클라이언트</text>
+<path class="fd-arrow" d="M 135 72 V 120" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="145" y="100">도구 호출</text>
+<path class="fd-arrow" d="M 345 160 V 74" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="335" y="94" text-anchor="end">응답</text>
+<text class="fd-label" x="335" y="110" text-anchor="end">+ 관련 기억(있을 때)</text>
+<rect class="fd-proxy" x="20" y="122" width="440" height="188" rx="10"/>
+<text class="fd-title" x="36" y="148">memtomem-stm</text>
+<text class="fd-note" x="36" y="167">선택 사항인 프록시</text>
+<text class="fd-label" x="36" y="232">호출 전달</text>
+<rect class="fd-stage" x="250" y="160" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="181" text-anchor="middle">SURFACE</text>
+<rect class="fd-stage" x="250" y="208" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="229" text-anchor="middle">COMPRESS</text>
+<rect class="fd-stage" x="250" y="256" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="277" text-anchor="middle">CLEAN</text>
+<path class="fd-arrow" d="M 335 256 V 242" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 335 208 V 194" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 135 310 V 348" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 200 350 V 272 H 248" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="208" y="334">응답</text>
+<path class="fd-arrow" d="M 440 350 V 176 H 422" marker-start="url(#stm-flow-head)" marker-end="url(#stm-flow-head)"/>
+<rect class="fd-box" x="20" y="350" width="210" height="64" rx="8"/>
+<text class="fd-title" x="125" y="376" text-anchor="middle">연결한 MCP 서버</text>
+<text class="fd-note" x="125" y="396" text-anchor="middle">filesystem, GitHub, …</text>
+<rect class="fd-mem" x="270" y="350" width="190" height="64" rx="8"/>
+<text class="fd-title" x="365" y="376" text-anchor="middle">memtomem (LTM)</text>
+<text class="fd-note" x="365" y="396" text-anchor="middle">MCP로 검색</text>
+</svg>
+<figcaption>텍스트 응답의 일반적인 처리 경로입니다. 일부 응답은 아래 설명처럼 COMPRESS와 SURFACE를 거치지 않습니다.</figcaption>
+</figure>
 
 STM은 모든 MCP 도구 호출을 다음 순서로 처리합니다.
 
-1. **CLEAN** — 요청 정규화 (노이즈 제거, 형식 통일)
+1. **CLEAN** — 업스트림 응답 정리 (노이즈 제거, 형식 통일)
 2. **COMPRESS** — 응답 크기 축소 (10가지 전략 중 자동 선택)
 3. **SURFACE** — LTM에서 관련 기억 조회·주입 (5단계 관련성 검사)
 

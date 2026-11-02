@@ -33,18 +33,48 @@ mms doctor                                               # 3. diagnose the compl
 
 ## How It Works
 
-```
-AI Agent
-    ↕  MCP protocol
-memtomem-stm (STM Proxy)
-    ├── ↕ Surfacing queries → memtomem (LTM)
-    └── ↕ Proxied calls → Upstream MCP Servers
-                           (filesystem, GitHub, …)
-```
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 430" role="img" aria-labelledby="stm-flow-title stm-flow-desc">
+<title id="stm-flow-title">How a tool call passes through memtomem-stm</title>
+<desc id="stm-flow-desc">The AI agent sends a tool call to the memtomem-stm proxy, which forwards it to the upstream MCP server. A text response usually comes back through three stages: CLEAN, COMPRESS, and SURFACE; the responses described after the list skip COMPRESS and SURFACE. SURFACE searches memtomem (LTM) and adds the memories that pass its relevance checks, if any. The agent receives the response with those memories.</desc>
+<defs><marker id="stm-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="90" y="16" width="300" height="56" rx="8"/>
+<text class="fd-title" x="240" y="40" text-anchor="middle">AI agent</text>
+<text class="fd-note" x="240" y="60" text-anchor="middle">Claude Code · Codex CLI · any MCP client</text>
+<path class="fd-arrow" d="M 135 72 V 120" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="145" y="100">tool call</text>
+<path class="fd-arrow" d="M 345 160 V 74" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="335" y="94" text-anchor="end">response</text>
+<text class="fd-label" x="335" y="110" text-anchor="end">+ memories, if relevant</text>
+<rect class="fd-proxy" x="20" y="122" width="440" height="188" rx="10"/>
+<text class="fd-title" x="36" y="148">memtomem-stm</text>
+<text class="fd-note" x="36" y="167">optional proxy</text>
+<text class="fd-label" x="36" y="232">forwards the call</text>
+<rect class="fd-stage" x="250" y="160" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="181" text-anchor="middle">SURFACE</text>
+<rect class="fd-stage" x="250" y="208" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="229" text-anchor="middle">COMPRESS</text>
+<rect class="fd-stage" x="250" y="256" width="170" height="32" rx="6"/>
+<text class="fd-stage-text" x="335" y="277" text-anchor="middle">CLEAN</text>
+<path class="fd-arrow" d="M 335 256 V 242" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 335 208 V 194" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 135 310 V 348" marker-end="url(#stm-flow-head)"/>
+<path class="fd-arrow" d="M 200 350 V 272 H 248" marker-end="url(#stm-flow-head)"/>
+<text class="fd-label" x="208" y="334">response</text>
+<path class="fd-arrow" d="M 440 350 V 176 H 422" marker-start="url(#stm-flow-head)" marker-end="url(#stm-flow-head)"/>
+<rect class="fd-box" x="20" y="350" width="210" height="64" rx="8"/>
+<text class="fd-title" x="125" y="376" text-anchor="middle">Upstream MCP servers</text>
+<text class="fd-note" x="125" y="396" text-anchor="middle">filesystem, GitHub, …</text>
+<rect class="fd-mem" x="270" y="350" width="190" height="64" rx="8"/>
+<text class="fd-title" x="365" y="376" text-anchor="middle">memtomem (LTM)</text>
+<text class="fd-note" x="365" y="396" text-anchor="middle">search over MCP</text>
+</svg>
+<figcaption>The usual path for a text response. Some responses skip COMPRESS and SURFACE, as described below.</figcaption>
+</figure>
 
 STM runs every MCP tool call through this pipeline:
 
-1. **CLEAN** — normalize the request (strip noise, unify format)
+1. **CLEAN** — clean the upstream response (strip noise, unify format)
 2. **COMPRESS** — shrink the response (auto-select from 10 strategies)
 3. **SURFACE** — pull relevant memories from LTM and inject them (5-level gating)
 
