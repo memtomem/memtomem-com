@@ -204,7 +204,7 @@
         "promote"
       ]
     },
-    "commit": "e67c706d23be7a76ebed85ccc7f3e48d2280fe3a",
+    "commit": "d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -1128,6 +1128,7 @@
       "mem_tag_rename",
       "mem_timeline",
       "mem_unlink",
+      "mem_update_coverage",
       "mem_version",
       "mem_watchdog"
     ],
@@ -1232,6 +1233,7 @@
       "mem_tag_rename",
       "mem_timeline",
       "mem_unlink",
+      "mem_update_coverage",
       "mem_watchdog"
     ]
   },

@@ -146,9 +146,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 					<p>노트·문서·코드를 <code>mm index</code>로 색인합니다. 임베딩을 활성화하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합하며, minimal 설정은 키워드 검색만 사용합니다. 정확한 이름과 의미가 비슷한 표현을 함께 찾을 수 있습니다. 문서는 구조에 맞춰 분할하고, 다시 색인할 때는 변경된 부분만 임베딩을 계산합니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a class="feature-card teal" href={`${base}/ko/ltm/multi-agent/`}>
+			<a class="feature-card teal" href={`${base}/ko/ltm/project-workflows/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
-					<p>기억은 세션이 끝나도 남습니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다. Claude Code·Cursor·Codex는 같은 저장소에서 이전 작업을 이어갑니다.</p>
+					<p><code>handoff</code>로 Claude Code에서 하던 작업을 Codex나 Antigravity CLI로 넘기고, <code>brief</code>로 지난 결정을 확인한 뒤 작업을 시작하며, <code>update</code>로 세션에서 정한 내용을 저장합니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>

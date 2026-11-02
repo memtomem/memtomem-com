@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 39, including `mem_do` | You want common management tools directly visible |
-| `full` | 101 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 102 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
 
 The following example is for a manual MCP-only connection. If a client plugin
 already supplies memtomem, check that client's coexistence rule in
@@ -31,6 +31,8 @@ Example:
   }
 }
 ```
+
+To expose a registered tool individually on top of the mode, list it in `MEMTOMEM_EXTRA_TOOLS` (comma-separated), for example `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`. Set it in the environment the server is launched with; the server reads it at startup, so restart the server after changing it. A name the server does not register is logged and ignored.
 
 ## Core Mode
 
@@ -65,7 +67,8 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.7.1 registry has 101 current tools and 95 `mem_do` actions; 0.7.1 adds
+The v0.7.2 registry has 102 current tools and 96 `mem_do` actions; 0.7.2 adds
+`mem_update_coverage` ([Update Coverage](#update-coverage)), and 0.7.1 added
 `mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
 `mem_formation_scan` and `mem_candidate_propose/list/review/recover/evidence`. The new
@@ -101,7 +104,7 @@ candidate; reusing it with different content is rejected.
 | Sessions | `session_start`, `session_end`, `session_list`, `project_bind` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
 | Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
-| Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
+| Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
@@ -120,7 +123,23 @@ After binding, the memory tools that use the project context use that project: s
 - The binding is set once per server process, and binding another project needs a restart. It is refused when the server's working directory already lies in another registered project.
 - If the tier is unregistered later, reads stay on the bound project, adds to the tier are refused, and pinned context is not re-checked until the server restarts. Until then `mem_status` warns `bound_project_unregistered`; restart the server or register the tier again with `mm mem init`.
 
-The workflows bundled with the Hermes Agent and Antigravity CLI plugins do not bind a project on their own, and their `remember` workflow always saves at user scope.
+Since 0.7.2, the Antigravity CLI plugin's project workflows (`handoff`, `brief`, `update`) bind the server to the repository they run in; see [Project Workflows](/ltm/project-workflows/#antigravity-cli). The Hermes Agent plugin's workflows do not bind a project, and in both plugins the `remember` workflow always saves at user scope.
+
+## Update Coverage
+
+`mem_update_coverage` (0.7.2) keeps, per project, the set of commit SHAs that a review of recent commits has already read. It is a set, not a cursor. The tool belongs to the `maintenance` category, so the default modes reach it through `mem_do`:
+
+```text
+mem_do(action="update_coverage", params={"shas": ["<40-hex sha>", "<40-hex sha>"]})
+mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": true, "run_id": "<uuid>"})
+```
+
+- `shas` takes 1 to 10 full 40-character lowercase SHAs without duplicates. The server checks their shape only and never runs `git`.
+- With `record=false` (the default), the result lists the given SHAs that no earlier call recorded, in the order given.
+- With `record=true`, the SHAs are recorded as reviewed and `run_id` (a canonical lowercase UUID, required) is kept as provenance. Record only commits whose full message was read, and only after the run's last `mem_add`; a review limited to one topic records nothing. Recording also prunes rows older than 90 days.
+- It needs a project context: start the server inside a project with a registered tier, or bind one with [`mem_project_bind`](#project-binding).
+- Coverage is stored only in the SQLite database. A JSON export does not carry it, and an import neither adds nor clears it, so after a bundle is restored into a store without that project's coverage, those commits are reviewed again.
+- The tool is marked as not read-only, so a caching proxy does not replay an earlier answer.
 
 ## When to Change Modes
 
@@ -166,7 +185,7 @@ A sources page is `{"sources": [...], "page_size": N, "next": ...}`. `next` is t
 
 ## Full-mode tool names
 
-These are the 101 current names in full mode, distinct from the nine tools exposed by default in core mode.
+These are the 102 current names in full mode, distinct from the nine tools exposed by default in core mode.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -269,5 +288,6 @@ These are the 101 current names in full mode, distinct from the nine tools expos
 - `mem_tag_rename`
 - `mem_timeline`
 - `mem_unlink`
+- `mem_update_coverage`
 - `mem_watchdog`
 <!-- upstream-tool-names:end -->

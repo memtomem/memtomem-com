@@ -146,9 +146,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 				<p>Index your notes, docs, and code with <code>mm index</code>, then search by keyword with the minimal preset. Enable embeddings for hybrid search — BM25 keyword and dense-vector semantic search fused via RRF, so exact identifiers and meaning-based queries both land. Markdown, code, and structured files are chunked by structure, and re-indexing only re-embeds the chunks that changed.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
-			<a class="feature-card teal" href={`${base}/ltm/multi-agent/`}>
+			<a class="feature-card teal" href={`${base}/ltm/project-workflows/`}>
 				<h3>Memory Across Sessions &amp; Agents</h3>
-				<p>Memory doesn't vanish when a session ends. Namespaces route searches between agent-specific and <code>shared</code> scopes; they are not access-control boundaries. The session workflow lets Claude Code, Cursor, and Codex continue from one memory store.</p>
+				<p>Hand off work from Claude Code to Codex or Antigravity CLI with <code>handoff</code>, start a task with a <code>brief</code> of past decisions, and save what a session settled with <code>update</code>. Namespaces route searches between agent-specific and <code>shared</code> scopes; they are not access-control boundaries.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ltm/context-gateway/`}>

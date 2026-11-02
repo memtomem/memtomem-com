@@ -13,7 +13,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 |---|---|---|
 | `core` (기본) | `mem_do` 포함 총 9개 | 대부분의 에이전트에 가장 좋은 기본값 |
 | `standard` | `mem_do` 포함 39개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
-| `full` | 현재 도구 101개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
+| `full` | 현재 도구 102개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
 
 다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이
 이미 memtomem을 제공한다면 항목을 추가하기 전에
@@ -32,6 +32,8 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
   }
 }
 ```
+
+등록된 도구를 모드와 별도로 개별 노출하려면 `MEMTOMEM_EXTRA_TOOLS`에 쉼표로 구분해 지정합니다(예: `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`). 서버를 실행하는 환경에 설정해야 하며, 서버는 시작할 때 이 값을 읽으므로 변경한 뒤에는 서버를 재시작합니다. 서버에 등록되지 않은 이름은 로그에 기록되고 무시됩니다.
 
 ## Core 모드
 
@@ -66,7 +68,8 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.1은 현재 도구 101개와 `mem_do` 액션 95개를 제공합니다. 0.7.1에서
+v0.7.2는 현재 도구 102개와 `mem_do` 액션 96개를 제공합니다. 0.7.2에서
+`mem_update_coverage`가 추가되었고([업데이트 커버리지](#update-coverage)), 0.7.1에서
 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)).
 Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과
@@ -102,7 +105,7 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 | 세션 | `session_start`, `session_end`, `session_list`, `project_bind` |
 | 스크래치 | `scratch_set`, `scratch_get`, `scratch_promote` |
 | Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (스킬·에이전트·명령을 프로젝트·계층 간 이동/복사), `context_version`, `context_promote` |
-| 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag` |
+| 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | 가져오기 / 내보내기 | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | 품질 / 분석 | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
@@ -123,7 +126,25 @@ mem_do(action="project_bind", params={"project_root": "/absolute/path/to/project
 - 바인딩은 서버 프로세스마다 한 번만 설정되며, 다른 프로젝트에 바인딩하려면 서버를 다시 시작해야 합니다. 서버의 작업 디렉터리가 이미 다른 등록된 프로젝트 안에 있으면 거부됩니다.
 - 나중에 tier 등록을 해제하면 읽기는 바인딩된 프로젝트에 그대로 남고, 해당 tier에 대한 추가는 거부되며, pinned context는 서버를 다시 시작할 때까지 다시 확인하지 않습니다. 그동안 `mem_status`가 `bound_project_unregistered` 경고를 표시하므로 서버를 다시 시작하거나 `mm mem init`으로 tier를 다시 등록합니다.
 
-Hermes Agent와 Antigravity CLI 플러그인에 포함된 워크플로는 프로젝트를 스스로 바인딩하지 않으며, `remember` 워크플로는 항상 사용자 범위에 저장합니다.
+0.7.2부터 Antigravity CLI 플러그인의 프로젝트 워크플로(`handoff`, `brief`, `update`)는 실행 중인 저장소에 서버를 바인딩합니다. 자세한 내용은 [프로젝트 워크플로](/ko/ltm/project-workflows/#antigravity-cli)를 참고하세요. Hermes Agent 플러그인의 워크플로는 프로젝트를 바인딩하지 않으며, 두 플러그인 모두 `remember` 워크플로는 항상 사용자 범위에 저장합니다.
+
+<a id="update-coverage"></a>
+
+## 업데이트 커버리지
+
+`mem_update_coverage`(0.7.2)는 최근 커밋을 검토하는 작업이 이미 읽은 커밋 SHA 집합을 프로젝트별로 기록합니다. 커서가 아닌 집합입니다. 이 도구는 `maintenance` 범주에 속하므로 기본 모드에서는 `mem_do`로 호출합니다.
+
+```text
+mem_do(action="update_coverage", params={"shas": ["<40-hex sha>", "<40-hex sha>"]})
+mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": true, "run_id": "<uuid>"})
+```
+
+- `shas`에는 중복 없이 40자 소문자 전체 SHA를 1~10개 전달합니다. 서버는 형식만 검사하며 `git`을 실행하지 않습니다.
+- `record=false`(기본값)이면 전달한 SHA 중 이전 호출에서 기록되지 않은 것을 전달한 순서대로 반환합니다.
+- `record=true`이면 SHA를 검토 완료로 기록하고, 필수 인자인 `run_id`(소문자 표준 UUID)를 출처로 함께 저장합니다. 전체 메시지를 읽은 커밋만 대상으로 하고, 실행의 마지막 `mem_add`가 끝난 뒤에 기록해야 하며, 한 주제로 범위를 좁힌 검토는 아무것도 기록하지 않습니다. 기록할 때 90일이 지난 행은 정리됩니다.
+- 프로젝트 컨텍스트가 필요합니다. tier가 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
+- 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
+- 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
 
 <a id="언제-모드를-바꿀까"></a>
 
@@ -171,7 +192,7 @@ AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 �
 
 ## 전체 모드 도구 이름
 
-full 모드에서 제공하는 현재 도구 101개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
+full 모드에서 제공하는 현재 도구 102개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -274,5 +295,6 @@ full 모드에서 제공하는 현재 도구 101개의 이름이며, 기본 core
 - `mem_tag_rename`
 - `mem_timeline`
 - `mem_unlink`
+- `mem_update_coverage`
 - `mem_watchdog`
 <!-- upstream-tool-names:end -->
