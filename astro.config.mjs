@@ -66,6 +66,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', slug: 'ltm/overview', translations: { ko: '개요' } },
 						{ label: 'Memory Across Sessions', slug: 'ltm/memory-persistence', translations: { ko: '세션을 넘나드는 기억' } },
+						{ label: 'Project Workflows', slug: 'ltm/project-workflows', translations: { ko: '프로젝트 워크플로' } },
 						{ label: 'Index & Import Content', slug: 'ltm/index-and-import', translations: { ko: '기존 자료 색인·가져오기' } },
 						{ label: 'Multi-Agent Collaboration', slug: 'ltm/multi-agent', translations: { ko: '멀티 에이전트 협업' } },
 						{ label: 'Context Gateway', slug: 'ltm/context-gateway' },

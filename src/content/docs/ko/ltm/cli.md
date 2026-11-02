@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.7.1을 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.2를 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -70,7 +70,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.7.1에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.2에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -95,7 +95,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 클라이언트별 등록 방법은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
 
-MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 101개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
+MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 102개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
 v0.1.25부터 MCP 연결만으로는 `~/.memtomem/memtomem.db`를 만들지 않습니다. DB는 도구를 처음 호출할 때 엽니다. 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`에 두며, 플랫폼에 따라 `$TMPDIR/memtomem-$UID/`를 사용합니다. 도구를 호출하지 않으면 홈 디렉터리에 파일을 남기지 않습니다.
 
@@ -498,7 +498,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.7.1          # 특정 버전 고정
+mm upgrade --version 0.7.2          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -510,7 +510,8 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이 검사 없이 메모리 도구가 저장한 내용은 blocked로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
 - **PKCS#8 형식의 개인 키**(`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`)는 0.6.12 이전에는 쓰기 검사(write guard)를 통과했으며, 업그레이드해도 이미 저장된 내용은 다시 검사하지 않습니다. `mm mem rescan --scope <tier> --json`으로 키가 들어 있는 저장 청크를 확인하고, 보고된 각 파일에서 키를 제거한 뒤 `mm index <dir>`를 실행합니다. rescan을 다시 실행해 아무것도 보고되지 않는지 확인합니다. 계속 보고되는 출처는 다시 색인되지 않은 것입니다. 삭제한 파일, 제외된 경로, 10 MB를 넘는 파일, `mm index` 실행에서 오류가 보고된 파일이 해당합니다. 이런 청크를 제거하는 방법은 [보안 권고](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8)에 있습니다. 호스팅 서비스나 git 기록에 들어간 키는 교체(rotate)합니다.
 - **0.7.0 이전에서 업그레이드한 경우:** 기억 파일과 Context Gateway의 agent·command 파일의 frontmatter를 YAML로 읽습니다. 다시 색인하면 따옴표 없는 ` #` 뒤의 내용은 주석으로 처리되어 경고와 함께 제외되고, 키 뒤의 콜론 다음에는 공백이 있어야 합니다. `#` 문자를 값에 포함하려면 따옴표로 감쌉니다. 업그레이드한 뒤에는 백업을 다시 만드세요. 내보내기는 이제 bundle v4로 저장하며, 이전 버전의 가져오기는 v4가 추가한 범위·프로젝트·유효 기간 필드를 무시하므로 0.7.0 이상에서만 완전히 복원됩니다.
-- **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 그대로 두면 이후 다시 색인할 때 같은 이름이 다시 생길 수 있습니다.
+- **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 0.7.1에서는 그대로 두면 이후 다시 색인할 때 같은 이름이 다시 생길 수 있고, 0.7.2부터는 이 이름이 거부되거나 건너뛰어집니다(다음 항목).
+- **0.7.2 이전에서 업그레이드한 경우:** 검색에서 이름으로 찾을 수 없는 네임스페이스에는 더 이상 쓰지 않습니다. `,`나 `*`를 포함한 이름, `!system`, 공백만 있는 이름, 에이전트 도구가 거부하는 에이전트 ID를 가진 `agent-runtime:` 이름(`agent-runtime:foo:bar`)이 이에 해당합니다. 빈 문자열은 지금도 네임스페이스를 지정하지 않은 것으로 처리됩니다. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, Notion·Obsidian 가져오기, `mm index --namespace`, 웹 추가·색인 경로는 이런 이름을 쓰기 전에 거부합니다. 이 검사는 `mm add --namespace`, 세션 도구, `mem_ns_*` 도구의 검사보다 범위가 좁으므로 `claude:-Users-me-project`처럼 규칙이 만드는 이름은 계속 사용할 수 있습니다. 색인기는 네임스페이스 규칙, 폴더 이름(`enable_auto_ns`), `default_namespace`에서 나온 이런 이름을 건너뛰고 다음 규칙, `enable_auto_ns`, `default_namespace` 순으로 넘어갑니다. 검사를 통과하지 못한 `default_namespace`는 청크를 네임스페이스 없이(`default`) 저장합니다. `mm config set`, `mem_config`, `mm init --namespace`, `mem_policy_add`도 이런 이름을 거부합니다. `config.json`이나 `config.d` 조각에 이미 있는 값은 그대로 로드되지만, `namespace.rules`는 목록 전체를 한 번에 저장하므로 이 경로로 규칙을 수정하려면 해당 항목을 먼저 고쳐야 합니다. 이런 대상으로 이미 저장된 수명 주기 정책은 실행될 때 아무것도 옮기지 않고 오류를 보고합니다. 이미 이런 이름으로 저장된 행은 일반 재색인이나 `--force` 재색인 후에도 이름이 유지됩니다. `mem_do(action="ns_rename", ...)`로 옮기거나(원본 이름이 빈 문자열이면 거부), 규칙을 고친 뒤 `mm index --reassign-namespaces`를 실행합니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 

@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.1이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.2가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -87,8 +87,8 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_NAMESPACE__RULES` | `{path_glob, namespace}` 객체로 구성된 JSON 리스트. `pathspec.GitIgnoreSpec` 패턴, 대소문자 구분 없음. `{parent}`와 `{ancestor:N}` 플레이스홀더는 일치한 파일 경로에서 치환됨. 해석 순서: 명시적 `namespace=` 인자 → 규칙(최초 매칭) → `enable_auto_ns` → `default_namespace`. | `[]` |
-| `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | 새 청크의 기본 네임스페이스 | `"default"` |
+| `MEMTOMEM_NAMESPACE__RULES` | `{path_glob, namespace}` 객체로 구성된 JSON 리스트. `pathspec.GitIgnoreSpec` 패턴, 대소문자 구분 없음. `{parent}`와 `{ancestor:N}` 플레이스홀더는 일치한 파일 경로에서 치환됨. 해석 순서: 명시적 `namespace=` 인자 → 규칙(최초 매칭) → `enable_auto_ns` → `default_namespace`. 0.7.2부터 치환된 네임스페이스가 `,`나 `*`를 포함하거나, `!system`이거나, 비어 있거나, 에이전트 도구가 거부하는 `agent-runtime:` 이름인 규칙은 플레이스홀더가 빈 값으로 치환된 규칙처럼 건너뛰고 다음 단계로 넘어감. | `[]` |
+| `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | 새 청크의 기본 네임스페이스. 0.7.2부터 같은 검사를 통과하지 못한 값이면 청크를 네임스페이스 없이(`default`) 저장하며, `mm config set`은 이 값을 거부함 | `"default"` |
 | `MEMTOMEM_NAMESPACE__ENABLE_AUTO_NS` | 명시 네임스페이스나 규칙이 없을 때 파일의 직계 부모 폴더명으로 네임스페이스 유도 | `false` |
 
 예시 (`config.d/namespace.json`, APPEND 병합):
@@ -224,7 +224,8 @@ Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 �
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 101개, 폐기 예정 별칭 없음) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 102개, 폐기 예정 별칭 없음) | `core` |
+| `MEMTOMEM_EXTRA_TOOLS` | `MEMTOMEM_TOOL_MODE`와 별도로 개별 노출할 등록 도구 이름(쉼표 구분, 예: `mem_update_coverage`). 서버 시작 시 읽으며, 알 수 없는 이름은 로그에 기록하고 무시합니다 | `""` |
 
 ### Web UI
 
@@ -378,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.1/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.2/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

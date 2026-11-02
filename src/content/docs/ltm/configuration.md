@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.1 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.2 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -79,8 +79,8 @@ Path-glob → namespace mappings that auto-tag files at index time, so you don't
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_NAMESPACE__RULES` | JSON list of `{path_glob, namespace}` objects. `pathspec.GitIgnoreSpec` patterns, case-insensitive. `{parent}` and `{ancestor:N}` placeholders expand from the matched file path. Resolution order: explicit `namespace=` param → rules (first match) → `enable_auto_ns` → `default_namespace`. | `[]` |
-| `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | Default namespace for new chunks | `"default"` |
+| `MEMTOMEM_NAMESPACE__RULES` | JSON list of `{path_glob, namespace}` objects. `pathspec.GitIgnoreSpec` patterns, case-insensitive. `{parent}` and `{ancestor:N}` placeholders expand from the matched file path. Resolution order: explicit `namespace=` param → rules (first match) → `enable_auto_ns` → `default_namespace`. Since 0.7.2, a rule whose expanded namespace contains `,` or `*`, is `!system`, is blank, or is an `agent-runtime:` name the agent tools refuse is skipped like a rule whose placeholder expands to nothing, and resolution moves on. | `[]` |
+| `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | Default namespace for new chunks. Since 0.7.2, a value that fails the same check stores chunks untagged (`default`), and `mm config set` refuses it | `"default"` |
 | `MEMTOMEM_NAMESPACE__ENABLE_AUTO_NS` | Derive namespace from a file's immediate parent folder when no explicit namespace or rule applies | `false` |
 
 Example (via `config.d/namespace.json`, APPEND-merged):
@@ -196,7 +196,8 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (101 current tools; no deprecated aliases) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (102 current tools; no deprecated aliases) | `core` |
+| `MEMTOMEM_EXTRA_TOOLS` | Comma-separated registered tool names to expose individually on top of `MEMTOMEM_TOOL_MODE`, e.g. `mem_update_coverage`. Read at server startup; unknown names are logged and ignored | `""` |
 
 ### Web UI
 
@@ -330,7 +331,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.1/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.2/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

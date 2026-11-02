@@ -1,13 +1,13 @@
 {
   "core": {
-    "version": "0.7.1",
+    "version": "0.7.2",
     "python": ">=3.12",
     "tools": {
       "core": 9,
       "standard": 39,
-      "fullCurrent": 101,
+      "fullCurrent": 102,
       "deprecatedAliases": 0,
-      "actions": 95
+      "actions": 96
     },
     "toolNames": [
       "mem_activity",
@@ -110,6 +110,7 @@
       "mem_tag_rename",
       "mem_timeline",
       "mem_unlink",
+      "mem_update_coverage",
       "mem_watchdog"
     ]
   },
@@ -122,22 +123,22 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.23",
-    "bundledCore": "0.7.1",
-    "requirement": "memtomem[onnx]==0.7.1"
+    "version": "0.5.25",
+    "bundledCore": "0.7.2",
+    "requirement": "memtomem[onnx]==0.7.2"
   },
   "opencode": {
-    "version": "0.3.20",
-    "bundledCore": "0.7.1"
+    "version": "0.3.22",
+    "bundledCore": "0.7.2"
   },
   "sourceSnapshots": {
-    "coreMain": "e67c706d23be7a76ebed85ccc7f3e48d2280fe3a",
+    "coreMain": "d867c6b0ac9c8d75dffcbd7e1b9ba4754edae84b",
     "stmMain": "9363ecb95cd3baa3e7ecec99000962035b64547b"
   },
   "configuration": {
     "coreEnvironment": {
-      "count": 151,
-      "sha256": "95ed71d08b94b71352a5dd646763b983525f08a19130258590156bc130947bfe"
+      "count": 152,
+      "sha256": "dc7a750509f5377ed714f418363e83f6d38c740fec3b528665fbaf4ab6a165a2"
     },
     "stmEnvironment": {
       "count": 182,
@@ -599,5 +600,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-11-01"
+  "reviewedOn": "2026-11-02"
 }

@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.7.1. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.2. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.1 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.2 binary.
 
 | Group | Commands |
 |---|---|
@@ -91,7 +91,7 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.7.1, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.2, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -116,7 +116,7 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Connect an AI Client](/guides/connect-ai-client/) for the per-client registration steps.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 101 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 102 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
 
@@ -518,7 +518,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.7.1          # pin a specific version
+mm upgrade --version 0.7.2          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -530,7 +530,8 @@ Checks after upgrading from an earlier release:
 - **From before 0.6.9:** run `mm index` over your memory directories once. It judges every file with the redaction guard, so content the memory tools stored without that check is reported as blocked and held until the file is cleaned and re-indexed. Chunks whose text and context are unchanged keep their vectors, so `--force` is not needed.
 - **Private keys in PKCS#8 form** (`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`) pass the write guard before 0.6.12, and upgrading does not rescan what is already stored. Run `mm mem rescan --scope <tier> --json` to list stored chunks that carry a key, take the key out of each reported file, and run `mm index <dir>`. Re-run the rescan: it should report nothing. A source it still reports was not reindexed: a file you deleted, an excluded path, a file over 10 MB, or a file whose `mm index` run reported an error. The [advisory](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8) lists how to remove those chunks. Rotate any key that reached a hosted service or a git history.
 - **From before 0.7.0:** frontmatter in memory files, and in Context Gateway agent and command files, is read as YAML. After a re-index an unquoted ` #` suffix is a comment and is dropped with a warning, and a key needs a space after its colon; quote a literal hash. Back up again after upgrading: export now writes bundle v4, and only 0.7.0 or later restores it fully, because an earlier import ignores the scope, project and validity fields v4 adds.
-- **From before 0.7.1:** `namespace="!system"` now selects every namespace except the system ones, so a namespace literally named `!system` (possible in 0.7.0 through `mm index --namespace`, namespace rules or a raw `mem_add`) can no longer be selected by that name. On `mem_search`, `mem_recall`, `mm search` and `mm recall` a comma list that includes it, such as `"!system,work"`, is refused; drop it from saved filters. Find such a namespace with `mem_do(action="ns_list")`, move it with `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`, then change the rule or flag that produced it, or a later re-index can write it again.
+- **From before 0.7.1:** `namespace="!system"` now selects every namespace except the system ones, so a namespace literally named `!system` (possible in 0.7.0 through `mm index --namespace`, namespace rules or a raw `mem_add`) can no longer be selected by that name. On `mem_search`, `mem_recall`, `mm search` and `mm recall` a comma list that includes it, such as `"!system,work"`, is refused; drop it from saved filters. Find such a namespace with `mem_do(action="ns_list")`, move it with `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`, then change the rule or flag that produced it. On 0.7.1 a later re-index can write it again; from 0.7.2 the name is refused or skipped (next item).
+- **From before 0.7.2:** writes refuse a namespace that a search could not find by name: one that contains `,` or `*`, is `!system`, is whitespace only, or is an `agent-runtime:` name whose agent id the agent tools refuse (`agent-runtime:foo:bar`). An empty string still means no namespace was given. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, the Notion and Obsidian importers, `mm index --namespace` and the web add and index routes refuse such a name before writing. The check is narrower than the one `mm add --namespace` and the session and `mem_ns_*` tools apply, so rule-generated names such as `claude:-Users-me-project` keep working. The indexer skips such a name from a namespace rule, a folder name (`enable_auto_ns`) or `default_namespace` and moves on to the next rule, then `enable_auto_ns`, then `default_namespace`; a `default_namespace` that fails stores the chunks untagged (`default`). `mm config set`, `mem_config`, `mm init --namespace` and `mem_policy_add` refuse such a name. A value already in `config.json` or a `config.d` fragment still loads, but `namespace.rules` is written as a whole list, so fix such an entry before editing the rules through those surfaces. A lifecycle policy already stored with such a target moves nothing and reports an error when it runs. Rows already stored under such a name keep it, also on a plain or `--force` re-index: move them with `mem_do(action="ns_rename", ...)`, which refuses an empty source name, or fix the rule and run `mm index --reassign-namespaces`.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 

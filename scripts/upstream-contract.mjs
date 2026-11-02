@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 // 0.6.12 stays out for the same reason: the upgrade checks in ltm/cli.md date
 // the PKCS#8 write guard to it ("before 0.6.12"). stalePins() still rejects a
 // leftover 0.6.12 install pin or release link.
-export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15'];
+export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15', '0.5.23', '0.3.20'];
 
 export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`);
