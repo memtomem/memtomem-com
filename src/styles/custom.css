@@ -289,6 +289,7 @@ starlight-toc {
 .flow-diagram .fd-proxy { fill: none; stroke: var(--sl-color-accent); stroke-width: 1.5; stroke-dasharray: 6 4; }
 .flow-diagram .fd-mem { fill: var(--sl-color-accent-low); stroke: var(--sl-color-accent); stroke-width: 1.5; }
 .flow-diagram .fd-stage { fill: var(--sl-color-accent-low); stroke: var(--sl-color-accent); stroke-width: 1.2; }
+.flow-diagram .fd-optional { fill: var(--sl-color-gray-6); stroke: var(--sl-color-gray-3); stroke-width: 1.5; stroke-dasharray: 5 4; }
 .flow-diagram .fd-title { fill: var(--sl-color-white); font: 600 15px var(--__sl-font, sans-serif); }
 .flow-diagram .fd-note,
 .flow-diagram .fd-label { fill: var(--sl-color-gray-2); font: 13px var(--__sl-font, sans-serif); }

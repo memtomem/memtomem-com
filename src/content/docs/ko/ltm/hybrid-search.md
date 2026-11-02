@@ -15,6 +15,45 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 임베딩 공급자를 활성화하면 BM25와 벡터 검색을 병렬 실행한 뒤 RRF로 순위를 결합합니다. `embedding.provider=none`(minimal 프리셋 포함)이면 키워드 검색만 수행합니다.
 
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 542" role="img" aria-labelledby="search-flow-title search-flow-desc">
+<title id="search-flow-title">memtomem 검색 결과의 순위가 정해지는 과정</title>
+<desc id="search-flow-desc">mem_search나 mm search로 들어온 검색어는 BM25 키워드 검색과 벡터 검색을 병렬로 실행합니다. RRF 결합이 두 순위를 하나로 합칩니다. 크로스 인코더 리랭커는 리랭킹을 활성화한 경우에만 그다음에 실행되며, 기본값은 꺼짐입니다. 소스 필터는 두 검색기 안에서 후보 개수 제한 전에 적용합니다. 리랭킹 뒤에는 소스 필터를 한 번 더 확인하고 시간 유효성 필터를 적용한 다음 상위 결과를 반환합니다. 기본 개수는 10개입니다. embedding.provider=none이면 BM25만 실행합니다.</desc>
+<defs><marker id="search-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="140" y="16" width="200" height="48" rx="8"/>
+<text class="fd-title" x="240" y="38" text-anchor="middle">검색어</text>
+<text class="fd-note" x="240" y="56" text-anchor="middle">mem_search · mm search</text>
+<path class="fd-arrow" d="M 240 64 V 84 H 130 V 104" marker-end="url(#search-flow-head)"/>
+<path class="fd-arrow" d="M 240 84 H 350 V 104" marker-end="url(#search-flow-head)"/>
+<rect class="fd-stage" x="30" y="106" width="200" height="72" rx="8"/>
+<text class="fd-title" x="130" y="132" text-anchor="middle">BM25</text>
+<text class="fd-note" x="130" y="152" text-anchor="middle">SQLite FTS5</text>
+<text class="fd-note" x="130" y="169" text-anchor="middle">정확한 용어</text>
+<rect class="fd-stage" x="250" y="106" width="200" height="72" rx="8"/>
+<text class="fd-title" x="350" y="132" text-anchor="middle">벡터 검색</text>
+<text class="fd-note" x="350" y="152" text-anchor="middle">sqlite-vec</text>
+<text class="fd-note" x="350" y="169" text-anchor="middle">비슷한 의미</text>
+<path class="fd-arrow" d="M 130 178 V 196 H 240 V 214" marker-end="url(#search-flow-head)"/>
+<path class="fd-arrow" d="M 350 178 V 196 H 240"/>
+<rect class="fd-box" x="140" y="216" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="239" text-anchor="middle">RRF 결합</text>
+<text class="fd-note" x="240" y="258" text-anchor="middle">하나의 순위 · k = 60</text>
+<path class="fd-arrow" d="M 240 268 V 300" marker-end="url(#search-flow-head)"/>
+<rect class="fd-optional" x="140" y="302" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="325" text-anchor="middle">리랭크</text>
+<text class="fd-note" x="240" y="344" text-anchor="middle">선택 · 기본값 꺼짐</text>
+<path class="fd-arrow" d="M 240 354 V 386" marker-end="url(#search-flow-head)"/>
+<rect class="fd-box" x="140" y="388" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="411" text-anchor="middle">필터</text>
+<text class="fd-note" x="240" y="430" text-anchor="middle">소스 재확인 · 시간 유효성</text>
+<path class="fd-arrow" d="M 240 440 V 472" marker-end="url(#search-flow-head)"/>
+<rect class="fd-mem" x="140" y="474" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="497" text-anchor="middle">결과</text>
+<text class="fd-note" x="240" y="516" text-anchor="middle">top_k, 기본값 10</text>
+</svg>
+<figcaption>기본 검색 경로입니다. 소스 필터는 두 검색기 안에서 적용하고 리랭킹 뒤에 한 번 더 확인합니다. <code>embedding.provider=none</code>이면(minimal 프리셋 포함) BM25만 실행합니다.</figcaption>
+</figure>
+
 | 검색 엔진 | 기반 | 강점 |
 |---|---|---|
 | **BM25** | SQLite FTS5 | 정확한 키워드/용어 매칭. "FastAPI", "mem_search" 같은 고유 명칭에 강함 |
@@ -89,4 +128,4 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 프로젝트 범위는 검색 단계에서 적용합니다. 태그 필터는 BM25/recall SQL에 적용하지만, 벡터 검색은 제한된 최근접 이웃 후보를 구한 뒤 태그를 확인하므로 후보 밖의 희소 태그 항목을 놓칠 수 있습니다. BM25에서도 태그가 맞는 청크가 검색어와 어휘적으로 일치해야 합니다. 태그 문자열 자체가 FTS에 색인되는 것은 아닙니다.
 
-소스 부분 문자열·glob 필터와 시간 유효성 필터는 리랭킹 뒤에 적용합니다. 모든 필터를 동일한 SQL 사전 필터로 취급하거나 필터 적용 후에도 항상 `top_k`개를 보장한다고 가정하지 마세요.
+소스 부분 문자열·glob 필터는 두 검색기 안에서 후보 개수 제한 전에 적용하고, 리랭킹 뒤에 한 번 더 확인합니다. 시간 유효성 필터는 리랭킹 뒤에 적용합니다. 모든 필터를 동일한 SQL 사전 필터로 취급하거나 필터 적용 후에도 항상 `top_k`개를 보장한다고 가정하지 마세요.
