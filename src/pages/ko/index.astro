@@ -29,7 +29,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta name="twitter:description" content="노트·문서·코드를 검색 가능한 로컬 우선 기억으로 바꿉니다. MCP 지원 AI 도구라면 세션이나 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<meta name="twitter:description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image-ko.png" />
 
 	<!-- JSON-LD 구조화 데이터 -->
@@ -128,24 +128,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-			<div class="section-label">문제</div>
-		<div class="section-title">에이전트는 왜 잊을까?</div>
-		<div class="section-desc">도구 연동(MCP), 안전장치(Guardrails), 관측(Langfuse)은 이미 자리를 잡았지만, ‘기억’만큼은 아직 표준이 없습니다.</div>
+		<div class="section-label">필요한 것</div>
+		<div class="section-title">에이전트의 기억이 해야 할 일</div>
+		<div class="section-desc">도구 연동(MCP), 안전장치(Guardrails), 관측(Langfuse)에는 이미 자리 잡은 계층이 있습니다. 기억에도 계층이 필요하며, 그 계층이 할 일은 세 가지입니다.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
 				<div class="problem-num">01</div>
-					<h3>새 세션은 이전 작업을 모릅니다</h3>
-					<p>세션이 끝나면 작업 맥락도 사라집니다. 설계 결정, 코딩 방식, 디버깅 이력을 매번 다시 설명해야 합니다.</p>
+				<h3>다음 세션으로 맥락을 이어 갑니다</h3>
+				<p>세션이 끝나도 설계 결정, 코딩 방식, 디버깅 이력이 남아 있습니다. 다음 세션은 처음부터 다시 설명을 듣지 않고 그 위에서 시작합니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">02</div>
-					<h3>도구를 바꾸면 작업이 끊깁니다</h3>
-					<p>Claude Code에서 정리한 내용을 Cursor가 바로 이어받지 못합니다. 기억이 도구마다 따로 흩어져 있기 때문입니다.</p>
+				<h3>도구가 아니라 프로젝트에 남습니다</h3>
+				<p>Claude Code에서 정리한 내용을 Codex CLI나 다른 MCP 클라이언트에서도 검색할 수 있습니다. 프로젝트의 모든 에이전트가 하나의 저장소를 함께 읽고 씁니다.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">03</div>
-				<h3>기존 솔루션의 한계</h3>
-					<p>기존 기억 시스템은 에이전트가 직접 검색해야 동작하거나 특정 실행 환경에 묶여 있습니다. 장기 기억만 다루는 경우도 많습니다.</p>
+				<h3>묻기 전에도 필요한 기억을 전달합니다</h3>
+				<p>에이전트가 검색하면 답합니다. 선택 사항인 STM 프록시를 MCP 서버 앞에 두면, 프록시를 거친 도구 응답에 별도 검색 없이도 관련 기억이 함께 전달될 수 있습니다.</p>
 			</div>
 		</div>
 	</div>
@@ -154,7 +154,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 			<div class="section-label">해결 방법</div>
-		<div class="section-title">memtomem이 해결합니다</div>
+		<div class="section-title">memtomem의 방식</div>
 			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색을 서로 다른 MCP 서버로 분리했습니다. 필요한 계층만 선택해 사용할 수 있습니다.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>

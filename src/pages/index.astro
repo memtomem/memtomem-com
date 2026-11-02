@@ -128,24 +128,24 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">Problem</div>
-		<div class="section-title">Why Do Agents Forget?</div>
-		<div class="section-desc">Tool integration (MCP), safety (Guardrails), and observability (Langfuse) are mature — but the memory layer still has no standard.</div>
+		<div class="section-label">What agents need</div>
+		<div class="section-title">What Agent Memory Has to Do</div>
+		<div class="section-desc">Tool integration (MCP), safety (Guardrails), and observability (Langfuse) each have an established layer. Memory needs one too, and it has three jobs.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
 				<div class="problem-num">01</div>
-				<h3>No Memory Between Sessions</h3>
-				<p>All context is lost when a session ends. Architecture decisions, coding patterns, and debugging history must be re-explained every time.</p>
+				<h3>Carry Context Into the Next Session</h3>
+				<p>Architecture decisions, coding patterns, and debugging history are still there when a session ends, so the next one starts from them instead of from a fresh explanation.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">02</div>
-				<h3>Memory Silos Between Agents</h3>
-				<p>Knowledge from Claude Code can't be carried over to Cursor. Each agent is trapped in its own isolated memory silo.</p>
+				<h3>Stay With the Project, Not the Tool</h3>
+				<p>What you settle in Claude Code is searchable from Codex CLI or any other MCP client. Every agent on the project reads and writes one store.</p>
 			</div>
 			<div class="problem-card">
 				<div class="problem-num">03</div>
-				<h3>Limitations of Existing Solutions</h3>
-				<p>Current memory systems only work when agents explicitly search, are locked to specific runtimes, and offer only a single LTM layer.</p>
+				<h3>Reach the Agent Without Being Asked</h3>
+				<p>Search answers when an agent asks. With the optional STM proxy in front of your MCP servers, routed tool responses can also carry relevant memories without a separate query.</p>
 			</div>
 		</div>
 	</div>
@@ -154,7 +154,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Solution</div>
-		<div class="section-title">memtomem Solves This</div>
+		<div class="section-title">How memtomem Does It</div>
 		<div class="section-desc">Applying the cognitive science working-memory / long-term memory model to agents. Short-term compression and long-term search as independent MCP servers.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ltm/hybrid-search/`}>
