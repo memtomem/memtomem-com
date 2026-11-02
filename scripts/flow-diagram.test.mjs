@@ -69,9 +69,11 @@ test('EN and KO figures share one drawing; only their words differ', async () =>
 });
 
 test('every class the figures use has a rule in custom.css', async () => {
+	// A class name ends where the next character is not a name character, so .fd-stage is not
+	// satisfied by the .fd-stage-text rule.
 	const css = await read('src/styles/custom.css');
 	const { html } = await figure(pages[0]);
 	const classes = new Set([...html.matchAll(/class="(fd-[a-z-]+)"/g)].map((match) => match[1]));
 	assert.ok(classes.size > 0);
-	for (const name of classes) assert.match(css, new RegExp(`\\.flow-diagram \\.${name}\\b`), `no rule for .${name}`);
+	for (const name of classes) assert.match(css, new RegExp(`\\.flow-diagram \\.${name}(?![\\w-])`), `no rule for .${name}`);
 });
