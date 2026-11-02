@@ -15,6 +15,45 @@ Keyword search finds exact names like `mem_search` or `FastAPI` — things a vec
 
 With an embedding provider enabled, BM25 and vector retrieval run in parallel, followed by RRF fusion. With `embedding.provider=none` (including the minimal preset), search is keyword-only:
 
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 542" role="img" aria-labelledby="search-flow-title search-flow-desc">
+<title id="search-flow-title">How memtomem ranks search results</title>
+<desc id="search-flow-desc">A query from mem_search or mm search runs BM25 keyword search and vector search in parallel. RRF fusion combines the two rankings into one. A cross-encoder reranker runs next only when reranking is enabled; it is off by default. The source filter is applied inside both retrievers, before their candidate limits. After reranking, the source filter is checked again, the temporal validity filter runs, and the top results are returned, 10 by default. With embedding.provider=none, only BM25 runs.</desc>
+<defs><marker id="search-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="140" y="16" width="200" height="48" rx="8"/>
+<text class="fd-title" x="240" y="38" text-anchor="middle">Query</text>
+<text class="fd-note" x="240" y="56" text-anchor="middle">mem_search · mm search</text>
+<path class="fd-arrow" d="M 240 64 V 84 H 130 V 104" marker-end="url(#search-flow-head)"/>
+<path class="fd-arrow" d="M 240 84 H 350 V 104" marker-end="url(#search-flow-head)"/>
+<rect class="fd-stage" x="30" y="106" width="200" height="72" rx="8"/>
+<text class="fd-title" x="130" y="132" text-anchor="middle">BM25</text>
+<text class="fd-note" x="130" y="152" text-anchor="middle">SQLite FTS5</text>
+<text class="fd-note" x="130" y="169" text-anchor="middle">exact terms</text>
+<rect class="fd-stage" x="250" y="106" width="200" height="72" rx="8"/>
+<text class="fd-title" x="350" y="132" text-anchor="middle">Vector search</text>
+<text class="fd-note" x="350" y="152" text-anchor="middle">sqlite-vec</text>
+<text class="fd-note" x="350" y="169" text-anchor="middle">similar meaning</text>
+<path class="fd-arrow" d="M 130 178 V 196 H 240 V 214" marker-end="url(#search-flow-head)"/>
+<path class="fd-arrow" d="M 350 178 V 196 H 240"/>
+<rect class="fd-box" x="140" y="216" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="239" text-anchor="middle">RRF fusion</text>
+<text class="fd-note" x="240" y="258" text-anchor="middle">one ranking · k = 60</text>
+<path class="fd-arrow" d="M 240 268 V 300" marker-end="url(#search-flow-head)"/>
+<rect class="fd-optional" x="140" y="302" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="325" text-anchor="middle">Rerank</text>
+<text class="fd-note" x="240" y="344" text-anchor="middle">optional · off by default</text>
+<path class="fd-arrow" d="M 240 354 V 386" marker-end="url(#search-flow-head)"/>
+<rect class="fd-box" x="140" y="388" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="411" text-anchor="middle">Filters</text>
+<text class="fd-note" x="240" y="430" text-anchor="middle">source recheck · validity</text>
+<path class="fd-arrow" d="M 240 440 V 472" marker-end="url(#search-flow-head)"/>
+<rect class="fd-mem" x="140" y="474" width="200" height="52" rx="8"/>
+<text class="fd-title" x="240" y="497" text-anchor="middle">Results</text>
+<text class="fd-note" x="240" y="516" text-anchor="middle">top_k, default 10</text>
+</svg>
+<figcaption>The default search path. The source filter runs inside both retrievers and is checked again after reranking. With <code>embedding.provider=none</code>, including the minimal preset, only BM25 runs.</figcaption>
+</figure>
+
 | Engine | Based on | Strength |
 |---|---|---|
 | **BM25** | SQLite FTS5 | Exact keyword/term matching. Strong for unique identifiers like "FastAPI", "mem_search" |
@@ -85,4 +124,4 @@ required before any default change.
 
 Project scope is enforced at retrieval. Tag filters are applied in BM25/recall SQL, while dense retrieval checks tags after its bounded nearest-neighbor pool and may miss a rare tagged match outside that pool. BM25 tag filtering still requires a lexical query match: tag text is not itself indexed by FTS.
 
-The source substring/glob filter and temporal validity filter run after reranking. Do not treat every filter as an identical SQL prefilter or assume that filtering guarantees a full `top_k` result set.
+The source substring/glob filter is applied inside both retrievers, before their candidate limits, and checked again after reranking. The temporal validity filter runs after reranking. Do not treat every filter as an identical SQL prefilter or assume that filtering guarantees a full `top_k` result set.
