@@ -13,6 +13,40 @@ Use them when you want to:
 
 The workflows are designed to run when you ask for them. In Claude Code and Codex CLI they are configured so the agent does not invoke them on its own. They do not record whole conversations or coordinate agents working at the same time.
 
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 500" role="img" aria-labelledby="loop-flow-title loop-flow-desc">
+<title id="loop-flow-title">The handoff, brief, and update loop</title>
+<desc id="loop-flow-desc">Session 1 in Claude Code runs /memtomem:handoff save, which writes one record into the project's .memtomem/memories.local Markdown files. Session 2 in Codex CLI runs $memtomem-brief, which lists recent updates and handoff IDs, and $memtomem-handoff resume, which loads that record. After work and commits, back in Claude Code, /memtomem:update saves decisions, bug causes, and preferences into the same files.</desc>
+<defs><marker id="loop-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="20" y="16" width="270" height="64" rx="8"/>
+<text class="fd-title" x="155" y="42" text-anchor="middle">Session 1 · Claude Code</text>
+<text class="fd-cmd" x="155" y="64" text-anchor="middle">/memtomem:handoff save</text>
+<path class="fd-arrow" d="M 155 80 V 126" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="108">one handoff record</text>
+<path class="fd-mem" d="M 20 142 A 135 12 0 0 1 290 142 V 212 A 135 12 0 0 1 20 212 Z"/>
+<path class="fd-mem" d="M 20 142 A 135 12 0 0 0 290 142"/>
+<text class="fd-path" x="155" y="180" text-anchor="middle">.memtomem/memories.local</text>
+<text class="fd-note" x="155" y="200" text-anchor="middle">Markdown files you own</text>
+<path class="fd-arrow" d="M 155 226 V 282" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="248">brief: updates · handoff IDs</text>
+<text class="fd-label" x="167" y="265">resume: that record</text>
+<rect class="fd-box" x="20" y="284" width="270" height="88" rx="8"/>
+<text class="fd-title" x="155" y="310" text-anchor="middle">Session 2 · Codex CLI</text>
+<text class="fd-cmd" x="155" y="334" text-anchor="middle">$memtomem-brief</text>
+<text class="fd-cmd" x="155" y="356" text-anchor="middle">$memtomem-handoff resume</text>
+<path class="fd-arrow" d="M 155 372 V 418" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="400">work · commits</text>
+<rect class="fd-box" x="20" y="420" width="270" height="64" rx="8"/>
+<text class="fd-title" x="155" y="446" text-anchor="middle">Back in Claude Code</text>
+<text class="fd-cmd" x="155" y="468" text-anchor="middle">/memtomem:update</text>
+<path class="fd-arrow" d="M 290 452 H 455 V 177 H 294" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="372" y="404" text-anchor="middle">decisions ·</text>
+<text class="fd-label" x="372" y="420" text-anchor="middle">bug causes ·</text>
+<text class="fd-label" x="372" y="436" text-anchor="middle">preferences</text>
+</svg>
+<figcaption>One example: work handed from Claude Code to Codex CLI and back. The other supported AI tools under <a href="#where-they-ship">Where they ship</a> run the same three workflows.</figcaption>
+</figure>
+
 ## Before you start
 
 All three workflows, including the read-only `brief`, need the following.

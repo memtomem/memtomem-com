@@ -13,6 +13,40 @@ description: handoff, brief, update로 한 Git 프로젝트의 작업을 다른 
 
 세 워크플로는 사용자가 명시적으로 요청해 실행하도록 설계되었습니다. Claude Code와 Codex CLI에서는 에이전트가 자동으로 호출하지 않도록 설정되어 있습니다. 대화 전체를 기록하거나 여러 에이전트의 동시 작업을 조율하지는 않습니다.
 
+<figure class="flow-diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 500" role="img" aria-labelledby="loop-flow-title loop-flow-desc">
+<title id="loop-flow-title">handoff, brief, update로 이어지는 흐름</title>
+<desc id="loop-flow-desc">세션 1의 Claude Code에서 /memtomem:handoff save를 실행하면 프로젝트의 .memtomem/memories.local Markdown 파일에 기록 하나가 저장됩니다. 세션 2의 Codex CLI에서 $memtomem-brief는 최근 업데이트와 handoff ID를 보여 주고, $memtomem-handoff resume은 그 기록을 불러옵니다. 작업하고 커밋한 뒤 다시 Claude Code에서 /memtomem:update를 실행하면 결정, 버그 원인, 선호가 같은 파일에 저장됩니다.</desc>
+<defs><marker id="loop-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+<rect class="fd-box" x="20" y="16" width="270" height="64" rx="8"/>
+<text class="fd-title" x="155" y="42" text-anchor="middle">세션 1 · Claude Code</text>
+<text class="fd-cmd" x="155" y="64" text-anchor="middle">/memtomem:handoff save</text>
+<path class="fd-arrow" d="M 155 80 V 126" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="108">handoff 기록 하나</text>
+<path class="fd-mem" d="M 20 142 A 135 12 0 0 1 290 142 V 212 A 135 12 0 0 1 20 212 Z"/>
+<path class="fd-mem" d="M 20 142 A 135 12 0 0 0 290 142"/>
+<text class="fd-path" x="155" y="180" text-anchor="middle">.memtomem/memories.local</text>
+<text class="fd-note" x="155" y="200" text-anchor="middle">직접 소유하는 Markdown 파일</text>
+<path class="fd-arrow" d="M 155 226 V 282" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="248">brief: 최근 업데이트 · handoff ID</text>
+<text class="fd-label" x="167" y="265">resume: 그 기록</text>
+<rect class="fd-box" x="20" y="284" width="270" height="88" rx="8"/>
+<text class="fd-title" x="155" y="310" text-anchor="middle">세션 2 · Codex CLI</text>
+<text class="fd-cmd" x="155" y="334" text-anchor="middle">$memtomem-brief</text>
+<text class="fd-cmd" x="155" y="356" text-anchor="middle">$memtomem-handoff resume</text>
+<path class="fd-arrow" d="M 155 372 V 418" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="167" y="400">작업 · 커밋</text>
+<rect class="fd-box" x="20" y="420" width="270" height="64" rx="8"/>
+<text class="fd-title" x="155" y="446" text-anchor="middle">다시 Claude Code</text>
+<text class="fd-cmd" x="155" y="468" text-anchor="middle">/memtomem:update</text>
+<path class="fd-arrow" d="M 290 452 H 455 V 177 H 294" marker-end="url(#loop-flow-head)"/>
+<text class="fd-label" x="372" y="404" text-anchor="middle">결정 ·</text>
+<text class="fd-label" x="372" y="420" text-anchor="middle">버그 원인 ·</text>
+<text class="fd-label" x="372" y="436" text-anchor="middle">선호</text>
+</svg>
+<figcaption>Claude Code에서 Codex CLI로 작업을 넘겼다가 다시 돌아오는 예시입니다. <a href="#제공-위치">제공 위치</a>에서 지원하는 다른 AI 도구도 같은 세 워크플로를 실행합니다.</figcaption>
+</figure>
+
 ## 시작하기 전에
 
 세 워크플로 모두, 읽기 전용인 `brief`를 포함해 다음 조건이 필요합니다.

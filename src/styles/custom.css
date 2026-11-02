@@ -294,6 +294,8 @@ starlight-toc {
 .flow-diagram .fd-note,
 .flow-diagram .fd-label { fill: var(--sl-color-gray-2); font: 13px var(--__sl-font, sans-serif); }
 .flow-diagram .fd-stage-text { fill: var(--sl-color-white); font: 600 13px var(--__sl-font-mono, monospace); letter-spacing: 0.5px; }
+.flow-diagram .fd-cmd { fill: var(--sl-color-accent); font: 13px var(--__sl-font-mono, monospace); }
+.flow-diagram .fd-path { fill: var(--sl-color-white); font: 600 13px var(--__sl-font-mono, monospace); }
 .flow-diagram .fd-arrow { fill: none; stroke: var(--sl-color-gray-2); stroke-width: 1.5; }
 .flow-diagram .fd-head { fill: var(--sl-color-gray-2); }
 .flow-diagram figcaption { margin-top: 0.5rem; text-align: center; font-size: var(--sl-text-sm); color: var(--sl-color-gray-2); }
