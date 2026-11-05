@@ -1,6 +1,6 @@
 ---
 title: STM CLI Reference
-description: mms CLI commands for memtomem-stm proxy management.
+description: Every mms command for the memtomem-stm proxy, from setup and registration to surfacing hooks, diagnostics, projects and hosts, and --json failure documents.
 ---
 
 The `mms` command is installed with the `memtomem-stm` v0.7.5 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.

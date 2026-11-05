@@ -3,22 +3,60 @@
 import '../../styles/landing.css';
 import docsContract from '../../data/docs-contract.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@graph": [
+		{
+			"@type": "SoftwareApplication",
+			"name": "memtomem",
+			"description": "AI 도구를 위한 MCP 기반 기억 인프라입니다. STM과 LTM을 분리해 세션과 도구가 바뀌어도 기억을 이어서 사용할 수 있습니다.",
+			"url": "https://memtomem.com/ko/",
+			"inLanguage": "ko",
+			"softwareVersion": docsContract.core.version,
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Cross-platform",
+			"license": "https://opensource.org/licenses/Apache-2.0",
+			"sameAs": [
+				"https://github.com/memtomem/memtomem"
+			],
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"author": {
+				"@type": "Organization",
+				"name": "DAPADA Inc."
+			}
+		},
+		{
+			"@type": "WebSite",
+			"name": "memtomem",
+			"url": "https://memtomem.com/",
+			"inLanguage": "ko"
+		}
+	]
+};
 ---
 <html lang="ko">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>memtomem — 에이전트를 위한 장단기 기억 인프라</title>
-	<meta name="description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<title>memtomem — AI 에이전트를 위한 장단기 기억 인프라</title>
+	<meta name="description" content="노트·문서·코드를 MCP 호환 AI 에이전트가 검색할 수 있는 로컬 우선 기억(메모리)으로 바꿉니다. 세션이나 에이전트가 바뀌어도 같은 기억을 이어서 사용합니다." />
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/ko/" />
+	<link rel="alternate" hreflang="en" href="https://memtomem.com/" />
+	<link rel="alternate" hreflang="ko" href="https://memtomem.com/ko/" />
+	<link rel="alternate" hreflang="x-default" href="https://memtomem.com/" />
+	<link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://memtomem.com/ko/" />
-	<meta property="og:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta property="og:description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<meta property="og:title" content="memtomem — AI 에이전트를 위한 장단기 기억 인프라" />
+	<meta property="og:description" content="노트·문서·코드를 MCP 호환 AI 에이전트가 검색할 수 있는 로컬 우선 기억(메모리)으로 바꿉니다. 세션이나 에이전트가 바뀌어도 같은 기억을 이어서 사용합니다." />
 	<meta property="og:site_name" content="memtomem" />
 	<meta property="og:image" content="https://memtomem.com/og-image-ko.png" />
 	<meta property="og:image:width" content="1200" />
@@ -28,32 +66,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content="memtomem — 에이전트를 위한 장단기 기억 인프라" />
-	<meta name="twitter:description" content="노트·문서·코드를 로컬에 보관하고 검색할 수 있는 기억으로 바꿉니다. 세션이나 AI 도구가 바뀌어도 다시 사용할 수 있습니다." />
+	<meta name="twitter:title" content="memtomem — AI 에이전트를 위한 장단기 기억 인프라" />
+	<meta name="twitter:description" content="노트·문서·코드를 MCP 호환 AI 에이전트가 검색할 수 있는 로컬 우선 기억(메모리)으로 바꿉니다. 세션이나 에이전트가 바뀌어도 같은 기억을 이어서 사용합니다." />
 	<meta name="twitter:image" content="https://memtomem.com/og-image-ko.png" />
 
 	<!-- JSON-LD 구조화 데이터 -->
-	<script type="application/ld+json">
-	{
-		"@context": "https://schema.org",
-		"@type": "SoftwareApplication",
-		"name": "memtomem",
-		"description": "AI 도구를 위한 MCP 기반 기억 인프라입니다. STM과 LTM을 분리해 세션과 도구가 바뀌어도 기억을 이어서 사용할 수 있습니다.",
-		"url": "https://memtomem.com",
-		"applicationCategory": "DeveloperApplication",
-		"operatingSystem": "Cross-platform",
-		"license": "https://opensource.org/licenses/Apache-2.0",
-		"offers": {
-			"@type": "Offer",
-			"price": "0",
-			"priceCurrency": "USD"
-		},
-		"author": {
-			"@type": "Organization",
-			"name": "DAPADA Inc."
-		}
-	}
-	</script>
+	<script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 </head>
 <body>
 
@@ -65,11 +83,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/`}>EN</a></span>
 	</div>
-	<a href={`${base}/ko/guides/quickstart/`}>
-		<button class="nav-cta">시작하기</button>
-	</a>
+	<a class="nav-cta" href={`${base}/ko/guides/quickstart/`}>시작하기</a>
 </nav>
 
+<main>
 <section class="hero">
 	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
 	<h1>새 세션도<br /><em>지난 작업이 끝난 곳에서</em> 시작합니다</h1>
@@ -107,7 +124,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">10분 기본 검증</div>
-		<div class="section-title">기본 흐름을 확인한 뒤 다음 작업 하나를 선택하세요</div>
+		<h2 class="section-title">기본 흐름을 확인한 뒤 다음 작업 하나를 선택하세요</h2>
 		<div class="section-desc">먼저 로컬 LTM만으로 시작합니다. 기억 저장·검색이 동작하는지 확인한 뒤 AI 클라이언트를 연결하거나 STM을 추가하세요.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/guides/quickstart/#2-초기-설정`}>
@@ -129,7 +146,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">필요한 것</div>
-		<div class="section-title">에이전트의 기억이 해야 할 일</div>
+		<h2 class="section-title">에이전트의 기억이 해야 할 일</h2>
 		<div class="section-desc">도구 연동(MCP), 안전장치(Guardrails), 관측(Langfuse)에는 이미 자리 잡은 계층이 있습니다. 기억에도 계층이 필요하며, 그 계층이 할 일은 세 가지입니다.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
@@ -154,7 +171,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 			<div class="section-label">해결 방법</div>
-		<div class="section-title">memtomem의 방식</div>
+		<h2 class="section-title">memtomem의 방식</h2>
 			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색을 서로 다른 MCP 서버로 분리했습니다. 필요한 계층만 선택해 사용할 수 있습니다.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
@@ -174,7 +191,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
-				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 자신을 거치는 MCP 도구 호출에서 실행 조건을 확인하고 적절한 시점에 관련 기억을 찾아 함께 전달합니다. 전달된 기억마다 식별자가 있어 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
+				<p>에이전트가 먼저 검색을 요청하지 않아도, STM이 중계하는 MCP 도구 호출에서 실행 조건을 확인하고 적절한 시점에 관련 기억을 찾아 함께 전달합니다. 전달된 기억마다 식별자가 있어 에이전트가 항목별로 유용성을 평가하거나 무시할 수 있습니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
@@ -194,7 +211,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">활용 사례</div>
-		<div class="section-title">직접 실행하는 활용 사례</div>
+		<h2 class="section-title">직접 실행하는 활용 사례</h2>
 		<div class="section-desc">두 사례 모두 공개된 예제 파일에서 시작하며, 실행 결과를 직접 확인하는 단계까지 이어집니다.</div>
 		<div class="feature-grid feature-grid-2">
 			<a class="feature-card accent" href={`${base}/ko/use-cases/vibe-coding/`}><h3>코딩 결정과 근거 문서 다시 찾기</h3></a>
@@ -206,7 +223,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section" id="architecture">
 	<div class="section-inner">
 			<div class="section-label">구조</div>
-		<div class="section-title">두 계층 구조</div>
+		<h2 class="section-title">두 계층 구조</h2>
 			<div class="section-desc">STM 프록시와 LTM 서버는 MCP로 연결됩니다. AI 도구의 코드를 수정하지 않고도 관련 기억 자동 제시와 응답 압축을 추가할 수 있습니다.</div>
 		<div class="arch-diagram">
 			<div class="arch-tier-label">주요 AI 도구 / 기타</div>
@@ -250,7 +267,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 			<div class="section-label">호환성</div>
-			<div class="section-title">지원하는 AI 도구와 호환성</div>
+			<h2 class="section-title">지원하는 AI 도구와 호환성</h2>
 		<div class="section-desc">주요 CLI 도구에 맞춰 최적화했으며, 그 밖의 클라이언트도 MCP 표준으로 연결할 수 있습니다.</div>
 		<div class="runtime-grid">
 			<div class="runtime-chip">Claude Code</div>
@@ -265,7 +282,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">작업별 가이드</div>
-		<div class="section-title">원하는 결과에 맞는 가이드로 이어서 진행하세요</div>
+		<h2 class="section-title">원하는 결과에 맞는 가이드로 이어서 진행하세요</h2>
 		<div class="section-desc">각 가이드는 확인할 결과, 검증 단계, 복구 또는 원복 절차까지 안내합니다.</div>
 		<div class="docs-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
@@ -306,14 +323,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<h2>지금 시작하세요</h2>
 		<p>GPU 없이 시작할 수 있습니다. 기본 저장소는 로컬이며 외부 서비스 연결은 선택 사항입니다.</p>
 	<div class="cta-buttons">
-		<a href="https://github.com/memtomem/memtomem">
-			<button class="btn-primary">GitHub에서 보기</button>
-		</a>
-		<a href={`${base}/ko/guides/choose-your-path/`}>
-			<button class="btn-secondary">문서 읽기</button>
-		</a>
+		<a class="btn-primary" href="https://github.com/memtomem/memtomem">GitHub에서 보기</a>
+		<a class="btn-secondary" href={`${base}/ko/guides/choose-your-path/`}>문서 읽기</a>
 	</div>
 </section>
+
+</main>
 
 <footer class="footer">
 	<span>DAPADA Inc. — Apache 2.0</span>

@@ -1,6 +1,6 @@
 ---
 title: STM Environment Variables
-description: Configuration reference for memtomem-stm (STM) environment variables.
+description: Every memtomem-stm (STM) environment variable with its default, plus the MEMTOMEM_STM_ prefix, double-underscore nesting, and resolution order.
 ---
 
 memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) with `env_prefix` + `env_nested_delimiter="__"`. **Nested settings use double underscore** — `MEMTOMEM_STM_PROXY__CACHE__ENABLED`, not `MEMTOMEM_STM_PROXY_CACHE_ENABLED`.

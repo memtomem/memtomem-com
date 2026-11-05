@@ -3,6 +3,40 @@
 import '../styles/landing.css';
 import docsContract from '../data/docs-contract.json';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@graph": [
+		{
+			"@type": "SoftwareApplication",
+			"name": "memtomem",
+			"description": "MCP-native memory infrastructure for AI agents. STM + LTM separated architecture for cross-session, cross-agent knowledge sharing.",
+			"url": "https://memtomem.com/",
+			"inLanguage": "en",
+			"softwareVersion": docsContract.core.version,
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Cross-platform",
+			"license": "https://opensource.org/licenses/Apache-2.0",
+			"sameAs": [
+				"https://github.com/memtomem/memtomem"
+			],
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"author": {
+				"@type": "Organization",
+				"name": "DAPADA Inc."
+			}
+		},
+		{
+			"@type": "WebSite",
+			"name": "memtomem",
+			"url": "https://memtomem.com/",
+			"inLanguage": "en"
+		}
+	]
+};
 ---
 <html lang="en">
 <head>
@@ -13,6 +47,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta name="theme-color" content="#534AB7" />
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href="https://memtomem.com/" />
+	<link rel="alternate" hreflang="en" href="https://memtomem.com/" />
+	<link rel="alternate" hreflang="ko" href="https://memtomem.com/ko/" />
+	<link rel="alternate" hreflang="x-default" href="https://memtomem.com/" />
+	<link rel="sitemap" href={`${base}/sitemap-index.xml`} />
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website" />
@@ -33,27 +71,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<meta name="twitter:image" content="https://memtomem.com/og-image.png" />
 
 	<!-- JSON-LD -->
-	<script type="application/ld+json">
-	{
-		"@context": "https://schema.org",
-		"@type": "SoftwareApplication",
-		"name": "memtomem",
-		"description": "MCP-native memory infrastructure for AI agents. STM + LTM separated architecture for cross-session, cross-agent knowledge sharing.",
-		"url": "https://memtomem.com",
-		"applicationCategory": "DeveloperApplication",
-		"operatingSystem": "Cross-platform",
-		"license": "https://opensource.org/licenses/Apache-2.0",
-		"offers": {
-			"@type": "Offer",
-			"price": "0",
-			"priceCurrency": "USD"
-		},
-		"author": {
-			"@type": "Organization",
-			"name": "DAPADA Inc."
-		}
-	}
-	</script>
+	<script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 </head>
 <body>
 
@@ -65,11 +83,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/ko/`}>KO</a></span>
 	</div>
-	<a href={`${base}/guides/quickstart/`}>
-		<button class="nav-cta">Get started</button>
-	</a>
+	<a class="nav-cta" href={`${base}/guides/quickstart/`}>Get started</a>
 </nav>
 
+<main>
 <section class="hero">
 	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
 	<h1>Every session starts<br /><em>where the last one left off</em></h1>
@@ -107,7 +124,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">10-minute first success</div>
-		<div class="section-title">Prove the basics, then choose one next task</div>
+		<h2 class="section-title">Prove the basics, then choose one next task</h2>
 		<div class="section-desc">Start with local LTM only. Connect an AI client or add STM after storage and search work.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/guides/quickstart/#2-run-setup`}>
@@ -129,7 +146,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">What agents need</div>
-		<div class="section-title">What Agent Memory Has to Do</div>
+		<h2 class="section-title">What Agent Memory Has to Do</h2>
 		<div class="section-desc">Tool integration (MCP), safety (Guardrails), and observability (Langfuse) each have an established layer. Memory needs one too, and it has three jobs.</div>
 		<div class="problem-grid">
 			<div class="problem-card">
@@ -154,7 +171,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Solution</div>
-		<div class="section-title">How memtomem Does It</div>
+		<h2 class="section-title">How memtomem Does It</h2>
 		<div class="section-desc">Applying the cognitive science working-memory / long-term memory model to agents. Short-term compression and long-term search as independent MCP servers.</div>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ltm/hybrid-search/`}>
@@ -194,7 +211,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Use cases</div>
-		<div class="section-title">Try a concrete use case</div>
+		<h2 class="section-title">Try a concrete use case</h2>
 		<div class="section-desc">Both scenarios start from published example files and end with a result you verify yourself.</div>
 		<div class="feature-grid feature-grid-2">
 			<a class="feature-card accent" href={`${base}/use-cases/vibe-coding/`}><h3>Recover a coding decision and its source</h3></a>
@@ -206,7 +223,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section" id="architecture">
 	<div class="section-inner">
 		<div class="section-label">Architecture</div>
-		<div class="section-title">Two-Layer Architecture</div>
+		<h2 class="section-title">Two-Layer Architecture</h2>
 		<div class="section-desc">STM proxy and LTM server connected via MCP, transparently providing surfacing and compression to agents.</div>
 		<div class="arch-diagram">
 			<div class="arch-tier-label">Core AI Runtimes / Others</div>
@@ -250,7 +267,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Compatibility</div>
-		<div class="section-title">Core Runtimes & Compatibility</div>
+		<h2 class="section-title">Core Runtimes & Compatibility</h2>
 		<div class="section-desc">Optimized for the main CLI runtimes, while staying MCP-native for the rest.</div>
 		<div class="runtime-grid">
 			<div class="runtime-chip">Claude Code</div>
@@ -265,7 +282,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="section">
 	<div class="section-inner">
 		<div class="section-label">Task guides</div>
-		<div class="section-title">Continue by outcome</div>
+		<h2 class="section-title">Continue by outcome</h2>
 		<div class="section-desc">Each guide ends with a visible result, a verification step, and a recovery or rollback path.</div>
 		<div class="docs-grid">
 			<a href={`${base}/guides/quickstart/`} class="doc-card">
@@ -306,14 +323,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 	<h2>Get Started Now</h2>
 	<p>No GPU is required. The default path stays local; external providers remain optional.</p>
 	<div class="cta-buttons">
-		<a href="https://github.com/memtomem/memtomem">
-			<button class="btn-primary">View on GitHub</button>
-		</a>
-		<a href={`${base}/guides/choose-your-path/`}>
-			<button class="btn-secondary">Read the Docs</button>
-		</a>
+		<a class="btn-primary" href="https://github.com/memtomem/memtomem">View on GitHub</a>
+		<a class="btn-secondary" href={`${base}/guides/choose-your-path/`}>Read the Docs</a>
 	</div>
 </section>
+
+</main>
 
 <footer class="footer">
 	<span>DAPADA Inc. — Apache 2.0</span>
