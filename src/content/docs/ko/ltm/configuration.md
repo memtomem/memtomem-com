@@ -1,6 +1,6 @@
 ---
 title: LTM 환경 변수
-description: memtomem(LTM) 환경 변수 설정 레퍼런스.
+description: memtomem(LTM)의 모든 환경 변수와 기본값을 정리합니다. MEMTOMEM_ 접두사, 이중 밑줄 중첩 규칙, 설정 우선순위도 함께 설명합니다.
 ---
 
 memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)를 사용합니다. 환경 변수 이름은 `env_prefix` 뒤에 필드명을 붙이며, 중첩된 필드는 `env_nested_delimiter="__"`에 따라 **밑줄 두 개**로 구분합니다. 예를 들어 `MEMTOMEM_EMBEDDING__PROVIDER`는 유효하지만 `MEMTOMEM_EMBEDDING_PROVIDER`는 유효하지 않습니다.

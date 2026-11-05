@@ -1,6 +1,6 @@
 ---
 title: STM CLI 레퍼런스
-description: memtomem-stm 프록시를 관리하는 mms CLI 명령.
+description: memtomem-stm 프록시를 관리하는 mms 명령 전체를 설정·등록, 관련 기억 제시·훅, 진단·튜닝, 프로젝트·호스트 순으로 정리하고 --json 실패 문서 형식을 설명합니다.
 ---
 
 `mms` 명령은 `memtomem-stm` v0.7.5 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
@@ -503,7 +503,9 @@ mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-confi
 - `mms init`과 `mms register`는 `config_path`, `servers`, `client`를 담은 결과 문서를 출력하며, 설정 작업 자체가 실패하면 `error`에 `setup_failed`나 쓰기 실패 코드를 넣습니다. `mms init`은 설정 작업 전에 설정 쓰기 잠금을 잡으므로, 이 단계의 잠금 실패(`config_lock_timeout`, `config_lock_unavailable`)는 표준 형식으로 출력합니다.
 - `mms stats --json`의 저장소 오류는 [`mms stats`](#mms-stats)에서 설명한 `compression.error`, `surfacing.error` 필드에 들어갑니다.
 
-## 예제 워크플로우
+<a id="예제-워크플로우"></a>
+
+## 예제 워크플로
 
 ```bash
 # 1. 첫 설치 — 서버 한 개 구성과 MCP 클라이언트 등록을 한 번에

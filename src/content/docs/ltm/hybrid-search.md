@@ -7,7 +7,7 @@ description: How BM25 keyword + dense vector + RRF fusion search works and how t
 
 memtomem's hybrid search combines keyword search and semantic search, leveraging both exact term matching and meaning-based similarity in a single query.
 
-### Why both?
+## Why both?
 
 Keyword search finds exact names like `mem_search` or `FastAPI` — things a vector model often misses because their meaning isn't distributed across the embedding space. Semantic search finds ideas like "how do I deploy?" that match documents using different wording. Running both and merging the rankings covers both cases.
 

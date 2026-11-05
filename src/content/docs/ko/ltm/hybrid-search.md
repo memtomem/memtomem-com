@@ -7,13 +7,13 @@ description: BM25 키워드 검색과 벡터 검색을 RRF로 결합하는 방�
 
 memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 정확한 용어와 뜻이 비슷한 표현을 모두 찾을 수 있습니다.
 
-### 왜 두 방식을 함께 사용하는가?
+## 왜 두 방식을 함께 사용하는가?
 
 키워드 검색은 `mem_search`, `FastAPI` 같은 고유 명칭을 정확히 찾습니다. 벡터 모델은 이런 짧은 이름을 놓칠 수 있습니다. 반대로 의미 기반 검색은 "배포 방법"과 "deployment checklist"처럼 표현이 달라도 뜻이 비슷한 문서를 찾습니다. 두 결과의 순위를 합치면 각 방식의 장점을 함께 활용할 수 있습니다.
 
 ## 검색 아키텍처
 
-임베딩 공급자를 활성화하면 BM25와 벡터 검색을 병렬 실행한 뒤 RRF로 순위를 결합합니다. `embedding.provider=none`(minimal 프리셋 포함)이면 키워드 검색만 수행합니다.
+임베딩 제공자를 활성화하면 BM25와 벡터 검색을 병렬 실행한 뒤 RRF로 순위를 결합합니다. `embedding.provider=none`(minimal 프리셋 포함)이면 키워드 검색만 수행합니다.
 
 <figure class="flow-diagram">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 542" role="img" aria-labelledby="search-flow-title search-flow-desc">

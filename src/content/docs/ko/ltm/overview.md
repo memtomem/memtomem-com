@@ -62,7 +62,7 @@ SQLite 저장과 ONNX 임베딩은 로컬에서 처리하므로 GPU나 계정이
 - [빠른 시작](/ko/guides/quickstart/) — 10분 안에 설치하고 첫 기억 저장·검색 확인
 - [세션을 넘나드는 기억](/ko/ltm/memory-persistence/) — 세션 A에서 저장 → 세션 B에서 불러오기
 - [하이브리드 검색](/ko/ltm/hybrid-search/) — 검색 엔진 작동 원리
-- [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 네임스페이스 설계와 공유 워크플로우
+- [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 네임스페이스 설계와 공유 워크플로
 - [Context Gateway](/ko/ltm/context-gateway/) — 에이전트·스킬·명령의 기준본을 프로젝트와 실행 환경 사이에서 관리
 - [MCP 도구](/ko/ltm/mcp-tools/) — 전체 도구 레퍼런스
 - [CLI 레퍼런스](/ko/ltm/cli/) — `mm` 명령 전체 목록
