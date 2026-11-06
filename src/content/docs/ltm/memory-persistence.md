@@ -79,6 +79,7 @@ The durable source is Markdown and retrieval runs against the local SQLite index
 - **Agent doesn't call `mem_search`.** Use the explicit Claude, Codex, or MCP instruction above instead of relying on automatic tool selection.
 - **Empty results.** Run `mm status` to confirm the server connection and namespace list. Session A and Session B may be using different namespaces; the default is whatever `mm init` set.
 - **Different clients disagree.** Compare the database path from each client's `mem_status`. For project-local memory, also confirm that both sessions opened the same project root.
+- **`mem_add` reports "Similar memories found".** The note was still saved. The warning lists existing memories that are nearly identical to it; check them and merge real duplicates. [Duplicate warning](/ltm/mcp-tools/#duplicate-warning) explains when it appears and how to merge.
 
 ## Next Steps
 
