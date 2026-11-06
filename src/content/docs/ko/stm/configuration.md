@@ -123,7 +123,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | `stm_compression_feedback` 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | 압축 피드백 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | 압축 피드백 보존 일수 | `90` |
-| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달의 읽기 기록 활성화. `stm_admin(action="progressive_stats")`에서 확인 | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | 점진적 전달의 읽기 기록 활성화. `stm_admin(action="progressive_stats")`와 `mms stats`의 Progressive delivery 항목에서 확인 | `true` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__DB_PATH` | 점진적 읽기 기록을 저장할 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__RETENTION_DAYS` | 점진적 읽기 기록 보존 일수 | `90` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | 내부 잠금을 기다릴 최대 시간. 넘으면 연결 서버가 느린 것이 아니라 교착 상태이거나 잠금 소유자가 멈춘 것으로 처리 | `30` |

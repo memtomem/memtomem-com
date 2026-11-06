@@ -111,7 +111,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | Persist `stm_compression_feedback` | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | Compression feedback SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | Compression feedback retention | `90` |
-| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_admin(action="progressive_stats")`) | `true` |
+| `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__ENABLED` | Record progressive-delivery read telemetry (surfaces via `stm_admin(action="progressive_stats")` and the `mms stats` Progressive delivery block) | `true` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__DB_PATH` | Progressive-read telemetry SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__PROGRESSIVE_READS__RETENTION_DAYS` | Progressive-read telemetry retention | `90` |
 | `MEMTOMEM_STM_PROXY__LOCK_TIMEOUT_SECONDS` | Internal lock-acquisition ceiling; a timeout signals a deadlock/stuck holder rather than a slow upstream | `30` |

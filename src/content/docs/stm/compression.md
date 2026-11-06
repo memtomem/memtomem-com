@@ -67,7 +67,7 @@ The `progressive` strategy delivers retained content sequentially, subject to th
 
 Under legacy delivery, every progressive chunk ends with the canonical footer `\n---\n[progressive: chars=<n>]` — agents must split on the full `PROGRESSIVE_FOOTER_TOKEN` string (exported from `memtomem_stm.proxy.progressive`). Splitting on `\n---\n` alone silently drops bytes when content contains Markdown horizontal rules or YAML fences.
 
-Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)).
+Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)). [`mms stats`](/stm/cli/#mms-stats) reads the same telemetry from disk and adds a **Progressive delivery** block that compares the characters produced with the characters delivered (`--json`: `progressive`).
 
 The response cache uses schema 6 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
 
