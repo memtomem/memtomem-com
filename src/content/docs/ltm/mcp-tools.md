@@ -108,6 +108,22 @@ candidate; reusing it with different content is rejected.
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
+## Duplicate Warning
+
+After `mem_add` writes a note, it compares the stored vectors of the chunks that write created with existing chunks in the namespaces a default search sees. System namespaces such as `archive:*` are left out, and an active session's namespace does not narrow the check. When an existing chunk is close enough, the result ends with `⚠ Similar memories found:` and up to three of them, each with its storage similarity shown as `(dense 0.97)`, not a percentage. The note is saved either way. Since 0.7.2 the check uses these stored vectors instead of a search, so it no longer reports the note itself and works the same with or without a reranker.
+
+- Copied or paraphrased content may trigger the warning when its stored vectors reach the threshold. The score depends on the whole entry, including its title, and on the embedding model, and the threshold is provisional until it is calibrated across models. No warning does not mean the note is unique.
+- The chunks the write created are excluded, including one that merged an earlier entry of the same file with the new note.
+- The check is skipped when the content, after any template expansion, is 20 characters or fewer, and on a store without vectors (keyword-only).
+
+To clean up, list candidate pairs with `mem_do(action="dedup_scan")`, then merge a pair you confirm:
+
+```text
+mem_do(action="dedup_merge", params={"keep_id": "<chunk-id>", "delete_ids": ["<chunk-id>"], "dry_run": false})
+```
+
+Without `"dry_run": false`, `dedup_merge` only previews the merge.
+
 ## Project Binding
 
 The project context comes from the server's working directory. A host can start a stdio server somewhere else, as the Hermes Agent and Antigravity CLI plugins do in the plugin's directory, and then `project_local` never resolves. `mem_project_bind` (0.7.1) pins such a server to a project whose tier is registered:
