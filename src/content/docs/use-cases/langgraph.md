@@ -43,6 +43,10 @@ Each notebook should print six `PASS` markers. Notebook 06 additionally prints `
 
 `MemtomemBaseStore` implements LangGraph's standard Store interface, with tuple namespaces stored in inspectable JSON files. Its no-embedding search uses lexical overlap, not Core's BM25/RRF pipeline. It does not support TTL.
 
+:::caution[Upgrading to 0.7.4 or later]
+The first time 0.7.4 or later opens a `MemtomemBaseStore`, it moves the record files to `<root>/records.v2/` under a lock file (`<root>/.layout.lock`), so names that differ only in case no longer share a file on macOS and Windows. Stop every process running an older memtomem on that store first. A record an older process writes later in the old layout is moved on the next open when its key is new; if it conflicts with a different existing record, the older process's copy goes to `<root>/quarantine.v2/` to be resolved by hand. The move is not undone automatically; to go back, restore a copy of the store root taken before the upgrade.
+:::
+
 `MemtomemStore` is an async adapter that exposes Core's Markdown write/index/search operations, sessions, and working memory, and is used explicitly inside nodes, not passed as `compile(store=...)`. Notebook 06 uses keyword-only search. The two examples do not automatically share a database with each other or with a coding client.
 
 `MemtomemStore`'s `config_overrides` apply after ambient config. Use them to point a graph at its own database so test writes do not land in the user's default store. An unknown section or key raises an error on the first call instead of falling back to the default store.
