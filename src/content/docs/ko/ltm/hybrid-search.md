@@ -66,13 +66,13 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 검색 결과를 관련도 순으로 다시 정렬해 정확도를 높이는 **재정렬(리랭커)** 단계의 고급 설정입니다. 기본값으로도 충분히 동작하므로, 결과 품질을 세밀하게 조정할 때만 참고하세요.
 
-재정렬을 활성화하면 후보 수는 `max(min_pool, min(max_pool, int(oversample * response_top_k)))`로 계산합니다. 기본값(oversample `2.0`, min_pool `20`, max_pool `200`)에서 `top_k=10`이면 후보 20개를 선택합니다. `top_k`가 커지면 후보 수도 함께 늘어납니다.
+재정렬을 활성화하면 후보 수는 `max(response_top_k, min_pool, min(max_pool, int(oversample * response_top_k)))`로 계산합니다. 기본값(oversample `2.0`, min_pool `20`, max_pool `200`)에서 `top_k=10`이면 후보 20개를 선택합니다. `top_k`가 커지면 후보 수도 함께 늘어납니다. 후보 수는 요청한 `top_k`보다 작아지지 않으므로, `max_pool` 때문에 응답이 요청보다 짧아지지 않습니다. 다만 응답에는 일치하는 후보 수만큼만 결과가 담깁니다.
 
 | 키 | 환경 변수 | 기본값 | 비고 |
 |---|---|---|---|
 | `rerank.oversample` | `MEMTOMEM_RERANK__OVERSAMPLE` | `2.0` | `response_top_k` 대비 풀 배수 |
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | 하한선 — 리랭커가 받는 후보 수의 최소값 |
-| `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | 상한선 — 큰 `top_k`에서 비용 폭주 방지 |
+| `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | oversample로 늘린 후보 수의 상한. `top_k`나 `min_pool`이 더 크면 그 값이 우선 |
 
 실행 중인 설정은 `mm config set rerank.oversample 3.0`처럼 바꿀 수 있습니다. 리랭커 모델을 비롯한 나머지 `rerank.*` 설정은 [설정 레퍼런스](/ko/ltm/configuration/)를 참고하세요.
 

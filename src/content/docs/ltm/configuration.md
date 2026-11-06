@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.3 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.5 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -79,7 +79,7 @@ Path-glob → namespace mappings that auto-tag files at index time, so you don't
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_NAMESPACE__RULES` | JSON list of `{path_glob, namespace}` objects. `pathspec.GitIgnoreSpec` patterns, case-insensitive. `{parent}` and `{ancestor:N}` placeholders expand from the matched file path. Resolution order: explicit `namespace=` param → rules (first match) → `enable_auto_ns` → `default_namespace`. Since 0.7.2, a rule whose expanded namespace contains `,` or `*`, is `!system`, is blank, or is an `agent-runtime:` name the agent tools refuse is skipped like a rule whose placeholder expands to nothing, and resolution moves on. | `[]` |
+| `MEMTOMEM_NAMESPACE__RULES` | JSON list of `{path_glob, namespace}` objects. `pathspec.GitIgnoreSpec` patterns, case-insensitive. `{parent}` and `{ancestor:N}` placeholders expand from the matched file path. Resolution order when a file is indexed: explicit `namespace=` param → the namespace its stored rows share → the namespace its day-file name declares (0.7.5+) → session binding → rules (first match) → `enable_auto_ns` → `default_namespace`. Since 0.7.2, a rule whose expanded namespace contains `,` or `*`, is `!system`, is blank, or is an `agent-runtime:` name the agent tools refuse is skipped like a rule whose placeholder expands to nothing, and resolution moves on. | `[]` |
 | `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | Default namespace for new chunks. Since 0.7.2, a value that fails the same check stores chunks untagged (`default`), and `mm config set` refuses it | `"default"` |
 | `MEMTOMEM_NAMESPACE__ENABLE_AUTO_NS` | Derive namespace from a file's immediate parent folder when no explicit namespace or rule applies | `false` |
 
@@ -102,9 +102,9 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) / `local` (sentence-transformers `CrossEncoder`, local). `local` needs `sentence-transformers` installed separately; no memtomem extra includes it. `MEMTOMEM_RERANK__MODEL` then takes a sentence-transformers model name (e.g. `cross-encoder/ms-marco-MiniLM-L-6-v2`). `fastembed` is usually preferable | `"fastembed"` |
 | `MEMTOMEM_RERANK__MODEL` | Model name; its form depends on the provider (a fastembed catalog ID, a Cohere Rerank model, or a sentence-transformers model name). With `fastembed`, for non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. No `mm init` preset turns reranking on, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | `""` |
-| `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
+| `MEMTOMEM_RERANK__OVERSAMPLE` | Pool multiplier over `response_top_k`. Pool size is `max(response_top_k, min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | Floor — reranker never sees fewer candidates than this | `20` |
-| `MEMTOMEM_RERANK__MAX_POOL` | Cap — prevents runaway cost at large `top_k` | `200` |
+| `MEMTOMEM_RERANK__MAX_POOL` | Cap on the oversampled pool; a larger `top_k` or `min_pool` still wins | `200` |
 | `MEMTOMEM_RERANK__TOP_K` | Deprecated legacy pool size; migrates to `min_pool` when present | `20` |
 
 ### Search
@@ -331,7 +331,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.3/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.5/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

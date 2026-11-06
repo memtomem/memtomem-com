@@ -67,7 +67,7 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.7.3 registry has 102 current tools and 96 `mem_do` actions; 0.7.2 adds
+The v0.7.5 registry has 102 current tools and 96 `mem_do` actions; 0.7.2 adds
 `mem_update_coverage` ([Update Coverage](#update-coverage)), and 0.7.1 added
 `mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
@@ -140,7 +140,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - It needs a project context: start the server inside a project with a registered tier, or bind one with [`mem_project_bind`](#project-binding).
 - Coverage is stored only in the SQLite database. A JSON export does not carry it, and an import neither adds nor clears it, so after a bundle is restored into a store without that project's coverage, those commits are reviewed again.
 - The tool is marked as not read-only, so a caching proxy does not replay an earlier answer.
-- The `update` workflow of the plugins released with Core 0.7.3 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
+- The `update` workflow of the plugins released with Core 0.7.5 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
 
 ## When to Change Modes
 

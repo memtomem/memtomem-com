@@ -86,7 +86,7 @@ description: handoff, brief, update로 한 Git 프로젝트의 작업을 다른 
 
 `save`와 `resume` 중 하나를 지정합니다. 인자의 첫 단어가 `s`나 `r` 하나뿐이면 각각 `save`, `resume`으로 처리합니다. 작업을 지정하지 않으면 워크플로가 먼저 묻고, 물어볼 사람이 없는 비대화형 실행에서는 `insufficient_input: operation`을 보고하고 중단합니다.
 
-대상 AI 도구는 `claude-code`, `codex-cli`, `kimi-code`, `opencode`, `antigravity-cli`, `any` 중 하나로 기록됩니다. `claude`, `codex`, `kimi`는 각각 해당 이름으로, `antigravity`와 `agy`는 `antigravity-cli`로 바뀝니다. 지정하지 않으면 `any`가 대상입니다. 목록에 없는 대상은 다시 묻거나, 비대화형 실행에서는 `insufficient_input: runtime`을 보고합니다.
+대상 AI 도구는 `claude-code`, `codex-cli`, `kimi-code`, `opencode`, `antigravity-cli`, `cursor`, `any` 중 하나로 기록됩니다. `claude`, `codex`, `kimi`는 각각 해당 이름으로, `antigravity`와 `agy`는 `antigravity-cli`로 바뀝니다. 지정하지 않으면 `any`가 대상입니다. 목록에 없는 대상은 다시 묻거나, 비대화형 실행에서는 `insufficient_input: runtime`을 보고합니다.
 
 **저장(`save`)** 은 실제로 진행된 작업만 기록합니다. 관찰한 작업에서 완료한 내용(`completed`)과 검증 결과(`validation`)를 채울 수 없으면 저장하지 않고 `insufficient_input: work context`를 보고합니다. 호출한 쪽에서 넘겨받았거나 요청에 포함된 맥락도 관찰한 작업으로 인정됩니다. 기록은 1,200자 이내이며 목표, 완료한 작업, 변경 파일, 현재 커밋(`git_head`), 작업 트리 상태, 검증, 차단 요인, 다음 작업(`next_action`)을 담습니다. 0.7.2부터는 `artifacts` 필드도 기록합니다. 저장소 밖에서 만든 결과물(예: AI 도구 세션 디렉터리에 있는 계획 파일)의 절대 경로이며, 없으면 `none`입니다. 경로는 자르지 않으며, 필드 길이(160자)를 넘는 경로는 빼고 그 개수를 함께 적습니다. 저장이 끝나면 `handoff_id`를 알려 줍니다.
 
@@ -154,12 +154,12 @@ Claude Code 플러그인은 원격 비교와 GitHub 조회에 쓰는 명령을 �
 
 ## Antigravity CLI
 
-Antigravity CLI(`agy`)는 플러그인의 memtomem 서버를 플러그인 디렉터리에서 시작하므로 서버에 프로젝트 컨텍스트가 없습니다. 그래서 Antigravity용 세 워크플로는 다른 memtomem 호출보다 먼저 서버를 저장소에 바인딩합니다.
+Antigravity CLI(`agy`)는 플러그인의 memtomem 서버를 플러그인 디렉터리에서 시작하므로 서버에 프로젝트 컨텍스트가 없습니다. 그래서 Antigravity용 세 워크플로는 다른 memtomem 호출보다 먼저 서버를 저장소에 바인딩합니다. 0.7.4부터는 search, recall, remember 스킬도 같은 방식으로 바인딩합니다.
 
 - `git rev-parse --show-toplevel`이 출력한 루트로 `mem_do`를 통해 [`mem_project_bind`](/ko/ltm/mcp-tools/#project-binding)를 호출하고, 도구가 같은 루트를 반환할 때만 계속 진행합니다.
 - 상위 디렉터리의 tier만 등록되어 있으면 서버가 상위 디렉터리를 반환합니다. 이 경우를 포함해 다른 결과가 나오면 워크플로가 중단됩니다. tier가 없을 때도 중단되며, 이때 결과 메시지에 `mm mem init` 명령이 표시됩니다.
 - 바인딩은 서버 프로세스가 재시작될 때까지 유지됩니다. 다른 저장소에서 작업하려면 먼저 서버를 재시작해야 합니다.
-- 바인딩한 뒤에는 해당 서버 프로세스의 search와 recall도 바인딩된 저장소의 프로젝트 tier를 함께 조회합니다. `remember` 워크플로는 계속 사용자 범위에만 저장합니다.
+- 바인딩한 뒤 search와 recall은 해당 저장소의 프로젝트 기억도 함께 조회하고, remember는 프로젝트 사실을 저장소의 `project_local` tier에 저장합니다. tier가 없으면 search와 recall은 사용자 범위만 조회하고, remember는 프로젝트와 무관한 선호와 개인 메모만 저장하며 프로젝트 사실은 거부합니다.
 
 설치와 서버 중복 확인은 [Antigravity CLI 플러그인](/ko/guides/connect-ai-client/#antigravity-cli-플러그인)을 참고하세요.
 

@@ -86,7 +86,7 @@ Saves and loads a compact record for passing work along in sequence. It does not
 
 Name one operation, `save` or `resume`. When the first word of the arguments is exactly `s` or `r`, it means `save` or `resume`. Without an operation the workflow asks first; in a non-interactive run with nobody to ask, it reports `insufficient_input: operation` and stops.
 
-The target AI tool is recorded as one of `claude-code`, `codex-cli`, `kimi-code`, `opencode`, `antigravity-cli`, or `any`. `claude`, `codex`, and `kimi` become the matching label, and `antigravity` or `agy` becomes `antigravity-cli`. Without a target, the record is addressed to `any`. A target outside this list is asked for again, or reported as `insufficient_input: runtime` in a non-interactive run.
+The target AI tool is recorded as one of `claude-code`, `codex-cli`, `kimi-code`, `opencode`, `antigravity-cli`, `cursor`, or `any`. `claude`, `codex`, and `kimi` become the matching label, and `antigravity` or `agy` becomes `antigravity-cli`. Without a target, the record is addressed to `any`. A target outside this list is asked for again, or reported as `insufficient_input: runtime` in a non-interactive run.
 
 **`save`** records only work that actually happened. If what was completed (`completed`) and how it was checked (`validation`) cannot be filled from observed work, it saves nothing and reports `insufficient_input: work context`. Context inherited from a caller or given in the request counts as observed. A record is at most 1,200 characters and holds the objective, completed work, changed files, the current commit (`git_head`), the worktree state, validation, blockers, and the next action (`next_action`). Since 0.7.2 it also writes an `artifacts` field: absolute paths of outputs produced outside the repository, such as a plan file in an AI tool's session directory, or `none`. Paths are never cut; a path that does not fit the 160-character field is left out and counted. The workflow reports the `handoff_id` when it is done.
 
@@ -152,12 +152,12 @@ The tool exists from memtomem 0.7.2, and a server exposes it as its own tool onl
 
 ## Antigravity CLI
 
-The Antigravity CLI (`agy`) starts the plugin's memtomem server in the plugin directory, so the server has no project context. The three Antigravity workflows therefore bind the server to the repository before any other memtomem call.
+The Antigravity CLI (`agy`) starts the plugin's memtomem server in the plugin directory, so the server has no project context. The three Antigravity workflows therefore bind the server to the repository before any other memtomem call. Since 0.7.4 the search, recall and remember skills bind the same way.
 
 - They call [`mem_project_bind`](/ltm/mcp-tools/#project-binding) through `mem_do` with the root that `git rev-parse --show-toplevel` prints, and continue only when the tool names that same root.
 - When only a parent directory's tier is registered, the server returns that parent directory. That result, like any other result, stops the workflow. A missing tier stops it too, and the result message names the `mm mem init` command.
 - A binding lasts until the server process restarts. To work in another repository, restart the server first.
-- After a binding, search and recall in that server process also see the bound repository's project tiers. The `remember` workflow still saves at user scope only.
+- Once bound, search and recall also read the repository's project memory, and remember saves a project fact to its `project_local` tier. Without a tier, search and recall read user scope only, and remember saves only cross-project preferences and personal notes, refusing a project fact.
 
 For installation and the duplicate-server check, see [Antigravity CLI Plugin](/guides/connect-ai-client/#antigravity-cli-plugin).
 

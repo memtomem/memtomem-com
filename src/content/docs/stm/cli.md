@@ -3,7 +3,7 @@ title: STM CLI Reference
 description: Every mms command for the memtomem-stm proxy, from setup and registration to surfacing hooks, diagnostics, projects and hosts, and --json failure documents.
 ---
 
-The `mms` command is installed with the `memtomem-stm` v0.7.5 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
+The `mms` command is installed with the `memtomem-stm` v0.7.7 package. This page mirrors the complete top-level command surface; run `mms <command> --help` for the installed option spelling and `mms --version` (or `mms version`) for the runtime version.
 
 STM's import is reversible. Pulling an upstream behind the STM proxy preserves its original registration, so if the result isn't what you want, `mms eject` restores it to the original host MCP-client config.
 
@@ -244,7 +244,7 @@ mms daemon run                       # foreground long-lived server loop
 
 The daemon holds one warm LTM MCP session for the active config. Set `MEMTOMEM_STM_HOOK__USE_DAEMON=0` to force the legacy cold in-process hook path, or `MEMTOMEM_STM_HOOK__FALLBACK=cold` if you prefer a cold fallback when the daemon is unavailable. A `busy` or `expired` daemon reply skips surfacing for that call either way. A daemon under a different config fingerprint can belong to a running STM process with a different `MEMTOMEM_STM_*` environment (the MCP-launched server versus your shell or hook), so check `mms daemon status` before stopping it with `--all`.
 
-The hook↔daemon protocol version is part of the daemon fingerprint; it is v9 since 0.7.0. When a release's upgrade notes say the protocol changes, quit the MCP hosts that run STM and run `mms daemon stop` with the old build **before** upgrading: the new build cannot reach a daemon the old one started, and processes that share the pending SQLite store must run the same version. The upstream [Upgrading runbook](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/guides/operations.md#upgrading) has the full sequence. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
+The hook↔daemon protocol version is part of the daemon fingerprint; it is v9 since 0.7.0. When a release's upgrade notes say the protocol changes, quit the MCP hosts that run STM and run `mms daemon stop` with the old build **before** upgrading: the new build cannot reach a daemon the old one started, and processes that share the pending SQLite store must run the same version. The upstream [Upgrading runbook](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/guides/operations.md#upgrading) has the full sequence. A daemon pinned with `idle_timeout_seconds=0` never idles out: stop it with `mms daemon stop --all`. On Windows that command cannot terminate it, so end the process from Task Manager instead.
 
 `mms daemon stop` exits 0 only when every daemon it acted on finished shutting down, none was running, or the record it found was stale. Otherwise it exits 1 with the reason on stderr: for example, the daemon's lifetime lock is still held after a 5-second wait, a pid cannot be signalled, or, on Windows, a daemon that would need the signal fallback is still listening. `--all` waits up to 10 seconds in total, and when `data_dir` exists but cannot be listed it stops none of the foreign daemons and exits 1. `mms daemon restart` starts a replacement only after its stop step succeeds.
 
@@ -302,10 +302,10 @@ mms config validate --config ./stm_proxy.json --json
 
 ### `mms stats`
 
-Read all-time persistent compression and surfacing statistics without creating or migrating stores.
+Read persistent compression and surfacing statistics without creating or migrating stores. The totals cover the rows still retained, not all time: compression rows are capped per source at `proxy.metrics.max_history`, and progressive reads and surfacing rows age out after their retention periods.
 
 ```bash
-mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
+mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--all-time] [--json]
 ```
 
 The CLI sees disk-backed metrics only; process-local live counters remain available through the observability MCP tools.
@@ -315,11 +315,12 @@ The CLI sees disk-backed metrics only; process-local live counters remain availa
   - `mms stats` warns about successful MCP rows recorded before this accounting.
   - The `--json` summary adds `initial_response_calls`, `unclassified_mcp_calls` and a `measurement` description.
   - Calls that used the experimental [structured delivery](/stm/compression/#structured-chunk-delivery) are counted on a separate `Structured delivery:` line (calls, serialized base characters, measured MCP bytes; `--json`: `compression.structured_delivery`) and stay out of the saved ratio.
+- **`--all-time`:** switches the compression block alone to all-time totals; the progressive and surfacing blocks keep their retained windows. All-time totals are the retained rows plus a `proxy_metrics_daily` table that keeps daily aggregates (per day, source, server and tool) of every deleted row. The table is installed the first time a 0.7.7 metrics writer (the MCP server, `mms hook` or `mms tune`) opens the metrics database; rows trimmed before that cannot be recovered, and an **Incomplete before** line reports when and how many. `--json` names the scope in `compression_scope` (`retained` or `all_time`).
 - **Error counts:** `lock_timeout` and `internal_error` rows recorded by the proxy's own call path count as errors. Rows recorded before the upgrade are not rewritten.
 - **Surfacing:**
   - Only shown events count as surfacings.
   - Withheld (holdout) calls appear on a separate `withheld (holdout)` line, and the opportunity log on an `opportunities` line. Each line appears only when there is something to count.
-- **Per-tool `tuner_calls`:** in `--json`, a tool's `calls` counts every matching row and `tuner_calls` counts the rows the auto-tuner uses. Rows annotated as metadata bypass are dropped from the tuner's profiles, so they are left out of `tuner_calls`. A database without the `compression_strategy` column counts every row.
+- **Per-tool `tuner_calls`:** in retained-mode `--json`, a tool's `calls` counts every matching row and `tuner_calls` counts the rows the auto-tuner uses. Rows annotated as metadata bypass are dropped from the tuner's profiles, so they are left out of `tuner_calls`. A database without the `compression_strategy` column counts every row. All-time `by_tool` entries have no `tuner_calls`.
 - **Unknown values:** a rating or surfacing decision outside STM's own vocabulary is counted under `other`.
 - **`--json` errors:** a SQLite error in `compression.error` or `surfacing.error` reads as its type, e.g. `DatabaseError (SQLITE_CORRUPT)`.
 
@@ -486,7 +487,7 @@ Many `--json` commands, such as `add`, `remove`, `prune`, `eject`, `list`, `stat
 | `~/.mms` state (`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | The state lock timed out or is unavailable / a write failed / the schema version does not match / a state file is corrupt |
 | Metrics store (`mms tune`) | `store_invalid` | SQLite cannot open or read the metrics or feedback database file (listed in `stores`) |
 
-For the command-specific codes of `add`, `gateway explain`, `project route`, `selection feedback` and others, see the upstream [CLI documentation](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/cli.md).
+For the command-specific codes of `add`, `gateway explain`, `project route`, `selection feedback` and others, see the upstream [CLI documentation](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/cli.md).
 
 These cases do not use the envelope:
 
@@ -571,7 +572,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mms selection` | — |
 | `mms selection feedback` | `--active-only`, `--config`, `--json`, `--last`, `--log`, `--no-operator-override`, `--no-user-corrected`, `--operator-override`, `--selection-id`, `--server`, `--tool`, `--user-corrected`, `--yes` |
 | `mms selection replay` | `--active-only`, `--config`, `--dataset`, `--json`, `--log`, `--no-telemetry`, `--output-dir` |
-| `mms stats` | `--config`, `--json`, `--source`, `--tool` |
+| `mms stats` | `--all-time`, `--config`, `--json`, `--source`, `--tool` |
 | `mms status` | `--config`, `--json` |
 | `mms surfacing` | `--config` |
 | `mms tune` | `--apply`, `--config`, `--json`, `--since-hours`, `--tool`, `--yes` |

@@ -64,13 +64,13 @@ If vector retrieval raises an error (for example, the embedding server is unreac
 
 ## Reranker Pool Tuning
 
-When reranking is enabled, the reranker sees a candidate pool of size `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. The defaults (oversample `2.0`, min_pool `20`, max_pool `200`) give the classic 2× oversample at `top_k=10` and scale up with larger `top_k` requests. Tune with:
+When reranking is enabled, the reranker sees a candidate pool of size `max(response_top_k, min_pool, min(max_pool, int(oversample * response_top_k)))`. The defaults (oversample `2.0`, min_pool `20`, max_pool `200`) give the classic 2× oversample at `top_k=10` and scale up with larger `top_k` requests. The pool is never smaller than the requested `top_k`, so `max_pool` no longer cuts a larger request short; the response still holds only as many results as there are matching candidates. Tune with:
 
 | Key | Env var | Default | Notes |
 |---|---|---|---|
 | `rerank.oversample` | `MEMTOMEM_RERANK__OVERSAMPLE` | `2.0` | Pool multiplier over `response_top_k` |
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | Floor — reranker never sees fewer candidates |
-| `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | Cap — prevents runaway cost on large `top_k` |
+| `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | Cap on the oversampled pool; a larger `top_k` or `min_pool` still wins |
 
 Runtime-tunable via `mm config set rerank.oversample 3.0` etc. The remaining `rerank.*` keys, including reranker model selection, are covered in the [configuration reference](/ltm/configuration/).
 

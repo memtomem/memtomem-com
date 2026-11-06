@@ -1,6 +1,6 @@
 {
   "core": {
-    "version": "0.7.3",
+    "version": "0.7.5",
     "python": ">=3.12",
     "tools": {
       "core": 9,
@@ -115,7 +115,7 @@
     ]
   },
   "stm": {
-    "version": "0.7.5",
+    "version": "0.7.7",
     "python": ">=3.12",
     "tools": {
       "modelFacing": 5,
@@ -123,17 +123,17 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.28",
-    "bundledCore": "0.7.3",
-    "requirement": "memtomem[onnx]==0.7.3"
+    "version": "0.5.31",
+    "bundledCore": "0.7.5",
+    "requirement": "memtomem[onnx]==0.7.5"
   },
   "opencode": {
-    "version": "0.3.25",
-    "bundledCore": "0.7.3"
+    "version": "0.3.27",
+    "bundledCore": "0.7.5"
   },
   "sourceSnapshots": {
-    "coreMain": "953b3c15a66c0808429d882f7326a381187fa90c",
-    "stmMain": "9363ecb95cd3baa3e7ecec99000962035b64547b"
+    "coreMain": "1092d604887dabfcb43a6a84e963231f4fdee2f8",
+    "stmMain": "78ff04c302e70e95d875532289cc9396af310f0f"
   },
   "configuration": {
     "coreEnvironment": {
@@ -141,8 +141,8 @@
       "sha256": "dc7a750509f5377ed714f418363e83f6d38c740fec3b528665fbaf4ab6a165a2"
     },
     "stmEnvironment": {
-      "count": 182,
-      "sha256": "1353d93bb3f5a73d47061f386a596c28205cd516095c0ddf8805c7c07ecb8e52"
+      "count": 184,
+      "sha256": "cdab3a2fa74173b4494f163f5aabdc53b11ebd3eec68544512d5438fe3aaf8b4"
     }
   },
   "guides": {
@@ -529,6 +529,7 @@
     "--accept-schema-loss",
     "--active-only",
     "--all",
+    "--all-time",
     "--allow-argv-secrets",
     "--allow-project-configs",
     "--apply",
@@ -600,5 +601,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-11-02"
+  "reviewedOn": "2026-11-06"
 }

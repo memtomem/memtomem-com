@@ -7,7 +7,7 @@ memtomem-stm(STM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concep
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem-stm` 0.7.5가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.7이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -114,7 +114,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__METRICS__ENABLED` | 호출 메트릭 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__METRICS__DB_PATH` | 프록시 메트릭 SQLite 경로 | `"~/.memtomem/proxy_metrics.db"` |
-| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | 메트릭 행 보관 상한 | `10000` |
+| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | 소스(`mcp`, `hook`)별 메트릭 행 보관 상한. 삭제된 행의 날짜별 집계값은 별도 집계 테이블에 남으며 이 값으로 정리되지 않음 | `10000` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | 점수 계산 방식 | `"bm25"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_PROVIDER` | 의미 기반 관련성 점수에 사용할 임베딩 제공자 | `"ollama"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | 관련성 임베딩 모델 | `"nomic-embed-text"` |
@@ -301,6 +301,8 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | 배치 위치: `prepend`, `append`, `section` | `"append"` |
 | `MEMTOMEM_STM_SURFACING__SECTION_HEADER` | `section` 주입 모드에서 사용할 제목 | `"## Relevant Memories"` |
 | `MEMTOMEM_STM_SURFACING__DEFAULT_NAMESPACE` | 도구 규칙이 덮어쓰지 않을 때의 선택적 네임스페이스 | `null` |
+| `MEMTOMEM_STM_SURFACING__EXCLUDE_NAMESPACES` | 관련 기억으로 주입하지 않을 네임스페이스 패턴(fnmatch, JSON 목록). hook 호출과 프록시 호출 모두에 적용되며 Pinned Context는 제외 대상이 아님. `[]`이면 제외하지 않음 | `["claude-plans","codex"]` |
+| `MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD` | `cwd`가 있고 네임스페이스를 고정하지 않은 hook 호출에서 검색 범위를 현재 저장소의 네임스페이스로 제한 | `true` |
 | `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` | 제외할 도구 이름 목록(JSON 목록) | `[]` |
 | `MEMTOMEM_STM_SURFACING__WRITE_TOOL_PATTERNS` | 기본적으로 관련 기억을 붙이지 않을 쓰기 도구 패턴(JSON 목록) | `["*write*","*create*","*delete*","*push*","*send*","*remove*"]` |
 | `MEMTOMEM_STM_SURFACING__CONTEXT_TOOLS` | 도구별 `enabled`, `query_template`, `namespace`, `min_score`, `max_results` 재정의(JSON object) | `{}` |
@@ -389,7 +391,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 
