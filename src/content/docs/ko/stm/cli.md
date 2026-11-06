@@ -126,6 +126,8 @@ mms list --json                      # 스크립트용 JSON
 
 **SOURCE** 열은 각 서버 정의의 출처를 `file`, `env`, `file+env`로 표시하며, 환경 변수로만 정의된 서버도 행으로 나타납니다. **COMPRESSION** 열은 파일에 적힌 값이 아니라 실제로 적용되는 서버 기본 전략을 보여 줍니다. 서버가 `compression`을 생략하면 `default_compression`을 상속하고 `MEMTOMEM_STM_PROXY__*` 환경 변수 재정의도 반영합니다. 설정 파일이 검증에 실패하면 서버 시작 시 실제로 사용하는 환경 변수·기본값 기반 설정을 보여 주며, 시작 시 거부되는 환경 변수처럼 실행 설정을 만들 수 없을 때만 `unknown`으로 표시합니다. 서버가 하나 이상이면 표 아래에 `COMPRESSION shows the resolved server default; tool overrides may differ.` 줄과, 도구별로 명시한 `compression`마다 `"server"/"tool": strategy (tool override)` 줄이 이어집니다. 표에서는 URL의 사용자 정보, 쿼리 문자열, 프래그먼트를 지우고, 환경 변수가 관여한 행(`env`, `file+env`)의 인자는 `[args hidden]`으로 가립니다. 서버별 `max_result_chars`는 도구별 재정의로 달라질 수 있어 열로 표시하지 않으므로 `--json`이나 설정 파일에서 확인합니다.
 
+등록한 서버가 없고 실행 설정이 유효하면 `mms list`는 `No upstream servers configured.` 다음 줄에 ``Run `mms add` (or `mms init`) to register an upstream.``를 출력합니다. 설정 파일이나 프록시 환경 변수가 검증에 실패한 경우에는 서버를 추가해도 해결되지 않으므로 이 안내를 출력하지 않습니다.
+
 표의 열 구성은 바뀔 수 있으므로 스크립트에서는 `--json`을 사용하세요. `--json`의 `servers` 맵은 여전히 파일 내용을 그대로 보여 주고, 실제 실행 기준의 값은 `effective_servers`, `server_sources`, `effective_compression`(서버 이름별 `strategy`, `source`(`server` 또는 `global`), `tool_overrides`)에서 확인합니다. 이 값들은 실행 설정을 만들 수 없을 때뿐 아니라 실제 설정에 서버가 하나도 없을 때도 빈 객체(`{}`)가 되므로, 설정 실패 여부는 `config_valid`와 `config_error`로 판단합니다. 각 `effective_servers` 항목에는 서버에 적용되는 `delivery_format`과, `tool_overrides` 항목이 있는 도구별 적용 형식인 `tool_delivery_overrides`도 포함됩니다.
 
 ### `mms status`
@@ -138,6 +140,8 @@ mms status --json                    # 스크립트용 JSON
 ```
 
 v0.1.32부터 `status`는 설정 경로, `enabled` 값, 스키마 검증 경고, `Servers: N (P host-pruned)`를 요약합니다. 서버별 압축 전략과 관련 기억 제시 상태는 `mms list`에서 확인합니다. `status --json`은 민감 정보를 가린 `servers` 맵 전체와 `server_count` / `pruned_count` 키를 반환하며, `effective_server_count`(환경 변수 때문에 시작할 수 없는 설정이면 `null`)도 포함합니다. `enabled`는 시작 시 설정 해석이 성공하면 환경 변수 재정의까지 반영한 실제 값입니다.
+
+사람이 읽는 출력의 마지막 줄은 다음에 할 일을 안내합니다. 설정 파일 오류에는 ``Run `mms config validate` to fix the proxy file.``, 환경 변수 때문에 서버를 시작할 수 없을 때(예: `MEMTOMEM_STM_PROXY=[]`)는 `Fix the runtime configuration named in the warning above first.`를 출력합니다. 서버가 등록되어 있으면 `mms list`와 `mms health`를, 그 밖의 경우에는 `mms add`를 안내합니다. `--json`에는 이 줄이 없습니다.
 
 `list`와 `status`는 서버 시작 시와 같은 기준으로 설정을 검증하므로, 시작 시 거부되는 환경 변수가 있으면 설정을 유효하지 않은 것으로 표시합니다. `config_error`에는 값 없이 오류 위치와 유형 코드만 표시합니다. 위치에는 환경 변수나 헤더 이름 같은 키가 포함될 수 있지만 값은 포함되지 않습니다. 파일 오류의 자세한 내용은 `mms config validate`로 확인합니다.
 
@@ -269,6 +273,8 @@ mms health --names                   # 64자 MCP 도구명 한도를 넘는 도�
 
 `--names`는 `mcp__<server>__<prefix>__<tool>`의 전체 길이가 MCP의 64자 제한(#261)을 넘어 등록 후 표시되지 않는 도구를 찾을 때 사용합니다.
 
+점검 대상은 설정 파일의 서버 항목에 환경 변수 재정의(`MEMTOMEM_STM_PROXY` / `MEMTOMEM_STM_PROXY__UPSTREAM_SERVERS…`)를 반영한 목록이며, `mms doctor`가 확인하는 목록과 같습니다. 환경 변수로만 정의한 서버도 점검하고 `--json`의 `servers`에 포함합니다. `command`처럼 환경 변수로 재정의한 필드는 환경 변수 값으로 점검합니다. 실행 설정이나 재정의를 반영한 목록이 검증에 실패하면 설정 파일에 선언된 서버를 점검합니다. 설정 파일의 `upstream_servers`는 객체여야 하며, `null`이나 목록이면 점검 전에 종료 코드 1로 끝납니다. `"bad": 7`처럼 객체가 아닌 서버 항목 하나는 건너뛰고 잘못된 설정으로 보고하며, 이때 종료 코드는 0입니다.
+
 `health`는 서버별 **회로 차단기** 상태도 표시합니다. v0.1.32부터 기본으로 활성화됩니다. 연속 3회 호출에 실패하면 해당 서버의 도구는 약 60초 동안 `circuit_open`을 바로 반환하므로 호출할 때마다 재시도와 제한 시간을 모두 소진하지 않습니다. 캐시된 응답은 계속 제공하고 다른 서버에는 영향을 주지 않습니다. `stm_proxy.json`에서 해당 서버에 `circuit_max_failures: 0`을 지정하면 매번 다시 시도하는 이전 동작으로 돌아갑니다.
 
 `health`와 `doctor`는 서버 시작 시와 같은 기준으로 설정을 검증합니다. 예를 들어 `MEMTOMEM_STM_PROXY='[1]'`처럼 시작 시 거부되는 환경 변수가 있으면 `health`는 `config_valid: false`를 보고합니다. 오류 표시에는 거부된 값과 예외 메시지를 포함하지 않으며, 일부 항목은 다음과 같이 가립니다.
@@ -320,6 +326,10 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
   - 실험 기능인 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
 - **`--all-time`:** 압축 통계만 전체 기간 합계로 바꿉니다. progressive 통계와 관련 기억 제시 통계는 보존 기간 기준을 유지합니다. 전체 기간 합계는 보존된 행에, 삭제된 행을 날짜·소스·서버·도구별로 집계해 두는 `proxy_metrics_daily` 테이블의 값을 더한 것입니다. 이 테이블은 0.7.7의 지표 기록 프로세스(MCP 서버, `mms hook`, `mms tune`)가 지표 DB를 처음 열 때 만들어지며, 그 전에 삭제된 행은 복구할 수 없습니다. 이때는 **Incomplete before** 줄에 해당 시점과 잃은 행 수를 표시합니다. `--json`은 `compression_scope`(`retained` 또는 `all_time`)로 범위를 알려 줍니다.
+- **기록 초기화:** `DELETE FROM proxy_metrics`를 먼저 실행한 다음 `DELETE FROM proxy_metrics_daily`를 실행합니다. 순서를 바꾸면 삭제되는 행이 일별 테이블에 다시 집계됩니다. 트리거가 남아 있는 동안 일별 테이블을 `DROP`하지 마세요. 이후 정리 작업이 모두 `no such table`로 실패하면서 그 정리를 일으킨 쓰기까지 롤백되고, 시작 시 정합성 확인도 실패합니다.
+- **소스별 줄:** 프록시한 MCP 도구와 `mms hook`의 행이 모두 있으면, 압축 통계의 전체 합계 아래에 `mcp` 줄과 `hook` 줄을 각각의 절감률과 함께 표시합니다. 모든 행이 구조화 전달인 경우처럼 텍스트 문자 수가 없는 소스는 절감률 대신 `no text ratio`를 표시합니다. `--json`에서는 `compression_by_source`에 담기며, `--source`를 지정하면 `null`입니다.
+- **Progressive delivery:** 페이지로 나눈 응답에서 만든 문자 수와 에이전트에 실제로 전달한 문자 수를 비교합니다. 기록된 읽기를 모두 세므로 같은 내용을 다시 읽으면 비율이 100%를 넘을 수 있습니다. `--tool`로는 필터링되지만 `--source`로는 필터링되지 않고, 마지막 줄에 보존된 가장 오래된 행의 시점을 표시합니다. `--json`에서는 `progressive`에 담깁니다.
+- **설정 파일이 잘못된 경우:** `mms stats`는 기본값 대신 서버가 환경 변수로 만든 설정을 읽습니다. 따라서 환경 변수로 옮긴 DB를 읽고, `Enabled` / `Servers` 줄(`--json`의 `enabled` / `servers`)도 환경 변수 값을 표시합니다.
 - **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
 - **관련 기억 제시 통계:**
   - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
@@ -440,7 +450,10 @@ mms import --plan                    # 기본: 가져올 항목만 표시(비밀
 mms import --apply                   # 레지스트리에 실제로 저장
 mms import --from claude-code --plan # 클라이언트 한정(claude-code / cursor / codex / claude-desktop / all)
 mms import --plan --show-imported    # 계획에서 비밀값을 가리지 않음(주의)
+mms import --apply --allow-project-configs  # 프로젝트 설정 파일의 항목도 등록
 ```
+
+현재 디렉터리의 프로젝트 설정 파일(`<cwd>/.mcp.json`, `<cwd>/.cursor/mcp.json`)에서 찾은 항목은 저장소 체크아웃에 포함되어 배포될 수 있으므로, `--allow-project-configs`를 지정하지 않으면 `--apply`가 등록을 거부합니다. `--plan`은 `--apply`에 이 옵션이 필요하다는 경고만 출력합니다. `mms import --help`는 끝에 예시와 함께 두 가지를 안내합니다. 이 명령은 `mms add`가 쓰는 프록시 설정이 아니라 `~/.mms/registry.toml`에 쓰며, 프로젝트 설정 파일의 항목을 `--apply`로 등록하려면 `--allow-project-configs`가 필요합니다.
 
 먼저 가져온 항목이 우선합니다. 레지스트리에 같은 이름으로 다른 내용이 등록되어 있으면 충돌로 처리해 건너뛰고, 내용까지 같으면 바꾸지 않습니다.
 

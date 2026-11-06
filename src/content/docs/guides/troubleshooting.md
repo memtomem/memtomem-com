@@ -169,6 +169,14 @@ The client probably used a built-in tool instead of an STM MCP alias. Ask it to 
 
 `mms health` must report the optional LTM link as connected and the LTM server must expose `mem_search`. If only LTM is unavailable, proxying, compression, and caching can still work.
 
+If the link is connected but a call still injects nothing, check three filters added in 0.7.7:
+
+- **Repository scope:** by default, a Claude Code built-in tool call (`mms hook`) with no pinned namespace searches only the namespaces of the repository that holds its `cwd`, plus `default`. This applies only when Claude Code has a project directory for that repository; otherwise the call searches every namespace.
+- **Excluded namespaces:** by default, retrieved results from `claude-plans` and `codex` are not injected, on hook or proxied calls. Pinned Context is exempt.
+- **Short queries:** a built-in tool call whose query has fewer than `min_query_tokens` tokens is skipped instead of searched.
+
+[Scoping by Repository and Namespace](/stm/surfacing/#scoping-by-repository-and-namespace) shows how to turn the first two off.
+
 ### Restore the original MCP registration
 
 Preview first:

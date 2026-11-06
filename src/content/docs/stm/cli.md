@@ -122,6 +122,8 @@ The table includes an **ORIGIN** column reporting each upstream's import source.
 
 The **SOURCE** column reports where each server definition comes from — `file`, `env`, or `file+env` — and servers defined only in the environment get rows too. **COMPRESSION** shows the resolved server default rather than the file's value: a server that omits `compression` inherits `default_compression`, `MEMTOMEM_STM_PROXY__*` environment overrides are applied. When the file fails validation, the table shows the environment/default fallback that startup actually uses; `unknown` appears only when no runtime configuration can be built, such as an environment that startup rejects. Tables with at least one server end with `COMPRESSION shows the resolved server default; tool overrides may differ.` followed by one `"server"/"tool": strategy (tool override)` line per explicit tool-level `compression`. The table strips URL userinfo, query strings and fragments, and shows the arguments of rows the environment touches (`env`, `file+env`) as `[args hidden]`. Per-server `max_result_chars` has no column, because tool overrides can make it misleading; read it from `--json` or the config file.
 
+With no upstream servers and a valid runtime configuration, `mms list` prints `No upstream servers configured.` followed by ``Run `mms add` (or `mms init`) to register an upstream.``. The hint is left out when the file or the proxy environment fails validation, because adding an upstream would not fix that.
+
 Scripts should read `--json` rather than parse the table. Its `servers` map still describes the file, while `effective_servers`, `server_sources` and `effective_compression` (keyed by server name, with `strategy`, `source` — `server` or `global` — and `tool_overrides`) describe the runtime view. They are `{}` when no runtime configuration can be built, and also when the effective configuration simply has no servers, so an empty map alone does not mean the configuration failed; read `config_valid` and `config_error` for that. Each `effective_servers` entry also carries the server's resolved `delivery_format` and `tool_delivery_overrides`, the resolved format of each tool that has a `tool_overrides` entry.
 
 ### `mms status`
@@ -134,6 +136,8 @@ mms status --json                    # scriptable JSON
 ```
 
 As of v0.1.32 `status` is a summary: config path, the `enabled` flag, any schema-validation warning, and `Servers: N (P host-pruned)`. Per-server detail (compression strategy, surfacing state) moved to `mms list`. `status --json` keeps its full redacted `servers` map and adds `server_count` / `pruned_count`, plus `effective_server_count` (`null` if environment parsing prevents startup). Its `enabled` field reports the runtime value after environment overrides whenever startup parsing succeeds.
+
+The human-readable output ends with the next step to take: ``Run `mms config validate` to fix the proxy file.`` for a file error, `Fix the runtime configuration named in the warning above first.` when the environment keeps the server from starting (for example `MEMTOMEM_STM_PROXY=[]`), a pointer to `mms list` and `mms health` when servers are configured, and the `mms add` hint otherwise. `--json` does not carry this line.
 
 `list` and `status` validate the configuration the way server startup does, so an environment variable that startup rejects marks the configuration invalid. `config_error` reports the location and type code of each error without values; a location can name a key, such as an env or header name, but never its value. Run `mms config validate` for the details of a file error.
 
@@ -265,6 +269,8 @@ mms health --names                   # also flag tools whose proxied name overfl
 
 `--names` is the way to find an upstream tool that silently disappeared after registration because the composed `mcp__<server>__<prefix>__<tool>` name exceeded the MCP 64-char limit (#261).
 
+The servers probed are the file's entries with environment overrides applied (`MEMTOMEM_STM_PROXY` / `MEMTOMEM_STM_PROXY__UPSTREAM_SERVERS…`), the same map `mms doctor` checks. An upstream defined only in the environment is probed and listed in `--json` `servers`, and a field the environment overrides, such as `command`, is probed with the environment's value. When the runtime configuration or the overlaid map fails validation, `health` probes the servers declared in the file. `upstream_servers` in the file must still be an object: `null` or a list exits 1 before any probe. A single server entry that is not an object, such as `"bad": 7`, is skipped and reported as an invalid config, and `health` exits 0.
+
 `health` also renders a per-upstream **circuit breaker** line. As of v0.1.32 the breaker is on by default: after 3 consecutive failed calls an upstream's tools fast-fail with `circuit_open` for ~60s instead of each call burning the full retry/deadline budget; cached responses keep serving and other upstreams are unaffected. Set `circuit_max_failures: 0` on an upstream in `stm_proxy.json` to restore the old always-retry behavior.
 
 `health` and `doctor` validate the configuration the way server startup does: an environment that startup rejects, such as `MEMTOMEM_STM_PROXY='[1]'`, reports `config_valid: false` in `health`. Their error text omits rejected values and exception messages, and a few fields are redacted:
@@ -316,6 +322,10 @@ The CLI sees disk-backed metrics only; process-local live counters remain availa
   - The `--json` summary adds `initial_response_calls`, `unclassified_mcp_calls` and a `measurement` description.
   - Calls that used the experimental [structured delivery](/stm/compression/#structured-chunk-delivery) are counted on a separate `Structured delivery:` line (calls, serialized base characters, measured MCP bytes; `--json`: `compression.structured_delivery`) and stay out of the saved ratio.
 - **`--all-time`:** switches the compression block alone to all-time totals; the progressive and surfacing blocks keep their retained windows. All-time totals are the retained rows plus a `proxy_metrics_daily` table that keeps daily aggregates (per day, source, server and tool) of every deleted row. The table is installed the first time a 0.7.7 metrics writer (the MCP server, `mms hook` or `mms tune`) opens the metrics database; rows trimmed before that cannot be recovered, and an **Incomplete before** line reports when and how many. `--json` names the scope in `compression_scope` (`retained` or `all_time`).
+- **Resetting the history:** run `DELETE FROM proxy_metrics` first and then `DELETE FROM proxy_metrics_daily`; the other order refills the daily table from the rows being deleted. Do not `DROP` the daily table while its trigger exists: every trim then fails with `no such table` and rolls back the write that triggered it, and startup reconciliation fails too.
+- **Per-source lines:** when rows from both proxied MCP tools and `mms hook` are present, the compression block prints an `mcp` line and a `hook` line under the aggregate, each with its own saved ratio; a source with no text characters, such as one whose rows are all structured deliveries, shows `no text ratio` instead. `--json` carries them in `compression_by_source`, which is `null` when `--source` is given.
+- **Progressive delivery:** this block compares the characters produced for paged responses with the characters delivered to the agent. Every recorded read counts, so rereads can push the ratio above 100%. It is filtered by `--tool` but not by `--source`, ends with the oldest retained row, and appears in `--json` as `progressive`.
+- **Invalid config file:** `mms stats` reads the configuration the server builds from the environment in that case, not built-in defaults. A database moved by an environment variable is the one it reads, and the `Enabled` / `Servers` lines (`enabled` / `servers` in `--json`) report the environment's values.
 - **Error counts:** `lock_timeout` and `internal_error` rows recorded by the proxy's own call path count as errors. Rows recorded before the upgrade are not rewritten.
 - **Surfacing:**
   - Only shown events count as surfacings.
@@ -434,7 +444,10 @@ mms import --plan                    # default: show what would be imported (sec
 mms import --apply                   # write to the registry
 mms import --from claude-code --plan # restrict source (claude-code / cursor / codex / claude-desktop / all)
 mms import --plan --show-imported    # reveal secret values in the plan output (use carefully)
+mms import --apply --allow-project-configs  # also register entries from project config files
 ```
+
+`--apply` refuses entries discovered in project config files under the current directory (`<cwd>/.mcp.json`, `<cwd>/.cursor/mcp.json`) unless `--allow-project-configs` is given, because a repository checkout can ship those files. `--plan` only prints a warning that `--apply` will need the flag. `mms import --help` ends with examples and two notes: the command writes `~/.mms/registry.toml`, not the proxy config `mms add` writes, and `--apply` needs `--allow-project-configs` for project config entries.
 
 First import wins: identical names with different definitions are flagged as conflicts and skipped; identical definitions are left unchanged.
 

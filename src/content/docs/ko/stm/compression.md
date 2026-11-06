@@ -71,7 +71,7 @@ JSON을 다루는 압축 계층은 압축 후 결과를 엄격한 JSON으로 다
 
 legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[progressive: chars=<n>]`로 끝납니다. 에이전트는 `memtomem_stm.proxy.progressive`가 제공하는 전체 문자열 `PROGRESSIVE_FOOTER_TOKEN`을 기준으로 나눠야 합니다. `\n---\n`만 기준으로 삼으면 본문의 Markdown 수평선이나 YAML 구분선과 겹쳐 일부 내용이 빠질 수 있습니다.
 
-`progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소 오류로 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고).
+`progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소 오류로 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고). [`mms stats`](/ko/stm/cli/#mms-stats)는 같은 기록을 디스크에서 읽어, 만든 문자 수와 전달한 문자 수를 비교하는 **Progressive delivery** 항목을 표시합니다(`--json`: `progressive`).
 
 응답 캐시는 스키마 6을 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
 
