@@ -8,7 +8,7 @@ AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 �
 | 필요한 결과 | 사용할 방법 | 성공 확인 |
 |---|---|---|
 | 한 페이지 또는 전체 문서를 한 번 읽기 | `llms.txt` URL | 클라이언트가 요청한 내용을 가져옴 |
-| MCP로 문서를 반복 검색 | 로컬 `mcpdoc` 서버 | `list_doc_sources` 다음 `fetch_docs`로 페이지를 가져옴 |
+| MCP로 문서를 반복 검색 | 로컬 `mcpdoc` 서버 | `list_doc_sources` 호출 후 `fetch_docs`로 페이지를 가져옴 |
 | 로컬 기억 인덱스에서 문서 검색 | `mm index` | `mem_search` 결과에 memtomem.com 출처가 표시됨 |
 
 ## llms.txt
@@ -64,11 +64,12 @@ MCP 설정 파일에 추가합니다.
 
 Codex CLI 등 stdio 기반 MCP 클라이언트도 동일한 `command`/`args`로 등록합니다.
 
-### 에이전트에게 사용을 안내
+<a id="에이전트에게-사용을-안내"></a>
+### 에이전트에 사용 방법 안내
 
 AI 도구가 문서 검색 도구를 자동으로 사용하지 않으면 규칙이나 시스템 프롬프트에 다음 문장을 추가하세요.
 
-> memtomem 관련 질문에는 `memtomem-docs` MCP 서버를 사용해. 먼저 `list_doc_sources`를 호출하고 `fetch_docs`로 관련 문서를 읽어.
+> memtomem 관련 질문에는 `memtomem-docs` MCP 서버를 사용하세요. 먼저 `list_doc_sources`를 호출하고 `fetch_docs`로 관련 문서를 읽으세요.
 
 두 도구 호출이 모두 성공해야 연결이 확인된 것입니다. 클라이언트 목록에 `memtomem-docs`가 표시되는 것만으로는 전체 흐름이 검증되지 않습니다.
 

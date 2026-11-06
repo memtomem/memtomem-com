@@ -42,7 +42,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | `MEMTOMEM_EMBEDDING__THREADS` | ONNX Runtime 스레드 상한 (`0` = ORT 기본값) | `4` |
 | `MEMTOMEM_EMBEDDING__PROGRESS_THRESHOLD` | 한 파일이 이 값보다 많은 청크를 만들 때만 청크별 진행 이벤트를 보냄. `0`은 항상 보냄 | `32` |
 
-**ONNX E5 프로필에서 실제로 적용되는 값.** `PROVIDER=onnx`이고 `MODEL`을 비워 두면 Core가 `multilingual-e5-small`을 선택하고, 직접 지정하지 않은 항목에 `DIMENSION=384`, `MAX_SEQUENCE_TOKENS=512`, `THREADS=2`, `ONNX_BATCH_SIZE=4`를 채웁니다. 위 표의 기본값은 *선언된* 기본값이며 이 프로필 밖에서 적용됩니다. 프로필 안에서는 `DIMENSION`이 `384`가 아니거나 `MAX_SEQUENCE_TOKENS`가 `512`가 아니면 값을 조정하지 않고 시작 시 거부합니다. 표에 적힌 `0`이나 `1024`를 명시적으로 지정한 경우도 마찬가지입니다.
+**ONNX E5 프로필에서 실제로 적용되는 값.** `PROVIDER=onnx`이고 `MODEL`을 비워 두면 Core가 `multilingual-e5-small`을 선택하며, 별도로 지정하지 않은 항목에는 `DIMENSION=384`, `MAX_SEQUENCE_TOKENS=512`, `THREADS=2`, `ONNX_BATCH_SIZE=4`를 적용합니다. 위 표의 기본값은 스키마에 선언된 기본값으로, 이 프로필 밖에서 적용됩니다. 프로필 안에서는 `DIMENSION`이 `384`가 아니거나 `MAX_SEQUENCE_TOKENS`가 `512`가 아니면 값을 조정하지 않고 시작 시 거부합니다. 표에 적힌 `0`이나 `1024`를 명시적으로 지정한 경우도 마찬가지입니다.
 
 <a id="indexing"></a>
 
@@ -50,7 +50,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 훑지 않으므로 `mm index <dir>`로 처음 한 번 색인한 뒤 감시 기능에 맡기세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
+| `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 스캔하지 않으므로 `mm index <dir>`로 최초 1회 색인한 뒤 감시 기능을 사용하세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래에 있는 프로젝트 계층 기억의 루트 | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | 색인과 검색에는 사용하지만 memtomem이 절대 다시 쓰지 않는 루트. 쓰기 가능한 루트와 겹치지 않아야 합니다. | `[]` |
 | `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 chunk가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아니며, `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. (JSON 리스트, APPEND 병합) | `[]` |
@@ -143,7 +143,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_DECAY__ENABLED` | 시간 감쇠 가중 활성화 | `false` |
-| `MEMTOMEM_DECAY__HALF_LIFE_DAYS` | 반감기 (일). 이 기간이 지나면 기여도가 절반으로 | `30` |
+| `MEMTOMEM_DECAY__HALF_LIFE_DAYS` | 반감기(일). 이 기간이 지나면 점수 가중치가 절반으로 감소 | `30` |
 
 <a id="mmr-다양성-재순위"></a>
 
@@ -383,7 +383,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 
 ## 고정 소스 기준 기본값
 
-위 기본값은 초기화 프리셋을 적용하기 전 스키마 선언값입니다. `mm init`은 공급자·차원·메모리 경로를 변경할 수 있습니다. OTLP와 Langfuse는 별도 옵트인입니다. 자식 MCP 프로세스에 환경 변수를 전달하고 다시 연결해야 합니다.
+위 기본값은 초기화 프리셋을 적용하기 전의 스키마 선언값이며, `mm init`을 실행하면 제공자·차원·메모리 경로가 변경될 수 있습니다. OTLP와 Langfuse는 명시적으로 활성화(opt-in)해야 하며, 자식 MCP 프로세스에 환경 변수를 전달한 뒤 다시 연결해야 적용됩니다.
 
 ### Core 추가 설정
 

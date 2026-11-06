@@ -95,7 +95,7 @@ mm search "원본에_실제로_있는_단어"
 
 ### 클라이언트가 플러그인 명령을 지원하지 않음
 
-이 사이트의 공식 플러그인 경로는 Claude Code와 Codex용입니다. 다른 클라이언트가 `/plugin` 또는 `codex plugin`을 지원하지 않으면 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)의 MCP 전용 설정을 사용하세요.
+`/plugin`과 `codex plugin` 명령은 각각 Claude Code와 Codex CLI 전용입니다. 다른 클라이언트가 해당 명령을 지원하지 않으면 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)의 클라이언트별 안내나 MCP 전용 설정을 사용하세요.
 
 ### 에이전트에 memtomem 도구가 보이지 않음
 
@@ -106,14 +106,14 @@ mm search "원본에_실제로_있는_단어"
 
 ### 플러그인 업데이트 후 Claude 자동화가 동작하지 않음
 
-[선택형 자동화 플러그인](/ko/guides/connect-ai-client/#선택형-자동화-플러그인)은 `mm --version`이 플러그인을 검토한 Core 릴리스를 정확히 보고할 때만 hook을 실행하며, 플러그인을 업데이트해도 CLI는 업그레이드되지 않습니다. CLI를 업그레이드하고 버전을 확인한 뒤 새 Claude Code 세션을 시작합니다.
+[선택형 자동화 플러그인](/ko/guides/connect-ai-client/#선택형-자동화-플러그인)은 `mm --version` 출력이 플러그인 검증 기준 Core 릴리스와 정확히 일치할 때만 hook을 실행하며, 플러그인을 업데이트해도 CLI는 자동으로 업그레이드되지 않습니다. CLI를 업그레이드하고 버전을 확인한 뒤 새 Claude Code 세션을 시작합니다.
 
 ```bash
 mm upgrade --version 0.7.5
 mm --version
 ```
 
-건너뛴 hook은 `~/.claude/memtomem-automation/hook.log`에 기록되며, Claude Code가 `$CLAUDE_PLUGIN_DATA`를 설정하면 `$CLAUDE_PLUGIN_DATA/hook.log`에 기록됩니다. hook을 실행하려면 Claude Code가 hook을 실행할 때 쓰는 `PATH`에 `uv`도 있어야 합니다.
+건너뛴 hook은 `~/.claude/memtomem-automation/hook.log`에 기록되며, Claude Code가 `$CLAUDE_PLUGIN_DATA`를 설정하면 `$CLAUDE_PLUGIN_DATA/hook.log`에 기록됩니다. hook을 실행하려면 Claude Code의 hook 실행 환경 `PATH`에 `uv`도 포함되어 있어야 합니다.
 
 ### GUI 클라이언트가 `memtomem-server`를 찾지 못함
 
@@ -136,15 +136,15 @@ command -v memtomem-server
 - **OpenCode:** 수동 항목을 정확한 `mcp.memtomem` 키로 유지하거나, 플러그인 서버를 사용하려면 제거합니다. `mcp."memtomem-local"`처럼 다른 키를 사용하면 서버 두 개가 실행됩니다.
 - **Antigravity CLI:** 플러그인 서버의 이름이 `memtomem_memtomem`이므로 직접 등록한 `memtomem` 항목은 항상 함께 실행됩니다. `agy mcp remove memtomem`으로 수동 항목을 제거하거나, 수동 항목을 유지하고 `mm doctor --mcp-client agy --reconcile keep-manual --apply`로 플러그인 서버를 비활성화합니다.
 
-유지하는 수동 항목은 플러그인의 명령과 스킬이 사용하는 서버이며, 자체 환경 변수를 그대로 가진 채 우선합니다. 플러그인의 [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 `topic` 이외의 모드로 실행하려면 [수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인)처럼 이 항목에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점에 `update`가 아무것도 쓰지 않고 멈춥니다.
+수동 항목을 유지하면 플러그인의 명령과 스킬도 해당 서버를 사용하며, 수동 항목에 지정한 환경 변수가 그대로 우선 적용됩니다. 플러그인의 [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 `topic` 이외의 모드로 실행하려면 [수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인)처럼 이 항목에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점에 `update`가 아무것도 쓰지 않고 멈춥니다.
 
-Claude Code, Codex, Antigravity CLI에서는 `mm doctor --mcp-client claude`(또는 `codex`, `agy`)가 수동 등록과 플러그인이 서버 두 개를 실행하게 되는지 보고합니다. `--reconcile keep-manual` 또는 `keep-plugin`은 복구안을 미리 보여 주고, `--apply`를 지정하면 수정한 파일의 백업을 남긴 채 반영합니다. 자세한 내용은 [`mm doctor`](/ko/ltm/cli/#추가-진단검토-명령)를 참고하세요.
+Claude Code, Codex, Antigravity CLI에서는 `mm doctor --mcp-client claude`(또는 `codex`, `agy`)가 수동 등록과 플러그인이 함께 설정되어 서버 두 개가 실행되는지 보고합니다. `--reconcile keep-manual` 또는 `keep-plugin`은 복구안을 미리 보여 주고, `--apply`를 지정하면 수정한 파일의 백업을 남긴 채 반영합니다. 자세한 내용은 [`mm doctor`](/ko/ltm/cli/#추가-진단검토-명령)를 참고하세요.
 
 등록을 변경한 뒤 새 세션을 시작하세요. 가능한 구성은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 모두 확인할 수 있습니다.
 
 ### 클라이언트마다 기억이 다름
 
-두 클라이언트에서 `mem_status`를 호출해 데이터베이스 경로를 비교합니다. 프로젝트 로컬 기억은 같은 프로젝트 루트와 범위도 사용해야 합니다. 패키지 버전이 같아도 서로 다른 데이터베이스는 내용을 공유하지 않습니다.
+두 클라이언트에서 `mem_status`를 호출해 데이터베이스 경로를 비교합니다. 프로젝트 로컬 기억을 함께 조회하려면 두 클라이언트가 동일한 프로젝트 루트와 범위를 사용해야 합니다. 패키지 버전이 같아도 서로 다른 데이터베이스는 내용을 공유하지 않습니다.
 
 ## 5. Web UI
 

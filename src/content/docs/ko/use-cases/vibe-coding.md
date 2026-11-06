@@ -63,6 +63,6 @@ mm search "legacy callback" --format context
 - 명시적으로 색인한 ADR을 다시 찾음
 - 두 클라이언트를 비교한다면 같은 저장소와 호환되는 프로젝트 문맥을 확인함
 
-이 데모는 자동 대화 수집·다른 컴퓨터와의 동기화·코딩 오류 감소율을 입증하지 않습니다. 코딩 에이전트 구독은 API 없는 CLI 샘플과 별개입니다. 진행이 막힌 단계는 [문제 해결](/ko/guides/troubleshooting/)에서 확인하세요.
+이 데모는 자동 대화 수집·다른 컴퓨터와의 동기화·코딩 오류 감소율을 입증하지 않습니다. 코딩 에이전트 자체의 구독·인증은 API 키 없이 동작하는 CLI 샘플과 별개입니다. 진행이 막힌 단계는 [문제 해결](/ko/guides/troubleshooting/)에서 확인하세요.
 
 **다음:** [기존 자료 색인](/ko/ltm/index-and-import/) 또는 [LangGraph 활용](/ko/use-cases/langgraph/).

@@ -55,7 +55,7 @@ Context Gateway는 세 가지 **계층(티어)**에 기준본을 보관합니다
 
 `user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리이며 파일은 홈 디렉터리에 저장됩니다. Web UI에서는 User 저장소 작업이 프로젝트 밖에 파일을 쓰기 전에 "Write outside the project?" 확인 창을 띄우고, 수정할 경로를 보여 준 뒤 승인한 경우에만 저장합니다. CLI에는 `user` 계층용 확인 창이 없습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전에 확인을 요청하며 `--yes`로 이 확인을 건너뛸 수 있습니다. `mm context init`과 `mm context sync`가 `user` 계층의 에이전트·스킬·명령을 쓸 때는 확인을 요청하지 않습니다.
 
-`project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 보내지지 않습니다.
+`project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 배포되지 않습니다.
 
 `project_shared`는 git으로 추적되므로 비밀값을 포함하면 안 됩니다. 비밀값이 발견되면 쓰기를 거부하며 `--force`로 우회할 수 없습니다. git 이력에 비밀값이 남을 수 있기 때문입니다. `user`와 `project_local`에서는 내용을 확인한 뒤 다시 시도할 수 있지만 `project_shared`에는 저장할 수 없습니다.
 
@@ -136,7 +136,7 @@ mm context import deploy-check.json --to user            # 미리보기(기본�
 mm context import deploy-check.json --to user --apply    # 실제 반영
 ```
 
-묶음 파일은 외부에서 온 파일이므로 어느 계층에 반영하든 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 고르지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 주더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
+묶음 파일은 외부에서 가져온 파일이므로 대상 계층과 관계없이 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 결정하지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기(`export`)는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기(`import`)에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 지정하더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
 
 ## 여러 프로젝트 관리
 
@@ -151,7 +151,7 @@ mm context projects resume <selector>
 # 등록된 모든 프로젝트에 일괄 동기화 (단일 락 윈도우)
 mm context sync --all-projects
 
-# 어떤 프로젝트가 어긋났는지 읽기 전용으로 점검
+# 동기화가 어긋난 프로젝트를 읽기 전용으로 점검
 mm context status --all-projects
 ```
 
