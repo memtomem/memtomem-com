@@ -96,6 +96,31 @@ For MCP-only setup without the plugin's commands and skills, choose one Claude C
 }
 ```
 
+### Optional Automation Plugin
+
+`memtomem-automation` is a separate, opt-in Claude Code plugin for users who want memory retrieved and files indexed without asking. Install it after the base plugin. The release that ships with Core 0.7.5 is version 0.3.19:
+
+```text
+/plugin install memtomem-automation@memtomem
+```
+
+Its hooks run through `uv` and call the `mm` CLI, so both must be on the `PATH` Claude Code runs hooks with:
+
+- a prompt longer than 20 characters after trimming is searched with its first 500 characters (`mm search`, top 3), and the result is added to the conversation as context;
+- a file that Write or Edit changes is queued for indexing, if its type is supported and it is not under a build, cache or dependency directory;
+- the queue is flushed when a response stops.
+
+It does not start or end episodic sessions. To turn it off, uninstall it with `/plugin uninstall memtomem-automation@memtomem`; the base plugin keeps working.
+
+The hooks run only when `mm --version` reports exactly 0.7.5, the release the plugin was reviewed with, and updating the plugins does not upgrade that CLI. After each plugin update, upgrade `mm` too, confirm it, then start a new Claude Code session:
+
+```bash
+mm upgrade --version 0.7.5
+mm --version
+```
+
+`mm upgrade` keeps the extras it detects from the existing `uv tool` install; check the `Extras:` line of `mm upgrade --dry-run` first (see [`mm upgrade`](/ltm/cli/#mm-upgrade)). Without such an install, install `uv tool install 'memtomem[all]==0.7.5'`: a base-only `memtomem==0.7.5` lacks the ONNX dependencies that the `mm init` English and Korean presets use, and reports them missing instead of indexing. With any other version, or no `mm` at all, the hooks skip every prompt and edit; at session start the plugin tells Claude which version it found, and each skip is logged to `~/.claude/memtomem-automation/hook.log` (`$CLAUDE_PLUGIN_DATA/hook.log` when Claude Code sets it).
+
 ## Codex CLI
 
 Install the official plugin:

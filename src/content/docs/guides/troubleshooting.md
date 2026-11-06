@@ -103,6 +103,17 @@ Claude Code and Codex have the official plugin paths documented on this site. Ot
 - In a Claude Code session, run `/mcp`; in Codex, run `codex mcp list`. In OpenCode, inspect the exact `mcp.memtomem` key.
 - Ask the client to call `mem_status` explicitly.
 
+### Claude automation does nothing after a plugin update
+
+The [optional automation plugin](/guides/connect-ai-client/#optional-automation-plugin) runs its hooks only when `mm --version` reports exactly the Core release it was reviewed with, and updating the plugins does not upgrade the CLI. Upgrade it, confirm the version, then start a new Claude Code session:
+
+```bash
+mm upgrade --version 0.7.5
+mm --version
+```
+
+Each skipped hook is logged to `~/.claude/memtomem-automation/hook.log`, or to `$CLAUDE_PLUGIN_DATA/hook.log` when Claude Code sets that variable. The hooks also need `uv` on the `PATH` Claude Code runs them with.
+
 ### A GUI client cannot find `memtomem-server`
 
 GUI apps may start with a different `PATH` from the terminal. Find the installed executable:

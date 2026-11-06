@@ -104,6 +104,17 @@ mm search "원본에_실제로_있는_단어"
 - Claude Code 세션에서는 `/mcp`, Codex에서는 `codex mcp list`를 확인합니다. OpenCode에서는 정확한 `mcp.memtomem` 키를 확인합니다.
 - 클라이언트에 `mem_status`를 명시적으로 호출하도록 요청합니다.
 
+### 플러그인 업데이트 후 Claude 자동화가 동작하지 않음
+
+[선택형 자동화 플러그인](/ko/guides/connect-ai-client/#선택형-자동화-플러그인)은 `mm --version`이 플러그인을 검토한 Core 릴리스를 정확히 보고할 때만 hook을 실행하며, 플러그인을 업데이트해도 CLI는 업그레이드되지 않습니다. CLI를 업그레이드하고 버전을 확인한 뒤 새 Claude Code 세션을 시작합니다.
+
+```bash
+mm upgrade --version 0.7.5
+mm --version
+```
+
+건너뛴 hook은 `~/.claude/memtomem-automation/hook.log`에 기록되며, Claude Code가 `$CLAUDE_PLUGIN_DATA`를 설정하면 `$CLAUDE_PLUGIN_DATA/hook.log`에 기록됩니다. hook을 실행하려면 Claude Code가 hook을 실행할 때 쓰는 `PATH`에 `uv`도 있어야 합니다.
+
 ### GUI 클라이언트가 `memtomem-server`를 찾지 못함
 
 GUI 앱은 터미널과 다른 `PATH`로 시작될 수 있습니다. 다음 명령으로 설치된 실행 파일의 경로를 확인합니다.

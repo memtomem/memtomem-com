@@ -96,6 +96,31 @@ uvx --from memtomem[onnx]==0.7.5 memtomem-server
 }
 ```
 
+### 선택형 자동화 플러그인
+
+`memtomem-automation`은 요청하지 않아도 기억을 찾아 주고 파일을 색인하길 원하는 사용자를 위한 별도의 선택형 Claude Code 플러그인입니다. 기본 플러그인을 설치한 뒤에 설치합니다. Core 0.7.5와 함께 배포된 버전은 0.3.19입니다.
+
+```text
+/plugin install memtomem-automation@memtomem
+```
+
+이 플러그인의 hook은 `uv`로 실행되어 `mm` CLI를 호출하므로, Claude Code가 hook을 실행할 때 쓰는 `PATH`에 둘 다 있어야 합니다.
+
+- 앞뒤 공백을 제외하고 20자보다 긴 프롬프트는 처음 500자로 검색하고(`mm search`, 상위 3개), 결과를 대화에 맥락으로 추가합니다.
+- Write나 Edit로 바뀐 파일은 지원하는 형식이고 빌드·캐시·의존성 디렉터리 아래가 아니면 색인 대기열에 넣습니다.
+- 응답이 끝나면 대기열을 처리합니다.
+
+에피소드 세션을 시작하거나 종료하지는 않습니다. 끄려면 `/plugin uninstall memtomem-automation@memtomem`으로 제거합니다. 기본 플러그인은 계속 동작합니다.
+
+hook은 `mm --version`이 플러그인을 검토한 릴리스인 0.7.5를 정확히 보고할 때만 실행되며, 플러그인을 업데이트해도 이 CLI는 업그레이드되지 않습니다. 플러그인을 업데이트할 때마다 `mm`도 업그레이드하고 버전을 확인한 뒤 새 Claude Code 세션을 시작합니다.
+
+```bash
+mm upgrade --version 0.7.5
+mm --version
+```
+
+`mm upgrade`는 기존 `uv tool` 설치에서 찾은 선택 기능(extras)을 유지합니다. 먼저 `mm upgrade --dry-run`의 `Extras:` 줄을 확인하세요([`mm upgrade`](/ko/ltm/cli/#mm-upgrade) 참고). 그런 설치가 없다면 `uv tool install 'memtomem[all]==0.7.5'`로 설치합니다. 선택 기능 없는 `memtomem==0.7.5`에는 `mm init`의 영어·한국어 프리셋이 사용하는 ONNX 의존성이 없어, 색인하는 대신 의존성이 없다고 보고합니다. 다른 버전이거나 `mm`이 없으면 hook은 모든 프롬프트와 편집을 건너뜁니다. 세션을 시작할 때 플러그인이 찾은 버전을 Claude에게 알리고, 건너뛸 때마다 `~/.claude/memtomem-automation/hook.log`(Claude Code가 `$CLAUDE_PLUGIN_DATA`를 설정하면 `$CLAUDE_PLUGIN_DATA/hook.log`)에 기록합니다.
+
 ## Codex CLI
 
 공식 플러그인을 설치합니다.
