@@ -34,7 +34,9 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 | 2 | `_context_query` 인자 | 에이전트가 직접 전달한 검색어 |
 | 3 | 경로 인자 | `path` / `file` / `filepath` / `file_path` / `filename` 키 전용 토큰화 (구분자 분리, 확장자 제거) |
 | 4 | 시맨틱 키 | `query` / `search` / `url` / `description` 등 인자 값의 키워드 조합 |
-| 5 | 도구명 | 마지막 수단으로 도구 이름 자체를 검색어로 사용 |
+| 5 | 도구명 | 프록시 호출의 마지막 수단으로 도구 이름 자체를 검색어로 사용 |
+
+`mms hook`으로 들어오는 Claude Code 기본 도구 호출은 0.7.7부터 5단계를 사용하지 않습니다. 호출 인자(경로와 셸 명령)로 검색어를 만들고, 남은 토큰이 `min_query_tokens`보다 적으면 관련 기억 제시를 건너뜁니다. 세부 규칙은 [upstream 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
 
 프록시는 `_context_query`를 받을 수 있습니다. 다만 연결한 도구의 스키마에는 `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`일 때만 이 인자를 표시합니다. 기본값은 `false`이므로 일반 에이전트가 이 내부용 힌트를 만들 필요는 없습니다.
 
@@ -46,7 +48,8 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 
 1. **LTM 검색** — 하이브리드 검색으로 관련 기억 후보를 검색합니다. 서피싱은 응답 지연을 줄이기 위해 기본적으로 Core에 재순위(reranking) 단계를 건너뛰도록 요청합니다(`MEMTOMEM_STM_SURFACING__RERANK=false`). `true`이면 Core에 설정된 리랭커를 사용하도록 요청하고, `none`이면 요청하지 않고 Core 자체 설정에 맡깁니다. 이 값은 호출별 재순위 옵션을 지원한다고 알린 Core에만 전달되며, 이전 Core는 자체 설정을 따릅니다.
 2. **점수 필터링** — RRF 점수 기준인 `min_score` 미만의 결과를 제거합니다. `scale_gated_min_score=true`(기본값)이면 Core가 알려 준 `score_scale`이 RRF가 아닌 알려진 점수 척도(예: 리랭커 점수)인 결과 묶음에는 전역 또는 자동 조정된 `min_score`를 적용하지 않습니다. 척도가 다르면 RRF 기준값이 의미가 없기 때문이며, 이때도 검색된 기억 수는 `max_results`로 제한됩니다. 도구별 `context_tools.<tool>.min_score`를 지정했다면 항상 적용합니다. `score_scale`이 없거나 STM이 알 수 없는 값이면 기존처럼 필터링합니다. 어느 경우에도 점수 자체를 변환하지는 않습니다.
-3. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
+3. **네임스페이스 제외** — 검색 결과 중 `exclude_namespaces` 패턴과 일치하는 네임스페이스의 결과를 제거합니다. Pinned Context에는 적용하지 않습니다.
+4. **중복 제거** — 세션 내 + 교차 세션(7일) 중복 방지
 
 ## 주입 모드
 
@@ -109,6 +112,24 @@ mms surfacing <server> on       # 다시 활성화
 이 값은 각 서버의 `surfacing_enabled` 플래그(기본값 `true`)로 공용 프록시 설정(`stm_proxy.json`)에 저장됩니다. 따라서 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 동일한 범위를 공유합니다. 실행 중인 프록시에도 재시작 없이 반영되며 현재 상태는 `mms list`의 SURFACING 열에 표시됩니다. 비활성화한 서버의 호출은 LTM을 검색하기 전에 건너뛰고, `stm_admin(action="surfacing_stats")`에서 정상 건너뜀(`upstream_disabled`)으로 집계합니다.
 
 도구별로 제외하거나 여러 서버에 패턴을 적용하려면 `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS`를 사용합니다. 값은 `server__tool` 패턴으로 비교합니다.
+
+## 저장소·네임스페이스별 범위
+
+0.7.7부터 `mms hook`으로 들어오는 Claude Code 기본 도구 호출은 호스트의 `cwd`를 기준으로 검색 범위를 제한합니다. `project_scope_from_cwd`(기본값 `true`)가 켜져 있고 네임스페이스를 고정하지 않았다면, STM은 모든 네임스페이스 대신 다음 세 가지만 검색합니다.
+
+- `cwd`가 속한 저장소의 각 git worktree와 `cwd` 자신에 해당하는 `claude:<slug>`
+- `shared:<저장소 디렉터리 이름>`(이름에 `,`나 `*`가 있으면 제외)
+- `default`
+
+이 범위는 Claude Code에 해당 worktree의 프로젝트 디렉터리가 있을 때만 적용하며, 없으면 이전처럼 범위 없이 검색합니다. `default_namespace`나 `context_tools.<tool>.namespace`를 지정하면 그 값이 우선합니다. 프록시 호출에는 적용하지 않습니다.
+
+`exclude_namespaces`는 범위 지정 여부와 관계없이 hook 호출과 프록시 호출 모두에 적용됩니다. fnmatch 패턴과 일치하는 네임스페이스의 검색 결과와 그 주변 문맥은 주입하지 않습니다. Pinned Context는 `["*"]`로 지정해도 제외되지 않습니다. 기본값은 이전 세션의 계획(`claude-plans`)과 다른 호스트의 색인(`codex`)을 제외합니다.
+
+```bash
+# 계획·codex 기억을 다시 주입하고, hook 호출에서도 모든 네임스페이스를 검색
+export MEMTOMEM_STM_SURFACING__EXCLUDE_NAMESPACES='[]'
+export MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD=false
+```
 
 ## 안전 장치
 

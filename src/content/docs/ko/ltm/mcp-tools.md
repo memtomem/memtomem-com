@@ -68,7 +68,7 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.3은 현재 도구 102개와 `mem_do` 액션 96개를 제공합니다. 0.7.2에서
+v0.7.5는 현재 도구 102개와 `mem_do` 액션 96개를 제공합니다. 0.7.2에서
 `mem_update_coverage`가 추가되었고([업데이트 커버리지](#update-coverage)), 0.7.1에서
 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)).
 Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
@@ -145,7 +145,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - 프로젝트 컨텍스트가 필요합니다. tier가 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
 - 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
 - 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
-- Core 0.7.3과 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`가 아닌 자체 도구 이름으로 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
+- Core 0.7.5와 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`가 아닌 자체 도구 이름으로 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
 
 <a id="언제-모드를-바꿀까"></a>
 

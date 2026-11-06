@@ -96,7 +96,7 @@ CLI로는 `mms stats`, `mms health`, `mms tune`이 같은 정보를 보여 줍�
 
 | 액션 | 파라미터 | 보고 내용 |
 |---|---|---|
-| `proxy_stats` | — | 토큰 절감량, 캐시 적중, 도구별 호출 이력. Core가 보낸 검색 힌트는 본문 대신 개수(`last: N hint(s)`)로만 표시합니다. |
+| `proxy_stats` | — | 토큰 절감량, 캐시 적중, 도구별 호출 이력, 실시간 표본이 있을 때의 `Stage latency` 줄(호출마다 clean·compress·surface에 걸린 시간 합계의 p50/p95/p99. LTM 조회는 포함하고 upstream 호출은 제외). Core가 보낸 검색 힌트는 본문 대신 개수(`last: N hint(s)`)로만 표시합니다. |
 | `proxy_health` | — | 업스트림 연결 상태와 프록시 상태. 업스트림마다 **발견한** 도구 수와 실제로 **노출한** 도구 수를 함께 보고하므로, 노출 조건 검사로 걸러진 차이를 한눈에 확인할 수 있습니다. 서피싱 서킷 브레이커 상태도 보여 주며, 외부 도구 그래프 노출 조건 제공자를 켰다면 그 상태도 포함합니다. `startup connect failed` 줄과 피드백 DB 오류는 메시지 대신 `ConnectError`, `DatabaseError (SQLITE_CORRUPT)`처럼 예외 유형만 표시합니다. |
 | `proxy_cache_clear` | `server`, `tool` | 캐시를 비웁니다. 범위를 지정하지 않으면 SQLite 응답 캐시와 메모리 내 서피싱 캐시를 모두 비우고, `server` 또는 `tool`로 범위를 좁히면 응답 캐시만 비웁니다. 서피싱 캐시는 질의 해시로만 색인되어 서버·도구 축이 없기 때문입니다. 시작 시에만 쓰는 도구 그래프 조회 캐시는 건드리지 않습니다. |
 | `surfacing_stats` | `tool`, `since`, `limit` | `events_total`, `distinct_tools`, `total_feedback`, 도구별 집계, 평가 분포, 도움이 된 비율, 최근 목록을 보고합니다. `since`는 ISO-8601 시각이며, `limit`의 기본값은 `10`이고 `0`이면 최근 목록을 숨깁니다. 집계할 내용이 있을 때만 다음 줄이 추가됩니다. `Withheld:`는 보류(holdout)되어 위 집계에서 제외된 이벤트 수입니다. `Opportunities:`는 저장된 제시 기회 기록 수로, 이 프로세스에서 샘플링으로 제외한 수와 결과별 집계(`by decision`)를 함께 보여 줍니다. 건너뜀 사유에는 정상 사례인 `empty_render`(표시할 항목이 없음)와 `cancelled`(결정 전에 호출이 취소됨)가 있습니다. 상태 판정에서 `empty_render`는 완료된 검색으로 집계하고 `cancelled`는 제외합니다. STM이 알지 못하는 `score_scale`은 `unrecognized`로 표시하고, 리랭커는 모델 ID 대신 `reranker reported`로만 표시합니다. STM이 기록하지 않는 평가나 제시 결정 값은 `other`로 집계합니다. |

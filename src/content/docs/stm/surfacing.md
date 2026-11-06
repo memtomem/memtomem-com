@@ -32,7 +32,9 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 | 2 | `_context_query` argument | Explicit search query passed by the agent |
 | 3 | Path arguments | Dedicated tokenization for `path` / `file` / `filepath` / `file_path` / `filename` keys (split on separators, drop extensions) |
 | 4 | Semantic keys | Keyword combination from `query` / `search` / `url` / `description` and similar argument values |
-| 5 | Tool name | Last resort — use the tool name itself as the query |
+| 5 | Tool name | Last resort for proxied calls — use the tool name itself as the query |
+
+Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` skip step 5. They build the query from the call's arguments (paths and shell commands) and skip surfacing when fewer than `min_query_tokens` remain. The [upstream guide](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/surfacing.md#how-context-extraction-works) lists the rules.
 
 `_context_query` is accepted by the proxy, but it is added to advertised upstream schemas only when `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`. The default is `false`, so ordinary agents are not asked to synthesize this private hint.
 
@@ -42,7 +44,8 @@ Once a query is extracted, surfaced memories are filtered further to ensure usef
 
 1. **LTM search** — Hybrid search for candidate memories. To keep latency low, surfacing asks the core to skip its rerank stage by default (`MEMTOMEM_STM_SURFACING__RERANK=false`). `true` asks for the core's configured reranker, and `none` sends no request and leaves the decision to the core's own configuration. The value is sent only to cores that advertise per-call rerank support; older cores follow their own configuration.
 2. **Score filtering** — Remove results below `min_score`, a threshold on the RRF scale. With `scale_gated_min_score=true` (default), the global or auto-tuned `min_score` is not applied to a batch whose core-reported `score_scale` is a recognized non-RRF scale, such as reranker scores, because an RRF threshold has no meaning on that scale; the number of retrieved memories is still capped by `max_results`. A per-tool `context_tools.<tool>.min_score` always applies. A missing or unrecognized `score_scale` keeps the filter. Scores themselves are never rescaled.
-3. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
+3. **Namespace exclusion** — Remove retrieved results whose namespace matches an `exclude_namespaces` pattern. Pinned Context is not affected.
+4. **Deduplication** — In-session + cross-session (7-day) duplicate prevention
 
 ## Injection Modes
 
@@ -103,6 +106,24 @@ mms surfacing <server> on       # re-enable
 The setting is written as a per-upstream `surfacing_enabled` flag (default `true`) in the shared proxy config (`stm_proxy.json`), so every MCP client that proxies through this `mms` sees the same scope. A running proxy hot-reloads it without a restart, and `mms list` shows the effective state in its SURFACING column. A disabled upstream's calls are skipped before the LTM search and counted as a healthy skip (`upstream_disabled`) in `stm_admin(action="surfacing_stats")`.
 
 For tool-grained or cross-server glob scope, set `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` (matches the `server__tool` pattern).
+
+## Scoping by Repository and Namespace
+
+Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` limit their search to the repository that holds the host's `cwd`. With `project_scope_from_cwd` (default `true`) and no pinned namespace, STM searches only these namespaces instead of all of them:
+
+- `claude:<slug>` for every git worktree of that repository and for `cwd` itself
+- `shared:<repository directory name>` (left out if the name contains `,` or `*`)
+- `default`
+
+The scope applies only when Claude Code has a project directory for one of those worktrees; otherwise the call keeps the unscoped search. A `default_namespace` or `context_tools.<tool>.namespace` takes precedence. Proxied calls are not scoped.
+
+`exclude_namespaces` applies to every call, scoped or not, hook or proxy: a retrieved result whose namespace matches one of its fnmatch patterns is not injected, and neither is a context-window neighbour from such a namespace. Pinned Context is exempt, even with `["*"]`. The defaults drop `claude-plans` (plans from earlier sessions) and `codex` (another host's index).
+
+```bash
+# Inject plans and codex memories again, and search every namespace from hooks
+export MEMTOMEM_STM_SURFACING__EXCLUDE_NAMESPACES='[]'
+export MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD=false
+```
 
 ## Safety Mechanisms
 

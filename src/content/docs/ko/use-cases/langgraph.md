@@ -18,10 +18,10 @@ description: LLM 없이 대화 상태·표준 Store·Core 검색을 구분하는
 | 05: 기억 기초 | `compile(store=...)`로 사용자 선호 저장 | 같은 사용자의 새 thread에서 조회, 다른 namespace에서 미조회, 새 store 객체에서 파일 재개방 |
 | 06: 검색 기반 기억 | 검색 → 초안 → 승인 → 저장 | 미승인 초안은 결과 기억을 저장하지 않음, 승인 결과의 Markdown 원본과 재개방 후 검색 |
 
-- [한국어 노트북 05 읽기](https://github.com/memtomem/memtomem/blob/v0.7.3/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [노트북 05 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.7.3/examples/notebooks/05_langgraph_memory_basics.ipynb)
-- [한국어 노트북 06 읽기](https://github.com/memtomem/memtomem/blob/v0.7.3/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
-- [노트북 06 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.7.3/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [한국어 노트북 05 읽기](https://github.com/memtomem/memtomem/blob/v0.7.5/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [노트북 05 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.7.5/examples/notebooks/05_langgraph_memory_basics.ipynb)
+- [한국어 노트북 06 읽기](https://github.com/memtomem/memtomem/blob/v0.7.5/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
+- [노트북 06 다운로드](https://raw.githubusercontent.com/memtomem/memtomem/v0.7.5/examples/notebooks/06_langgraph_retrieval_memory.ipynb)
 
 브라우저에서 JSON이 표시되면 링크를 “다른 이름으로 저장”하세요. 각 파일에 입력·코드·검증·해석·복구·연습이 모두 포함되어 있습니다. private 저장소나 이전 노트북 실행은 필요하지 않습니다.
 
@@ -31,7 +31,7 @@ Python 3.12 이상에서 격리 환경을 만듭니다.
 
 ```bash
 uv venv .venv
-uv pip install --python .venv/bin/python "memtomem[langgraph]==0.7.3" jupyterlab ipykernel
+uv pip install --python .venv/bin/python "memtomem[langgraph]==0.7.5" jupyterlab ipykernel
 uv run --python .venv/bin/python --no-project jupyter lab
 ```
 
@@ -48,6 +48,28 @@ Windows에서는 `.venv/bin/python` 대신 `.venv/Scripts/python.exe`를 사용�
 `MemtomemStore`의 `config_overrides`는 주변 환경의 설정을 읽은 뒤에 적용됩니다. 그래프 전용 DB를 명시적으로 지정해 테스트 데이터가 사용자 기본 저장소에 저장되지 않도록 할 수 있습니다. 알 수 없는 섹션이나 키를 지정하면 기본 저장소로 넘어가지 않고 첫 호출에서 오류가 발생합니다.
 
 `InMemorySaver`는 프로세스 안의 학습용 checkpointer이며 영속 체크포인트 복구를 보장하지 않습니다. namespace 선택도 인증·인가 시스템이 아닙니다.
+
+## Core 검색 파이프라인으로 순위를 매기는 Store
+
+`compile(store=...)`에 넘길 Store가 Core의 검색 파이프라인(BM25와 벡터 검색 결합, 선택적 재정렬)으로 순위를 매기게 하려면 별도 패키지 [`langchain-memtomem`](https://pypi.org/project/langchain-memtomem/0.1.0/)의 `MemtomemPipelineStore`를 사용합니다. Python 3.12 이상, `langgraph>=1.0,<2`, `memtomem>=0.7.4,<0.8`이 필요합니다. 위에서 만든 환경에 추가하려면 다음 명령을 실행합니다(Windows에서는 `.venv/Scripts/python.exe` 사용).
+
+```bash
+uv pip install --python .venv/bin/python langchain-memtomem
+```
+
+```python
+from langchain_memtomem import MemtomemPipelineStore
+
+store = await MemtomemPipelineStore.open("/var/app/memory")
+graph = builder.compile(store=store)  # builder: StateGraph
+```
+
+- 색인은 지정한 루트 아래에 Store가 직접 만듭니다. 개인 `~/.memtomem` 설정과 `MEMTOMEM_*` 환경 변수는 이 Store의 설정에 적용되지 않습니다. 이 Store에는 개발자의 기억이 아니라 애플리케이션의 기억(사용자, 스레드)이 담깁니다. 다만 프로젝트 tier 등록 정보를 한 번 읽으며, ONNX 모델 캐시처럼 루트 밖의 memtomem 공용 경로를 사용할 수 있습니다.
+- 기본값에서는 임베딩을 사용하지 않습니다(BM25만 사용, 모델 다운로드 없음). 벡터 검색을 쓰려면 `memtomem[onnx]`를 함께 설치하고 `config={"embedding": {...}}`를 지정합니다.
+- `index=False`로 저장한 항목은 목록 조회와 필터 대상이지만 검색 순위에는 오르지 않습니다. TTL은 지원하지 않습니다.
+- 위의 두 노트북은 이 패키지를 사용하지 않습니다.
+
+자세한 동작은 [패키지 README](https://github.com/memtomem/memtomem/blob/v0.7.5/packages/langchain-memtomem/README.md)를 참고하세요.
 
 ## 선택: 초안 노드를 실제 LLM으로 교체
 

@@ -7,7 +7,7 @@ memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/con
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem-stm` 0.7.5 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
+This public reference tracks the complete `memtomem-stm` 0.7.7 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -102,7 +102,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__METRICS__ENABLED` | Record call metrics | `true` |
 | `MEMTOMEM_STM_PROXY__METRICS__DB_PATH` | Proxy metrics SQLite path | `"~/.memtomem/proxy_metrics.db"` |
-| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | Maximum retained metrics rows | `10000` |
+| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | Maximum retained metrics rows per source (`mcp`, `hook`). Daily aggregates of trimmed rows are kept in a rollup table that this setting does not prune | `10000` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | Scorer backend | `"bm25"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_PROVIDER` | Embedding provider for semantic relevance scoring | `"ollama"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | Relevance embedding model | `"nomic-embed-text"` |
@@ -279,6 +279,8 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | Placement: `prepend`, `append`, or `section` | `"append"` |
 | `MEMTOMEM_STM_SURFACING__SECTION_HEADER` | Heading used by `section` injection mode | `"## Relevant Memories"` |
 | `MEMTOMEM_STM_SURFACING__DEFAULT_NAMESPACE` | Optional namespace used when a tool rule does not override it | `null` |
+| `MEMTOMEM_STM_SURFACING__EXCLUDE_NAMESPACES` | Namespace patterns (fnmatch, JSON list) whose results are never injected. Applies to hook and proxied calls; Pinned Context is not excluded. `[]` disables it | `["claude-plans","codex"]` |
+| `MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD` | Limit a hook call that carries `cwd` and no pinned namespace to the current repository's namespaces | `true` |
 | `MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS` | Tool-name denylist (JSON list) | `[]` |
 | `MEMTOMEM_STM_SURFACING__WRITE_TOOL_PATTERNS` | Patterns classified as write tools and therefore not surfaced by default (JSON list) | `["*write*","*create*","*delete*","*push*","*send*","*remove*"]` |
 | `MEMTOMEM_STM_SURFACING__CONTEXT_TOOLS` | Per-tool `enabled`, `query_template`, `namespace`, `min_score`, and `max_results` overrides (JSON object) | `{}` |
@@ -365,7 +367,7 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

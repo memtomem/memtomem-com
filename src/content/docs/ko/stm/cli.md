@@ -3,7 +3,7 @@ title: STM CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms 명령 전체를 설정·등록, 관련 기억 제시·훅, 진단·튜닝, 프로젝트·호스트 순으로 정리하고 --json 실패 문서 형식을 설명합니다.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.7.5 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.7.7 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 만족스럽지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -248,7 +248,7 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열도록 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
 
-훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함되며, 0.7.0부터 v9입니다. 릴리스의 업그레이드 안내에 프로토콜 변경이 있으면, STM을 실행하는 MCP 클라이언트를 종료하고 **업그레이드 전에** 이전 빌드로 `mms daemon stop`을 실행합니다. 새 빌드는 이전 빌드가 시작한 데몬에 접근할 수 없고, pending SQLite 저장소를 함께 쓰는 프로세스는 같은 버전이어야 하기 때문입니다. 전체 절차는 upstream [업그레이드 안내](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/guides/operations.md#upgrading)를 참고하세요. `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
+훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함되며, 0.7.0부터 v9입니다. 릴리스의 업그레이드 안내에 프로토콜 변경이 있으면, STM을 실행하는 MCP 클라이언트를 종료하고 **업그레이드 전에** 이전 빌드로 `mms daemon stop`을 실행합니다. 새 빌드는 이전 빌드가 시작한 데몬에 접근할 수 없고, pending SQLite 저장소를 함께 쓰는 프로세스는 같은 버전이어야 하기 때문입니다. 전체 절차는 upstream [업그레이드 안내](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/guides/operations.md#upgrading)를 참고하세요. `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
 `mms daemon stop`은 처리한 모든 데몬이 종료를 마쳤거나, 실행 중인 데몬이 없거나, 발견한 기록이 오래된 것일 때만 종료 코드 0을 반환합니다. 그 밖의 경우에는 stderr에 이유를 출력하고 종료 코드 1을 반환합니다. 예를 들어 5초를 기다린 뒤에도 데몬의 lifetime lock이 잡혀 있거나, 프로세스에 신호를 보낼 수 없거나, Windows에서 신호 방식으로만 멈출 수 있는 데몬이 아직 연결을 받고 있는 경우입니다. `--all`은 모두 합쳐 최대 10초까지 기다리며, `data_dir`가 있지만 목록을 읽을 수 없으면 다른 설정의 데몬을 하나도 중지하지 않고 종료 코드 1을 반환합니다. `mms daemon restart`는 중지 단계가 성공한 경우에만 새 데몬을 시작합니다.
 
@@ -306,10 +306,10 @@ mms config validate --config ./stm_proxy.json --json
 
 ### `mms stats`
 
-저장소를 새로 만들거나 이전하지 않고, 디스크에 기록된 전체 기간의 압축·관련 기억 제시 통계를 읽습니다.
+저장소를 새로 만들거나 이전하지 않고, 디스크에 기록된 압축·관련 기억 제시 통계를 읽습니다. 집계 대상은 전체 기간이 아니라 아직 보존된 행입니다. 압축 행은 소스별로 `proxy.metrics.max_history`개까지 남고, progressive 읽기와 관련 기억 제시 행은 각 보존 기간이 지나면 삭제됩니다.
 
 ```bash
-mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--json]
+mms stats [--config PATH] [--tool TOOL] [--source mcp|hook] [--all-time] [--json]
 ```
 
 CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의 실시간 횟수는 관찰·관리 MCP 도구에서 확인하세요.
@@ -319,11 +319,12 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
   - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
   - 실험 기능인 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
+- **`--all-time`:** 압축 통계만 전체 기간 합계로 바꿉니다. progressive 통계와 관련 기억 제시 통계는 보존 기간 기준을 유지합니다. 전체 기간 합계는 보존된 행에, 삭제된 행을 날짜·소스·서버·도구별로 집계해 두는 `proxy_metrics_daily` 테이블의 값을 더한 것입니다. 이 테이블은 0.7.7의 지표 기록 프로세스(MCP 서버, `mms hook`, `mms tune`)가 지표 DB를 처음 열 때 만들어지며, 그 전에 삭제된 행은 복구할 수 없습니다. 이때는 **Incomplete before** 줄에 해당 시점과 잃은 행 수를 표시합니다. `--json`은 `compression_scope`(`retained` 또는 `all_time`)로 범위를 알려 줍니다.
 - **오류 집계:** 프록시 자체 호출 경로에서 기록한 `lock_timeout`과 `internal_error` 행도 오류로 집계합니다. 업그레이드 전에 기록된 행은 다시 쓰지 않습니다.
 - **관련 기억 제시 통계:**
   - 실제로 표시한 이벤트만 제시 횟수로 집계합니다.
   - 보류(holdout)된 호출은 `withheld (holdout)` 줄에, 제시 기회 기록은 `opportunities` 줄에 따로 표시합니다. 두 줄 모두 집계할 내용이 있을 때만 나타납니다.
-- **도구별 `tuner_calls`:** `--json`의 도구별 `calls`는 해당하는 모든 행을 세고, `tuner_calls`는 자동 튜너가 사용하는 행만 셉니다. metadata bypass로 표시된 행은 튜너 프로필에서 제외되므로 `tuner_calls`에서도 빠집니다. `compression_strategy` 열이 없는 이전 DB에서는 모든 행을 셉니다.
+- **도구별 `tuner_calls`:** 보존된 행 기준 `--json`에서 도구별 `calls`는 해당하는 모든 행을 세고, `tuner_calls`는 자동 튜너가 사용하는 행만 셉니다. metadata bypass로 표시된 행은 튜너 프로필에서 제외되므로 `tuner_calls`에서도 빠집니다. `compression_strategy` 열이 없는 이전 DB에서는 모든 행을 셉니다. `--all-time`의 도구별 항목에는 `tuner_calls`가 없습니다.
 - **알 수 없는 값:** STM이 기록하지 않는 평가나 제시 결정 값은 `other`로 집계합니다.
 - **`--json` 오류 필드:** `compression.error`와 `surfacing.error`의 SQLite 오류는 `DatabaseError (SQLITE_CORRUPT)`처럼 유형만 표시합니다.
 
@@ -492,7 +493,7 @@ mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-confi
 | `~/.mms` 상태(`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | 상태 파일 잠금 시간 초과·사용 불가 / 쓰기 실패 / 스키마 버전 불일치 / 손상된 상태 파일 |
 | 지표 저장소(`mms tune`) | `store_invalid` | SQLite가 지표나 피드백 DB 파일을 열거나 읽을 수 없을 때(`stores`에 해당 파일) |
 
-`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/cli.md)에서 확인하세요.
+`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/cli.md)에서 확인하세요.
 
 다음 경우는 이 형식을 따르지 않습니다.
 
@@ -579,7 +580,7 @@ mms register --client claude
 | `mms selection` | — |
 | `mms selection feedback` | `--active-only`, `--config`, `--json`, `--last`, `--log`, `--no-operator-override`, `--no-user-corrected`, `--operator-override`, `--selection-id`, `--server`, `--tool`, `--user-corrected`, `--yes` |
 | `mms selection replay` | `--active-only`, `--config`, `--dataset`, `--json`, `--log`, `--no-telemetry`, `--output-dir` |
-| `mms stats` | `--config`, `--json`, `--source`, `--tool` |
+| `mms stats` | `--all-time`, `--config`, `--json`, `--source`, `--tool` |
 | `mms status` | `--config`, `--json` |
 | `mms surfacing` | `--config` |
 | `mms tune` | `--apply`, `--config`, `--json`, `--since-hours`, `--tool`, `--yes` |

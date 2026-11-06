@@ -86,7 +86,7 @@ Set `delivery_format: "structured"` globally (`MEMTOMEM_STM_PROXY__DELIVERY_FORM
 - **Surfacing:** memories arrive in `stm.supplements.surfacing` instead of the response text, so every `injection_mode` works, including `prepend`.
 - **Cache and stats:** the response-cache key includes the delivery format. `mms stats` reports structured calls on a separate `Structured delivery:` line (`--json`: `compression.structured_delivery`), apart from the legacy saved ratio, and the tuner's retention ratios leave them out.
 
-The upstream [structured chunk delivery reference](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/compression.md#structured-chunk-delivery) lists the envelope fields and error codes.
+The upstream [structured chunk delivery reference](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/compression.md#structured-chunk-delivery) lists the envelope fields and error codes.
 
 ## Fallback Ladder
 

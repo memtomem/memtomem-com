@@ -204,7 +204,7 @@
         "promote"
       ]
     },
-    "commit": "953b3c15a66c0808429d882f7326a381187fa90c",
+    "commit": "1092d604887dabfcb43a6a84e963231f4fdee2f8",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -1300,7 +1300,7 @@
         "replay"
       ]
     },
-    "commit": "9363ecb95cd3baa3e7ecec99000962035b64547b",
+    "commit": "78ff04c302e70e95d875532289cc9396af310f0f",
     "environment": {
       "MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS": false,
       "MEMTOMEM_STM_DAEMON__ALLOW_NON_LOOPBACK": false,
@@ -1441,6 +1441,10 @@
       "MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS": 604800.0,
       "MEMTOMEM_STM_SURFACING__DEFAULT_NAMESPACE": null,
       "MEMTOMEM_STM_SURFACING__ENABLED": true,
+      "MEMTOMEM_STM_SURFACING__EXCLUDE_NAMESPACES": [
+        "claude-plans",
+        "codex"
+      ],
       "MEMTOMEM_STM_SURFACING__EXCLUDE_TOOLS": [],
       "MEMTOMEM_STM_SURFACING__FEEDBACK_DB_PATH": "~/.memtomem/stm_feedback.db",
       "MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_ENABLED": true,
@@ -1465,6 +1469,7 @@
       "MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE": 1.0,
       "MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT": true,
       "MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS": 300,
+      "MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD": true,
       "MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS": 30,
       "MEMTOMEM_STM_SURFACING__RERANK": false,
       "MEMTOMEM_STM_SURFACING__RESULT_CONTENT_MAX_CHARS": 500,
@@ -1699,6 +1704,7 @@
         "--output-dir"
       ],
       "stats": [
+        "--all-time",
         "--config",
         "--json",
         "--source",

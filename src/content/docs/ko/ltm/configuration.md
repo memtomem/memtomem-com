@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.3이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.5가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -87,7 +87,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_NAMESPACE__RULES` | `{path_glob, namespace}` 객체로 구성된 JSON 리스트. `pathspec.GitIgnoreSpec` 패턴, 대소문자 구분 없음. `{parent}`와 `{ancestor:N}` 플레이스홀더는 일치한 파일 경로에서 치환됨. 해석 순서: 명시적 `namespace=` 인자 → 규칙(최초 매칭) → `enable_auto_ns` → `default_namespace`. 0.7.2부터 치환된 네임스페이스가 `,`나 `*`를 포함하거나, `!system`이거나, 비어 있거나, 에이전트 도구가 거부하는 `agent-runtime:` 이름인 규칙은 플레이스홀더가 빈 값으로 치환된 규칙처럼 건너뛰고 다음 단계로 넘어감. | `[]` |
+| `MEMTOMEM_NAMESPACE__RULES` | `{path_glob, namespace}` 객체로 구성된 JSON 리스트. `pathspec.GitIgnoreSpec` 패턴, 대소문자 구분 없음. `{parent}`와 `{ancestor:N}` 플레이스홀더는 일치한 파일 경로에서 치환됨. 파일을 색인할 때의 해석 순서: 명시적 `namespace=` 인자 → 저장된 행이 공통으로 가진 네임스페이스 → day file 이름이 선언한 네임스페이스(0.7.5 이상) → 세션 바인딩 → 규칙(최초 매칭) → `enable_auto_ns` → `default_namespace`. 0.7.2부터 치환된 네임스페이스가 `,`나 `*`를 포함하거나, `!system`이거나, 비어 있거나, 에이전트 도구가 거부하는 `agent-runtime:` 이름인 규칙은 플레이스홀더가 빈 값으로 치환된 규칙처럼 건너뛰고 다음 단계로 넘어감. | `[]` |
 | `MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE` | 새 청크의 기본 네임스페이스. 0.7.2부터 같은 검사를 통과하지 못한 값이면 청크를 네임스페이스 없이(`default`) 저장하며, `mm config set`은 이 값을 거부함 | `"default"` |
 | `MEMTOMEM_NAMESPACE__ENABLE_AUTO_NS` | 명시 네임스페이스나 규칙이 없을 때 파일의 직계 부모 폴더명으로 네임스페이스 유도 | `false` |
 
@@ -112,9 +112,9 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed`(로컬 ONNX) / `cohere`(외부 API) / `local`(sentence-transformers `CrossEncoder`, 로컬). `local`을 쓰려면 `sentence-transformers`를 별도로 설치해야 하며, memtomem extra에는 포함되어 있지 않습니다. 이때 `MEMTOMEM_RERANK__MODEL`에는 sentence-transformers 모델명(예: `cross-encoder/ms-marco-MiniLM-L-6-v2`)을 지정합니다. 일반적으로는 `fastembed`를 권장합니다 | `"fastembed"` |
 | `MEMTOMEM_RERANK__MODEL` | 모델명. 형식은 공급자에 따라 다릅니다(fastembed 카탈로그 ID, Cohere Rerank 모델, sentence-transformers 모델명). `fastembed`에서 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 어떤 `mm init` 프리셋도 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
-| `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
+| `MEMTOMEM_RERANK__OVERSAMPLE` | `response_top_k` 대비 풀 배수. 풀 크기 = `max(response_top_k, min_pool, min(max_pool, int(oversample * response_top_k)))`. | `2` |
 | `MEMTOMEM_RERANK__MIN_POOL` | 하한선 — 리랭커가 받는 후보 수의 최솟값 | `20` |
-| `MEMTOMEM_RERANK__MAX_POOL` | 상한선 — 큰 `top_k`에서 비용 폭주 방지 | `200` |
+| `MEMTOMEM_RERANK__MAX_POOL` | oversample로 늘린 후보 수의 상한. `top_k`나 `min_pool`이 더 크면 그 값이 우선 | `200` |
 | `MEMTOMEM_RERANK__TOP_K` | 폐기 예정인 이전 후보군 크기. 지정하면 `min_pool`로 이전 | `20` |
 
 <a id="search"></a>
@@ -379,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.3/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.5/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

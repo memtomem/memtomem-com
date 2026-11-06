@@ -92,7 +92,7 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 - **관련 기억 추가:** 기억은 응답 텍스트가 아닌 `stm.supplements.surfacing`으로 전달되므로 `prepend`를 포함한 모든 `injection_mode`가 동작합니다.
 - **캐시와 통계:** 응답 캐시 키에는 전달 형식이 포함됩니다. `mms stats`는 구조화 호출을 별도의 `Structured delivery:` 줄(`--json`: `compression.structured_delivery`)로 보고하여 legacy 절감 비율과 분리하며, 튜너의 보존 비율 계산에서도 제외합니다.
 
-봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.5/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
+봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
 
 <a id="폴백-래더"></a>
 
