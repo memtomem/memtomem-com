@@ -227,6 +227,13 @@
             "hermes mcp list"
           ]
         },
+        "cursor": {
+          "heading": "Cursor",
+          "requiredTokens": [
+            "~/.cursor/plugins/local/memtomem",
+            "~/.cursor/mcp.json"
+          ]
+        },
         "antigravity": {
           "heading": "Antigravity",
           "requiredTokens": [

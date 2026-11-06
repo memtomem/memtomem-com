@@ -26,6 +26,7 @@ export const UNPINNED_CORE_PATHS = [
   'docs/guides/configuration.md',
   'packages/memtomem-hermes-memory/README.md',
   'packages/memtomem-antigravity-plugin/README.md',
+  'packages/memtomem-cursor-plugin/README.md',
   'packages/langchain-memtomem/README.md',
 ];
 

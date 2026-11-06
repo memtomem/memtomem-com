@@ -224,6 +224,18 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
     `OpenCode plugin version ${contract.opencode.version}`
   );
 
+  // The Cursor plugin installs from a clone of the release tag. The documented
+  // clone and copy lines are checked whole, derived from the reviewed Core
+  // version, so a bump cannot leave the install command on the old tag.
+  const cursorSection = markdownSection(text, contract.guides.clientGuide.coexistence.cursor.heading, 2);
+  const cursorTag = `v${contract.core.version}`;
+  for (const command of [
+    `git clone --branch ${cursorTag} --depth 1 https://github.com/memtomem/memtomem.git memtomem-${cursorTag} &&\n`,
+    `cp -R memtomem-${cursorTag}/packages/memtomem-cursor-plugin ~/.cursor/plugins/local/memtomem\n`,
+  ]) {
+    assertSectionContains(file, cursorSection, command, `Cursor plugin install ${command.trim()}`);
+  }
+
   // The Hermes plugin and memory provider are pinned to the reviewed Core
   // release: a commit SHA for each Git install and the exact server
   // requirement the plugin launches. Each install command is checked whole,

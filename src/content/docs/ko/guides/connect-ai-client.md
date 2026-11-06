@@ -19,7 +19,7 @@ mm status
 
 MCP 서버만 수동으로 등록할 때는 `memtomem-server` 명령을 사용합니다. `memtomem`과 `mm`은 터미널용 CLI이므로 MCP 서버 명령으로 사용하면 안 됩니다. 공식 플러그인은 자체적으로 고정한 실행 명령을 사용할 수 있습니다.
 
-memtomem의 [`update` 워크플로](/ko/ltm/project-workflows/#update)를 실행하는 클라이언트(Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI)의 수동 항목에는 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`도 함께 설정합니다. 이 값은 설정 항목이 아닙니다. 워크플로가 `topic` 이외의 모드에서 필요로 하는 도구 하나를 노출하며, 서버가 설정을 읽기 전 실행 시점에 읽으므로 `~/.memtomem/config.json`으로는 지정할 수 없습니다. 설정은 계속 그 파일에서 읽습니다. 다른 클라이언트의 항목에는 넣지 않습니다.
+memtomem의 [`update` 워크플로](/ko/ltm/project-workflows/#update)를 실행하는 클라이언트(Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI)의 수동 항목에는 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`도 함께 설정합니다. 이 값은 설정 항목이 아닙니다. 워크플로가 `topic` 이외의 모드에서 필요로 하는 도구 하나를 노출하며, 서버가 설정을 읽기 전 실행 시점에 읽으므로 `~/.memtomem/config.json`으로는 지정할 수 없습니다. 설정은 계속 그 파일에서 읽습니다. 다른 클라이언트의 항목에는 넣지 않습니다. [Cursor 플러그인](#cursor-플러그인)도 이 워크플로를 실행하며, 플러그인에 포함된 서버가 이 변수를 이미 설정합니다.
 
 아래에서 사용할 클라이언트 **하나만** 선택하세요. 플러그인과 수동 MCP 항목이 이미 함께 등록되어 있다면, 한쪽이 자동으로 제거된다고 가정하지 말고 클라이언트별 판정 기준을 확인합니다.
 
@@ -30,6 +30,7 @@ memtomem의 [`update` 워크플로](/ko/ltm/project-workflows/#update)를 실행
 | OpenCode | `mcp` 키 | 수동 `mcp.memtomem`이 우선하고, 키가 다르면 서버 두 개가 실행 |
 | Hermes Agent | 서버 이름 | 수동 `mcp_servers.memtomem`이 우선하고, 이름이 다르면 서버 두 개가 실행 |
 | Antigravity CLI | 서버 이름 | 플러그인 서버의 이름이 `memtomem_memtomem`이므로 수동 `memtomem` 항목과 일치하지 않아 서버 두 개가 실행 |
+| Cursor | 구분하지 않음 | 플러그인이 수동 `memtomem` 항목과 별도로 자체 서버를 추가하므로 서버 두 개가 실행 |
 
 ## Claude Code
 
@@ -157,6 +158,34 @@ mm init --mcp kimi
 ```
 
 memtomem은 현재 Kimi Code 홈에만 Kimi 항목을 작성합니다. 이전 경로인 `~/.kimi/mcp.json`(또는 `$KIMI_SHARE_DIR` 아래)에 남은 memtomem 항목은 갱신되지 않고 `mm uninstall`도 보고만 하므로 직접 제거합니다.
+
+## Cursor
+
+MCP 서버만 등록하려면 [JSON 방식 MCP 클라이언트](#json-방식-mcp-클라이언트)의 기본 항목을 `~/.cursor/mcp.json`이나 프로젝트의 `.cursor/mcp.json`에 추가하고 Cursor를 다시 시작합니다.
+
+### Cursor 플러그인
+
+Cursor 플러그인은 버전을 고정한 memtomem MCP 서버와, [Antigravity CLI 플러그인](#antigravity-cli-플러그인)과 같은 기억 스킬 9개를 함께 제공합니다. 세 가지 [프로젝트 워크플로](/ko/ltm/project-workflows/)(handoff, brief, update)도 포함됩니다. Core 0.7.4부터 **실험 기능**이므로 구성과 스킬이 지원 중단 예고 없이 바뀔 수 있습니다. 다음이 필요합니다.
+
+- Cursor 3.27.22 이상(플러그인을 검증한 버전);
+- Cursor가 MCP 서버를 시작할 때 쓰는 `PATH`에 있는 `uv`. 플러그인은 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.5' memtomem-server`로 서버를 시작합니다;
+- Python 3.12. uv가 찾지 못하면 처음 시작할 때 내려받습니다. 내려받을 수 없으면 서버가 시작되지 않으므로 `uv python install 3.12`를 한 번 실행합니다.
+
+Cursor Marketplace에 등록되기 전까지는 0.7.5 릴리스에서 로컬 플러그인으로 설치합니다. Cursor는 symlink가 `~/.cursor/plugins/local` 안을 가리킬 때만 로컬 플러그인으로 불러오므로 디렉터리를 복사합니다.
+
+```bash
+git clone --branch v0.7.5 --depth 1 https://github.com/memtomem/memtomem.git memtomem-v0.7.5 &&
+  mkdir -p ~/.cursor/plugins/local &&
+  cp -R memtomem-v0.7.5/packages/memtomem-cursor-plugin ~/.cursor/plugins/local/memtomem
+```
+
+**Developer: Reload Window**를 실행한 뒤 **Customize**에서 memtomem MCP 서버와 스킬 9개가 표시되는지 확인합니다. Cursor Enterprise 팀에서는 관리자가 먼저 로컬 플러그인 가져오기를 허용해야 합니다. `main` 대신 릴리스 태그를 clone하세요. 버전을 올린 직후의 `main`은 아직 PyPI에 없는 memtomem 릴리스를 가리킬 수 있으며, 이때는 서버가 시작되지 않습니다.
+
+이 명령은 clone이 성공해야 복사합니다. `memtomem-v0.7.5`가 이미 있으면 clone이 실패하고 아무것도 복사하지 않으므로, 그 디렉터리를 먼저 지우거나 이름을 바꿉니다. 업데이트할 때는 새 릴리스의 태그를 같은 방식으로 별도 디렉터리에 clone한 뒤 설치된 사본을 교체합니다. `~/.cursor/plugins/local/memtomem`을 삭제하고 새 clone의 `packages/memtomem-cursor-plugin`을 그 위치로 복사한 다음 창을 다시 불러옵니다. clone은 복사에만 필요하므로, 보관할 필요가 없다면 설치 후 삭제해도 됩니다. 기존 `~/.cursor/plugins/local/memtomem` 위에 복사하면 새 묶음이 이전 묶음 안에 들어가고 이전 묶음이 계속 사용됩니다. 플러그인을 제거하려면 `~/.cursor/plugins/local/memtomem`을 삭제합니다. 기억은 `~/.memtomem`에 그대로 남습니다.
+
+Cursor는 플러그인 서버를 열린 작업 공간이 아니라 홈 디렉터리에서 시작하므로, 서버는 **사용자 범위**로 시작합니다. 스킬은 Antigravity CLI 스킬과 같은 방식으로 서버를 저장소에 바인딩합니다. 바인딩하려면 저장소에 등록된 tier(`mm mem init --scope project_local`)가 있어야 하며, 바인딩은 서버를 다시 시작할 때까지 유지됩니다. 바인딩되면 search와 recall은 저장소의 프로젝트 기억도 읽고, remember는 프로젝트 사실을 그 저장소의 `project_local` tier에 저장합니다. tier가 없거나 Git 저장소 밖이면 search와 recall은 사용자 범위 기억만 읽고, remember는 프로젝트 간 선호와 개인 메모만 저장하며 프로젝트 사실은 거부하고, 세 가지 프로젝트 워크플로는 멈춥니다. 바인딩 단계는 Cursor 터미널에서 `git rev-parse --show-toplevel`을 실행하므로, 셸 명령을 막는 Cursor hook(Cursor가 가져온 Claude Code hook 포함)이 있으면 바인딩 전에 스킬이 멈춥니다. remember, index, setup과 세 가지 프로젝트 워크플로는 `/skill-name`으로 직접 호출할 때만 실행됩니다. `~/.memtomem/config.json`의 저장 경로는 절대 경로이거나 `~`로 시작해야 합니다. 상대 경로는 홈 디렉터리를 기준으로 해석되어 다른 저장소를 엽니다.
+
+플러그인은 `~/.cursor/mcp.json`이나 프로젝트의 `.cursor/mcp.json`에 직접 등록한 `memtomem` 항목을 대체하지 않으므로 서버 두 개가 실행됩니다. `mem_status`가 보고하는 DB 경로를 비교한 뒤 수동 항목을 제거해 서버 하나만 실행되게 합니다. 자세한 내용은 [플러그인 README](https://github.com/memtomem/memtomem/blob/v0.7.5/packages/memtomem-cursor-plugin/README.md)를 참고하세요.
 
 ## OpenCode
 
