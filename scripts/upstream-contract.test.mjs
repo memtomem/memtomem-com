@@ -10,7 +10,7 @@ await walk('src/content/docs');
 const config = 'src/content/docs/ltm/configuration.md';
 const stmConfig = 'src/content/docs/stm/configuration.md';
 test('pinned website passes', () => assert.deepEqual(validateUpstream(snapshot, contract, sources), []));
-test('no current release is listed as stale', () => { for (const version of [contract.core.version, contract.stm.version, contract.claudePlugin.version, contract.opencode.version]) assert.ok(!STALE_VERSIONS.includes(version), version + ' is current but listed in STALE_VERSIONS'); });
+test('no current release is listed as stale', () => { for (const version of [contract.core.version, contract.stm.version, contract.claudePlugin.version, contract.claudeAutomationPlugin.version, contract.opencode.version]) assert.ok(!STALE_VERSIONS.includes(version), version + ' is current but listed in STALE_VERSIONS'); });
 for (const [name, mutate] of [
 ['same-count tool replacement', (s, c) => { c.core.toolNames[0] = 'mem_fake'; }],
 ['wrong source revision', (s, c) => { c.sourceSnapshots.coreMain = 'bad'; }],

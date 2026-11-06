@@ -122,6 +122,9 @@ if (contract.claudePlugin.bundledCore !== contract.core.version) {
 if (!contract.claudePlugin.requirement.endsWith(`==${contract.claudePlugin.bundledCore}`)) {
   errors.push(`Claude plugin requirement ${contract.claudePlugin.requirement} is not pinned to Core ${contract.claudePlugin.bundledCore}`);
 }
+if (contract.claudeAutomationPlugin.bundledCore !== contract.core.version) {
+  errors.push(`Claude automation plugin is reviewed for Core ${contract.claudeAutomationPlugin.bundledCore}; expected ${contract.core.version}`);
+}
 if (contract.opencode.bundledCore !== contract.core.version) {
   errors.push(`OpenCode plugin bundles Core ${contract.opencode.bundledCore}; expected ${contract.core.version}`);
 }
@@ -204,6 +207,18 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   const text = sourceText.get(file);
   const claudeSection = markdownSection(text, contract.guides.clientGuide.coexistence.claude.heading, 2);
   assertSectionContains(file, claudeSection, contract.claudePlugin.version, `Claude plugin version ${contract.claudePlugin.version}`);
+  // The automation plugin runs its hooks only on the exact Core release it was
+  // reviewed with, so its version and the matching `mm upgrade` move together.
+  for (const [needle, label] of [
+    ['/plugin install memtomem-automation@memtomem', 'Claude automation plugin install'],
+    [`mm upgrade --version ${contract.claudeAutomationPlugin.bundledCore}\n`, 'Claude automation mm upgrade'],
+  ]) {
+    assertSectionContains(file, claudeSection, needle, label);
+  }
+  const automationVersion = contract.claudeAutomationPlugin.version;
+  if (!new RegExp(`(?<![\\d.])${automationVersion.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`).test(claudeSection ?? '')) {
+    errors.push(`${relative(file)}: section missing Claude automation plugin version ${automationVersion}`);
+  }
   assertSectionContains(
     file,
     claudeSection,

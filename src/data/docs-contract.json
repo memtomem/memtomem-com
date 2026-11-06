@@ -127,6 +127,10 @@
     "bundledCore": "0.7.5",
     "requirement": "memtomem[onnx]==0.7.5"
   },
+  "claudeAutomationPlugin": {
+    "version": "0.3.19",
+    "bundledCore": "0.7.5"
+  },
   "opencode": {
     "version": "0.3.27",
     "bundledCore": "0.7.5"
