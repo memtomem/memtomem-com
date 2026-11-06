@@ -142,7 +142,8 @@ It has three modes:
 - Commit messages are treated as untrusted text; instructions in them are never followed.
 - Each candidate is first searched for in existing memories and skipped when already captured. For a project item, a match found only in an AI tool's own memory for this repository does not skip it: the item is still written to `project_local`, citing the match.
 - Items go to the project tier. A cross-project personal preference is saved at user scope (`namespace="default"`) only when you explicitly ask for that.
-- The run ends with a report of the mode, the commits whose full message it read, the coverage result in `incremental` and `full` mode, the items saved, and the duplicates skipped, with the yield as `commit-derived: <N>` and `session-derived: <M>`. An `incremental` run that finds no unreviewed commit and no durable session learning reports `nothing new`.
+- Each item is kept to at most 1,000 characters, or 600 when any of it is written in Korean, Japanese, or Chinese, counting its citations. Only the prose is shortened to fit, never a required citation or a verbatim path, symbol, command, or quote. An item that still does not fit is written anyway and reported as over the limit.
+- The run ends with a report of the mode, the commits whose full message it read, the coverage result in `incremental` and `full` mode, the items saved, any items written over the length limit, and the duplicates skipped, with the yield as `commit-derived: <N>` and `session-derived: <M>`. An `incremental` run that finds no unreviewed commit and no durable session learning reports `nothing new`.
 
 ### Review coverage
 
