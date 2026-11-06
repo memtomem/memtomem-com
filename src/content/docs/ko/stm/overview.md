@@ -7,10 +7,12 @@ description: memtomem-stm이란 — 관련 기억을 자동으로 제시하고 �
 
 memtomem-stm은 AI 에이전트와 기존 MCP 서버 사이에서 호출을 중계하는 **단기 기억(STM) 프록시**입니다. 에이전트 코드를 바꾸지 않아도 STM을 거치는 호출에 **응답 압축**, **관련 기억 자동 추가**, **노출 도구 정리**를 적용할 수 있습니다. 토큰 절감률은 응답 형태, 설정한 예산, 작업 특성에 따라 달라집니다.
 
-## 이럴 때 씁니다
+<a id="이럴-때-씁니다"></a>
 
-- **MCP 도구 응답이 너무 커서 컨텍스트가 금방 찰 때** — STM은 경유하는 filesystem, GitHub 등의 MCP 응답을 내용에 맞춰 정해진 문자·토큰 예산 안으로 줄입니다.
-- **에이전트에 명시 요청 없이 과거 기억을 자동으로 추가하고 싶을 때** — LTM 단독 구성에서는 에이전트가 검색 도구를 호출하지만, STM 앞단을 통과해 조건을 충족한 응답에는 별도 검색 호출 없이 관련 기억을 추가할 수 있습니다.
+## 주요 활용 상황
+
+- **MCP 도구 응답이 커서 컨텍스트 창이 빠르게 소모될 때** — STM은 경유하는 filesystem, GitHub 등의 MCP 응답을 내용에 맞춰 정해진 문자·토큰 예산 안으로 줄입니다.
+- **에이전트의 명시적 검색 요청 없이 관련 기억을 자동으로 추가하고 싶을 때** — LTM 단독 구성에서는 에이전트가 검색 도구를 호출하지만, STM 앞단을 통과해 조건을 충족한 응답에는 별도 검색 호출 없이 관련 기억을 추가할 수 있습니다.
 - **에이전트에 노출되는 도구 목록을 정리하고 싶을 때** — STM이 응답하지 않는 서버, 자격 증명이 담긴 설명, 이름이 겹치는 도구를 에이전트에 노출하는 목록에서 제외합니다.
 - **되돌릴 수 있는 방식으로 프록시를 시험하고 싶을 때** — STM은 기존 MCP 서버 설정을 가져와 앞단에서 호출을 중계합니다. `mms eject`로 서버를 원래 클라이언트 설정에 복원하면 STM 도입 이전 상태로 돌아갈 수 있습니다.
 
@@ -36,7 +38,7 @@ mms doctor                                               # 3. 전체 설정 진�
 <figure class="flow-diagram">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 430" role="img" aria-labelledby="stm-flow-title stm-flow-desc">
 <title id="stm-flow-title">memtomem-stm을 거치는 도구 호출의 흐름</title>
-<desc id="stm-flow-desc">AI 에이전트가 보낸 도구 호출을 memtomem-stm 프록시가 연결한 MCP 서버로 전달합니다. 돌아온 텍스트 응답은 보통 CLEAN, COMPRESS, SURFACE 세 단계를 거치며, 목록 다음에 설명한 응답은 COMPRESS와 SURFACE를 거치지 않습니다. SURFACE는 memtomem(LTM)을 검색하고, 관련성 검사를 통과한 기억이 있으면 응답에 덧붙입니다. 에이전트는 그 기억과 함께 응답을 받습니다.</desc>
+<desc id="stm-flow-desc">AI 에이전트가 보낸 도구 호출을 memtomem-stm 프록시가 연결한 MCP 서버로 전달합니다. 반환된 텍스트 응답은 기본적으로 CLEAN, COMPRESS, SURFACE 세 단계를 거치며, 예외 조건에 해당하는 응답은 COMPRESS와 SURFACE를 거치지 않습니다. SURFACE는 memtomem(LTM)을 검색하고, 관련성 검사를 통과한 기억이 있으면 응답에 덧붙입니다. 에이전트는 그 기억과 함께 응답을 받습니다.</desc>
 <defs><marker id="stm-flow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="fd-head" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
 <rect class="fd-box" x="90" y="16" width="300" height="56" rx="8"/>
 <text class="fd-title" x="240" y="40" text-anchor="middle">AI 에이전트</text>

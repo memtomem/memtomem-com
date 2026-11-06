@@ -47,7 +47,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__STRIP_SCHEMA_DESCRIPTIONS` | 표시하는 도구에서 중첩된 JSON 스키마의 설명 제거 | `false` |
 | `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY` | 관련성 점수 계산에 쓰는 선택형 `_context_query` 인자를 도구 스키마에 표시 | `false` |
 | `MEMTOMEM_STM_PROXY__HOST_DESCRIPTION_CAP` | 호스트가 허용하는 설명 길이(프록시 접두사와 힌트 포함). 지정하지 않으면 알 수 없는 값으로 두며 호스트 한도를 추정하지 않습니다. 다음 도구 등록 시 적용되므로 확실히 반영하려면 재시작합니다. | `null` |
-| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | `description_override`가 대체한 원본 설명을 함께 반환합니다. 복구하면 재정의가 가리려 했던 업스트림 문구가 재정의의 대상인 모델에 다시 전달되므로 기본값은 꺼짐입니다. | `false` |
+| `MEMTOMEM_STM_PROXY__RECOVER_UPSTREAM_DESCRIPTION` | `description_override`가 대체한 원본 설명을 함께 반환합니다. 원본을 그대로 반환하면 가려야 할 업스트림 원문이 모델에 다시 전달될 수 있어 기본값은 꺼짐(`false`)입니다. | `false` |
 | `MEMTOMEM_STM_PROXY__CONSUMER_MODEL` | 컨텍스트 윈도우 예산 계산에 쓰는 클라이언트 모델 식별자 | `""` |
 | `MEMTOMEM_STM_PROXY__CONTEXT_BUDGET_RATIO` | 프록시 결과에 허용할 수신 모델 컨텍스트 크기의 비율 | `0.05` |
 | `MEMTOMEM_STM_PROXY__CHARS_PER_TOKEN` | 토큰 예산용 정적 문자/토큰 추정치 | `3.5` |
@@ -395,26 +395,26 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 ## 고정 소스 기준 기본값
 
-위 기본값은 초기화 프리셋을 적용하기 전 스키마 선언값입니다. `mm init`은 공급자·차원·메모리 경로를 변경할 수 있습니다. OTLP와 Langfuse는 별도 옵트인입니다. 자식 MCP 프로세스에 환경 변수를 전달하고 다시 연결해야 합니다.
+위 기본값은 초기 설정을 적용하기 전의 스키마 선언값입니다. OTLP와 Langfuse는 명시적으로 활성화(opt-in)해야 하며, 자식 MCP 프로세스에 환경 변수를 전달한 뒤 다시 연결해야 적용됩니다.
 
 ### STM 추가 설정
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_STM_DAEMON__MAX_CONCURRENT_LTM_OPS` | LTM 작업 동시 실행 상한 | `4` |
-| `MEMTOMEM_STM_OTLP__ENABLED` | 선택적 OTLP 내보내기: enabled | `false` |
-| `MEMTOMEM_STM_OTLP__ENDPOINT` | 선택적 OTLP 내보내기: endpoint | `""` |
-| `MEMTOMEM_STM_OTLP__FLUSH_TIMEOUT_SECONDS` | 선택적 OTLP 내보내기: flush timeout seconds | `5` |
-| `MEMTOMEM_STM_OTLP__HEADERS` | 선택적 OTLP 내보내기: headers | `{}` |
-| `MEMTOMEM_STM_OTLP__MAX_EXPORT_BATCH_SIZE` | 선택적 OTLP 내보내기: max export batch size | `512` |
-| `MEMTOMEM_STM_OTLP__MAX_QUEUE_SIZE` | 선택적 OTLP 내보내기: max queue size | `2048` |
-| `MEMTOMEM_STM_OTLP__SAMPLING_RATE` | 선택적 OTLP 내보내기: sampling rate | `1` |
-| `MEMTOMEM_STM_OTLP__SCHEDULE_DELAY_MS` | 선택적 OTLP 내보내기: schedule delay ms | `5000` |
-| `MEMTOMEM_STM_OTLP__TIMEOUT_SECONDS` | 선택적 OTLP 내보내기: timeout seconds | `10` |
+| `MEMTOMEM_STM_OTLP__ENABLED` | 선택적 OTLP 내보내기 활성화 여부 | `false` |
+| `MEMTOMEM_STM_OTLP__ENDPOINT` | 선택적 OTLP 내보내기 엔드포인트 URL | `""` |
+| `MEMTOMEM_STM_OTLP__FLUSH_TIMEOUT_SECONDS` | 선택적 OTLP 내보내기 플러시 제한 시간(초) | `5` |
+| `MEMTOMEM_STM_OTLP__HEADERS` | 선택적 OTLP 내보내기 요청 헤더 | `{}` |
+| `MEMTOMEM_STM_OTLP__MAX_EXPORT_BATCH_SIZE` | 선택적 OTLP 내보내기 배치당 최대 크기 | `512` |
+| `MEMTOMEM_STM_OTLP__MAX_QUEUE_SIZE` | 선택적 OTLP 내보내기 대기열 최대 크기 | `2048` |
+| `MEMTOMEM_STM_OTLP__SAMPLING_RATE` | 선택적 OTLP 내보내기 샘플링 비율 | `1` |
+| `MEMTOMEM_STM_OTLP__SCHEDULE_DELAY_MS` | 선택적 OTLP 내보내기 배치 전송 주기(ms) | `5000` |
+| `MEMTOMEM_STM_OTLP__TIMEOUT_SECONDS` | 선택적 OTLP 내보내기 요청 제한 시간(초) | `10` |
 | `MEMTOMEM_STM_PARENT_LIVENESS_GRACE_SECONDS` | 부모 프로세스 생존 확인 유예 시간(초) | `900` |
-| `MEMTOMEM_STM_PARENT_LIVENESS_POLL_SECONDS` | 부모 프로세스 생존 확인 간격; 0이면 비활성화 | `0` |
-| `MEMTOMEM_STM_PROXY__EXTRACTION__LLM` | 선택적 LLM 추출 설정; null이면 해당 오버라이드 없음 | `null` |
-| `MEMTOMEM_STM_PROXY__MAX_UPSTREAM_BYTES` | 메타데이터·비텍스트·오류를 포함한 디코딩 후 compact JSON 응답 상한; 전송 크기나 최대 메모리 상한이 아님 | `41943040` |
+| `MEMTOMEM_STM_PARENT_LIVENESS_POLL_SECONDS` | 부모 프로세스 생존 확인 간격(초, `0`이면 비활성화) | `0` |
+| `MEMTOMEM_STM_PROXY__EXTRACTION__LLM` | 선택적 LLM 추출 설정(`null`이면 별도 재정의 없음) | `null` |
+| `MEMTOMEM_STM_PROXY__MAX_UPSTREAM_BYTES` | 메타데이터·비텍스트·오류를 포함한 디코딩 후 compact JSON 응답 상한(전송 크기나 최대 메모리 상한이 아님) | `41943040` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | 임베딩 관련도 캐시 항목 상한 | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | 종료 감시 제한 시간(초) | `60` |
 

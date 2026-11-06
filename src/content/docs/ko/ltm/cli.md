@@ -61,7 +61,7 @@ mm context version --help
 mm context settings-doctor --json
 ```
 
-`doctor`는 실행 환경을 진단하고 이 컴퓨터에서 실행 중인 memtomem 서버 프로세스를 보여 줍니다. `--mcp-client claude`, `agy`, `codex`를 지정하면 프로세스 대신 등록 상태를 확인하여, 수동 MCP 등록과 해당 클라이언트의 memtomem 플러그인이 서버 두 개를 실행하게 되는지 보고합니다(`--claude-mcp`는 Claude 확인의 별칭으로 계속 사용할 수 있습니다). 이 모드의 종료 코드는 통과 시 `0`, 중복 위험 시 `1`, 검사를 끝내지 못했을 때 `2`입니다. `--reconcile keep-manual`은 수동 등록과 플러그인 스킬을 유지하고 플러그인에 포함된 서버를 비활성화하며, `--reconcile keep-plugin`은 반대로 수동 항목을 제거합니다. 두 옵션 모두 미리보기만 실행하므로, 올바른 복구안을 제시하는 미리보기도 종료 코드 `1`을 반환할 수 있습니다. `--apply`를 지정해야 실제로 수정합니다. 이때 원본 파일을 같은 위치에 `<filename>.mm-backup-*`로 백업하고(백업에는 자격 증명이 들어 있을 수 있으므로 비공개 권한으로 저장), 해당 파일 하나를 원자적으로 교체한 뒤 검사를 다시 실행합니다. Claude 설정을 수정하기 전에는 모든 Claude 세션을 종료하세요. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로 그 뒤에 검사를 다시 실행합니다. 형식이 잘못되었거나 가려진 설정, 여러 개의 수동 등록, 관리 정책은 수동 검토 대상으로 보고하며 수정하지 않습니다.
+`doctor`는 실행 환경을 진단하고 이 컴퓨터에서 실행 중인 memtomem 서버 프로세스를 보여 줍니다. `--mcp-client claude`, `agy`, `codex`를 지정하면 프로세스 대신 등록 상태를 확인하여, 수동 MCP 등록과 해당 클라이언트의 memtomem 플러그인이 함께 설정되어 서버 두 개가 실행되는지 보고합니다(`--claude-mcp`는 Claude 확인의 별칭으로 계속 사용할 수 있습니다). 이 모드의 종료 코드는 통과 시 `0`, 중복 위험 시 `1`, 검사를 끝내지 못했을 때 `2`입니다. `--reconcile keep-manual`은 수동 등록과 플러그인 스킬을 유지하고 플러그인에 포함된 서버를 비활성화하며, `--reconcile keep-plugin`은 반대로 수동 항목을 제거합니다. 두 옵션 모두 미리보기만 실행하므로, 올바른 복구안을 제시하는 미리보기도 종료 코드 `1`을 반환할 수 있습니다. `--apply`를 지정해야 실제로 수정합니다. 이때 원본 파일을 같은 위치에 `<filename>.mm-backup-*`로 백업하고(백업에는 자격 증명이 들어 있을 수 있으므로 비공개 권한으로 저장), 해당 파일 하나를 원자적으로 교체한 뒤 검사를 다시 실행합니다. Claude 설정을 수정하기 전에는 모든 Claude 세션을 종료하세요. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로 그 뒤에 검사를 다시 실행합니다. 형식이 잘못되었거나 가려진 설정, 여러 개의 수동 등록, 관리 정책은 수동 검토 대상으로 보고하며 수정하지 않습니다.
 `agent debug-resolve`는 검색 범위를 설명합니다.
 `review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
 BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 표시될 수 있습니다.
@@ -80,7 +80,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ```bash
 mm init                              # 대화형 설정 + 프리셋 선택
-mm init --non-interactive            # 자동 수락; `--preset minimal --non-interactive`와 동일
+mm init --non-interactive            # 기본값 자동 수락(`--preset minimal --non-interactive`와 동일)
 mm init --preset korean --non-interactive   # 한국어 프리셋을 비대화 모드로 적용
 mm init --preset english --non-interactive   # 영어 프리셋, 프롬프트 없음
 mm init --advanced                   # 프리셋 선택 생략, 10단계 전체 마법사
@@ -139,7 +139,7 @@ mm tags delete deprecated --apply             # 태그 제거 (청크는 그대�
 mm tags merge py python --into python --apply # 여러 태그를 하나로 통합
 ```
 
-`--apply` 없이 실행하면 영향을 받는 청크 수와 샘플을 먼저 보여줍니다. `delete`는 태그만 제거하며 청크 자체는 인덱스에 남습니다.
+`--apply` 없이 실행하면 영향을 받는 청크 수와 샘플을 먼저 보여 줍니다. `delete`는 태그만 제거하며 청크 자체는 인덱스에 남습니다.
 
 ### `mm recall`
 
@@ -197,21 +197,21 @@ mm add "API 타임아웃 정책 결정" --title "API timeout" --tags "ops,api"
 mm add "postmortem 요약" --file postmortems/2026-04-auth.md
 ```
 
-`--tags`로 지정한 태그는 파일에 내용을 덧붙인 뒤 청크 메타데이터에 합칩니다. 본문에서 태그를 자동으로 읽지는 않습니다. `--file`에는 `~/.memtomem/memories/` 아래의 상대 경로만 사용할 수 있으며 `..` 경로는 거부합니다. 대상 파일에 다른 네임스페이스의 항목이 이미 있거나, 0.7.5부터는 파일 이름이 다른 네임스페이스로 해석되는 비기본 데이 파일 이름이면 추가를 거부합니다. `--allow-namespace-mix`를 지정하면 거부하지 않습니다. slug가 잘린 이름처럼 해석할 수 없는 이름은 이전과 같이 처리합니다.
+`--tags`로 지정한 태그는 파일에 내용을 덧붙인 뒤 청크 메타데이터에 합칩니다. 본문에서 태그를 자동으로 읽지는 않습니다. `--file`에는 `~/.memtomem/memories/` 아래의 상대 경로만 사용할 수 있으며 `..` 경로는 거부합니다. 대상 파일에 다른 네임스페이스의 항목이 이미 있거나, 다른 네임스페이스를 가리키는 비기본 데이 파일 이름(0.7.5 이상)이면 추가를 거부합니다. `--allow-namespace-mix`를 지정하면 거부하지 않습니다. 슬러그(slug)가 잘려 네임스페이스를 해석할 수 없는 파일 이름은 이전과 같이 처리합니다.
 
 ### `mm index <path>`
 
 디스크에 있는 기존 파일을 처음 색인하는 명령입니다. 해시로 변경된 부분만 찾아 갱신하므로 같은 경로에 다시 실행해도 안전합니다.
 
 ```bash
-mm index .                           # 현재 디렉토리 인덱싱
+mm index .                           # 현재 디렉터리 인덱싱
 mm index ~/docs/architecture         # 특정 디렉터리 색인
 mm index README.md                   # 단일 파일 인덱싱
 ```
 
 `memtomem-server`는 `indexing.memory_dirs`에 등록된 경로를 계속 감시하지만 **새로 생긴 변경만 처리**합니다. 서버를 시작한 뒤 발생한 파일 수정·생성·이동만 다시 색인하며 기존 파일은 자동으로 읽지 않습니다. 다만 시작할 때마다 이미 색인된 파일을 한 번 확인하여, 이후 symlink로 바뀐 파일의 청크를 검색에서 숨깁니다. 이 확인은 새 파일을 색인하지 않습니다. 기존 파일은 `mm index <dir>` 또는 `mem_index(path="<dir>")`로 처음 한 번 색인하세요. Web UI를 시작할 때 기존 파일도 자동으로 확인하려면 `MEMTOMEM_INDEXING__STARTUP_BACKFILL=true`를 직접 설정합니다.
 
-watchdog 7.0(새로 설치할 때 받는 버전)을 사용하면 Linux 네이티브 백엔드와 polling 백엔드(macOS 기본값)에서 권한이나 소유자만 바꿔도 내용 수정과 같이 색인기에 전달합니다. 따라서 색인된 기억 파일에 `chmod 000`을 실행하면 그 파일은 검색에서 제외됩니다. 감시기를 시작할 수 없으면(예: 네이티브 FSEvents 스트림을 열 수 없는 경우) 서버는 실시간 파일 이벤트 없이 도구 호출에 계속 응답합니다. 시작할 때 색인된 파일을 확인하는 작업은 그대로 실행하며, `mem_status`에 오류 내용과 해결 방법을 담은 `watcher_unavailable` 경고를 표시합니다. `indexing.watcher_backend`를 `"polling"`으로 설정하거나 다른 `memtomem-server` 세션을 닫은 뒤 서버를 다시 시작합니다. `mm status`는 감시기를 실행하지 않으므로 이 경고를 표시하지 않습니다.
+watchdog 7.0(신규 설치 기본 버전) 환경에서는 Linux 네이티브 백엔드와 polling 백엔드(macOS 기본값)에서 파일 권한이나 소유자만 변경되어도 내용 수정과 동일하게 색인기에 이벤트가 전달됩니다. 따라서 색인된 기억 파일에 `chmod 000`을 실행하면 그 파일은 검색에서 제외됩니다. 감시기를 시작할 수 없으면(예: 네이티브 FSEvents 스트림을 열 수 없는 경우) 서버는 실시간 파일 이벤트 없이 도구 호출에 계속 응답합니다. 시작할 때 색인된 파일을 확인하는 작업은 그대로 실행하며, `mem_status`에 오류 내용과 해결 방법을 담은 `watcher_unavailable` 경고를 표시합니다. `indexing.watcher_backend`를 `"polling"`으로 설정하거나 다른 `memtomem-server` 세션을 닫은 뒤 서버를 다시 시작합니다. `mm status`는 감시기를 실행하지 않으므로 이 경고를 표시하지 않습니다.
 
 ### `mm ingest`
 
@@ -252,7 +252,7 @@ mm context move commands deploy --to project_shared --confirm-project-shared --a
 
 mm context projects add ~/work/app-a                # 프로젝트 등록(list / pause / resume / remove)
 mm context sync --all-projects                      # 등록된 모든 프로젝트의 Project (shared) 계층 동기화
-mm context status --all-projects                    # 읽기 전용: 어떤 프로젝트가 어긋났는가
+mm context status --all-projects                    # 읽기 전용: 동기화가 어긋난 프로젝트 확인
 
 mm context export skills deploy-check --out deploy-check.json   # 다른 컴퓨터로 옮길 묶음 생성
 mm context import deploy-check.json --to user                    # 묶음 반영(미리보기)
@@ -454,7 +454,7 @@ mm schedule delete <sched-id>
 
 원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 영구히 제거합니다.
 
-파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 소유한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. 출처는 색인할 때의 경로를 기준으로 판정하므로, 이후 symlink로 바뀐 파일은 링크가 있는 위치를 기준으로 일치합니다. `DIR` 자체는 실제 경로로 해석합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
+파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 속한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. 출처는 색인할 때의 경로를 기준으로 판정하므로, 이후 symlink로 바뀐 파일은 링크가 있는 위치를 기준으로 일치합니다. `DIR` 자체는 실제 경로로 해석합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
 
 ```bash
 mm gc orphan-sources
@@ -478,7 +478,7 @@ mm embedding-reset --mode revert-to-stored    # 실행 중인 임베더를 DB �
 
 ### `mm purge --matching-excluded`
 
-내장 자격 증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요. 저장된 경로가 이제 다른 곳을 가리키는 출처(색인한 뒤 symlink로 바뀐 파일)는 판정하지도 삭제하지도 않습니다. 이런 출처는 건너뛰고 stderr에 표시하며, `--json`에서는 `moved`와 `moved_sample`로 보고합니다.
+내장 자격 증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요. 저장된 경로가 다른 대상을 가리키게 된 출처(색인한 뒤 symlink로 바뀐 파일)는 제외 여부를 판정하거나 삭제하지 않습니다. 이런 출처는 건너뛰고 stderr에 표시하며, `--json`에서는 `moved`와 `moved_sample`로 보고합니다.
 
 ```bash
 mm purge --matching-excluded              # 삭제 대상 미리보기
@@ -511,16 +511,16 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 
 이전 릴리스에서 업그레이드했다면 다음 항목을 확인합니다.
 
-- **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이 검사 없이 메모리 도구가 저장한 내용은 blocked로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
+- **0.6.9 이전에서 업그레이드한 경우:** 메모리 디렉터리 전체에 `mm index`를 한 번 실행합니다. 모든 파일을 redaction guard로 검사하므로, 이전 버전에서 이 검사 없이 저장된 내용은 `blocked`로 보고되고 파일을 정리해 다시 색인할 때까지 보류됩니다. 텍스트와 문맥이 바뀌지 않은 청크는 기존 벡터를 유지하므로 `--force`는 필요하지 않습니다.
 - **PKCS#8 형식의 개인 키**(`BEGIN PRIVATE KEY`, `BEGIN ENCRYPTED PRIVATE KEY`)는 0.6.12 이전에는 쓰기 검사(write guard)를 통과했으며, 업그레이드해도 이미 저장된 내용은 다시 검사하지 않습니다. `mm mem rescan --scope <tier> --json`으로 키가 들어 있는 저장 청크를 확인하고, 보고된 각 파일에서 키를 제거한 뒤 `mm index <dir>`를 실행합니다. rescan을 다시 실행해 아무것도 보고되지 않는지 확인합니다. 계속 보고되는 출처는 다시 색인되지 않은 것입니다. 삭제한 파일, 제외된 경로, 10 MB를 넘는 파일, `mm index` 실행에서 오류가 보고된 파일이 해당합니다. 이런 청크를 제거하는 방법은 [보안 권고](https://github.com/memtomem/memtomem/security/advisories/GHSA-pfm2-fmvr-p8c8)에 있습니다. 호스팅 서비스나 git 기록에 들어간 키는 교체(rotate)합니다.
 - **0.7.0 이전에서 업그레이드한 경우:** 기억 파일과 Context Gateway의 agent·command 파일의 frontmatter를 YAML로 읽습니다. 다시 색인하면 따옴표 없는 ` #` 뒤의 내용은 주석으로 처리되어 경고와 함께 제외되고, 키 뒤의 콜론 다음에는 공백이 있어야 합니다. `#` 문자를 값에 포함하려면 따옴표로 감쌉니다. 업그레이드한 뒤에는 백업을 다시 만드세요. 내보내기는 이제 bundle v4로 저장하며, 이전 버전의 가져오기는 v4가 추가한 범위·프로젝트·유효 기간 필드를 무시하므로 0.7.0 이상에서만 완전히 복원됩니다.
-- **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 0.7.1에서는 그대로 두면 이후 다시 색인할 때 같은 이름이 다시 생길 수 있고, 0.7.2부터는 이 이름이 거부되거나 건너뛰어집니다(다음 항목).
-- **0.7.2 이전에서 업그레이드한 경우:** 검색에서 이름으로 찾을 수 없는 네임스페이스에는 더 이상 쓰지 않습니다. `,`나 `*`를 포함한 이름, `!system`, 공백만 있는 이름, 에이전트 도구가 거부하는 에이전트 ID를 가진 `agent-runtime:` 이름(`agent-runtime:foo:bar`)이 이에 해당합니다. 빈 문자열은 지금도 네임스페이스를 지정하지 않은 것으로 처리됩니다. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, Notion·Obsidian 가져오기, `mm index --namespace`, 웹 추가·색인 경로는 이런 이름을 쓰기 전에 거부합니다. 이 검사는 `mm add --namespace`, 세션 도구, `mem_ns_*` 도구의 검사보다 범위가 좁으므로 `claude:-Users-me-project`처럼 규칙이 만드는 이름은 계속 사용할 수 있습니다. 색인기는 네임스페이스 규칙, 폴더 이름(`enable_auto_ns`), `default_namespace`에서 나온 이런 이름을 건너뛰고 다음 규칙, `enable_auto_ns`, `default_namespace` 순으로 넘어갑니다. 검사를 통과하지 못한 `default_namespace`는 청크를 네임스페이스 없이(`default`) 저장합니다. `mm config set`, `mem_config`, `mm init --namespace`, `mem_policy_add`도 이런 이름을 거부합니다. `config.json`이나 `config.d` 조각에 이미 있는 값은 그대로 로드되지만, `namespace.rules`는 목록 전체를 한 번에 저장하므로 이 경로로 규칙을 수정하려면 해당 항목을 먼저 고쳐야 합니다. 이런 대상으로 이미 저장된 수명 주기 정책은 실행될 때 아무것도 옮기지 않고 오류를 보고합니다. 이미 이런 이름으로 저장된 행은 일반 재색인이나 `--force` 재색인 후에도 이름이 유지됩니다. `mem_do(action="ns_rename", ...)`로 옮기거나(원본 이름이 빈 문자열이면 거부), 규칙을 고친 뒤 `mm index --reassign-namespaces`를 실행합니다.
-- **0.7.3 이전에서 업그레이드한 경우:** [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 실행하는 클라이언트에 직접 작성했거나 이전 `mm init --mcp`가 작성한 MCP 등록에는 `env`(OpenCode는 `environment`)에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점, 즉 `incremental`이나 `full` 모드에서 커밋 메시지를 하나 이상 전부 읽은 뒤에 `update`가 아무것도 쓰지 않고 멈춥니다. `topic` 모드와 `full` 도구 모드로 실행한 서버(이 도구를 원래 노출함)는 영향을 받지 않습니다. `mm init --mcp kimi`를 다시 실행하면 Kimi Code 항목이 이 변수를 포함해 새로 작성됩니다. `mm init --mcp claude`(또는 `json`)는 기존 Claude 등록을 그대로 두므로 직접 추가해야 합니다([수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인) 참고). 수동 등록을 함께 유지하는 Claude 플러그인 사용자는, 0.7.3과 함께 배포된 플러그인이 그 릴리스를 실행하므로 `mm doctor --claude-mcp`를 실행한 뒤 수동 항목의 실행 조합을 플러그인과 맞추거나 항목을 제거하고, 다시 불러온 다음 `/mcp`로 확인합니다.
+- **0.7.1 이전에서 업그레이드한 경우:** `namespace="!system"`은 이제 시스템 네임스페이스를 제외한 모든 네임스페이스를 선택합니다. 따라서 이름이 문자 그대로 `!system`인 네임스페이스(0.7.0에서 `mm index --namespace`, 네임스페이스 규칙, 직접 호출한 `mem_add`로 생길 수 있음)는 이 이름으로 더 이상 선택할 수 없습니다. `mem_search`, `mem_recall`, `mm search`, `mm recall`에서 이 값을 포함한 쉼표 목록(예: `"!system,work"`)은 거부되므로 저장된 필터에서 제거합니다. 해당 네임스페이스는 `mem_do(action="ns_list")`로 찾고 `mem_do(action="ns_rename", params={"old": "!system", "new": "<name>"})`로 옮긴 뒤, 이 이름을 만든 규칙이나 플래그도 수정합니다. 0.7.1에서는 규칙을 수정하지 않고 두면 재색인 시 같은 이름이 다시 생길 수 있고, 0.7.2부터는 이 이름이 거부되거나 건너뛰어집니다(다음 항목 참고).
+- **0.7.2 이전에서 업그레이드한 경우:** 검색 시 이름으로 조회할 수 없는 네임스페이스에는 더 이상 쓰지 않습니다. `,`나 `*`를 포함한 이름, `!system`, 공백만 있는 이름, 에이전트 도구가 거부하는 에이전트 ID가 포함된 `agent-runtime:` 이름(`agent-runtime:foo:bar`)이 이에 해당합니다. 빈 문자열은 지금도 네임스페이스를 지정하지 않은 것으로 처리됩니다. `mem_add`, `mem_batch_add`, `mem_fetch`, `mem_index`, `mem_import`, Notion·Obsidian 가져오기, `mm index --namespace`, 웹 추가·색인 경로는 이런 이름을 쓰기 전에 거부합니다. 이 검사는 `mm add --namespace`, 세션 도구, `mem_ns_*` 도구의 검사보다 범위가 좁으므로 `claude:-Users-me-project`처럼 규칙이 만드는 이름은 계속 사용할 수 있습니다. 색인기는 네임스페이스 규칙, 폴더 이름(`enable_auto_ns`), `default_namespace`에서 나온 이런 이름을 건너뛰고 다음 규칙, `enable_auto_ns`, `default_namespace` 순으로 넘어갑니다. 검사를 통과하지 못한 `default_namespace`는 청크를 네임스페이스 없이(`default`) 저장합니다. `mm config set`, `mem_config`, `mm init --namespace`, `mem_policy_add`도 이런 이름을 거부합니다. `config.json`이나 `config.d` 조각에 이미 있는 값은 그대로 로드되지만, `namespace.rules`는 목록 전체를 한 번에 저장하므로 이 경로로 규칙을 수정하려면 해당 항목을 먼저 고쳐야 합니다. 이런 대상으로 이미 저장된 수명 주기 정책은 실행될 때 아무것도 옮기지 않고 오류를 보고합니다. 이미 이런 이름으로 저장된 행은 일반 재색인이나 `--force` 재색인 후에도 이름이 유지됩니다. `mem_do(action="ns_rename", ...)`로 옮기거나(원본 이름이 빈 문자열이면 거부), 규칙을 고친 뒤 `mm index --reassign-namespaces`를 실행합니다.
+- **0.7.3 이전에서 업그레이드한 경우:** [`update` 워크플로](/ko/ltm/project-workflows/#review-coverage)를 실행하는 클라이언트에 직접 작성했거나 이전 `mm init --mcp`가 작성한 MCP 등록에는 `env`(OpenCode는 `environment`)에 `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`가 필요합니다. 없으면 검토 기록 호출이 필요한 시점, 즉 `incremental`이나 `full` 모드에서 커밋 메시지를 하나 이상 전부 읽은 뒤에 `update`가 아무것도 쓰지 않고 멈춥니다. `topic` 모드와 `full` 도구 모드로 실행한 서버(이 도구를 원래 노출함)는 영향을 받지 않습니다. `mm init --mcp kimi`를 다시 실행하면 Kimi Code 항목이 이 변수를 포함해 새로 작성됩니다. `mm init --mcp claude`(또는 `json`)는 기존 Claude 등록을 그대로 두므로 직접 추가해야 합니다([수동 등록 예시](/ko/guides/connect-ai-client/#연결-전-확인) 참고). 수동 등록을 함께 유지하는 Claude 플러그인 사용자는 `mm doctor --claude-mcp`를 실행한 뒤, 수동 항목의 실행 조합을 플러그인 버전과 맞추거나 수동 항목을 제거하고 플러그인을 다시 불러온 다음 `/mcp`로 확인합니다.
 - **0.7.4 이전에서 업그레이드한 경우:** [`MemtomemBaseStore`](/ko/use-cases/langgraph/#두-어댑터를-구분하세요)는 0.7.4 이상이 저장소를 처음 열 때 레코드 파일을 `<root>/records.v2/`로 옮깁니다. 업그레이드하기 전에 같은 저장소를 사용하는 이전 버전 memtomem 프로세스를 모두 중지합니다. 이동은 자동으로 되돌리지 않으며 이전 버전은 `records.v2/`를 읽지 않습니다. 되돌리려면 업그레이드 전에 만든 저장소 루트 사본을 복원합니다.
 - **0.7.5 이전에서 업그레이드한 경우:** `mem_edit`와 `PATCH /api/chunks/{id}`는 청크의 원본이 아닌 색인 텍스트에 대한 편집을 거부합니다. wikilink가 해석된 텍스트나 병합된 섹션이 그 예입니다. 이때는 아무것도 쓰지 않고 청크의 원본 텍스트와 `base_hash`를 담아 `edit_base_mismatch`로 응답합니다. 원본 텍스트를 수정해 그 `base_hash`와 함께 다시 보냅니다. `base_hash`를 지정한 편집은 원본 텍스트를 그대로 교체하므로, 제목과 헤더를 포함해 유지할 줄을 모두 보내야 합니다. 편집 전에 `GET /api/chunks/{id}/source`로 같은 원본 텍스트와 `base_hash`를 받을 수 있으며, Web UI 편집기가 이 경로를 사용합니다. `base_hash` 없이 `mem_add`로 작성한 항목의 본문만 수정하는 경우에는 이전처럼 제목과 `> created:` / `> tags:` 헤더를 유지합니다. 태그 없이 작성해 색인 텍스트에 `> created:` 줄이 보이는 항목에서는, 그 줄을 바꾸거나 옮기는 편집과 새 본문이 `>`로 시작하는 편집도 같은 방식으로 거부합니다.
-- **0.7.5 이전에서 업그레이드한 경우:** 저장소가 행을 만들 때마다 청크의 `created_at`을 해당 항목의 `> created:` 줄에서 가져옵니다. 따라서 항목을 수정하거나 색인을 다시 만들어도 처음 작성한 날짜가 유지됩니다. 기간 지정 조회(`mm recall --since` / `--until`, `mem_recall`의 `since` / `until`), 최신순 정렬, 중복 정리에서 가장 오래된 사본을 고르는 기준, `created_at` 기준 수명 주기 정책이 이 날짜를 따릅니다. 시간 감쇠는 `updated_at`을 읽으므로 바뀌지 않습니다. `base_hash` 없이 새 내용을 자체 `## ` 제목으로 시작하면 항목 전체를 교체하면서 헤더가 빠지므로, 그 항목은 수정한 시점으로 기록됩니다. 날짜는 섹션 첫머리의 인용 블록에 있는 `> created:` 줄에서만 읽으며, ISO 8601 시각으로 해석되지 않는 값은 무시합니다. 이미 저장된 행은 기존 `created_at`을 유지하고, 이런 줄이 없는 텍스트는 이전처럼 색인을 실행한 시점으로 기록됩니다.
-- **0.7.5 이전에서 업그레이드한 경우:** 기본이 아닌 네임스페이스의 데이 파일 이름 형식(`{date}--{slug}-{digest}.md`)을 따르고 이름을 해석할 수 있는 파일은, 누가 작성했든 그리고 비어 있든 아니든 이름이 나타내는 네임스페이스에 속합니다. 해석할 수 없는 이름은 이전과 같이 처리합니다. 저장된 행이 없는 이런 파일에 네임스페이스를 명시하지 않고, 에이전트 세션 바인딩도 없고, `mem_ns_set`으로 현재 네임스페이스를 지정하지도 않은 상태로 쓰면 그 네임스페이스에 저장됩니다. 이런 파일에 다른 네임스페이스로 쓰는 요청(`mem_add(file=...)`, `mm add --file`, Web UI의 추가)은 다른 네임스페이스 혼합과 같이 거부하며, `allow_namespace_mix=true` / `--allow-namespace-mix`로 허용할 수 있습니다. DB가 없어졌거나 다른 컴퓨터에서 저장된 행이 없는 상태로 이런 파일을 다시 색인하면, 세션 바인딩보다 우선해 그 네임스페이스로 되돌립니다. 저장된 행, 명시한 `namespace`, `--reassign-namespaces`는 여전히 우선합니다. 작성한 뒤에 옮긴 네임스페이스(`mem_ns_rename`, `mem_ns_assign`, 보관·승격 정책)는 DB에만 기록되므로, 색인을 다시 만들면 해당 파일은 이름에 담긴 네임스페이스로 돌아갑니다. DB를 유지하거나, 다시 만든 뒤 이동을 다시 적용합니다.
+- **0.7.5 이전에서 업그레이드한 경우:** 저장소가 행을 만들 때마다 청크의 `created_at`을 해당 항목의 `> created:` 줄에서 가져옵니다. 따라서 항목을 수정하거나 색인을 다시 만들어도 처음 작성한 날짜가 유지됩니다. 기간 지정 조회(`mm recall --since` / `--until`, `mem_recall`의 `since` / `until`), 최신순 정렬, 중복 정리에서 가장 오래된 사본을 고르는 기준, `created_at` 기준 수명 주기 정책이 이 날짜를 따릅니다. 시간 감쇠는 `updated_at`을 읽으므로 바뀌지 않습니다. `base_hash` 없이 새 본문을 `## ` 제목으로 시작하면 항목 전체가 교체되면서 기존 헤더가 제거되므로, 그 항목은 수정한 시점으로 기록됩니다. 날짜는 섹션 첫머리의 인용 블록에 있는 `> created:` 줄에서만 읽으며, ISO 8601 시각으로 해석되지 않는 값은 무시합니다. 이미 저장된 행은 기존 `created_at`을 유지하고, 이런 줄이 없는 텍스트는 이전처럼 색인을 실행한 시점으로 기록됩니다.
+- **0.7.5 이전에서 업그레이드한 경우:** 기본 네임스페이스가 아닌 데이 파일 이름 형식(`{date}--{slug}-{digest}.md`)을 따르며 이름을 해석할 수 있는 파일은, 작성 주체나 파일이 비어 있는지 여부와 관계없이 파일 이름이 가리키는 네임스페이스에 속합니다. 해석할 수 없는 파일 이름은 이전과 같이 처리합니다. 아직 저장된 행이 없는 이런 파일에 네임스페이스 인자, 에이전트 세션 바인딩, `mem_ns_set` 설정 없이 내용을 추가하면 파일 이름의 네임스페이스에 저장됩니다. 이런 파일에 다른 네임스페이스로 쓰는 요청(`mem_add(file=...)`, `mm add --file`, Web UI의 추가)은 다른 네임스페이스 혼합과 같이 거부하며, `allow_namespace_mix=true` / `--allow-namespace-mix`로 허용할 수 있습니다. DB가 없어졌거나 다른 컴퓨터에서 저장된 행이 없는 상태로 이런 파일을 다시 색인하면, 세션 바인딩보다 우선해 그 네임스페이스로 되돌립니다. 저장된 행, 명시한 `namespace`, `--reassign-namespaces`는 여전히 우선합니다. 작성한 뒤에 옮긴 네임스페이스(`mem_ns_rename`, `mem_ns_assign`, 보관·승격 정책)는 DB에만 기록되므로, 색인을 다시 만들면 해당 파일은 이름에 담긴 네임스페이스로 돌아갑니다. DB를 유지하거나, 다시 만든 뒤 이동을 다시 적용합니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 
@@ -533,7 +533,7 @@ mm uninstall                  # 대화형, 전체 삭제
 mm uninstall -y               # 확인 프롬프트 스킵
 mm uninstall --keep-config    # config.json + config.d/* + 백업 보존
 mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
-mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회; 살아 있는 프로세스는 먼저 종료
+mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회(살아 있는 프로세스는 먼저 종료 필요)
 ```
 
 기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하세요. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. Antigravity의 경우 CLI의 `~/.gemini/config/mcp_config.json`, 이전 경로인 `~/.gemini/antigravity-cli/mcp_config.json`, IDE의 `~/.gemini/antigravity/mcp_config.json`, VS Code 기반 연동의 `~/Library/Application Support/Antigravity/User/mcp.json`을 확인합니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.

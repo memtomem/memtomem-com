@@ -8,11 +8,11 @@ description: 준비 상태 확인, Web API, 색인 결과, 업그레이드와 �
 
 `mm web`을 실행하면 로컬 `/api/docs`에서 OpenAPI 문서를 볼 수 있습니다.
 자동화에서는 `GET /api/readiness`로 준비 상태를 확인하세요. 준비가 끝나면
-`200`을 반환합니다. 시작에 필요한 구성 요소가 준비되지 않으면
-`startup_unavailable`과 `503`을 반환합니다.
+`200`을 반환합니다. 시작에 필요한 구성 요소가 아직 준비되지 않았다면
+`startup_unavailable`과 함께 `503`을 반환합니다.
 
 검색에는 `source_exact`, `chunk_type`, `created_from`, `created_before`를 사용할
-수 있습니다. 시간에는 시간대를 포함해야 합니다. 형식이 잘못되었거나 시작과
+수 있습니다. 시각 값에는 시간대(timezone)를 반드시 포함해야 합니다. 형식이 잘못되었거나 시작과
 끝이 뒤바뀐 범위에는 `422`를 반환합니다. 내보내기는 네임스페이스 필터를
 지원합니다. 초기 색인 결과는 `success`, `partial`, `failed`로 구분합니다.
 

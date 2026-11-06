@@ -7,7 +7,8 @@ description: BM25 키워드 검색과 벡터 검색을 RRF로 결합하는 방�
 
 memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 정확한 용어와 뜻이 비슷한 표현을 모두 찾을 수 있습니다.
 
-## 왜 두 방식을 함께 사용하는가?
+<a id="왜-두-방식을-함께-사용하는가"></a>
+## 두 검색 방식을 결합하는 이유
 
 키워드 검색은 `mem_search`, `FastAPI` 같은 고유 명칭을 정확히 찾습니다. 벡터 모델은 이런 짧은 이름을 놓칠 수 있습니다. 반대로 의미 기반 검색은 "배포 방법"과 "deployment checklist"처럼 표현이 달라도 뜻이 비슷한 문서를 찾습니다. 두 결과의 순위를 합치면 각 방식의 장점을 함께 활용할 수 있습니다.
 
@@ -60,7 +61,7 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 | **벡터 검색** | sqlite-vec + ONNX/Ollama/OpenAI 임베딩 | 의미가 비슷한 표현 검색. "배포 방법"으로 "deployment checklist"를 찾을 수 있음 |
 | **RRF 결합** | Reciprocal Rank Fusion | 두 검색 결과의 순위를 합쳐 최종 순위 계산 |
 
-벡터 검색이 오류로 실패해도(예: 임베딩 서버에 연결할 수 없는 경우) 남은 결과는 반환되며, 결과가 있으면 `semantic search failed for this query — results may be incomplete` 안내가 함께 표시됩니다. `mem_search`의 compact 출력 끝, structured 출력의 `hints` 배열, `mm search`의 stderr, `mem_ask`의 근거 프롬프트에 나타납니다. 세션 요약 보조 검색이 벡터 결과를 일부 찾을 수 있으므로 결과가 키워드 검색만으로 이루어졌다는 의미는 아닙니다. 임베딩 불일치로 벡터 검색을 건너뛴 경우에는 해결 방법을 담은 별도 안내가 표시되고, 결과가 없을 때의 응답은 바뀌지 않습니다.
+벡터 검색이 오류로 실패해도(예: 임베딩 서버에 연결할 수 없는 경우) 남은 결과는 반환되며, 결과가 있으면 `semantic search failed for this query — results may be incomplete` 안내가 함께 표시됩니다. `mem_search`의 compact 출력 끝, structured 출력의 `hints` 배열, `mm search`의 stderr, `mem_ask`의 근거 프롬프트에 나타납니다. 세션 요약 보조 검색을 통해 일부 벡터 결과가 포함될 수 있으므로, 반환된 결과가 키워드 검색만으로 구성되었다는 의미는 아닙니다. 임베딩 불일치로 벡터 검색을 건너뛴 경우에는 해결 방법을 담은 별도 안내가 표시되고, 결과가 없을 때의 응답은 바뀌지 않습니다.
 
 ## 리랭커 풀 튜닝
 

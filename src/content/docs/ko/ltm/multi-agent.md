@@ -125,7 +125,8 @@ mm agent share CHUNK_ID --target shared
 
 `mm agent share`도 비밀값 검사를 실행합니다. 등록, 조회, 마이그레이션, 공유의 전체 옵션은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
 
-## 내장 기억 가져오기와 차이
+<a id="내장-기억-가져오기와-차이"></a>
+## 내장 기억 가져오기와의 차이
 
 `mm ingest claude-memory`, `mm ingest codex-memory`, `mm ingest gemini-memory`는 외부 파일을 자료별 고정 네임스페이스에 저장합니다. `agent_id`를 지정하거나 세션을 시작하지 않습니다. 자세한 절차는 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)를 참고하세요.
 

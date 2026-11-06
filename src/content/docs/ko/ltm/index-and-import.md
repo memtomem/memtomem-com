@@ -9,7 +9,8 @@ description: 노트 폴더나 Claude·Codex·Gemini/Antigravity 내장 기억을
 
 먼저 [빠른 시작](/ko/guides/quickstart/)을 완료하세요.
 
-## 알맞은 명령 고르기
+<a id="알맞은-명령-고르기"></a>
+## 상황에 맞는 명령 선택
 
 | 자료 | 사용할 명령 | 동작 |
 |---|---|---|
@@ -51,7 +52,7 @@ Markdown, Python, JavaScript, TypeScript, JSON, YAML, TOML 자료도 같은 `mm 
 
 ## 경로 B: AI 도구 내장 기억 가져오기
 
-항상 미리보기부터 실행하세요. 예시 경로는 로컬에 실제로 있는 자료 경로로만 바꾸세요.
+항상 미리보기부터 실행하세요. 예시 경로는 로컬 환경에 실제로 존재하는 경로로 바꾸어 실행하세요.
 
 ### Claude Code
 

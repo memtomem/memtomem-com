@@ -22,8 +22,8 @@ Git으로 추적하는 공유 계층에 쓰려면 `--confirm-project-shared`가 
 한도가 아니라 `compose` 1회에서 고정 블록에 사용할 수 있는 분량입니다.
 기본 전체 한도는 12,000자이며 블록 중간을 자르지 않습니다.
 
-`mem_context_compose` schema 4는 검색 결과의 우선순위를 유지하면서 인접한
-context-window 청크도 함께 반환합니다. 검색 결과가 있으면 `score_scale`
+`mem_context_compose` 스키마 4는 검색 결과의 우선순위를 유지하면서 인접한
+주변 맥락(context-window) 청크도 함께 반환합니다. 검색 결과가 있으면 `score_scale`
 (`rrf`, `bm25`, `dense`, `none`, `rerank`)을 표시합니다. 재정렬한 결과에는
 사용한 리랭커 모델도 포함합니다.
 

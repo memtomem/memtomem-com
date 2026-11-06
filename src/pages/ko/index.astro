@@ -109,7 +109,7 @@ const jsonLd = {
 			<p>대기 중인 handoff를 확인합니다. 불러온 기록은 현재 커밋과 맞는지 검사합니다.</p>
 		</li>
 		<li class="loop-step coral">
-			<div class="loop-when">커밋 몇 개 이후 · Claude Code</div>
+			<div class="loop-when">커밋 몇 건 이후 · Claude Code</div>
 			<code class="loop-cmd">/memtomem:update</code>
 			<p>결정, 버그 원인, 선호를 같은 파일에 다시 저장합니다.</p>
 		</li>
@@ -182,7 +182,7 @@ const jsonLd = {
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/project-workflows/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
-					<p>Claude Code에서 하던 작업을 <code>handoff</code>로 Codex나 Antigravity CLI에 넘깁니다. 새 세션에서는 <code>brief</code>로 지난 결정을 확인한 다음 작업을 시작합니다. 세션에서 정한 내용은 <code>update</code>로 저장합니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다.</p>
+					<p>Claude Code에서 진행하던 작업을 <code>handoff</code>로 Codex나 Antigravity CLI에 넘깁니다. 새 세션에서는 <code>brief</code>로 지난 결정을 확인한 다음 작업을 시작합니다. 세션에서 정한 내용은 <code>update</code>로 저장합니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>
@@ -197,7 +197,7 @@ const jsonLd = {
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>
-				<p>STM은 중계하는 MCP 도구 응답을 에이전트에 전달하기 전에 압축할 수 있습니다. 압축 여부는 설정한 응답 예산과 조건으로 정하며, 자동 선택과 그대로 전달을 포함해 10가지 모드가 있습니다. 실제 절감량은 응답 내용과 보존 설정에 따라 달라집니다.</p>
+				<p>STM은 중계하는 MCP 도구 응답을 에이전트에 전달하기 전에 압축할 수 있습니다. 압축 여부는 설정한 응답 예산과 조건으로 정하며, 자동 선택과 원본 전달을 포함해 10가지 모드를 지원합니다. 실제 절감량은 응답 내용과 보존 설정에 따라 달라집니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
