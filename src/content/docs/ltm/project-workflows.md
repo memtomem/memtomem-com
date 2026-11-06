@@ -72,6 +72,7 @@ Project records are stored in the `shared:<project-slug>` namespace, where `<pro
 | OpenCode | `/memtomem-handoff`, `/memtomem-brief`, `/memtomem-update` | [`opencode-memtomem` plugin](/guides/connect-ai-client/#opencode) |
 | Kimi Code | `memtomem-handoff`, `memtomem-brief`, `memtomem-update` skills | memtomem Kimi skill bundle |
 | Antigravity CLI | `memtomem-handoff`, `memtomem-brief`, `memtomem-update` skills | Since 0.7.2, experimental. Binds the server to the repository first ([below](#antigravity-cli)). |
+| Cursor | `/memtomem-handoff`, `/memtomem-brief`, `/memtomem-update` | Since 0.7.4, experimental. Same skills and binding as Antigravity CLI ([below](#antigravity-cli)); [Cursor plugin](/guides/connect-ai-client/#cursor-plugin). |
 | Hermes Agent | Not included | The plugin's server starts outside the project. |
 
 ## handoff
@@ -161,6 +162,8 @@ The Antigravity CLI (`agy`) starts the plugin's memtomem server in the plugin di
 - Once bound, search and recall also read the repository's project memory, and remember saves a project fact to its `project_local` tier. Without a tier, search and recall read user scope only, and remember saves only cross-project preferences and personal notes, refusing a project fact.
 
 For installation and the duplicate-server check, see [Antigravity CLI Plugin](/guides/connect-ai-client/#antigravity-cli-plugin).
+
+The [Cursor plugin](/guides/connect-ai-client/#cursor-plugin) ships the same skills. Cursor starts the plugin's server in your home directory rather than in the open workspace, so the skills bind the same way.
 
 ## Next steps
 

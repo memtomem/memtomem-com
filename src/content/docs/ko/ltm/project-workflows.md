@@ -72,6 +72,7 @@ description: handoff, brief, update로 한 Git 프로젝트의 작업을 다른 
 | OpenCode | `/memtomem-handoff`, `/memtomem-brief`, `/memtomem-update` | [`opencode-memtomem` 플러그인](/ko/guides/connect-ai-client/#opencode) |
 | Kimi Code | `memtomem-handoff`, `memtomem-brief`, `memtomem-update` 스킬 | memtomem Kimi 스킬 묶음 |
 | Antigravity CLI | `memtomem-handoff`, `memtomem-brief`, `memtomem-update` 스킬 | 0.7.2부터 제공, 실험 기능. 먼저 서버를 저장소에 바인딩합니다([아래](#antigravity-cli)). |
+| Cursor | `/memtomem-handoff`, `/memtomem-brief`, `/memtomem-update` | 0.7.4부터 제공, 실험 기능. Antigravity CLI와 같은 스킬과 바인딩 방식([아래](#antigravity-cli)); [Cursor 플러그인](/ko/guides/connect-ai-client/#cursor-플러그인). |
 | Hermes Agent | 제공하지 않음 | 플러그인 서버가 프로젝트 밖에서 시작하므로 포함되지 않습니다. |
 
 ## handoff
@@ -163,6 +164,8 @@ Antigravity CLI(`agy`)는 플러그인의 memtomem 서버를 플러그인 디렉
 - 바인딩한 뒤 search와 recall은 해당 저장소의 프로젝트 기억도 함께 조회하고, remember는 프로젝트 사실을 저장소의 `project_local` tier에 저장합니다. tier가 없으면 search와 recall은 사용자 범위만 조회하고, remember는 프로젝트와 무관한 선호와 개인 메모만 저장하며 프로젝트 사실은 거부합니다.
 
 설치와 서버 중복 확인은 [Antigravity CLI 플러그인](/ko/guides/connect-ai-client/#antigravity-cli-플러그인)을 참고하세요.
+
+[Cursor 플러그인](/ko/guides/connect-ai-client/#cursor-플러그인)도 같은 스킬을 제공합니다. Cursor는 플러그인 서버를 열린 작업 공간이 아니라 홈 디렉터리에서 시작하므로, 스킬이 같은 방식으로 바인딩합니다.
 
 ## 다음 단계
 

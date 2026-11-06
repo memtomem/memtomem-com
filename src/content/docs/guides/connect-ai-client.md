@@ -19,7 +19,7 @@ Keep the displayed database path. You will compare it with the client result.
 
 Manual MCP-only entries use the `memtomem-server` command. `memtomem` and `mm` are terminal CLIs and must not be used as MCP server commands. Official plugins may supply their own pinned launch command.
 
-For a client that runs memtomem's [`update` workflow](/ltm/project-workflows/#update) (Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI), the manual entries below also set `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`. It is not a setting: it exposes the one tool the workflow needs outside `topic` mode, and the server reads it at launch, before any configuration, so `~/.memtomem/config.json` cannot provide it. Settings still come from that file. The entries for other clients leave it out.
+For a client that runs memtomem's [`update` workflow](/ltm/project-workflows/#update) (Claude Code, Codex CLI, OpenCode, Kimi Code, Antigravity CLI), the manual entries below also set `MEMTOMEM_EXTRA_TOOLS=mem_update_coverage`. It is not a setting: it exposes the one tool the workflow needs outside `topic` mode, and the server reads it at launch, before any configuration, so `~/.memtomem/config.json` cannot provide it. Settings still come from that file. The entries for other clients leave it out. The [Cursor plugin](#cursor-plugin) runs the workflow too, and its bundled server already sets the variable.
 
 Pick **one** client below. If that client already has both a plugin and a manual MCP entry, use its matching rule instead of assuming that one copy is always removed:
 
@@ -30,6 +30,7 @@ Pick **one** client below. If that client already has both a plugin and a manual
 | OpenCode | `mcp` key | manual `mcp.memtomem` wins; a different key runs both |
 | Hermes Agent | server name | manual `mcp_servers.memtomem` wins; a different name runs both |
 | Antigravity CLI | server name | the plugin's server is named `memtomem_memtomem`, so a manual `memtomem` entry never matches it and both run |
+| Cursor | not matched | the plugin adds its own server beside a manual `memtomem` entry, and both run |
 
 ## Claude Code
 
@@ -157,6 +158,34 @@ mm init --mcp kimi
 ```
 
 memtomem writes Kimi entries only to the current Kimi Code home. A memtomem entry left in the legacy `~/.kimi/mcp.json` (or under `$KIMI_SHARE_DIR`) is not updated, and `mm uninstall` only reports it, so remove it yourself.
+
+## Cursor
+
+For an MCP-only entry, use the generic entry in [JSON-Based MCP Clients](#json-based-mcp-clients) in `~/.cursor/mcp.json`, or a project's `.cursor/mcp.json`, and restart Cursor.
+
+### Cursor Plugin
+
+The Cursor plugin bundles an exact-pinned memtomem MCP server and the nine memory skills the [Antigravity CLI plugin](#antigravity-cli-plugin) ships, including the three [project workflows](/ltm/project-workflows/) (handoff, brief, update). It is **experimental** since Core 0.7.4: its layout and skills can change without a deprecation window. It requires:
+
+- Cursor 3.27.22 or later, the version the plugin was verified against;
+- `uv` on the `PATH` Cursor starts MCP servers with. The plugin starts the server with `uvx --python 3.12 --from 'memtomem[onnx]==0.7.5' memtomem-server`;
+- Python 3.12. If uv cannot find one, it downloads one on first start. When that download is not possible, the server does not start; run `uv python install 3.12` once to fix it.
+
+Until the plugin is listed in the Cursor Marketplace, install it as a local plugin from the 0.7.5 release. Cursor loads a symlinked local plugin only when the link resolves inside `~/.cursor/plugins/local`, so copy the directory:
+
+```bash
+git clone --branch v0.7.5 --depth 1 https://github.com/memtomem/memtomem.git memtomem-v0.7.5 &&
+  mkdir -p ~/.cursor/plugins/local &&
+  cp -R memtomem-v0.7.5/packages/memtomem-cursor-plugin ~/.cursor/plugins/local/memtomem
+```
+
+Run **Developer: Reload Window**, then check under **Customize** that the memtomem MCP server and its nine skills are listed. On a Cursor Enterprise team, an admin has to allow local plugin imports first. Clone the release tag rather than `main`: right after a version bump, `main` can pin a memtomem release that is not on PyPI yet, and the server then fails to start.
+
+The commands copy only after the clone succeeds; if `memtomem-v0.7.5` already exists, the clone fails and nothing is copied, so remove or rename that directory first. To update, clone the new release's tag the same way into its own directory, then replace the installed copy: delete `~/.cursor/plugins/local/memtomem` and copy the new clone's `packages/memtomem-cursor-plugin` there, then reload the window. The clone is needed only for the copy; delete it once the plugin is installed if you do not want to keep it. Copying onto an existing `~/.cursor/plugins/local/memtomem` nests the new bundle inside the old one and leaves the old one active. To remove the plugin, delete `~/.cursor/plugins/local/memtomem`; your memories stay in `~/.memtomem`.
+
+Cursor starts the plugin's server in your home directory, not in the open workspace, so the server begins at **user scope**. The skills bind it to your repository the way the Antigravity CLI skills do. Binding needs a registered tier in the repository (`mm mem init --scope project_local`) and lasts until the server restarts. Once bound, search and recall also read the repository's project memory, and remember saves a project fact to its `project_local` tier. Without a tier, or outside a Git repository, search and recall read user-scope memory only, remember saves only cross-project preferences and personal notes and refuses a project fact, and the three project workflows stop. The binding step runs `git rev-parse --show-toplevel` in Cursor's terminal, so a Cursor hook that blocks shell commands, including a Claude Code hook Cursor imports, stops the skill before it binds. Remember, index, setup and the three project workflows run only when you invoke them with `/skill-name`. Storage paths in `~/.memtomem/config.json` must be absolute or start with `~`; a relative path resolves against your home directory and opens a different store.
+
+The plugin does not replace a hand-registered `memtomem` entry in `~/.cursor/mcp.json` or a project's `.cursor/mcp.json`: both servers run. Remove the manual entry so only one server runs, after comparing the database path `mem_status` reports. See the [plugin README](https://github.com/memtomem/memtomem/blob/v0.7.5/packages/memtomem-cursor-plugin/README.md) for details.
 
 ## OpenCode
 
