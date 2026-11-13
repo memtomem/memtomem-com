@@ -78,7 +78,6 @@ const jsonLd = {
 <nav class="nav">
 	<a href={`${base}/ko/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
 	<div class="nav-links">
-		<a href={`${base}/ko/guides/choose-your-path/`}>문서</a>
 		<a href="#architecture">구조</a>
 		<a href="https://github.com/memtomem/memtomem">GitHub</a>
 		<span class="nav-lang"><a href={`${base}/`}>EN</a></span>
@@ -88,14 +87,9 @@ const jsonLd = {
 
 <main>
 <section class="hero">
-	<div class="hero-badge">memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version} · Apache 2.0</div>
-	<h1>Claude Code에서 멈춘 작업을<br /><em>Codex에서 그대로 이어 갑니다</em></h1>
-	<p class="hero-sub">
-		memtomem은 프로젝트의 기억을 사용자가 소유한 Markdown 파일로 보관합니다. 세션을 마칠 때
-		handoff로 진행 상황을 남기면, 다음 세션은 brief로 그 지점부터 시작합니다. AI 도구가
-		바뀌어도 마찬가지입니다. 결정한 내용은 update로 저장하며, 세 단계 모두 직접 호출할 때만
-		실행됩니다.
-	</p>
+	<div class="hero-badge">AI 에이전트를 위한 기억 인프라 · Apache 2.0</div>
+	<h1>어제 <span class="nowrap">Claude Code</span>에서 하던 작업을<br /><em>오늘 Codex에서 이어 갑니다</em></h1>
+	<p class="hero-sub">같은 도구로 돌아오든 다른 도구로 옮기든, 프로젝트의 기억은 사용자가 소유한 Markdown 파일에 남습니다. 아래 세 단계는 직접 호출할 때만 실행됩니다.</p>
 	<ol class="loop" role="list">
 		<li class="loop-step accent">
 			<div class="loop-when">세션 종료 · Claude Code</div>
@@ -114,118 +108,63 @@ const jsonLd = {
 			<p>결정, 버그 원인, 선호를 같은 파일에 다시 저장합니다.</p>
 		</li>
 	</ol>
-	<div class="hero-actions">
-		<div class="hero-install">
-			<span class="dollar">$</span> uv tool install 'memtomem[all]'
-		</div>
-		<a class="hero-link" href={`${base}/ko/ltm/project-workflows/`}>세션 루프 자세히 보기 →</a>
+	<div class="hero-install" id="install">
+		<span class="dollar" aria-hidden="true">$</span>
+		<code id="install-cmd">uv tool install 'memtomem[all]'</code>
+		<button type="button" class="copy-btn" data-copy="install-cmd" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
 	</div>
+	<p class="install-steps">
+		<span>설치</span><span class="step-sep" aria-hidden="true"></span><code>mm init</code><span class="step-sep" aria-hidden="true"></span><code>mm add</code><span class="step-sep" aria-hidden="true"></span><code>mm search</code>
+		<a href={`${base}/ko/guides/quickstart/`}>10분 빠른 시작 →</a>
+	</p>
+	<p class="sr-only" id="copy-status" aria-live="polite"></p>
 </section>
 
 <section class="section">
 	<div class="section-inner">
-		<div class="section-label">10분 기본 검증</div>
-		<h2 class="section-title">기본 흐름을 확인한 뒤 다음 작업을 선택하세요</h2>
-		<div class="section-desc">로컬 LTM만으로 시작합니다. 기억 저장과 검색이 동작하면 그다음에 AI 클라이언트를 연결하거나 STM을 추가합니다.</div>
-		<div class="feature-grid">
-			<a class="feature-card accent" href={`${base}/ko/guides/quickstart/#2-초기-설정`}>
-				<h3>1. 설치·초기화</h3>
-				<p>Python과 uv를 확인하고 memtomem을 설치합니다. 초기화는 모델을 내려받지 않는 Minimal 프리셋으로 진행합니다.</p>
-			</a>
-			<a class="feature-card teal" href={`${base}/ko/guides/quickstart/#3-기억-저장검색-확인`}>
-				<h3>2. 기억 하나 저장·검색</h3>
-				<p><code>mm status</code>, <code>mm add</code>, <code>mm search</code>를 실행합니다. 검색 결과가 출처와 함께 표시되면 완료입니다.</p>
-			</a>
-			<a class="feature-card coral" href={`${base}/ko/guides/choose-your-path/`}>
-				<h3>3. 다음 목표 선택</h3>
-				<p>AI 클라이언트 연결, 기존 자료 색인, 새 세션 검증, MCP 서버에 STM 추가 가운데 하나를 선택합니다.</p>
-			</a>
-		</div>
-	</div>
-</section>
-
-<section class="section">
-	<div class="section-inner">
-		<div class="section-label">필요한 것</div>
-		<h2 class="section-title">에이전트의 기억이 해야 할 일</h2>
-		<div class="section-desc">도구 연동에는 MCP, 안전장치에는 Guardrails, 관측에는 Langfuse가 있습니다. 기억에도 같은 계층이 필요합니다. 이 계층이 해야 할 일은 세 가지입니다.</div>
-		<div class="problem-grid">
-			<div class="problem-card">
-				<div class="problem-num">01</div>
-				<h3>다음 세션으로 맥락을 이어 갑니다</h3>
-				<p>설계 결정, 코딩 방식, 디버깅 이력은 세션이 끝나도 남습니다. 다음 세션에서 같은 설명을 반복할 필요가 없습니다.</p>
-			</div>
-			<div class="problem-card">
-				<div class="problem-num">02</div>
-				<h3>도구가 아니라 프로젝트에 남습니다</h3>
-				<p>Claude Code에서 정리한 내용을 Codex CLI에서 그대로 검색합니다. 다른 MCP 클라이언트도 같습니다. 프로젝트의 에이전트는 모두 같은 저장소를 읽고 씁니다.</p>
-			</div>
-			<div class="problem-card">
-				<div class="problem-num">03</div>
-				<h3>묻기 전에도 필요한 기억을 전달합니다</h3>
-				<p>기본은 에이전트가 검색할 때 답하는 방식입니다. 선택 사항인 STM 프록시를 MCP 서버 앞에 두면, 검색 요청이 없어도 프록시를 거친 도구 응답에 관련 기억을 함께 전달할 수 있습니다.</p>
-			</div>
-		</div>
-	</div>
-</section>
-
-<section class="section">
-	<div class="section-inner">
-			<div class="section-label">해결 방법</div>
-		<h2 class="section-title">memtomem의 방식</h2>
-			<div class="section-desc">단기 응답 압축·캐시와 장기 저장·검색은 별도의 MCP 서버입니다. 필요한 계층만 선택해 사용합니다.</div>
+		<h2 class="section-head"><span class="lead">기억 계층.</span> 도구 연동의 MCP, 안전장치의 Guardrails, 관측의 Langfuse처럼 기억에도 전용 계층이 필요합니다.</h2>
 		<div class="feature-grid">
 			<a class="feature-card accent" href={`${base}/ko/ltm/hybrid-search/`}>
 				<h3>장기 기억 검색</h3>
-					<p>함수 이름 같은 정확한 단어와, 표현은 달라도 뜻이 같은 문장을 한 번에 찾습니다. 노트·문서·코드를 <code>mm index</code>로 색인하고, 임베딩을 활성화하면 BM25 키워드 검색과 벡터 검색을 RRF로 결합합니다. minimal 설정은 키워드 검색만 사용합니다. 문서는 구조에 맞춰 분할하며, 다시 색인할 때는 바뀐 부분만 임베딩을 계산합니다.</p>
+				<p>함수 이름 같은 정확한 단어와, 표현은 달라도 뜻이 같은 문장을 함께 찾습니다. Minimal 설정은 키워드 검색만 사용하고, 임베딩을 켜면 BM25와 벡터 검색을 결합합니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card teal" href={`${base}/ko/ltm/project-workflows/`}>
 				<h3>세션·에이전트 경계를 넘어</h3>
-					<p>Claude Code에서 진행하던 작업을 <code>handoff</code>로 Codex나 Antigravity CLI에 넘깁니다. 새 세션에서는 <code>brief</code>로 지난 결정을 확인한 다음 작업을 시작합니다. 세션에서 정한 내용은 <code>update</code>로 저장합니다. 네임스페이스는 검색 범위를 에이전트별 영역과 <code>shared</code> 공유 영역으로 나누지만, 접근 제어 경계는 아닙니다.</p>
+				<p><code>handoff</code>, <code>brief</code>, <code>update</code>로 Claude Code, Codex, Antigravity CLI 사이에서 작업을 이어 갑니다. 네임스페이스는 검색 범위를 나눌 뿐, 접근 제어 경계는 아닙니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card coral" href={`${base}/ko/ltm/context-gateway/`}>
 				<h3>Context Gateway</h3>
-					<p>스킬·명령·서브에이전트의 기준본을 <code>.memtomem/</code> Store에 보관합니다. Pull은 실행 환경의 파일을 미리 확인한 다음 Store로 가져옵니다. Push는 검토를 마친 기준본을 선택한 실행 환경으로 보냅니다. 프로젝트나 계층 사이의 복사·이동도 지원합니다.</p>
+				<p>스킬·명령·서브에이전트의 기준본을 <code>.memtomem/</code> Store에 보관합니다. 실행 환경의 파일은 미리 확인한 뒤 Pull로 가져오고, 검토한 기준본은 Push로 보냅니다.</p>
 				<span class="tag tag-ltm">LTM</span>
 			</a>
 			<a class="feature-card amber" href={`${base}/ko/stm/surfacing/`}>
 				<h3>능동적 서피싱</h3>
-				<p>STM은 중계하는 MCP 도구 호출마다 실행 조건을 확인하고, 조건이 맞으면 관련 기억을 찾아 응답과 함께 전달합니다. 에이전트가 먼저 검색하지 않아도 됩니다. 전달한 기억에는 항목별 식별자가 있어, 에이전트가 항목마다 유용성을 평가하거나 다음 캐시 응답에서 제외할 수 있습니다.</p>
+				<p>선택 사항인 STM 프록시는 중계하는 MCP 도구 응답에 관련 기억을 함께 전달할 수 있습니다. 항목마다 식별자가 있어 에이전트가 평가하거나 제외할 수 있습니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card blue" href={`${base}/ko/stm/compression/`}>
 				<h3>토큰 인식 압축</h3>
-				<p>STM은 중계하는 MCP 도구 응답을 에이전트에 전달하기 전에 압축할 수 있습니다. 압축 여부는 설정한 응답 예산과 조건으로 정하며, 자동 선택과 원본 전달을 포함해 10가지 모드를 지원합니다. 실제 절감량은 응답 내용과 보존 설정에 따라 달라집니다.</p>
+				<p>STM은 중계하는 MCP 도구 응답을 에이전트에 전달하기 전에 압축할 수 있습니다. 설정한 응답 예산과 조건에 따라 동작하며, 실제 절감량은 응답에 따라 달라집니다.</p>
 				<span class="tag tag-stm">STM</span>
 			</a>
 			<a class="feature-card green" href={`${base}/ko/guides/privacy/`}>
 				<h3>로컬 우선 · 정보 보호</h3>
-				<p>SQLite 저장과 로컬 ONNX 추론에는 GPU나 클라우드 계정이 필요 없습니다. Ollama·OpenAI 호환·Cohere·Langfuse 연동은 선택 사항이며, 설정한 서비스와 통신할 수 있습니다. 로컬 파일에는 제한 권한을 적용하고, 자격 증명 형태의 콘텐츠는 캐시·인덱스·공유 경계에서 걸러냅니다.</p>
+				<p>SQLite 저장과 로컬 ONNX 추론에는 GPU나 클라우드 계정이 필요 없습니다. Ollama·OpenAI 호환·Cohere·Langfuse 연동은 선택 사항이며, 설정한 서비스와 통신할 수 있습니다.</p>
 				<span class="tag tag-guide">LTM + STM</span>
 			</a>
 		</div>
 	</div>
 </section>
 
-<section class="section">
-	<div class="section-inner">
-		<div class="section-label">활용 사례</div>
-		<h2 class="section-title">직접 실행하는 활용 사례</h2>
-		<div class="section-desc">두 사례 모두 공개된 예제 파일로 시작해, 실행 결과를 직접 확인하는 단계에서 끝납니다.</div>
-		<div class="feature-grid feature-grid-2">
-			<a class="feature-card accent" href={`${base}/ko/use-cases/vibe-coding/`}><h3>코딩 결정과 근거 문서 다시 찾기</h3></a>
-			<a class="feature-card teal" href={`${base}/ko/use-cases/langgraph/`}><h3>모델 없이 시작하는 LangGraph 기억</h3></a>
-		</div>
-	</div>
-</section>
-
 <section class="section" id="architecture">
 	<div class="section-inner">
-			<div class="section-label">구조</div>
-		<h2 class="section-title">두 계층 구조</h2>
-			<div class="section-desc">STM 프록시와 LTM 서버는 MCP로 연결됩니다. AI 도구의 코드를 바꾸지 않아도 관련 기억 자동 제시와 응답 압축을 추가할 수 있습니다.</div>
+		<h2 class="section-head"><span class="lead">두 계층.</span> 장기 기억 서버와 선택형 STM 프록시를 MCP로 연결합니다.</h2>
+		<div class="section-actions">
+			<a class="btn-small" href={`${base}/ko/ltm/overview/`}>LTM 개요</a>
+			<a class="btn-small ghost" href={`${base}/ko/stm/overview/`}>STM 개요</a>
+		</div>
 		<div class="arch-diagram">
 			<div class="arch-tier-label">주요 AI 도구 / 기타</div>
 			<div class="arch-row">
@@ -258,89 +197,73 @@ const jsonLd = {
 				</div>
 			</div>
 		</div>
-		<div class="arch-links">
-			<a class="tag tag-ltm" href={`${base}/ko/ltm/overview/`}>LTM 개요</a>
-			<a class="tag tag-stm" href={`${base}/ko/stm/overview/`}>STM 개요</a>
-		</div>
+		<p class="arch-caption">그 밖의 MCP 클라이언트와 프레임워크 어댑터도 같은 MCP 표준으로 연결합니다.</p>
 	</div>
 </section>
 
 <section class="section">
 	<div class="section-inner">
-			<div class="section-label">호환성</div>
-			<h2 class="section-title">지원하는 AI 도구와 호환성</h2>
-		<div class="section-desc">주요 CLI 도구에 맞춰 최적화했고, 그 밖의 클라이언트는 MCP 표준으로 연결합니다.</div>
-		<div class="runtime-grid">
-			<div class="runtime-chip">Claude Code</div>
-			<div class="runtime-chip">Codex CLI</div>
-			<div class="runtime-chip">Antigravity CLI</div>
-			<div class="runtime-chip">기타 MCP 클라이언트</div>
-			<div class="runtime-chip">프레임워크 어댑터</div>
-		</div>
-	</div>
-</section>
-
-<section class="section">
-	<div class="section-inner">
-		<div class="section-label">작업별 가이드</div>
-		<h2 class="section-title">원하는 결과에 맞는 가이드를 선택하세요</h2>
-		<div class="section-desc">각 가이드는 확인할 결과와 검증 단계, 복구·원복 절차를 함께 안내합니다.</div>
-		<div class="docs-grid">
+		<h2 class="section-head"><span class="lead">다음 단계.</span> 10분 기본 검증부터 시작하고, 필요한 작업으로 넓혀 갑니다.</h2>
+		<div class="next-grid">
 			<a href={`${base}/ko/guides/quickstart/`} class="doc-card">
 				<h3>빠른 시작</h3>
-				<p>클라이언트를 연결하기 전에 LTM을 설치하고 기억 저장·검색을 확인합니다.</p>
+				<p>LTM을 설치하고 기억 하나를 저장한 뒤 다시 찾습니다.</p>
 				<span class="tag tag-guide">처음 시작</span>
 			</a>
 			<a href={`${base}/ko/guides/connect-ai-client/`} class="doc-card">
 				<h3>AI 클라이언트 연결</h3>
-				<p>Claude Code, Codex 또는 다른 지원 MCP 클라이언트를 연결하고 <code>mem_status</code>를 확인합니다.</p>
+				<p>Claude Code, Codex 등 MCP 클라이언트를 연결하고 <code>mem_status</code>를 확인합니다.</p>
 				<span class="tag tag-guide">연결</span>
 			</a>
-			<a href={`${base}/ko/ltm/index-and-import/`} class="doc-card">
-				<h3>기존 자료 색인</h3>
-				<p>노트·코드를 색인하거나 AI 도구 내장 기억을 미리보기와 출처 확인을 거쳐 가져옵니다.</p>
-				<span class="tag tag-ltm">자료</span>
+			<a href={`${base}/ko/use-cases/vibe-coding/`} class="doc-card">
+				<h3>코딩 결정과 근거 문서 다시 찾기</h3>
+				<p>저장한 이유와 ADR 출처를 새 세션에서 다시 찾습니다.</p>
+				<span class="tag tag-ltm">활용 사례</span>
 			</a>
-			<a href={`${base}/ko/ltm/memory-persistence/`} class="doc-card">
-				<h3>세션을 넘나드는 기억</h3>
-				<p>검증된 결정을 저장하고 새 세션에서 이유와 출처까지 다시 찾습니다.</p>
-				<span class="tag tag-ltm">워크플로</span>
-			</a>
-			<a href={`${base}/ko/stm/first-proxy/`} class="doc-card">
-				<h3>MCP 서버에 STM 추가</h3>
-				<p>로컬 데모, 실제 프록시 호출, 지표 확인, 원래 경로 복원까지 진행합니다.</p>
-				<span class="tag tag-stm">선택형 STM</span>
-			</a>
-			<a href={`${base}/ko/guides/troubleshooting/`} class="doc-card">
-				<h3>문제 해결</h3>
-				<p>설치, 검색, MCP, Web UI, STM 가운데 실패한 단계로 돌아가 원인을 점검합니다.</p>
-				<span class="tag tag-guide">복구</span>
+			<a href={`${base}/ko/use-cases/langgraph/`} class="doc-card">
+				<h3>모델 없이 시작하는 LangGraph 기억</h3>
+				<p>API 키 없이 실행하는 입문 노트북 두 개로 시작합니다.</p>
+				<span class="tag tag-ltm">활용 사례</span>
 			</a>
 		</div>
-	</div>
-</section>
-
-<section class="cta-section">
-	<h2>지금 시작하세요</h2>
-		<p>GPU 없이 시작합니다. 기본 저장소는 로컬이고, 외부 서비스 연결은 선택 사항입니다.</p>
-	<div class="cta-buttons">
-		<a class="btn-primary" href="https://github.com/memtomem/memtomem">GitHub에서 보기</a>
-		<a class="btn-secondary" href={`${base}/ko/guides/choose-your-path/`}>문서 읽기</a>
 	</div>
 </section>
 
 </main>
 
 <footer class="footer">
-	<span>DAPADA Inc. — Apache 2.0</span>
-	<span>
-		<a href="https://github.com/memtomem/memtomem" style="color:inherit;">GitHub (LTM)</a>
-		&nbsp;·&nbsp;
-		<a href="https://github.com/memtomem/memtomem-stm" style="color:inherit;">GitHub (STM)</a>
-		&nbsp;·&nbsp;
-		<a href="https://pypi.org/project/memtomem/" style="color:inherit;">PyPI</a>
-	</span>
+	<div class="footer-cols">
+		<div class="footer-brand">
+			<a href={`${base}/ko/`} class="nav-logo"><span>mem</span>to<span>mem</span></a>
+			<p>AI 에이전트를 위한 MCP 기반 기억 인프라</p>
+		</div>
+		<nav class="footer-col" aria-label="시작하기">
+			<h2>시작하기</h2>
+			<a href={`${base}/ko/guides/quickstart/`}>빠른 시작</a>
+			<a href={`${base}/ko/guides/connect-ai-client/`}>AI 클라이언트 연결</a>
+			<a href={`${base}/ko/guides/installation/`}>설치</a>
+			<a href={`${base}/ko/guides/choose-your-path/`}>목적에 맞는 시작 경로</a>
+		</nav>
+		<nav class="footer-col" aria-label="가이드">
+			<h2>가이드</h2>
+			<a href={`${base}/ko/ltm/memory-persistence/`}>세션을 넘나드는 기억</a>
+			<a href={`${base}/ko/ltm/index-and-import/`}>기존 자료 색인·가져오기</a>
+			<a href={`${base}/ko/stm/first-proxy/`}>MCP 서버에 STM 추가</a>
+			<a href={`${base}/ko/guides/troubleshooting/`}>문제 해결</a>
+		</nav>
+		<nav class="footer-col" aria-label="프로젝트">
+			<h2>프로젝트</h2>
+			<a href="https://github.com/memtomem/memtomem">GitHub (LTM)</a>
+			<a href="https://github.com/memtomem/memtomem-stm">GitHub (STM)</a>
+			<a href="https://pypi.org/project/memtomem/">PyPI</a>
+		</nav>
+	</div>
+	<div class="footer-bottom">DAPADA Inc. — Apache 2.0 · memtomem v{docsContract.core.version} · memtomem-stm v{docsContract.stm.version}</div>
 </footer>
+
+<script>
+	import '../../scripts/copy-button';
+</script>
 
 </body>
 </html>
