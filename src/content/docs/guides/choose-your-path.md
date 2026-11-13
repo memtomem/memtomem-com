@@ -48,23 +48,4 @@ Installing a plugin or registering the MCP server does **not** automatically:
 
 Use an explicit indexing, import, save, or synchronization workflow when you want one of those outcomes.
 
-## A Good First Week
-
-1. Complete [Quick Start](/guides/quickstart/) without an MCP client.
-2. Connect one AI client and verify `mem_status`.
-3. Save one confirmed decision and retrieve it in a new session.
-4. Index one small, non-sensitive docs directory and verify a source-backed result.
-5. Add STM only if you can name the MCP server whose responses you want to proxy.
-
 Keep permanent project rules in `CLAUDE.md`, `AGENTS.md`, or the equivalent runtime instruction file. Put decisions, findings, and repeatable procedures in memtomem when you want to retrieve them later.
-
-## Reference and Advanced Features
-
-Task guides recommend one safe path. The reference pages retain the full released command and configuration surfaces:
-
-- [LTM CLI Reference](/ltm/cli/)
-- [LTM MCP Tools](/ltm/mcp-tools/)
-- [LTM Environment Variables](/ltm/configuration/)
-- [STM CLI Reference](/stm/cli/)
-- [STM MCP Tools](/stm/mcp-tools/)
-- [STM Environment Variables](/stm/configuration/)
