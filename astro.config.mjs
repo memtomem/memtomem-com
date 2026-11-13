@@ -65,10 +65,10 @@ export default defineConfig({
 					label: 'Get Started',
 					translations: { ko: '시작하기' },
 					items: [
-						{ label: 'Choose Your Path', slug: 'guides/choose-your-path', translations: { ko: '목적에 맞는 시작 경로' } },
 						{ label: 'Quick Start', slug: 'guides/quickstart', translations: { ko: '빠른 시작' } },
 						{ label: 'Connect an AI Client', slug: 'guides/connect-ai-client', translations: { ko: 'AI 클라이언트 연결' } },
 						{ label: 'Installation', slug: 'guides/installation', translations: { ko: '설치' } },
+						{ label: 'Choose Your Path', slug: 'guides/choose-your-path', translations: { ko: '목적에 맞는 시작 경로' } },
 					],
 				},
 				{

@@ -66,18 +66,8 @@ mm search "릴리스 smoke test"
 
 임베딩 제공자를 변경하려면 `mm init`을 다시 실행하세요. 기존 인덱스의 임베딩 모델을 변경하기 전에는 [설치](/ko/guides/installation/)를 먼저 확인하세요.
 
-## 4. MCP 클라이언트 연결
-
-[AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 사용하는 클라이언트 하나를 고르고 서버를 등록한 뒤 `mem_status`를 확인하세요. Claude Code와 Codex는 공식 플러그인 설치를 권장하며, 다른 클라이언트는 각 클라이언트의 표준 MCP 설정 형식을 따릅니다.
-
-플러그인을 설치하거나 MCP를 등록해도 프로젝트 전체 색인, 파일 감시, 내장 기억 가져오기, 대화 저장은 자동으로 실행되지 않습니다.
-
-<a id="5-기억-추가와-검색"></a>
-## 5. 기존 노트 인덱싱
-
-[기존 자료 색인·가져오기](/ko/ltm/index-and-import/)에서 `mm index`와 `mm ingest`의 차이를 확인하고, 미리보기·출처 검색·재실행까지 완료하세요.
-
-## 6. Web UI 열기
+<a id="6-web-ui-열기"></a>
+## Web UI 열기
 
 기본 검증에는 CLI만으로 충분합니다. 검색 결과, 출처, 태그, 설정, Context Gateway를 브라우저에서 확인하려면 다음 명령을 실행하세요.
 
@@ -87,15 +77,12 @@ mm web --open
 
 개발·유지보수용 페이지는 `mm web --dev`로 실행할 때만 표시되며, 일반 사용에는 필요하지 않습니다.
 
-## 선택 사항: STM은 나중에 추가
-
-기존 MCP 워크플로에 응답 압축, 캐시, 관련 LTM 기억 자동 제시가 필요할 때 STM을 추가하세요. [MCP 서버에 STM 추가](/ko/stm/first-proxy/)에서 내장 데모, 실제 프록시 호출, `mms eject`를 통한 원래 설정 복원까지 확인할 수 있습니다.
-
 ## 다음 단계
 
-- [목적에 맞는 시작 경로](/ko/guides/choose-your-path/) — 목표에 맞는 다음 가이드 선택
+- <a id="4-mcp-클라이언트-연결"></a>[AI 클라이언트 연결](/ko/guides/connect-ai-client/) — 클라이언트 하나를 등록하고 `mem_status`를 확인합니다. Claude Code와 Codex는 공식 플러그인 설치를 권장합니다. 플러그인을 설치하거나 MCP를 등록해도 프로젝트 전체 색인, 파일 감시, 내장 기억 가져오기, 대화 저장은 자동으로 실행되지 않습니다.
+- <a id="5-기존-노트-인덱싱"></a><a id="5-기억-추가와-검색"></a>[기존 자료 색인·가져오기](/ko/ltm/index-and-import/) — `mm index`와 `mm ingest`의 차이, 미리보기와 출처 검색
 - [세션을 넘나드는 기억](/ko/ltm/memory-persistence/) — 새 세션에서 저장한 결정 찾기
-- [AI 클라이언트 연결](/ko/guides/connect-ai-client/) — Claude Code, Codex, 기타 MCP 클라이언트
-- [기존 자료 색인·가져오기](/ko/ltm/index-and-import/) — 노트·코드·AI 도구 내장 기억
+- <a id="선택-사항-stm은-나중에-추가"></a>[MCP 서버에 STM 추가](/ko/stm/first-proxy/) — 응답 압축, 캐시, 관련 기억 자동 제시가 필요할 때만 추가합니다. `mms eject`로 원래 설정을 복원할 수 있습니다.
 - [로컬 우선 · 정보 보호](/ko/guides/privacy/) — 로컬 기본값과 선택형 외부 연결
 - [문제 해결](/ko/guides/troubleshooting/) — 실패한 단계별 복구 절차
+- [목적에 맞는 시작 경로](/ko/guides/choose-your-path/) — 목표별 전체 안내

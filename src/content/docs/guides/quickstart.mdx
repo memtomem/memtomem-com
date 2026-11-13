@@ -67,19 +67,8 @@ The interactive preset picker offers Minimal, English (Recommended), and Korean-
 
 Rerun `mm init` after the first success when you want to change the provider. See [Installation](/guides/installation/) before changing an existing index's embedding model.
 
-## 4. Connect Your MCP Client
-
-Use [Connect an AI Client](/guides/connect-ai-client/) to choose one supported client, register the server, and verify `mem_status`. Claude Code and Codex users should prefer the official plugin path; other clients use their released MCP configuration format.
-
-Installing a plugin or registering MCP does not index the whole project, watch files, import built-in memory, or save conversations automatically.
-
-<a id="5-add-and-search-memory"></a>
-<a id="5-add-and-search"></a>
-## 5. Index Existing Notes
-
-Follow [Index and Import Existing Content](/ltm/index-and-import/) for a complete `mm index` or `mm ingest` workflow with a dry run, source-backed search, and repeat-run check.
-
-## 6. Open the Web UI
+<a id="6-open-the-web-ui"></a>
+## Open the Web UI
 
 The CLI round trip is sufficient for the first success. To browse search results, sources, tags, settings, and Context Gateway in a browser:
 
@@ -89,15 +78,12 @@ mm web --open
 
 Developer and maintainer pages require `mm web --dev`; normal use does not.
 
-## Optional: Add STM Later
-
-Add STM only when an existing MCP workflow needs response compression, caching, or proactive LTM surfacing. [Add STM to an MCP Server](/stm/first-proxy/) takes you from the bundled demo to a real proxied call and a reversible `mms eject` workflow.
-
 ## Next
 
-- [Choose Your Path](/guides/choose-your-path/) — pick the next task by outcome
+- <a id="4-connect-your-mcp-client"></a>[Connect an AI Client](/guides/connect-ai-client/) — register one client and verify `mem_status`. Claude Code and Codex users should prefer the official plugin. Installing a plugin or registering MCP does not index the whole project, watch files, import built-in memory, or save conversations automatically.
+- <a id="5-index-existing-notes"></a><a id="5-add-and-search-memory"></a><a id="5-add-and-search"></a>[Index and Import Existing Content](/ltm/index-and-import/) — `mm index` or `mm ingest` with a dry run and source-backed search
 - [Memory Across Sessions](/ltm/memory-persistence/) — retrieve a saved decision in a new session
-- [Connect an AI Client](/guides/connect-ai-client/) — Claude Code, Codex, and other MCP clients
-- [Index and Import Existing Content](/ltm/index-and-import/) — notes, code, and built-in AI memory
+- <a id="optional-add-stm-later"></a>[Add STM to an MCP Server](/stm/first-proxy/) — only when an MCP workflow needs response compression, caching, or proactive LTM surfacing; `mms eject` restores the original setup
 - [Local-First & Privacy](/guides/privacy/) — local defaults and opt-in network boundaries
 - [Troubleshooting](/guides/troubleshooting/) — return to the failed step with a concrete fix
+- [Choose Your Path](/guides/choose-your-path/) — every next task by outcome
