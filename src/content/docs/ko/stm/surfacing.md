@@ -36,7 +36,7 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 | 4 | 시맨틱 키 | `query` / `search` / `url` / `description` 등 인자 값의 키워드 조합 |
 | 5 | 도구명 | 프록시 호출의 마지막 수단으로 도구 이름 자체를 검색어로 사용 |
 
-`mms hook`으로 들어오는 Claude Code 기본 도구 호출은 0.7.7부터 5단계를 사용하지 않습니다. 호출 인자(경로와 셸 명령)로 검색어를 만들고, 남은 토큰이 `min_query_tokens`보다 적으면 관련 기억 제시를 건너뜁니다. 세부 규칙은 [upstream 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
+`mms hook`으로 들어오는 Claude Code 기본 도구 호출은 0.7.7부터 5단계를 사용하지 않습니다. 호출 인자(경로와 셸 명령)로 검색어를 만들고, 남은 토큰이 `min_query_tokens`보다 적으면 관련 기억 제시를 건너뜁니다. 단, 경로만 사용하는 기본 `Read` 호출은 `src/auth.py` 같은 2구간 경로에서도 관련 기억을 찾을 수 있도록 `max(1, min_query_tokens - 1)`개 토큰(기본값 `3`에서는 `2`개)만 요구합니다. 세부 규칙은 [upstream 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
 
 프록시는 `_context_query`를 받을 수 있습니다. 다만 연결한 도구의 스키마에는 `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`일 때만 이 인자를 표시합니다. 기본값은 `false`이므로 일반 에이전트가 이 내부용 힌트를 만들 필요는 없습니다.
 
@@ -91,7 +91,7 @@ STM이 LTM에서 기억을 찾으려면 먼저 검색어가 필요합니다. 한
 
 - `rrf` 결과: 표시된 상한(유효한 값이 없으면 `2/61`)을 소수 4자리로 내림합니다(`2/61` → `0.0327`).
 - `score_scale` 표시가 없거나 STM이 알 수 없는 값인 결과: `2/61`을 소수 2자리로 내림합니다(`0.03`).
-- 빈 배치이거나 RRF 이외의 알려진 점수 척도인 결과: 별도 상한을 적용하지 않습니다.
+- 검색된 LTM 기억이 없는 빈 배치이거나 Pinned Context만 포함한 배치에서는 `min_score`를 바꾸지 않으며, RRF 이외의 알려진 점수 척도에는 별도 상한을 적용하지 않습니다.
 
 저장된 조정값은 덮어쓰지 않습니다. 이미 상한보다 높게 조정된 도구는 다음 검색부터 상한으로 필터링하지만, `stm_admin(action="surfacing_stats")`에는 저장된 값이 계속 표시됩니다. 이 동작은 프록시와 `hook.record_feedback_events`가 활성화된 데몬에 모두 적용됩니다.
 
@@ -139,6 +139,7 @@ export MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD=false
 - **서피싱 시간 제한** — 호출당 최대 `3s`까지 기다립니다. LTM 연결이 아직 시작 중일 때 들어온 호출은 이 시간 안에서 연결을 기다린 뒤, 연결된 Core가 지원하는 컨텍스트 구성 방식을 사용합니다.
 - **호출 빈도 제한** — 모든 도구를 합해 분당 최대 `15`회
 - **쓰기 도구 제외** — 파일 쓰기, 삭제 등 부수효과가 있는 도구에서는 서피싱 비활성화
+- **민감 검색어 건너뜀(`sensitive_query`)** — 검색어가 자격 증명이나 이메일 패턴(한글·가나·한자·악센트 라틴 문자에 바로 붙은 자격 증명과 조사가 붙은 이메일 주소 포함)과 일치하면 LTM 조회 전에 서피싱을 건너뜀(`surfacing_stats`의 `sensitive_query`, 해시 다이제스트 검색 없음). 검색어가 `query_template`이나 인자에서 만들어질 때는 원본 인자(및 서버·도구·템플릿 문자열)를 먼저 검사하며, 템플릿이 없는 도구에 에이전트가 직접 전달한 검색어(`context_query` / `_context_query`)는 입력값만 검사해 민감 패턴이 없으면 정상 동작함. 건너뛴 호출은 Pinned Context를 포함해 아무것도 전달하지 않고 `surfacing_events` 행 기록과 웹훅 호출도 생략하며 해제 스위치는 없음
 - **반복 검색 방지** — 최근 5초 안에 처리한 검색어와 거의 같으면(Jaccard 유사도 `> 0.95`) 관련 기억 검색을 건너뜀
 - **교차 세션 중복 제거** — 기본 TTL `604800s` (7일), `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS` 로 조정
 - **주입 크기 상한** — 주입당 기본 `3000 chars`

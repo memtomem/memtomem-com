@@ -3,7 +3,7 @@ title: STM CLI 레퍼런스
 description: memtomem-stm 프록시를 관리하는 mms 명령 전체를 설정·등록, 관련 기억 제시·훅, 진단·튜닝, 프로젝트·호스트 순으로 정리하고 --json 실패 문서 형식을 설명합니다.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.7.7 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.7.8 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
 
 STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 만족스럽지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
@@ -58,6 +58,8 @@ mms register --client skip           # 수동 등록 안내 출력
 
 전체 옵션은 `--config`, `--client auto|claude|codex|json|skip`, 호환 `--mcp claude|json|skip`, `--replace-registration`, `--json`입니다. 반복 실행해도 안전하며 교체를 요청하지 않으면 기존 등록을 유지합니다.
 
+`mms register`는 신뢰할 수 없는 작업 디렉터리가 `sys.path` 맨 앞에 추가되지 않도록 `<python> -P -m memtomem_stm` 형태로 등록하며, `mms init --demo`는 `args: ["-P", "-m", "memtomem_stm.demo_server"]`를 기록합니다(`GHSA-2p94-5932-5f3p`). 0.7.8 이전에서 업그레이드할 때는 프로젝트별 `.mcp.json`에서 `mms register --client json --replace-registration`, Claude Code 사용자 범위는 `mms register --client claude --replace-registration`, Codex는 `mms register --client codex --replace-registration`을 실행해 기존 등록을 갱신하고(기본 경로가 아닌 설정으로 등록했다면 같은 `--config <path>` 전달), 직접 작성한 호스트 설정은 `"-m"` 앞에 `"-P"`를 추가하세요. `stm_proxy.json`에 이전 데모 업스트림이 있다면 `mms init --demo --resume`은 기존 항목을 바꾸지 않으므로 `upstream_servers.demo.args`를 `["-P", "-m", "memtomem_stm.demo_server"]`로 수정합니다.
+
 ### `mms add <name>`
 
 STM이 중계할 MCP 서버를 등록합니다.
@@ -96,7 +98,7 @@ mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에�
 
 가져오기에 성공하면 같은 서버가 STM 프록시 경로와 원본 클라이언트의 직접 경로 양쪽에 표시됩니다. 직접 경로는 압축·캐시·관련 기억 검색을 거치지 않습니다. 가져온 항목에는 원본 클라이언트 종류와 기존 등록 정보 사본을 함께 기록하므로 [`mms eject`](#mms-eject-name)로 언제든 원래 상태를 복원할 수 있습니다.
 
-`--prune` 옵션을 지정하거나 대화형 터미널의 확인 질문에서 동의하면(기본값 **No**), Claude Code 범위별 `claude mcp remove`와 Claude Desktop JSON 파일의 안전한 재작성을 통해 이중 등록을 정리합니다. 제거 전에는 각 항목을 `~/.memtomem/pruned_upstreams.json`에 백업하므로 이 작업도 되돌릴 수 있습니다. 비대화형 환경에서 `--prune` 없이 실행하면 안내 경고와 수동 복구 명령만 출력합니다.
+`--prune` 옵션을 지정하거나 대화형 터미널의 확인 질문에서 동의하면(기본값 **No**), Claude Code 범위별 `claude mcp remove`와 Claude Desktop JSON 파일의 안전한 재작성을 통해 이중 등록을 정리합니다. 제거 전에는 각 항목을 `~/.memtomem/pruned_upstreams.json`에 백업하므로 이 작업도 되돌릴 수 있습니다. 비대화형 환경에서 `--prune` 없이 실행하면 안내 경고와 직접 등록을 제거하는 명령만 출력합니다.
 
 `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--env`와 함께 쓸 수 없습니다. `--prune`은 반드시 `--from-clients` / `--import`와 함께 써야 합니다.
 
@@ -187,7 +189,7 @@ mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 
 | 플래그 | 설명 |
 |------|-------------|
-| `--to TARGET` | 출처가 기록되지 않은 항목의 복원 대상 지정 (`claude-user` / `claude-project[:PATH]` / `mcp-json[:PATH]` / `claude-desktop`). 출처가 있는 항목은 무시됩니다 |
+| `--to TARGET` | 출처가 기록되지 않은 항목의 복원 대상 지정 (`claude-user` / `claude-project[:PATH]` / `mcp-json[:PATH]` / `claude-desktop`). 출처가 이미 기록된 항목에서는 이 옵션을 무시합니다 |
 | `--keep` | 클라이언트에 복원하되 STM 항목 유지(이중 등록) |
 | `--force` | 같은 이름이지만 내용이 다른 클라이언트 항목 덮어쓰기 |
 | `--allow-argv-secrets` | 비밀값으로 분류된 내용을 포함한 `claude mcp add-json` 실행 허용. `argv`가 프로세스 목록에 노출될 수 있음 |
@@ -252,7 +254,7 @@ mms daemon run                       # 포그라운드에서 서버 계속 실�
 
 데몬은 현재 설정에 맞는 LTM MCP 세션 하나를 미리 연결해 둡니다. 호출할 때마다 세션을 새로 열도록 하려면 `MEMTOMEM_STM_HOOK__USE_DAEMON=0`으로 설정하세요. 데몬을 사용할 수 없을 때 새 세션을 여는 방식으로 대신 처리하려면 `MEMTOMEM_STM_HOOK__FALLBACK=cold`를 설정합니다. 데몬이 `busy`나 `expired`로 응답하면 이 설정과 관계없이 해당 호출의 관련 기억 추가를 건너뜁니다. 다른 설정 fingerprint로 실행 중인 데몬은 환경 변수가 다른 STM 프로세스(예: MCP가 실행한 서버와 셸·hook)가 사용 중인 데몬일 수 있으므로, `--all`로 중지하기 전에 `mms daemon status`로 확인합니다.
 
-훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함되며, 0.7.0부터 v9입니다. 릴리스의 업그레이드 안내에 프로토콜 변경이 있으면, STM을 실행하는 MCP 클라이언트를 종료하고 **업그레이드 전에** 이전 빌드로 `mms daemon stop`을 실행합니다. 새 빌드는 이전 빌드가 시작한 데몬에 접근할 수 없고, pending SQLite 저장소를 함께 쓰는 프로세스는 같은 버전이어야 하기 때문입니다. 전체 절차는 upstream [업그레이드 안내](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/guides/operations.md#upgrading)를 참고하세요. `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
+훅과 데몬 사이 프로토콜 버전은 데몬 식별값에 포함되며, 0.7.0부터 v9입니다. 릴리스의 업그레이드 안내에 프로토콜 변경이 있으면, STM을 실행하는 MCP 클라이언트를 종료하고 **업그레이드 전에** 이전 빌드로 `mms daemon stop`을 실행합니다. 새 빌드는 이전 빌드가 시작한 데몬에 접근할 수 없고, pending SQLite 저장소를 함께 쓰는 프로세스는 같은 버전이어야 하기 때문입니다. 프로토콜 버전이 바뀌지 않은 업그레이드(예: 0.7.8 업그레이드)에서도 새 코드와 `-P` 실행 인자가 적용되도록 업그레이드 후 MCP 클라이언트를 종료하고 이전 데몬을 중지하세요(macOS·Linux에서는 `mms daemon stop --all`, Windows에서는 `--all`이 종료 신호를 보내지 못하므로 작업 관리자에서 이전 데몬 프로세스를 종료하며, OTLP `endpoint`가 검증에 실패하면 `mms daemon`이 설정을 읽으므로 먼저 수정합니다). 전체 절차는 upstream [업그레이드 안내](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/guides/operations.md#upgrading)를 참고하세요. `idle_timeout_seconds=0`으로 고정한 데몬은 스스로 종료되지 않으므로 `mms daemon stop --all`로 중지합니다. Windows에서는 이 명령으로 종료할 수 없으므로 작업 관리자에서 프로세스를 종료하세요.
 
 `mms daemon stop`은 처리한 모든 데몬이 종료를 마쳤거나, 실행 중인 데몬이 없거나, 발견한 기록이 오래된 것일 때만 종료 코드 0을 반환합니다. 그 밖의 경우에는 stderr에 이유를 출력하고 종료 코드 1을 반환합니다. 예를 들어 5초 동안 대기한 뒤에도 데몬의 수명 주기 잠금(lifetime lock)이 해제되지 않았거나, 프로세스에 종료 신호를 보낼 수 없거나, Windows에서 종료 신호로만 중지할 수 있는 데몬이 여전히 연결을 수신 중인 경우입니다. `--all`은 모두 합쳐 최대 10초까지 기다리며, `data_dir`가 있지만 목록을 읽을 수 없으면 다른 설정의 데몬을 하나도 중지하지 않고 종료 코드 1을 반환합니다. `mms daemon restart`는 중지 단계가 성공한 경우에만 새 데몬을 시작합니다.
 
@@ -325,7 +327,7 @@ CLI는 디스크에 저장된 지표만 보여 줍니다. 현재 프로세스의
   - 측정 기준이 기록되지 않은 이전 성공 MCP 행이 있으면 경고합니다.
   - `--json` 요약에는 `initial_response_calls`, `unclassified_mcp_calls`, `measurement`가 추가됩니다.
   - 실험 기능인 [구조화 전달](/ko/stm/compression/#structured-chunk-delivery)을 사용한 호출은 별도의 `Structured delivery:` 줄(호출 수, 직렬화된 기본 문자 수, 측정한 MCP 바이트 수, `--json`: `compression.structured_delivery`)로 집계하며 절감률 계산에는 넣지 않습니다.
-- **`--all-time`:** 압축 통계만 전체 기간 합계로 바꿉니다. progressive 통계와 관련 기억 제시 통계는 보존 기간 기준을 유지합니다. 전체 기간 합계는 보존된 행에, 삭제된 행을 날짜·소스·서버·도구별로 집계해 두는 `proxy_metrics_daily` 테이블의 값을 더한 것입니다. 이 테이블은 0.7.7의 지표 기록 프로세스(MCP 서버, `mms hook`, `mms tune`)가 지표 DB를 처음 열 때 만들어지며, 그 전에 삭제된 행은 복구할 수 없습니다. 이 경우 **Incomplete before** 줄에 집계 누락 기준 시점과 유실된 행 수를 표시합니다. `--json`은 `compression_scope`(`retained` 또는 `all_time`)로 범위를 알려 줍니다.
+- **`--all-time`:** 압축 통계만 전체 기간 합계로 바꿉니다. progressive 통계와 관련 기억 제시 통계는 보존 기간 기준을 유지합니다. 전체 기간 합계는 보존된 행에, 삭제된 행을 날짜·소스·서버·도구별로 집계해 두는 `proxy_metrics_daily` 테이블의 값을 더한 것입니다. 이 테이블은 0.7.7 이상의 지표 기록 프로세스(MCP 서버, `mms hook`, `mms tune`)가 지표 DB를 처음 열 때 만들어지며, 그 전에 삭제된 행은 복구할 수 없습니다. 이 경우 **Incomplete before** 줄에 집계 누락 기준 시점과 유실된 행 수를 표시합니다. `--json`은 `compression_scope`(`retained` 또는 `all_time`)로 범위를 알려 줍니다.
 - **기록 초기화:** `DELETE FROM proxy_metrics`를 먼저 실행한 다음 `DELETE FROM proxy_metrics_daily`를 실행합니다. 순서를 바꾸면 삭제되는 행이 일별 테이블에 다시 집계됩니다. 트리거가 남아 있는 동안 일별 테이블을 `DROP`하지 마세요. 이후 정리 작업이 모두 `no such table`로 실패하면서 그 정리를 일으킨 쓰기까지 롤백되고, 시작 시 정합성 확인도 실패합니다.
 - **소스별 줄:** 프록시한 MCP 도구와 `mms hook`의 행이 모두 있으면, 압축 통계의 전체 합계 아래에 `mcp` 줄과 `hook` 줄을 각각의 절감률과 함께 표시합니다. 모든 행이 구조화 전달인 경우처럼 텍스트 문자 수가 없는 소스는 절감률 대신 `no text ratio`를 표시합니다. `--json`에서는 `compression_by_source`에 담기며, `--source`를 지정하면 `null`입니다.
 - **Progressive delivery:** 페이지로 나눈 응답에서 만든 문자 수와 에이전트에 실제로 전달한 문자 수를 비교합니다. 기록된 읽기를 모두 세므로 같은 내용을 다시 읽으면 비율이 100%를 넘을 수 있습니다. `--tool`로는 필터링되지만 `--source`로는 필터링되지 않고, 마지막 줄에 보존된 가장 오래된 행의 시점을 표시합니다. `--json`에서는 `progressive`에 담깁니다.
@@ -506,7 +508,7 @@ mms host sync [--plan|--apply] [--json] [--yes] [--force] [--allow-project-confi
 | `~/.mms` 상태(`mms host`, `mms project`, `mms import`) | `mms_lock_timeout`, `mms_lock_unavailable`, `mms_state_write_failed`, `mms_schema_mismatch`, `mms_state_invalid` | 상태 파일 잠금 시간 초과·사용 불가 / 쓰기 실패 / 스키마 버전 불일치 / 손상된 상태 파일 |
 | 지표 저장소(`mms tune`) | `store_invalid` | SQLite가 지표나 피드백 DB 파일을 열거나 읽을 수 없을 때(`stores`에 해당 파일) |
 
-`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/cli.md)에서 확인하세요.
+`add`, `gateway explain`, `project route`, `selection feedback` 등 명령별 코드는 upstream [CLI 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/cli.md)에서 확인하세요.
 
 다음 경우는 이 형식을 따르지 않습니다.
 

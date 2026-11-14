@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.5가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -108,7 +108,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화 | `false` |
+| `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화. 실행 중에도 변경 가능 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed`(로컬 ONNX) / `cohere`(외부 API) / `local`(sentence-transformers `CrossEncoder`, 로컬). `local`을 쓰려면 `sentence-transformers`를 별도로 설치해야 하며, memtomem extra에는 포함되어 있지 않습니다. 이때 `MEMTOMEM_RERANK__MODEL`에는 sentence-transformers 모델명(예: `cross-encoder/ms-marco-MiniLM-L-6-v2`)을 지정합니다. 일반적으로는 `fastembed`를 권장합니다 | `"fastembed"` |
 | `MEMTOMEM_RERANK__MODEL` | 모델명. 형식은 공급자에 따라 다릅니다(fastembed 카탈로그 ID, Cohere Rerank 모델, sentence-transformers 모델명). `fastembed`에서 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 어떤 `mm init` 프리셋도 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
@@ -149,7 +149,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 ### MMR 다양성 재순위
 
-Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 서로 다른 관점의 결과를 함께 반영합니다.
+Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 서로 다른 관점의 결과를 함께 반영합니다. 시간 감쇠와 점수 가중 뒤에 실행됩니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -224,7 +224,7 @@ Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 �
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 102개, 폐기 예정 별칭 없음) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 93개, 폐기 예정 별칭 없음) | `core` |
 | `MEMTOMEM_EXTRA_TOOLS` | `MEMTOMEM_TOOL_MODE`와 별도로 개별 노출할 등록 도구 이름(쉼표 구분, 예: `mem_update_coverage`). 서버 시작 시 읽으며, 알 수 없는 이름은 로그에 기록하고 무시합니다 | `""` |
 
 ### Web UI
@@ -366,7 +366,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | 변수 | 설명 | 기본값 |
 |---|---|---|
 | `MEMTOMEM_WIKI_PATH` | 위키 저장소 위치 재정의 | `~/.memtomem-wiki` |
-| `MEMTOMEM_FASTEMBED_CACHE` | ONNX / FastEmbed 모델 캐시 재정의(`FASTEMBED_CACHE_PATH`보다 우선) | `~/.memtomem/cache/fastembed` |
+| `MEMTOMEM_FASTEMBED_CACHE` | ONNX / FastEmbed 모델 캐시 재정의(`FASTEMBED_CACHE_PATH`보다 우선). macOS·Linux에서 기본 경로를 새로 만들 때는 `0700` 권한을 사용합니다 | `~/.memtomem/cache/fastembed` |
 | `MEMTOMEM_INDEX_DEBOUNCE_QUEUE` | 짧은 시간에 연속으로 생긴 파일 변경을 모아 두는 큐 파일 경로 재정의 | 상태 디렉터리 |
 
 <a id="임베딩-프로바이더-비교"></a>
@@ -379,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.5/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

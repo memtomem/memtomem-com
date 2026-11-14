@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.5 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.9 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -98,7 +98,7 @@ Cross-encoder reranking runs fully locally by default — no external API requir
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_RERANK__ENABLED` | Enable reranking of hybrid search results | `false` |
+| `MEMTOMEM_RERANK__ENABLED` | Enable reranking of hybrid search results; runtime-mutable | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed` (local ONNX) / `cohere` (external API) / `local` (sentence-transformers `CrossEncoder`, local). `local` needs `sentence-transformers` installed separately; no memtomem extra includes it. `MEMTOMEM_RERANK__MODEL` then takes a sentence-transformers model name (e.g. `cross-encoder/ms-marco-MiniLM-L-6-v2`). `fastembed` is usually preferable | `"fastembed"` |
 | `MEMTOMEM_RERANK__MODEL` | Model name; its form depends on the provider (a fastembed catalog ID, a Cohere Rerank model, or a sentence-transformers model name). With `fastembed`, for non-English content use `onnx-community/gte-multilingual-reranker-base` (341 MB; memtomem registers it with fastembed itself, so it needs no setup). `jinaai/jina-reranker-v2-base-multilingual` still works but is 1.1 GB and its model license (CC-BY-NC-4.0) does not allow commercial use. No `mm init` preset turns reranking on, so pair the model with `MEMTOMEM_RERANK__ENABLED=true` | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | Only required when `provider=cohere` | `""` |
@@ -133,7 +133,7 @@ Half-life decay multiplier applied to hybrid-search scores. Gradually deprioriti
 
 ### MMR (diversity rerank)
 
-Maximal Marginal Relevance rerank. Reduces redundancy among top results and mixes in alternate angles.
+Maximal Marginal Relevance rerank. Reduces redundancy among top results and mixes in alternate angles; runs after time decay and score boosts.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -196,7 +196,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (102 current tools; no deprecated aliases) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (93 current tools; no deprecated aliases) | `core` |
 | `MEMTOMEM_EXTRA_TOOLS` | Comma-separated registered tool names to expose individually on top of `MEMTOMEM_TOOL_MODE`, e.g. `mem_update_coverage`. Read at server startup; unknown names are logged and ignored | `""` |
 
 ### Web UI
@@ -320,7 +320,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | Variable | Description | Default |
 |---|---|---|
 | `MEMTOMEM_WIKI_PATH` | Override the wiki store location | `~/.memtomem-wiki` |
-| `MEMTOMEM_FASTEMBED_CACHE` | Override the ONNX / FastEmbed model cache (checked before `FASTEMBED_CACHE_PATH`) | `~/.memtomem/cache/fastembed` |
+| `MEMTOMEM_FASTEMBED_CACHE` | Override the ONNX / FastEmbed model cache (checked before `FASTEMBED_CACHE_PATH`). When newly created at the default path on macOS/Linux, uses mode `0700` | `~/.memtomem/cache/fastembed` |
 | `MEMTOMEM_INDEX_DEBOUNCE_QUEUE` | Override the file-watcher debounce queue file | state directory |
 
 ### Embedding provider comparison
@@ -331,7 +331,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.5/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

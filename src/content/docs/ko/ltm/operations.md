@@ -27,7 +27,8 @@ mm web status
 
 CI에서는 `mm status --json`의 최상위 `error` 필드를 실패로 처리합니다.
 초기화 오류에서도 JSON 형식을 유지하기 위해 프로세스 종료 코드는 0일
-수 있습니다.
+수 있습니다. `mm status`는 설정된 원격 임베딩·LLM·리랭커 엔드포인트도 함께
+표시하므로 로컬 밖으로 요청이 나가는 추론 대상을 바로 확인할 수 있습니다.
 
 `mm upgrade`는 `uv tool`로 설치한 환경을 관리합니다. pipx 설치는 `pipx
 upgrade memtomem`을 사용하세요. 프로젝트 의존성은 잠금 파일을 갱신한 뒤
@@ -35,6 +36,10 @@ upgrade memtomem`을 사용하세요. 프로젝트 의존성은 잠금 파일을
 실행합니다.
 
 Web UI는 기본적으로 로컬 컴퓨터에서만 접속할 수 있는 루프백 주소에
-연결됩니다. 외부에서 접속하려면 remote UI, trusted-origin, trusted-host
-플래그를 모두 설정해야 합니다. 반드시 인증을 처리하는 리버스 프록시 뒤에서
-운영하세요.
+바인딩되며, 브라우저 요청의 `Origin`(없으면 `Referer`)이 UI 자체 출처(스킴·호스트·포트)와 다르면 `/api/*`로의
+교차 출처 요청(`GET`과 쓰기 모두)을 `403`으로 거부합니다. 다른 출처의
+브라우저 프론트엔드에서 `/api/*`를 호출해야 할 때는 `--trusted-origin
+<hostname>`을 지정하며, `Origin`이나 `Referer` 헤더를 보내지 않는 비브라우저 HTTP 클라이언트는
+영향을 받지 않습니다. 외부에서 접속하려면 remote UI, trusted-origin,
+trusted-host 플래그를 모두 설정해야 하며 반드시 인증을 처리하는 리버스 프록시
+뒤에서 운영하세요.

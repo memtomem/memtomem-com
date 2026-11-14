@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.7.5를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.9를 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -70,13 +70,13 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.7.5에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.9에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
 대화형 설정 마법사를 실행합니다. 임베딩 제공자, 데이터베이스 경로, 토크나이저, 리랭커, 기본 네임스페이스를 설정합니다.
 
-설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 어떤 프리셋도 리랭커를 켜지 않으므로, 리랭커가 필요하면 `mm config set rerank.enabled true`를 실행하거나 고급 마법사의 리랭커 단계에서 추가합니다. 프리셋으로 `mm init`을 다시 실행해도 `config.json`에 이미 있는 `rerank` 섹션은 그대로 유지됩니다. 입력 없이 실행하려면 `--preset <name> --non-interactive`를 함께 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
+설정 마법사는 먼저 **프리셋 선택 화면**(Minimal / English (Recommended) / Korean-optimized)을 보여 줍니다. 프리셋은 임베딩·토크나이저·네임스페이스 기본값을 한 번에 적용합니다. 대화형 실행에서 Enter 키의 기본 선택은 현재 환경이 바로 마칠 수 있는 항목을 따르므로, `onnx` 선택 의존성이 없으면 프리셋 기본값이 Minimal로 내려가고 `claude` CLI가 `PATH`에 없으면 MCP 연결 기본값이 Skip이 됩니다(0.7.8). 원격 추론 엔드포인트를 선택하면 기억 본문과 검색어가 해당 엔드포인트로 전송된다는 안내가 표시됩니다(0.7.6). 어떤 프리셋도 리랭커를 켜지 않으므로, 리랭커가 필요하면 `mm config set rerank.enabled true`를 실행하거나 고급 마법사의 리랭커 단계에서 추가합니다. 프리셋으로 `mm init`을 다시 실행해도 `config.json`에 이미 있는 `rerank` 섹션은 그대로 유지됩니다. 입력 없이 실행하려면 `--preset <name> --non-interactive`를 함께 지정하세요. `--advanced`는 프리셋 선택을 건너뛰고 10단계 전체 설정을 엽니다.
 
 ```bash
 mm init                              # 대화형 설정 + 프리셋 선택
@@ -95,7 +95,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 클라이언트별 등록 방법은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
 
-MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 102개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
+MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 93개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
 v0.1.25부터 MCP 연결만으로는 `~/.memtomem/memtomem.db`를 만들지 않습니다. DB는 도구를 처음 호출할 때 엽니다. 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`에 두며, 플랫폼에 따라 `$TMPDIR/memtomem-$UID/`를 사용합니다. 도구를 호출하지 않으면 홈 디렉터리에 파일을 남기지 않습니다.
 
@@ -162,6 +162,8 @@ mm recall --namespace project-x --format plain
 
 헤더에서 **Advanced**를 켜면 Tags, Timeline과 Settings의 Dedup·Age-out·Export/Import가 추가됩니다. `--dev` 또는 `MEMTOMEM_WEB__MODE=dev`는 개발·유지보수용 **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction** 화면도 표시합니다.
 
+0.7.9부터 `/api/*`는 다른 출처(다른 루프백 포트 포함)에서 온 브라우저 요청을 읽기(`GET`)와 쓰기 모두 `403`으로 거부합니다. `Origin`이나 `Referer` 헤더를 보내지 않는 비브라우저 도구는 영향을 받지 않습니다. `--trusted-origin <hostname>`은 포트가 아닌 호스트 이름을 받으며, 지정한 호스트의 모든 포트에서 오는 요청을 허용합니다(예: `mm web --trusted-origin localhost`).
+
 ```bash
 mm web                               # 기본: http://localhost:8080 (prod 모드)
 mm web --port 9000
@@ -197,7 +199,7 @@ mm add "API 타임아웃 정책 결정" --title "API timeout" --tags "ops,api"
 mm add "postmortem 요약" --file postmortems/2026-04-auth.md
 ```
 
-`--tags`로 지정한 태그는 파일에 내용을 덧붙인 뒤 청크 메타데이터에 합칩니다. 본문에서 태그를 자동으로 읽지는 않습니다. `--file`에는 `~/.memtomem/memories/` 아래의 상대 경로만 사용할 수 있으며 `..` 경로는 거부합니다. 대상 파일에 다른 네임스페이스의 항목이 이미 있거나, 다른 네임스페이스를 가리키는 비기본 데이 파일 이름(0.7.5 이상)이면 추가를 거부합니다. `--allow-namespace-mix`를 지정하면 거부하지 않습니다. 슬러그(slug)가 잘려 네임스페이스를 해석할 수 없는 파일 이름은 이전과 같이 처리합니다.
+`--tags`로 지정한 태그는 파일에 내용을 덧붙인 뒤 청크 메타데이터에 합칩니다. 본문에서 태그를 자동으로 읽지는 않습니다. `--file`에는 활성 범위의 메모리 디렉터리 아래 상대 경로만 사용할 수 있으며 `..` 경로는 거부합니다. 0.7.9부터는 대상 경로가 다른 등록된 메모리 계층(예: `~/.memtomem/memories/` 안에 중첩된 `project_shared` 계층)으로 해석되면 `--confirm-project-shared`를 붙여도 쓰기를 거부하므로, 해당 프로젝트에서 `--scope`를 직접 지정해 기록해야 합니다. 대상 파일에 다른 네임스페이스의 항목이 이미 있거나, 다른 네임스페이스를 가리키는 비기본 데이 파일 이름(0.7.5 이상)이면 추가를 거부합니다. `--allow-namespace-mix`를 지정하면 거부하지 않습니다. 슬러그(slug)가 잘려 네임스페이스를 해석할 수 없는 파일 이름은 이전과 같이 처리합니다.
 
 ### `mm index <path>`
 
@@ -372,7 +374,7 @@ mm status --json                     # 기계 판독용 — 스크립트 / `jq` 
 
 이 명령은 v0.1.25에 추가됐고 `--json`과 `--format json`은 v0.3.4부터 지원합니다. MCP 클라이언트를 실행하지 않고도 DB가 열리는지, 기억이 몇 건 있는지 빠르게 확인할 수 있습니다.
 
-`search.tokenizer`가 `kiwipiepy`인데 `kiwipiepy` 패키지를 찾을 수 없거나 프로세스가 이미 `unicode61`로 대체한 경우, `mm status`와 `mem_status`는 `tokenizer_fallback` 경고를 표시합니다. 이 상태에서 색인한 행은 다른 방식으로 토큰화되므로 한국어 키워드 검색에서 누락될 수 있습니다. memtomem을 실행하는 모든 환경에 `korean` extra를 설치하고 서버를 다시 시작한 뒤 키워드 인덱스를 다시 만드세요.
+`search.tokenizer`가 `kiwipiepy`인데 `kiwipiepy` 패키지를 찾을 수 없거나 프로세스가 이미 `unicode61`로 대체한 경우, `mm status`와 `mem_status`는 `tokenizer_fallback` 경고를 표시합니다. 이 상태에서 색인한 행은 다른 방식으로 토큰화되므로 한국어 키워드 검색에서 누락될 수 있습니다. memtomem을 실행하는 모든 환경에 `korean` extra를 설치하고 서버를 다시 시작한 뒤 키워드 인덱스를 다시 만드세요. 원격 임베딩·리랭커·LLM 엔드포인트가 설정된 경우에는 자격 증명을 제거한 활성 원격 엔드포인트 주소도 함께 표시합니다(0.7.6).
 
 ### `mm sync-doctor`
 
@@ -446,7 +448,7 @@ mm schedule run-now <sched-id>       # 다음 예약 시각을 기다리지 않�
 mm schedule delete <sched-id>
 ```
 
-`--cron`에는 UTC 기준 5필드 표현식을 사용합니다. `--params`는 작업별 입력을 담은 JSON 객체입니다. 예약 작업을 실제로 실행하려면 `scheduler.enabled`와 `health_watchdog.enabled`가 모두 켜져 있어야 합니다.
+`--cron`에는 UTC 기준 5필드 표현식을 사용합니다. `--params`는 작업별 입력을 담은 JSON 객체이며, 0.7.9부터는 선택한 작업이 받지 않는 키(또는 인자를 받지 않는 작업에 전달한 키)를 등록 시점에 거부합니다. 예약 작업을 실제로 실행하려면 `scheduler.enabled`와 `health_watchdog.enabled`가 모두 켜져 있어야 합니다.
 
 ## 유지보수와 라이프사이클
 
@@ -502,7 +504,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.7.5          # 특정 버전 고정
+mm upgrade --version 0.7.9          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -521,6 +523,7 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.7.5 이전에서 업그레이드한 경우:** `mem_edit`와 `PATCH /api/chunks/{id}`는 청크의 원본이 아닌 색인 텍스트에 대한 편집을 거부합니다. wikilink가 해석된 텍스트나 병합된 섹션이 그 예입니다. 이때는 아무것도 쓰지 않고 청크의 원본 텍스트와 `base_hash`를 담아 `edit_base_mismatch`로 응답합니다. 원본 텍스트를 수정해 그 `base_hash`와 함께 다시 보냅니다. `base_hash`를 지정한 편집은 원본 텍스트를 그대로 교체하므로, 제목과 헤더를 포함해 유지할 줄을 모두 보내야 합니다. 편집 전에 `GET /api/chunks/{id}/source`로 같은 원본 텍스트와 `base_hash`를 받을 수 있으며, Web UI 편집기가 이 경로를 사용합니다. `base_hash` 없이 `mem_add`로 작성한 항목의 본문만 수정하는 경우에는 이전처럼 제목과 `> created:` / `> tags:` 헤더를 유지합니다. 태그 없이 작성해 색인 텍스트에 `> created:` 줄이 보이는 항목에서는, 그 줄을 바꾸거나 옮기는 편집과 새 본문이 `>`로 시작하는 편집도 같은 방식으로 거부합니다.
 - **0.7.5 이전에서 업그레이드한 경우:** 저장소가 행을 만들 때마다 청크의 `created_at`을 해당 항목의 `> created:` 줄에서 가져옵니다. 따라서 항목을 수정하거나 색인을 다시 만들어도 처음 작성한 날짜가 유지됩니다. 기간 지정 조회(`mm recall --since` / `--until`, `mem_recall`의 `since` / `until`), 최신순 정렬, 중복 정리에서 가장 오래된 사본을 고르는 기준, `created_at` 기준 수명 주기 정책이 이 날짜를 따릅니다. 시간 감쇠는 `updated_at`을 읽으므로 바뀌지 않습니다. `base_hash` 없이 새 본문을 `## ` 제목으로 시작하면 항목 전체가 교체되면서 기존 헤더가 제거되므로, 그 항목은 수정한 시점으로 기록됩니다. 날짜는 섹션 첫머리의 인용 블록에 있는 `> created:` 줄에서만 읽으며, ISO 8601 시각으로 해석되지 않는 값은 무시합니다. 이미 저장된 행은 기존 `created_at`을 유지하고, 이런 줄이 없는 텍스트는 이전처럼 색인을 실행한 시점으로 기록됩니다.
 - **0.7.5 이전에서 업그레이드한 경우:** 기본 네임스페이스가 아닌 데이 파일 이름 형식(`{date}--{slug}-{digest}.md`)을 따르며 이름을 해석할 수 있는 파일은, 작성 주체나 파일이 비어 있는지 여부와 관계없이 파일 이름이 가리키는 네임스페이스에 속합니다. 해석할 수 없는 파일 이름은 이전과 같이 처리합니다. 아직 저장된 행이 없는 이런 파일에 네임스페이스 인자, 에이전트 세션 바인딩, `mem_ns_set` 설정 없이 내용을 추가하면 파일 이름의 네임스페이스에 저장됩니다. 이런 파일에 다른 네임스페이스로 쓰는 요청(`mem_add(file=...)`, `mm add --file`, Web UI의 추가)은 다른 네임스페이스 혼합과 같이 거부하며, `allow_namespace_mix=true` / `--allow-namespace-mix`로 허용할 수 있습니다. DB가 없어졌거나 다른 컴퓨터에서 저장된 행이 없는 상태로 이런 파일을 다시 색인하면, 세션 바인딩보다 우선해 그 네임스페이스로 되돌립니다. 저장된 행, 명시한 `namespace`, `--reassign-namespaces`는 여전히 우선합니다. 작성한 뒤에 옮긴 네임스페이스(`mem_ns_rename`, `mem_ns_assign`, 보관·승격 정책)는 DB에만 기록되므로, 색인을 다시 만들면 해당 파일은 이름에 담긴 네임스페이스로 돌아갑니다. DB를 유지하거나, 다시 만든 뒤 이동을 다시 적용합니다.
+- **0.7.9 이전에서 업그레이드한 경우:** Context Gateway 쓰기 도구 9개(`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`)가 MCP에서 제거되었으므로 `mm context`(`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`)로 실행합니다. 관리 디렉터리·등록된 프로젝트 계층·`~/.memtomem/uploads` 밖에서 경로를 지정해 색인한 청크는 ID 기반 편집·삭제 시 `source_unmanaged`로 거부되고, 프로젝트 범위 `mm pinned` / `mem_pinned_*` 쓰기·삭제는 `.memtomem`·계층 디렉터리·`pinned` 또는 그 하위 디렉터리가 심볼릭 링크·정션이면 거부하며, `mm web`은 교차 출처 브라우저의 `/api/*` 요청을 읽기·쓰기 모두 `403`으로 거부합니다(필요 시 `--trusted-origin <hostname>` 지정). 또한 기존 환경은 의존성을 다시 해석할 때까지 `opentelemetry-api` 1.45.1이 남을 수 있으므로 설치 방식에 맞게 갱신해(`mm upgrade` / `uv tool upgrade memtomem`, 캐시된 `uvx` 실행은 `uv cache clean opentelemetry-api && uv cache prune`, 가상 환경은 `pip install -U opentelemetry-api`) `1.45.2` 이상인지 확인하고, 기존 가상 환경의 `filelock`은 `pip install -U filelock`으로 올리며, macOS·Linux의 기존 `~/.memtomem/cache/fastembed` 디렉터리는 `chmod 700 ~/.memtomem/cache/fastembed`로 권한을 잠그세요.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 

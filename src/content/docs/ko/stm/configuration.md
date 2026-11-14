@@ -7,7 +7,7 @@ memtomem-stm(STM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concep
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
 
-이 레퍼런스는 `memtomem-stm` 0.7.7이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.8이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -66,7 +66,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | 캐시 엔트리 상한 | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | MCP 도구 주석을 반영하는 캐시 정책: `conservative`, `strict`, `ignore` | `"conservative"` |
 
-캐시 스키마 6은 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장합니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
+캐시 스키마 7은 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장합니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
 
 <a id="proxy--auto-index-stage-4"></a>
 
@@ -132,7 +132,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 ### 프록시 → 도구 표시 필터
 
-연결한 서버의 도구 가운데 에이전트에 표시할 항목을 정하는 STM 자체 필터입니다. 실패가 잦거나, 설명에 자격 증명으로 보이는 문자열이 있거나, 이름이 겹치는 도구를 제외합니다. 상태는 프록시를 시작할 때 한 번 평가하므로 세션 중에는 표시되는 도구 목록이 바뀌지 않습니다.
+연결한 서버의 도구 가운데 에이전트에 표시할 항목을 정하는 STM 자체 필터입니다. 실패가 잦거나, 메타데이터에 자격 증명 문자열(한글·가나·한자·악센트 라틴 문자에 바로 붙은 자격 증명 포함, `sensitive_metadata`로 분류되며 도구 메타데이터의 이메일 주소는 도구를 제외하지 않음)이 있거나, 이름이 겹치는 도구를 제외합니다. 상태는 프록시를 시작할 때 한 번 평가하므로 세션 중에는 표시되는 도구 목록이 바뀌지 않습니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -295,7 +295,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | RRF 척도에서 적용하는 전역 결과 점수 하한. 도구별 고정값이나 척도 게이트가 있으면 그쪽이 우선합니다. | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 검색 결과 기억의 최대 수. Core가 `context_compose`로 반환하는 고정(pinned) 컨텍스트는 별도이며 이 수에 포함되지 않음 | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | 응답이 이보다 짧으면 관련 기억 검색 생략 | `5000` |
-| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수 | `3` |
+| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수(경로만 쓰는 기본 `Read` 훅 호출은 `max(1, min_query_tokens - 1)` 적용) | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | 반복되는 관련 기억 검색 사이의 최소 간격 | `5` |
 | `MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS` | LTM 관련 기억 검색의 제한 시간 | `3` |
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | 배치 위치: `prepend`, `append`, `section` | `"append"` |
@@ -312,7 +312,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__CACHE_TTL_SECONDS` | 현재 프로세스의 관련 기억 검색 결과 캐시 TTL | `60` |
 | `MEMTOMEM_STM_SURFACING__CIRCUIT_MAX_FAILURES` | 회로를 열기 전 연속 LTM 실패 횟수 | `3` |
 | `MEMTOMEM_STM_SURFACING__CIRCUIT_RESET_SECONDS` | 열린 회로를 다시 확인할 간격 | `60` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_ENABLED` | 도구별 임계값 자동 튜닝 | `true` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_ENABLED` | 도구별 임계값 자동 튜닝. 비어 있거나 고정 컨텍스트만 있는 배치에서는 `min_score` 유지 | `true` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | 튜닝 전 최소 피드백 샘플 수 | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | 임계값 조정 단위 | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | 기본 자동 튜닝 하한. 명시적 `min_score`를 포함하도록 검증 시 확장 | `0.005` |
@@ -391,7 +391,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 
@@ -403,7 +403,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 |---|---|---|
 | `MEMTOMEM_STM_DAEMON__MAX_CONCURRENT_LTM_OPS` | LTM 작업 동시 실행 상한 | `4` |
 | `MEMTOMEM_STM_OTLP__ENABLED` | 선택적 OTLP 내보내기 활성화 여부 | `false` |
-| `MEMTOMEM_STM_OTLP__ENDPOINT` | 선택적 OTLP 내보내기 엔드포인트 URL | `""` |
+| `MEMTOMEM_STM_OTLP__ENDPOINT` | 선택적 OTLP 내보내기 엔드포인트 URL(OTLP가 꺼져 있어도 호스트·경로에 민감 정보 패턴 검사 적용) | `""` |
 | `MEMTOMEM_STM_OTLP__FLUSH_TIMEOUT_SECONDS` | 선택적 OTLP 내보내기 플러시 제한 시간(초) | `5` |
 | `MEMTOMEM_STM_OTLP__HEADERS` | 선택적 OTLP 내보내기 요청 헤더 | `{}` |
 | `MEMTOMEM_STM_OTLP__MAX_EXPORT_BATCH_SIZE` | 선택적 OTLP 내보내기 배치당 최대 크기 | `512` |
@@ -418,4 +418,4 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | 임베딩 관련도 캐시 항목 상한 | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | 종료 감시 제한 시간(초) | `60` |
 
-캐시 스키마 6은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정에 묶습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만, 이는 LTM 기억 삭제와는 별개입니다.
+캐시 스키마 7은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정에 묶습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만, 이는 LTM 기억 삭제와는 별개입니다.

@@ -33,19 +33,22 @@ mms register --client codex
 mms register --client auto
 ```
 
-그 밖의 JSON 방식 클라이언트:
+그 밖의 JSON 방식 클라이언트에는 `memtomem-stm`이 설치된 환경의 Python 인터프리터를 지정합니다(`mms register --client json`이 생성한 항목을 복사해도 되며, `mms register`는 작업 디렉터리가 `sys.path` 맨 앞에 추가되지 않도록 `<python> -P -m memtomem_stm` 형태로 기록합니다):
 
 ```json
 {
   "mcpServers": {
     "memtomem-stm": {
-      "command": "memtomem-stm"
+      "command": "/path/to/memtomem-stm/python",
+      "args": ["-P", "-m", "memtomem_stm"]
     }
   }
 }
 ```
 
 등록 뒤 클라이언트를 다시 시작합니다.
+
+> **0.7.8 이전에서 업그레이드할 때(`GHSA-2p94-5932-5f3p`):** 업그레이드해도 기존 호스트 등록은 유지되므로 Python이 `-P` 옵션으로 시작하도록 다시 등록해야 합니다(기본 경로가 아닌 설정으로 등록했다면 `--config <path>`도 함께 전달). `.mcp.json`을 쓰는 프로젝트에서는 `mms register --client json --replace-registration`, Claude Code 사용자 범위는 `mms register --client claude --replace-registration`, Codex는 `mms register --client codex --replace-registration`을 실행하고, 직접 작성한 호스트 설정은 `args`의 `"-m"` 앞에 `"-P"`를 넣습니다. `~/.memtomem/stm_proxy.json`에 이전 데모 업스트림이 남아 있다면 `mms init --demo --resume`은 기존 항목을 바꾸지 않으므로 `upstream_servers.demo.args`를 `["-P", "-m", "memtomem_stm.demo_server"]`로 수정하세요. 그다음 MCP 호스트를 종료하고 macOS·Linux에서는 `mms daemon stop --all`로 이전 데몬을 중지합니다(Windows에서는 `--all`이 종료 신호를 보내지 못하므로 작업 관리자에서 이전 데몬 프로세스를 종료하며, OTLP `endpoint`가 0.7.8 검증에 걸리면 `mms daemon`이 설정을 읽으므로 먼저 수정해야 합니다).
 
 ## 2. 프록시 데모 도구 호출
 

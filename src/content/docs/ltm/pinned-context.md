@@ -16,7 +16,11 @@ mm pinned delete response-style --scope user
 ```
 
 Use `--scope user|project_local|project_shared` for exact operations. A
-Git-tracked shared write requires `--confirm-project-shared`.
+Git-tracked shared write requires `--confirm-project-shared`. Project-scope
+(`project_shared` and `project_local`) writes and deletes refuse when
+`.memtomem`, the tier directory, `pinned`, or a directory below it is a symlink
+or junction, so repository links cannot redirect mutations outside the project;
+user-scope blocks and reads are unchanged.
 
 Each block is limited to 2,000 characters. The 6,000-character value is the
 pinned budget for one compose request, not a global storage limit. The default

@@ -73,7 +73,7 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 
 `progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소 오류로 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고). [`mms stats`](/ko/stm/cli/#mms-stats)는 같은 기록을 디스크에서 읽어, 만든 문자 수와 전달한 문자 수를 비교하는 **Progressive delivery** 항목을 표시합니다(`--json`: `progressive`).
 
-응답 캐시는 스키마 6을 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
+응답 캐시는 스키마 7을 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
 
 <a id="structured-chunk-delivery"></a>
 
@@ -87,12 +87,12 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 
 - **페이로드:** 조건을 만족하는 텍스트 전용 응답이면 STM은 버전이 붙은 JSON 봉투(envelope)를 텍스트 블록에 넣고, 이어 읽기 응답은 이를 텍스트와 `structuredContent` 양쪽으로 반환합니다. 내용과 제어 필드는 `stm.payload`에서 읽습니다. `progressive`로 이어 읽을 때는 `content` 필드를 그대로 이어 붙이고 각 `next_offset`을 바꾸지 않고 다시 전달합니다. 위의 바닥글 규칙은 legacy 전달에만 적용되며, 본문에 바닥글 문자열이 들어 있어도 됩니다. 오프셋과 한도는 유니코드 코드 포인트 단위로 셉니다.
 - **원래 페이로드 유지:** 업스트림 `structuredContent`나 텍스트가 아닌 콘텐츠가 있는 성공 응답(`isError`가 아닌 응답)은 그대로 유지됩니다. 텍스트 블록마다 따로 정리하고 전체 텍스트 길이를 도구의 문자 예산으로 제한하며, 압축·관련 기억 추가·색인·캐시를 건너뛰며 이어 읽기 키도 발급하지 않습니다.
-- **예산:** 문자 예산은 JSON 이스케이프를 포함해 직렬화된 전체 MCP 결과 크기를 기준으로 계산하며, 이어 읽기 응답에서는 두 가지 표현을 모두 합산합니다. 관련 기억과 색인 알림 같은 보충 내용(supplements)은 이 확인 뒤에 추가되므로 최종 결과는 예산보다 클 수 있습니다. 모든 키를 담은 목차가 예산에 맞지 않으면 `progressive` 전달로 바뀌고, 원문을 한 글자도 전달하지 못할 만큼 예산이 작으면 `budget_exceeded`를 반환합니다. 구조화 `selective`와 목차 방식 `hybrid`는 키로 원문을 복구할 수 있으므로 `retention_floor`를 맞추려고 예산을 늘리지 않습니다.
+- **예산:** 문자 예산은 JSON 이스케이프를 포함해 직렬화된 전체 MCP 결과 크기를 기준으로 계산하며, 이어 읽기 응답에서는 두 가지 표현을 모두 합산합니다. 관련 기억과 색인 알림 같은 보충 내용(supplements)은 이 확인 뒤에 추가되므로 최종 결과는 예산보다 클 수 있습니다. `selective`와 `hybrid`의 압축 생략(passthrough) 응답도 직렬화된 결과 예산 안으로 제한하므로 예산을 넘는 성공 응답 대신 목차, `progressive` 전달, 또는 `budget_exceeded`를 반환합니다. 모든 키를 담은 목차가 예산에 맞지 않으면 `progressive` 전달로 바뀌고, 원문을 한 글자도 전달하지 못할 만큼 예산이 작으면 `budget_exceeded`를 반환합니다. 대기 저장소 오류가 발생하면 `selective`와 `hybrid`는 예산에 맞는 더 짧은 절삭 결과나 `budget_exceeded`로 대체되고, `progressive`는 전체 원문 대신 이어 읽기 키 없는 경계 기반 절삭 결과(한 글자도 담을 수 없으면 `budget_exceeded`)로 대체됩니다(`legacy` 전달은 바뀌지 않음). 구조화 `selective`와 목차 방식 `hybrid`는 키로 원문을 복구할 수 있으므로 `retention_floor`를 맞추려고 예산을 늘리지 않습니다.
 - **선택:** 선택한 섹션은 잘리지 않습니다. 선택한 키가 저장된 예산을 넘으면 키 수를 줄이거나 `response_format: "legacy"`로 요청합니다.
 - **관련 기억 추가:** 기억은 응답 텍스트가 아닌 `stm.supplements.surfacing`으로 전달되므로 `prepend`를 포함한 모든 `injection_mode`가 동작합니다.
 - **캐시와 통계:** 응답 캐시 키에는 전달 형식이 포함됩니다. `mms stats`는 구조화 호출을 별도의 `Structured delivery:` 줄(`--json`: `compression.structured_delivery`)로 보고하여 legacy 절감 비율과 분리하며, 튜너의 보존 비율 계산에서도 제외합니다.
 
-봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
+봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
 
 <a id="폴백-래더"></a>
 
@@ -126,4 +126,4 @@ progressive → hybrid → truncate
 
 점진 전달은 업스트림 제한 적용 후 정리된 소스를 보관합니다. 원본 응답 전체를 무제한·바이트 단위로 보존하는 기능은 아닙니다. 대기 중 선택 항목은 기본적으로 메모리에 저장되며 SQLite 영속 저장은 옵트인입니다. `pending_store: "sqlite"`에서는 저장 대상이 된 SELECTIVE·HYBRID·PROGRESSIVE 응답에 자격 증명 패턴이 들어 있으면 그 응답을 `pending_selections.db`에 기록하지 않습니다. 이런 응답은 SELECTIVE·HYBRID에서는 경계를 고려한 잘라내기(`truncate_on_sensitive`)로, PROGRESSIVE에서는 정리된 응답 전체(`passthrough_on_sensitive`)로 캐시 없이 반환됩니다. 이메일 주소는 이 처리 대상이 아닙니다. `progressive.ttl_seconds: 0`이면 즉시 만료되어 첫 청크가 만료 안내와 함께 전달됩니다. TTL이 지나 만료된 ID는 오류를 반환하고 업스트림을 자동 재호출하지 않습니다. 원래의 읽기 전용 호출을 다시 수행하는 것은 별도 명시적 동작입니다. 콘텐츠 복구를 위해 쓰기 작업을 반복하지 마세요.
 
-캐시 스키마 6은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정(URL, header, transport, command)에 묶으므로 연결 설정을 바꾸면 이전 연결의 응답을 다시 내보내지 않습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만(metrics와 피드백은 유지), 이는 LTM 기억 삭제와는 별개입니다.
+캐시 스키마 7은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정(URL, header, transport, command)에 묶으므로 연결 설정을 바꾸면 이전 연결의 응답을 다시 내보내지 않습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만(metrics와 피드백은 유지), 이는 LTM 기억 삭제와는 별개입니다.

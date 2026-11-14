@@ -95,10 +95,10 @@ MCP 서버 실행 파일은 `memtomem-server`입니다. 직접 실행할 필요�
 | 마법사 표시 이름 | 제공자 경로 | 다운로드·네트워크 경계 | 권장 대상 |
 |---|---|---|---|
 | Minimal | BM25 키워드 검색만 사용 | 모델 다운로드 없음 | 첫 점검과 정확한 식별자 검색 |
-| English (Recommended) | 로컬 ONNX 임베딩(리랭커 없음) | 로컬 모델 최초 1회 다운로드 | 영어 프로젝트 대부분 |
+| English (Recommended) | 로컬 ONNX 임베딩(리랭커 없음) | 로컬 모델 최초 1회 다운로드 | 영어 위주 프로젝트 |
 | Korean-optimized | 다국어 임베딩 + 한국어 토크나이저(리랭커 없음) | 로컬 모델 최초 1회 다운로드 | 한국어·다국어 노트 |
 
-CLI 토큰은 각각 `--preset minimal`, `--preset english`, `--preset korean`입니다. 원격 Ollama 또는 OpenAI 호환 제공자는 이후에 명시적으로 선택하며, 설정한 서비스로 요청 데이터가 전송될 수 있습니다.
+CLI 토큰은 각각 `--preset minimal`, `--preset english`, `--preset korean`입니다. 대화형 `mm init`에서 Enter 키 기본값은 `onnx`가 설치되어 있으면 **English**(`[2]`), 없으면 **Minimal**(`[1]`)이며, MCP 클라이언트 등록 단계에서는 `claude` CLI가 `PATH`에 있으면 **Claude Code**(`[1]`), 없으면 **Skip**(`[3]`)입니다. 원격 임베딩·LLM·리랭커 엔드포인트를 선택하면 기억 본문과 검색어가 해당 서비스로 전송된다는 안내가 표시됩니다. 원격 Ollama 또는 OpenAI 호환 제공자는 사용자가 명시적으로 선택할 때만 사용됩니다.
 
 ## STM 프록시 (memtomem-stm)
 
@@ -153,7 +153,7 @@ STM은 선택 사항입니다. 관련 기억을 자동으로 찾아 제시하는
 | `mms project route` | 선택한 프로젝트 MCP의 STM 라우팅 미리보기(`--apply`로 쓰기) |
 | `mms --version` | 설치된 버전 출력 |
 
-STM 프록시 실행 파일은 `memtomem-stm`입니다. `mms init --client ...`, `mms register --client ...`, 또는 일반 JSON 설정으로 STM을 MCP 클라이언트에 연결하면 클라이언트가 자동으로 실행합니다. 프록시 설정은 `~/.memtomem/stm_proxy.json`에 저장됩니다. `mms add`와 `mms init`이 이 파일을 관리하므로 직접 편집할 필요는 거의 없습니다.
+STM 프록시 실행 파일은 `memtomem-stm`입니다. `mms init --client ...`, `mms register --client ...`(`<python> -P -m memtomem_stm` 실행 명령을 작성), 또는 일반 JSON 설정으로 STM을 MCP 클라이언트에 연결하면 클라이언트가 자동으로 실행합니다. 프록시 설정은 `~/.memtomem/stm_proxy.json`에 저장됩니다. `mms add`와 `mms init`이 이 파일을 관리하므로 직접 편집할 필요는 거의 없습니다.
 
 ## 파일 위치
 

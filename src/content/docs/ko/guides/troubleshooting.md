@@ -89,7 +89,7 @@ mm status --json
 mm search "원본에_실제로_있는_단어"
 ```
 
-출처와 재실행 점검은 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)를 참고하세요.
+출처와 재실행 점검은 [기존 자료 색인·가져오기](/ko/ltm/index-and-import/)를 참고하세요. MCP의 청크 ID 기반 수정·삭제(`mem_edit`, `mem_delete` 또는 `mem_do`의 `edit`·`delete`)나 Web UI 청크 라우트에서 `source_unmanaged`가 반환되면, 해당 청크는 `indexing.memory_dirs`(`MEMTOMEM_INDEXING__MEMORY_DIRS`), 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 외부 파일 소속이므로 원본 파일을 직접 수정·삭제한 뒤 다시 색인하세요.
 
 ## 4. 플러그인·MCP 연결
 
@@ -109,7 +109,7 @@ mm search "원본에_실제로_있는_단어"
 [선택형 자동화 플러그인](/ko/guides/connect-ai-client/#선택형-자동화-플러그인)은 `mm --version` 출력이 플러그인 검증 기준 Core 릴리스와 정확히 일치할 때만 hook을 실행하며, 플러그인을 업데이트해도 CLI는 자동으로 업그레이드되지 않습니다. CLI를 업그레이드하고 버전을 확인한 뒤 새 Claude Code 세션을 시작합니다.
 
 ```bash
-mm upgrade --version 0.7.5
+mm upgrade --version 0.7.9
 mm --version
 ```
 
@@ -131,7 +131,7 @@ command -v memtomem-server
 
 중복되는 것은 MCP 서버 네임스페이스와 도구이며, 플러그인의 슬래시 명령이나 스킬까지 반드시 중복되는 것은 아닙니다. 클라이언트에 맞게 정리하세요.
 
-- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.7.5 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
+- **Claude Code:** `/mcp`를 실행합니다. 플러그인의 실행 조합은 `uvx --from memtomem[onnx]==0.7.9 memtomem-server`입니다. 수동 항목의 조합이 정확히 같으면 서버 하나만 실행하고, 명령이 다르면 `mcp__memtomem__mem_*`와 `mcp__plugin_memtomem_memtomem__mem_*` 서버 두 개가 실행됩니다. 플러그인을 유지하려면 `claude mcp remove memtomem`, 수동 서버만 유지하려면 `/plugin uninstall memtomem@memtomem`을 실행합니다. 수동 항목에 플러그인과 같은 실행 조합을 지정하면 플러그인 명령도 유지할 수 있습니다.
 - **Codex:** `codex mcp list`를 실행합니다. `[mcp_servers.memtomem]`은 플러그인보다 우선하며 서버 하나만 실행합니다. `[mcp_servers.memtomem-local]`처럼 다른 이름을 사용하면 서버 두 개가 실행되므로, 이름을 `memtomem`으로 변경하거나 플러그인 서버를 사용하려면 수동 항목을 제거합니다.
 - **OpenCode:** 수동 항목을 정확한 `mcp.memtomem` 키로 유지하거나, 플러그인 서버를 사용하려면 제거합니다. `mcp."memtomem-local"`처럼 다른 키를 사용하면 서버 두 개가 실행됩니다.
 - **Antigravity CLI:** 플러그인 서버의 이름이 `memtomem_memtomem`이므로 직접 등록한 `memtomem` 항목은 항상 함께 실행됩니다. `agy mcp remove memtomem`으로 수동 항목을 제거하거나, 수동 항목을 유지하고 `mm doctor --mcp-client agy --reconcile keep-manual --apply`로 플러그인 서버를 비활성화합니다.
@@ -167,11 +167,11 @@ mms health
 mms doctor
 ```
 
-`mms add` 또는 `mms init`으로 프록시를 활성화하고 upstream을 추가해야 합니다. `mms doctor`는 FAIL이 없으면 종료 코드 0을 반환하며, WARN은 허용됩니다.
+`mms add` 또는 `mms init`으로 프록시를 활성화하고 upstream을 추가해야 합니다. `mms doctor`는 FAIL이 없으면 종료 코드 0을 반환하며, WARN은 허용됩니다. `memtomem-stm`을 0.7.8 이상으로 업그레이드한 뒤에는 `<python> -m memtomem_stm` 실행 명령에 `-P`가 포함되도록 기존 등록을 갱신하고(`mms register --client json --replace-registration`, `mms register --client claude --replace-registration`, `mms register --client codex --replace-registration`, 별도 설정 경로는 `--config <path>`, 직접 작성한 항목과 `upstream_servers.demo.args`는 `"-m"` 앞에 `"-P"` 추가), 이전 데몬을 중지하세요(macOS·Linux는 `mms daemon stop --all`, Windows는 작업 관리자). 또한 `otlp.endpoint`가 민감 자격증명 패턴과 일치하면 `otlp.enabled=false`여도 시작과 `mms daemon`이 즉시 실패합니다.
 
 ### 프록시 도구가 사라짐(64자 제한)
 
-최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 구성될 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄인 뒤 `mms health --names`를 실행해 해당 최종 이름이 더 이상 보고되지 않는지 확인하세요. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 업스트림 도구는 길이와 관계없이 프록시되지 않으며, `mms health`가 그 개수를 보고합니다. 이 경우 업스트림 서버에서 도구 이름을 변경해야 합니다.
+최종 이름은 `mcp__<server>__<prefix>__<tool>`처럼 구성될 수 있습니다. 64자를 넘으면 도구가 제외될 수 있습니다. STM 서버 이름과 upstream `--prefix`를 줄인 뒤 `mms health --names`를 실행해 해당 최종 이름이 더 이상 보고되지 않는지 확인하세요. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 업스트림 도구는 길이와 관계없이 프록시되지 않으며, `mms health`가 그 개수를 보고합니다. 이 경우 업스트림 서버에서 도구 이름을 변경해야 합니다. 또한 `exposure.profile=strict`에서는 메타데이터가 자격증명 패턴(한글·가나·한자·악센트 있는 라틴 문자에 바로 붙은 토큰 포함, 이메일 주소는 제외)과 일치하는 도구도 `sensitive_metadata`로 제외되며 `stm_admin(action="proxy_health")`에서 확인할 수 있습니다.
 
 ### `mms stats --source mcp`가 비어 있음
 
@@ -181,11 +181,12 @@ mms doctor
 
 `mms health`에서 선택형 LTM 연결이 `connected`이고 LTM 서버에 `mem_search`가 표시되어야 합니다. LTM만 연결되지 않았다면 프록시·압축·캐시는 계속 동작할 수 있습니다.
 
-LTM이 연결되어 있는데도 주입되는 기억이 없다면 0.7.7에서 추가된 세 가지 조건을 확인합니다.
+LTM이 연결되어 있는데도 주입되는 기억이 없다면 0.7.7과 0.7.8에서 추가된 네 가지 조건을 확인합니다.
 
 - **저장소 범위:** 기본 설정에서 네임스페이스를 고정하지 않은 Claude Code 기본 도구 호출(`mms hook`)은 `cwd`가 속한 저장소의 네임스페이스와 `default`만 검색합니다. 이 범위는 Claude Code에 해당 저장소의 프로젝트 디렉터리가 있을 때만 적용되며, 없으면 모든 네임스페이스를 검색합니다.
 - **제외 네임스페이스:** 기본 설정에서 `claude-plans`와 `codex`의 검색 결과는 hook 호출과 프록시 호출 모두에서 주입하지 않습니다. Pinned Context는 제외 대상이 아닙니다.
-- **짧은 검색어:** 기본 도구 호출에서 검색어 토큰이 `min_query_tokens`보다 적으면 검색하지 않고 건너뜁니다.
+- **짧은 검색어:** 기본 도구 호출에서 검색어 토큰이 `min_query_tokens`보다 적으면(0.7.8 이상의 경로 전용 기본 `Read` 호출은 `max(1, min_query_tokens - 1)`보다 적으면) 검색하지 않고 건너뜁니다.
+- **민감 검색어(`sensitive_query`):** 0.7.8 이상에서 검색어(또는 검색어를 만든 원본 인자·템플릿)가 자격증명이나 이메일 패턴과 일치하면 LTM 호출 전에 서피싱을 중단하며 Pinned Context를 포함해 아무것도 전달하지 않습니다.
 
 앞의 두 조건을 끄는 방법은 [저장소·네임스페이스별 범위](/ko/stm/surfacing/#저장소네임스페이스별-범위)를 참고하세요.
 

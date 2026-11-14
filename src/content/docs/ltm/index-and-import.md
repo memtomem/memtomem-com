@@ -104,6 +104,7 @@ Minimal preset uses keyword search, so the first verification query should reuse
 - Do not index API keys, tokens, passwords, private keys, personal data, or raw conversation archives.
 - Built-in credential exclusions remain active even if a user exclude pattern tries to negate them.
 - `mm ingest` is an explicit read-only snapshot. Installing a plugin, connecting MCP, or enabling STM does not run it automatically.
+- Files indexed in place via an explicit path outside `indexing.memory_dirs`, registered project tiers, and Web UI uploads (`~/.memtomem/uploads`) remain searchable, but by-id chunk edits and deletes over MCP (`mem_edit`, `mem_delete`, or `mem_do` `edit`/`delete`) and the Web UI chunk routes refuse to rewrite or remove those external files (`source_unmanaged`).
 - Review paths and counts in `--dry-run` output before applying an import.
 - Use [Local-First & Privacy](/guides/privacy/) to check which optional providers can send content to another service.
 

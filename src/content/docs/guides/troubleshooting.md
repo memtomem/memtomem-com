@@ -88,7 +88,7 @@ Return to [Quick Start → Verify a Memory Round Trip](/guides/quickstart/#3-ver
 mm search "EXACT_WORDS_FROM_THE_SOURCE"
 ```
 
-See [Index and Import Existing Content](/ltm/index-and-import/) for source and repeat-run checks.
+See [Index and Import Existing Content](/ltm/index-and-import/) for source and repeat-run checks. If MCP by-id chunk edits or deletes (`mem_edit`, `mem_delete`, or `mem_do` `edit`/`delete`) or the Web UI chunk routes return `source_unmanaged`, the chunk came from an explicit-path indexed file outside `indexing.memory_dirs` (`MEMTOMEM_INDEXING__MEMORY_DIRS`), registered project tiers, and `~/.memtomem/uploads`; edit or remove that external file directly and re-index instead.
 
 ## 4. Plugin and MCP Connection
 
@@ -108,7 +108,7 @@ Claude Code and Codex have the official plugin paths documented on this site. Ot
 The [optional automation plugin](/guides/connect-ai-client/#optional-automation-plugin) runs its hooks only when `mm --version` reports exactly the Core release it was reviewed with, and updating the plugins does not upgrade the CLI. Upgrade it, confirm the version, then start a new Claude Code session:
 
 ```bash
-mm upgrade --version 0.7.5
+mm upgrade --version 0.7.9
 mm --version
 ```
 
@@ -130,7 +130,7 @@ Use that absolute path as the configured `command`, then fully restart the app. 
 
 This duplicates MCP server namespaces and tools, not necessarily the plugin's slash commands or skills. Resolve it according to the client:
 
-- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem[onnx]==0.7.5 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
+- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem[onnx]==0.7.9 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
 - **Codex:** run `codex mcp list`. `[mcp_servers.memtomem]` takes precedence over the plugin and runs one server. A different name such as `[mcp_servers.memtomem-local]` runs both; rename it to `memtomem` or remove it to use the plugin server.
 - **OpenCode:** keep the manual entry at the exact `mcp.memtomem` key, or remove it to use the plugin server. A different key such as `mcp."memtomem-local"` runs both.
 - **Antigravity CLI:** the plugin's server is named `memtomem_memtomem`, so a hand-registered `memtomem` entry always runs beside it. Remove the manual entry with `agy mcp remove memtomem`, or keep it and suppress the plugin's server with `mm doctor --mcp-client agy --reconcile keep-manual --apply`.
@@ -166,11 +166,11 @@ mms health
 mms doctor
 ```
 
-`mms add` or `mms init` must have enabled the proxy and added an upstream. `mms doctor` exits 0 when there are no FAIL checks; WARNs are allowed.
+`mms add` or `mms init` must have enabled the proxy and added an upstream. `mms doctor` exits 0 when there are no FAIL checks; WARNs are allowed. After upgrading `memtomem-stm` to 0.7.8 or later, refresh existing registrations so `<python> -m memtomem_stm` entries include `-P` (`mms register --client json --replace-registration`, `mms register --client claude --replace-registration`, `mms register --client codex --replace-registration`, `--config <path>` for custom config files, `"-P"` before `"-m"` in hand-written entries and `upstream_servers.demo.args`), and stop older daemons (`mms daemon stop --all` on macOS/Linux; Task Manager on Windows). Startup and `mms daemon` also fail fast if `otlp.endpoint` matches a sensitive credential pattern, even when `otlp.enabled=false`.
 
 ### Proxied tools go missing (64-character limit)
 
-The final client name may be `mcp__<server>__<prefix>__<tool>`. If it exceeds 64 characters, the tool can be withheld. Use a shorter STM server name and upstream `--prefix`, then run `mms health --names` and confirm it no longer reports the composed name. Separately, an upstream tool whose name falls outside the MCP tool-name grammar (`[A-Za-z0-9._-]`, 1–128 characters) is not proxied at any length, and `mms health` reports how many; that name has to change on the upstream server.
+The final client name may be `mcp__<server>__<prefix>__<tool>`. If it exceeds 64 characters, the tool can be withheld. Use a shorter STM server name and upstream `--prefix`, then run `mms health --names` and confirm it no longer reports the composed name. Separately, an upstream tool whose name falls outside the MCP tool-name grammar (`[A-Za-z0-9._-]`, 1–128 characters) is not proxied at any length, and `mms health` reports how many; that name has to change on the upstream server. Under `exposure.profile=strict`, tools whose metadata matches credential patterns (including tokens directly adjacent to Hangul, kana, Han, or accented Latin letters; email addresses do not withhold tools) are also withheld as `sensitive_metadata` and listed in `stm_admin(action="proxy_health")`.
 
 ### `mms stats --source mcp` stays empty
 
@@ -180,11 +180,12 @@ The client probably used a built-in tool instead of an STM MCP alias. Ask it to 
 
 `mms health` must report the optional LTM link as connected and the LTM server must expose `mem_search`. If only LTM is unavailable, proxying, compression, and caching can still work.
 
-If the link is connected but a call still injects nothing, check three filters added in 0.7.7:
+If the link is connected but a call still injects nothing, check four filters added in 0.7.7 and 0.7.8:
 
 - **Repository scope:** by default, a Claude Code built-in tool call (`mms hook`) with no pinned namespace searches only the namespaces of the repository that holds its `cwd`, plus `default`. This applies only when Claude Code has a project directory for that repository; otherwise the call searches every namespace.
 - **Excluded namespaces:** by default, retrieved results from `claude-plans` and `codex` are not injected, on hook or proxied calls. Pinned Context is exempt.
-- **Short queries:** a built-in tool call whose query has fewer than `min_query_tokens` tokens is skipped instead of searched.
+- **Short queries:** a built-in tool call whose query has fewer than `min_query_tokens` tokens (or `max(1, min_query_tokens - 1)` for path-only native `Read` calls in 0.7.8+) is skipped instead of searched.
+- **Sensitive queries (`sensitive_query`):** in 0.7.8+, if the query (or raw arguments/template when derived from them) matches a credential or email pattern, surfacing stops before LTM and delivers nothing, including Pinned Context.
 
 [Scoping by Repository and Namespace](/stm/surfacing/#scoping-by-repository-and-namespace) shows how to turn the first two off.
 

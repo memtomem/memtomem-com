@@ -7,7 +7,7 @@ memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/con
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem-stm` 0.7.7 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
+This public reference tracks the complete `memtomem-stm` 0.7.8 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -60,7 +60,7 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | Cache eviction ceiling | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | How MCP tool annotations affect caching: `conservative`, `strict`, or `ignore` | `"conservative"` |
 
-Cache schema 6 stores the canonical MCP content envelope, including `structuredContent` and `_meta`. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
+Cache schema 7 stores the canonical MCP content envelope, including `structuredContent` and `_meta`. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
 
 ### Proxy → Auto-Index (Stage 4)
 
@@ -118,7 +118,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 
 ### Proxy → Tool exposure
 
-An STM-native filter that decides, at tool-advertisement time, which of an upstream's tools the agent gets to see. Tools that fail consistently, carry credentials, or duplicate another tool's name are kept out of the advertised list. Health signals are evaluated once at proxy startup, so the advertised set stays stable for the session.
+An STM-native filter that decides, at tool-advertisement time, which of an upstream's tools the agent gets to see. Tools that fail consistently, carry credentials in metadata (including credentials directly adjacent to Hangul, kana, Han, or accented Latin letters — flagged as `sensitive_metadata`; an email address in tool metadata does not withhold a tool), or duplicate another tool's name are kept out of the advertised list. Health signals are evaluated once at proxy startup, so the advertised set stays stable for the session.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -273,7 +273,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | Global result-score floor on the RRF scale, applied unless a per-tool pin or the scale gate overrides it | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | Max retrieved memories injected per call. Pinned context returned by the core's `context_compose` is added separately and does not count toward this limit | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | Skip surfacing on tiny responses | `5000` |
-| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query | `3` |
+| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query (path-only native `Read` hook calls use `max(1, min_query_tokens - 1)`) | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | Minimum interval between repeated surfacing work | `5` |
 | `MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS` | LTM surfacing request timeout | `3` |
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | Placement: `prepend`, `append`, or `section` | `"append"` |
@@ -290,7 +290,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__CACHE_TTL_SECONDS` | In-process surfacing result cache TTL | `60` |
 | `MEMTOMEM_STM_SURFACING__CIRCUIT_MAX_FAILURES` | Consecutive LTM failures before opening the circuit | `3` |
 | `MEMTOMEM_STM_SURFACING__CIRCUIT_RESET_SECONDS` | Open-circuit reset interval | `60` |
-| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_ENABLED` | Per-tool threshold auto-tuning | `true` |
+| `MEMTOMEM_STM_SURFACING__AUTO_TUNE_ENABLED` | Per-tool threshold auto-tuning; leaves `min_score` unchanged on empty or pinned-only batches | `true` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_MIN_SAMPLES` | Minimum feedback samples before tuning | `20` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_INCREMENT` | Threshold adjustment step | `0.002` |
 | `MEMTOMEM_STM_SURFACING__AUTO_TUNE_SCORE_FLOOR` | Default lower auto-tune bound; validation widens it to include an explicit `min_score` | `0.005` |
@@ -367,11 +367,11 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 
-Defaults above are schema declarations before initialization presets. `mm init` may change the provider, dimension, and memory directories. OTLP and Langfuse are independent opt-ins. Pass environment variables to the child MCP process and reconnect.
+Defaults above are schema declarations before initialization presets. OTLP and Langfuse are independent opt-ins. Pass environment variables to the child MCP process and reconnect.
 
 ### STM additional settings
 
@@ -379,7 +379,7 @@ Defaults above are schema declarations before initialization presets. `mm init` 
 |---|---|---|
 | `MEMTOMEM_STM_DAEMON__MAX_CONCURRENT_LTM_OPS` | Concurrent LTM operation limit | `4` |
 | `MEMTOMEM_STM_OTLP__ENABLED` | Optional OTLP export: enabled | `false` |
-| `MEMTOMEM_STM_OTLP__ENDPOINT` | Optional OTLP export: endpoint | `""` |
+| `MEMTOMEM_STM_OTLP__ENDPOINT` | Optional OTLP export: endpoint (host/path checked against sensitive-content patterns even when OTLP is disabled) | `""` |
 | `MEMTOMEM_STM_OTLP__FLUSH_TIMEOUT_SECONDS` | Optional OTLP export: flush timeout seconds | `5` |
 | `MEMTOMEM_STM_OTLP__HEADERS` | Optional OTLP export: headers | `{}` |
 | `MEMTOMEM_STM_OTLP__MAX_EXPORT_BATCH_SIZE` | Optional OTLP export: max export batch size | `512` |
@@ -394,4 +394,4 @@ Defaults above are schema declarations before initialization presets. `mm init` 
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | Embedding relevance cache entry limit | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | Shutdown watchdog deadline in seconds | `60` |
 
-Cache schema 6 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.
+Cache schema 7 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.

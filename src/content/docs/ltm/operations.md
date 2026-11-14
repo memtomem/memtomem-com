@@ -26,12 +26,18 @@ mm web status
 
 For CI, treat a top-level `error` field in `mm status --json` as failure; the
 command keeps JSON output stable and may still exit zero for initialization
-errors.
+errors. `mm status` also reports any configured remote embedding, LLM, or
+reranker endpoints so non-local inference destinations remain visible.
 
 `mm upgrade` manages `uv tool` installs. Use `pipx upgrade memtomem` for pipx,
 update the lockfile and run `uv sync` for project dependencies, or update Git
 and run `uv sync --extra all` for a source checkout.
 
-The Web UI binds to loopback by default. Off-loopback access requires the
+The Web UI binds to loopback by default and rejects browser cross-origin
+`/api/*` requests (`GET` and writes) with `403` when `Origin` (or `Referer` when
+`Origin` is absent) does not match the UI's own origin (scheme, host, and port).
+Pass `--trusted-origin <hostname>` when a cross-origin browser frontend
+intentionally calls `/api/*`; non-browser HTTP clients that send neither
+`Origin` nor `Referer` are unaffected. Off-loopback access requires the
 explicit remote UI, trusted-origin, and trusted-host flags and should remain
 behind an authenticating reverse proxy.

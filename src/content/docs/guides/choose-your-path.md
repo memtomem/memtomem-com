@@ -34,7 +34,7 @@ Start with **LTM** (`memtomem`). It stores durable memory and searches it on dem
 | Attach relevant LTM memory to a proxied call | Provides the memory | Performs the surfacing |
 | Required for the first successful setup | Yes | No |
 
-STM does not replace LTM and does not write every proxied response back into durable memory. The two packages run independently and communicate through MCP when surfacing is enabled.
+STM does not replace LTM, and the bundled STM server does not write proxied responses into durable LTM memory. The two packages run independently and communicate through MCP when surfacing is enabled.
 
 ## What Does Not Happen Automatically
 

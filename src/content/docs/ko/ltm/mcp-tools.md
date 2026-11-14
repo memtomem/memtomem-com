@@ -13,7 +13,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 |---|---|---|
 | `core` (기본) | `mem_do` 포함 총 9개 | 대부분의 에이전트에 가장 좋은 기본값 |
 | `standard` | `mem_do` 포함 39개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
-| `full` | 현재 도구 102개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
+| `full` | 현재 도구 93개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
 
 다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이
 이미 memtomem을 제공한다면 항목을 추가하기 전에
@@ -44,7 +44,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 | `mem_status` | 서버, 스토리지, 임베딩, 인덱스 상태 확인 |
 | `mem_stats` | 인덱스 통계 반환 |
 | `mem_add` | 새 기억 저장 |
-| `mem_search` | 인덱싱된 기억 하이브리드 검색 |
+| `mem_search` | 인덱싱된 기억 하이브리드 검색(0.7.8부터 선택형 서버 처리 시간 예산 `deadline_ms` 지원) |
 | `mem_recall` | 최근 또는 날짜 필터 기반 기억 조회 |
 | `mem_index` | 파일 또는 디렉터리 인덱싱 |
 | `mem_list` | 인덱싱된 기억 / 소스 목록. 한 페이지에 `limit`개(1–500, 기본 50)를 보여 주며, 다음 페이지는 이전 결과의 "More:" 줄에 있는 `cursor`를 넘겨 조회합니다. |
@@ -62,20 +62,18 @@ mem_do(action="help")
 mem_do(action="help", params={"category": "context"})
 mem_do(action="schedule_list")
 mem_do(action="context_diff", params={"scope": "project_shared"})
-mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name": "my-skill", "mode": "copy", "to_scope": "project_shared"})
 mem_do(action="version")
 ```
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.5는 현재 도구 102개와 `mem_do` 액션 96개를 제공합니다. 0.7.2에서
-`mem_update_coverage`가 추가되었고([업데이트 커버리지](#update-coverage)), 0.7.1에서
+v0.7.9는 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서
+`mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서
 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)).
 Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과
-`mem_candidate_propose/list/review/recover/evidence`가 있습니다. Full 모드에는 AI
-도구의 복사본을 미리 확인한 뒤 가져오는 `mem_context_pull`과 Quality Lab에서
-결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다.
+`mem_candidate_propose/list/review/recover/evidence`가 있습니다. Full 모드에는 Quality Lab에서
+결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
 
 `mem_do(action="version")`은 서버 버전, 기능 목록, 실제 임베딩·리랭커 실행
 환경을 반환합니다. `runtime_profile`에는 빠진 선택 의존성이 표시되며 비밀값은
@@ -84,7 +82,7 @@ Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
 `mem_candidate_propose(content, source, source_ref, idempotency_key)`는 민감
 정보를 검사한 뒤 검토 대기 후보를 만듭니다. 장기 기억에는 바로 저장하지
 않으며 승인된 후보만 일반 쓰기 단계로 넘어갑니다. 같은
-`idempotency_key`에 다른 내용을 보내면 거부합니다.
+`idempotency_key`로 동일한 내용을 다시 보내면 기존 대기 후보를 반환하고, 다른 내용을 보내면 거부합니다.
 
 
 `mem_candidate_evidence`는 호출자의 범위 안에 색인된 기억과 후보를 비교합니다. 다른 대기 후보나 고정 컨텍스트와 비교하지 않으며, 충돌 가능성 표시는 사실 판정이나 자동 승인·거부가 아닙니다.
@@ -104,7 +102,7 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 | 태그 | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
 | 세션 | `session_start`, `session_end`, `session_list`, `project_bind` |
 | 스크래치 | `scratch_set`, `scratch_get`, `scratch_promote` |
-| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (스킬·에이전트·명령을 프로젝트·계층 간 이동/복사), `context_version`, `context_promote` |
+| Context Gateway | `context_detect`, `context_diff`, `context_compose` (쓰기 작업은 0.7.9부터 `mm context` CLI 전용) |
 | 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | 가져오기 / 내보내기 | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | 품질 / 분석 | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
@@ -163,7 +161,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - 프로젝트 컨텍스트가 필요합니다. tier가 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
 - 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
 - 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
-- Core 0.7.5와 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
+- Core 0.7.9와 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
 
 <a id="언제-모드를-바꿀까"></a>
 
@@ -189,7 +187,7 @@ MCP 클라이언트가 `mem_do`보다 개별 도구를 직접 호출하는 방�
 | `mem_add` | `mm add` |
 | `mem_search` | `mm search` |
 | `mem_index` | `mm index` |
-| `mem_do(action="context_sync")` | `mm context sync` |
+| `mem_do(action="context_diff")` | `mm context diff` |
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 실행한 뒤 같은 작업을 다시 요청해 보세요.
@@ -211,7 +209,7 @@ AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 �
 
 ## 전체 모드 도구 이름
 
-full 모드에서 제공하는 현재 도구 102개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
+full 모드에서 제공하는 현재 도구 93개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -233,18 +231,9 @@ full 모드에서 제공하는 현재 도구 102개의 이름이며, 기본 core
 - `mem_conflict_check`
 - `mem_consolidate`
 - `mem_consolidate_apply`
-- `mem_context_artifact_migrate`
-- `mem_context_artifact_transfer`
 - `mem_context_compose`
 - `mem_context_detect`
 - `mem_context_diff`
-- `mem_context_generate`
-- `mem_context_init`
-- `mem_context_memory_migrate`
-- `mem_context_promote`
-- `mem_context_pull`
-- `mem_context_sync`
-- `mem_context_version`
 - `mem_decay_expire`
 - `mem_decay_scan`
 - `mem_dedup_merge`

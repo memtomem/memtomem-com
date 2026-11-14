@@ -40,7 +40,7 @@ mm context diff --scope project_shared
 | `sync` | Store 파일을 각 AI 도구 경로로 Push. `--runtime`으로 대상 제한 가능 |
 | `diff` | 기준본과 AI 도구 복사본의 동기화 상태 확인 |
 
-이동/복사, 다중 프로젝트, 버전 등 전체 명령 목록은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요.
+이동/복사, 다중 프로젝트, 버전 등 전체 명령 목록은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요. `mm context sync`와 Web UI의 프로젝트 범위 동기화는 `.claude`처럼 심볼릭 링크로 연결된 런타임 디렉터리를 통과해 쓰므로, 외부에서 복제한 저장소에서는 실행 전에 링크 대상을 먼저 확인하세요.
 
 <a id="정규-티어"></a>
 ## 기준본을 보관하는 계층
@@ -102,7 +102,7 @@ mm context pull skills reviewer --from claude --scope project_shared --apply
 
 Pull을 `project_shared`에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다.
 
-Store에 같은 항목이 이미 있다면 `--overwrite`를 추가합니다. 교체하기 전에 현재 기준본을 버전 이력에 저장합니다. 실제로 적용하기 전에 생성될 파일을 확인하세요. 처음 항목을 찾을 때는 종류별 일괄 Pull이나 `mm context init`도 사용할 수 있습니다. 여러 AI 도구에 같은 이름이 있다면 항목 이름과 가져올 도구를 직접 지정하는 편이 안전합니다.
+Store에 같은 항목이 이미 있다면 `--overwrite`를 추가합니다. 교체하기 전에 현재 기준본을 버전 이력에 저장합니다. 커밋하기 전에 생성된 파일을 확인하세요. 처음 항목을 찾을 때는 종류별 일괄 Pull이나 `mm context init`도 사용할 수 있습니다. 여러 AI 도구에 같은 이름이 있다면 항목 이름과 가져올 도구를 직접 지정하는 편이 안전합니다.
 
 <a id="프로젝트티어-간-이동과-복사"></a>
 ## 프로젝트·계층 간 이동과 복사
@@ -124,7 +124,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 - `project_shared`로 들어가는 전송은 비밀값 스캔을 거치며, `--apply`로 실행할 때 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다.
 - 전송이 성공하면 이어서 실행할 `mm context sync` 명령을 출력합니다.
 
-UI가 없는 환경에서는 MCP 액션 `mem_context_artifact_transfer`로 같은 작업을 실행할 수 있습니다.
+0.7.9부터는 도구 인자가 터미널 승인을 대신하지 않도록 Context Gateway 쓰기 작업(`init`, `generate`, `sync`, `pull`, `copy` / `move`, 마이그레이션, `version`)이 MCP에서 제거되었습니다. 쓰기 작업은 `mm context` CLI로 실행하며(Web UI는 전용 라우트가 있는 작업만 유지), MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다.
 
 ## 다른 컴퓨터로 항목 옮기기
 
@@ -223,5 +223,5 @@ Web UI의 **Gateway** 아래에는 Overview, Projects, Skills, Commands, Subagen
 ## 다음 단계
 
 - [CLI 레퍼런스](/ko/ltm/cli/) — 전체 `mm context` · `mm wiki` 명령 목록
-- [MCP 도구](/ko/ltm/mcp-tools/) — `mem_do`를 통한 context 액션
+- [MCP 도구](/ko/ltm/mcp-tools/) — `mem_do`를 통한 읽기 전용 context 액션
 - [멀티 에이전트 협업](/ko/ltm/multi-agent/) — 여러 에이전트를 위한 기억 네임스페이스

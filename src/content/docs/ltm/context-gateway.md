@@ -38,7 +38,7 @@ mm context diff --scope project_shared
 | `sync` | Pushes Store files out to each runtime path; use `--runtime` to restrict fan-out |
 | `diff` | Shows whether canonical and runtime copies still match |
 
-For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/).
+For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/). `mm context sync` and the Web UI's project-scope sync write through a linked runtime directory such as `.claude`, so inspect symlinks in a cloned repository before running sync.
 
 ## Canonical Tiers
 
@@ -119,7 +119,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 - A transfer landing in `project_shared` runs the secret scan and, when applied, asks for confirmation. In non-interactive runs pass `--confirm-project-shared`, because `--yes` alone is refused.
 - Every successful transfer prints the follow-up `mm context sync` command to run.
 
-The `mem_context_artifact_transfer` MCP action performs the same operation headlessly.
+Since 0.7.9, Context Gateway writes (`init`, `generate`, `sync`, `pull`, `copy` / `move`, migrations, and `version`) are off the MCP surface so tool arguments cannot stand in for terminal confirmation; run them with `mm context` (the Web UI keeps the actions it has routes for). Read-only `context_detect`, `context_diff`, and `context_compose` remain available over MCP.
 
 ## Carry an Artifact to Another Machine
 
@@ -217,5 +217,5 @@ Project and tier filters, runtime targeting, drift status, and multi-project act
 ## Next
 
 - [CLI Reference](/ltm/cli/) — full `mm context` and `mm wiki` command list
-- [MCP Tools](/ltm/mcp-tools/) — context actions through `mem_do`
+- [MCP Tools](/ltm/mcp-tools/) — read-only context actions through `mem_do`
 - [Multi-Agent Collaboration](/ltm/multi-agent/) — memory namespaces for multiple agents

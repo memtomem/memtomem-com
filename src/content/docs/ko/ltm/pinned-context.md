@@ -17,6 +17,9 @@ mm pinned delete response-style --scope user
 
 대상 계층은 `--scope user|project_local|project_shared`로 지정합니다.
 Git으로 추적하는 공유 계층에 쓰려면 `--confirm-project-shared`가 필요합니다.
+프로젝트 범위(`project_shared`, `project_local`) 쓰기와 삭제는 저장소 안의
+링크가 프로젝트 밖 파일을 가리키지 못하도록 `.memtomem`, 계층 디렉터리, `pinned` 또는 그 하위 디렉터리가 심볼릭 링크나
+정션이면 거부하며, 사용자 범위 블록과 읽기는 그대로 동작합니다.
 
 블록 하나에는 최대 2,000자를 저장할 수 있습니다. 6,000자는 전체 저장
 한도가 아니라 `compose` 1회에서 고정 블록에 사용할 수 있는 분량입니다.

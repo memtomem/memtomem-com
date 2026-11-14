@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 39, including `mem_do` | You want common management tools directly visible |
-| `full` | 102 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 93 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
 
 The following example is for a manual MCP-only connection. If a client plugin
 already supplies memtomem, check that client's coexistence rule in
@@ -43,7 +43,7 @@ In `core` mode, the agent sees the tools needed for daily memory work:
 | `mem_status` | Check server, storage, embedding, and index status |
 | `mem_stats` | Return index statistics |
 | `mem_add` | Store a new memory |
-| `mem_search` | Hybrid search over indexed memory |
+| `mem_search` | Hybrid search over indexed memory (supports an optional `deadline_ms` server processing budget since 0.7.8) |
 | `mem_recall` | Browse recent or date-filtered memory |
 | `mem_index` | Index a file or directory |
 | `mem_list` | List indexed memories / sources, `limit` per page (1–500, default 50). Pass the `cursor` from the previous page's "More:" line for the next page. |
@@ -61,19 +61,16 @@ mem_do(action="help")
 mem_do(action="help", params={"category": "context"})
 mem_do(action="schedule_list")
 mem_do(action="context_diff", params={"scope": "project_shared"})
-mem_do(action="context_artifact_transfer", params={"asset_type": "skill", "name": "my-skill", "mode": "copy", "to_scope": "project_shared"})
 mem_do(action="version")
 ```
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.7.5 registry has 102 current tools and 96 `mem_do` actions; 0.7.2 adds
+The v0.7.9 registry has 93 current tools and 88 `mem_do` actions; 0.7.9 removes the nine Context Gateway write tools from MCP (run them with `mm context` instead; read-only `context_detect`, `context_diff`, and `context_compose` remain), 0.7.8 adds the `hermes_mirror_apply` action, 0.7.2 added
 `mem_update_coverage` ([Update Coverage](#update-coverage)), and 0.7.1 added
 `mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
-`mem_formation_scan` and `mem_candidate_propose/list/review/recover/evidence`. The new
-full-mode surface also includes `mem_context_pull` for preview-first runtime
-imports and `mem_quality_replay` for deterministic Quality Lab replays.
+`mem_formation_scan` and `mem_candidate_propose/list/review/recover/evidence`. Full mode also includes `mem_quality_replay` for deterministic Quality Lab replays. By-id `edit` and `delete` refuse chunks indexed from explicit paths outside managed memory roots, registered project tiers, and `~/.memtomem/uploads` with `source_unmanaged` (0.7.9).
 
 `mem_do(action="version")` returns the server version, capability map, and a
 secret-free `runtime_profile` describing the effective embedding/rerank runtime
@@ -103,7 +100,7 @@ candidate; reusing it with different content is rejected.
 | Tags | `tag_list`, `tag_rename`, `tag_merge`, `tag_delete` |
 | Sessions | `session_start`, `session_end`, `session_list`, `project_bind` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
-| Context Gateway | `context_detect`, `context_init`, `context_generate`, `context_diff`, `context_sync`, `context_pull`, `context_artifact_transfer` (move/copy skills, agents, commands across projects and tiers), `context_version`, `context_promote` |
+| Context Gateway | `context_detect`, `context_diff`, `context_compose` (writes moved to `mm context` in 0.7.9) |
 | Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
@@ -156,7 +153,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - It needs a project context: start the server inside a project with a registered tier, or bind one with [`mem_project_bind`](#project-binding).
 - Coverage is stored only in the SQLite database. A JSON export does not carry it, and an import neither adds nor clears it, so after a bundle is restored into a store without that project's coverage, those commits are reviewed again.
 - The tool is marked as not read-only, so a caching proxy does not replay an earlier answer.
-- The `update` workflow of the plugins released with Core 0.7.5 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
+- The `update` workflow of the plugins released with Core 0.7.9 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
 
 ## When to Change Modes
 
@@ -180,7 +177,7 @@ Most common MCP operations have CLI equivalents:
 | `mem_add` | `mm add` |
 | `mem_search` | `mm search` |
 | `mem_index` | `mm index` |
-| `mem_do(action="context_sync")` | `mm context sync` |
+| `mem_do(action="context_diff")` | `mm context diff` |
 | `mem_do(action="schedule_list")` | `mm schedule list` |
 
 If an agent is struggling to call the right tool, run the CLI command once yourself and then ask the agent to follow the same operation.
@@ -202,7 +199,7 @@ A sources page is `{"sources": [...], "page_size": N, "next": ...}`. `next` is t
 
 ## Full-mode tool names
 
-These are the 102 current names in full mode, distinct from the nine tools exposed by default in core mode.
+These are the 93 current names in full mode, distinct from the nine tools exposed by default in core mode.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -224,18 +221,9 @@ These are the 102 current names in full mode, distinct from the nine tools expos
 - `mem_conflict_check`
 - `mem_consolidate`
 - `mem_consolidate_apply`
-- `mem_context_artifact_migrate`
-- `mem_context_artifact_transfer`
 - `mem_context_compose`
 - `mem_context_detect`
 - `mem_context_diff`
-- `mem_context_generate`
-- `mem_context_init`
-- `mem_context_memory_migrate`
-- `mem_context_promote`
-- `mem_context_pull`
-- `mem_context_sync`
-- `mem_context_version`
 - `mem_decay_expire`
 - `mem_decay_scan`
 - `mem_dedup_merge`

@@ -12,7 +12,10 @@ import assert from 'node:assert/strict';
 // 0.6.12 stays out for the same reason: the upgrade checks in ltm/cli.md date
 // the PKCS#8 write guard to it ("before 0.6.12"). stalePins() still rejects a
 // leftover 0.6.12 install pin or release link.
-export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15', '0.5.23', '0.3.20', '0.5.25', '0.3.22', '0.5.28', '0.3.25'];
+// 0.7.5 and 0.7.7 stay out for the same package-agnostic historical-dating
+// reasons ("since 0.7.5", "From before 0.7.5", "Since 0.7.7"); stalePins()
+// rejects leftover 0.7.5/0.7.7 pins and tagged GitHub URLs.
+export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15', '0.5.23', '0.3.20', '0.5.25', '0.3.22', '0.5.28', '0.3.25', '0.5.31', '0.3.19', '0.3.27'];
 
 export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`);

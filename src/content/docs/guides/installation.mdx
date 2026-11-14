@@ -97,7 +97,7 @@ The MCP server itself ships as the `memtomem-server` console script. You don't r
 | English (Recommended) | local ONNX embedding (no reranker) | downloads local models once | mostly English projects |
 | Korean-optimized | multilingual embedding + Korean tokenizer (no reranker) | downloads local models once | Korean or multilingual notes |
 
-The CLI tokens remain `--preset minimal`, `--preset english`, and `--preset korean`. Remote Ollama or OpenAI-compatible providers are explicit later choices; selecting them can send request data to the configured service.
+The CLI tokens remain `--preset minimal`, `--preset english`, and `--preset korean`. Interactive `mm init` defaults Enter to **English** (`[2]`) when `onnx` is installed or **Minimal** (`[1]`) otherwise, and in the MCP registration prompt defaults to **Claude Code** (`[1]`) when the `claude` CLI is on `PATH` or **Skip** (`[3]`) otherwise. Selecting a remote embedding, LLM, or reranker endpoint prints a notice that memory text and queries are sent to that service. Remote Ollama or OpenAI-compatible providers remain explicit choices.
 
 ## STM Proxy (memtomem-stm)
 
@@ -152,7 +152,7 @@ After installation, the following commands are available:
 | `mms project route` | Preview routing selected project MCPs through STM (`--apply` writes) |
 | `mms --version` | Print installed version |
 
-The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client via `mms init --client ...`, `mms register --client ...`, or a generic JSON entry, the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
+The STM proxy itself ships as the `memtomem-stm` console script. As with LTM, you don't launch it by hand — once STM is registered with your MCP client via `mms init --client ...`, `mms register --client ...` (which writes `<python> -P -m memtomem_stm`), or a generic JSON entry, the client starts it automatically. STM writes its proxy config to `~/.memtomem/stm_proxy.json`; `mms add` / `mms init` manage it for you, so you rarely hand-edit it.
 
 ## File locations
 

@@ -33,19 +33,22 @@ mms register --client codex
 mms register --client auto
 ```
 
-For another JSON-based client:
+For another JSON-based client, use the Python interpreter of the environment where `memtomem-stm` is installed (or copy the entry written by `mms register --client json`; `mms register` writes `<python> -P -m memtomem_stm` so Python does not prepend the working directory to `sys.path`):
 
 ```json
 {
   "mcpServers": {
     "memtomem-stm": {
-      "command": "memtomem-stm"
+      "command": "/path/to/memtomem-stm/python",
+      "args": ["-P", "-m", "memtomem_stm"]
     }
   }
 }
 ```
 
 Restart the client after registration.
+
+> **Upgrading from before 0.7.8 (`GHSA-2p94-5932-5f3p`):** existing host registrations are kept on upgrade and should be refreshed so Python launches with `-P` (pass `--config <path>` too if you registered a non-default proxy config): run `mms register --client json --replace-registration` in projects with `.mcp.json`, `mms register --client claude --replace-registration` for Claude Code user scope, or `mms register --client codex --replace-registration` for Codex; for hand-edited host configs, insert `"-P"` before `"-m"` in `args`. If `~/.memtomem/stm_proxy.json` still has an older demo upstream, set `upstream_servers.demo.args` to `["-P", "-m", "memtomem_stm.demo_server"]` (`mms init --demo --resume` leaves an existing entry unchanged). Then quit MCP hosts and stop old daemons with `mms daemon stop --all` on macOS/Linux (on Windows `--all` does not signal them, so end old daemon processes from Task Manager; if an OTLP `endpoint` fails 0.7.8 validation, fix it first because `mms daemon` loads the config).
 
 ## 2. Call the Proxied Demo Tool
 

@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.7.5. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.9. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.5 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.9 binary.
 
 | Group | Commands |
 |---|---|
@@ -91,13 +91,13 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.7.5, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.9, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
 Run the interactive setup wizard. Configures embedding provider, database path, tokenizer, reranker, and default namespace.
 
-At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, tokenizer, and namespace defaults. No preset turns on a reranker: add one with `mm config set rerank.enabled true` or the Advanced wizard's reranker step. Rerunning `mm init` with a preset leaves an existing `rerank` section in `config.json` as it is. Pass `--preset <name> --non-interactive` to run without prompts, or `--advanced` to force the full 10-step wizard.
+At startup, the setup wizard offers a **preset picker** (Minimal / English (Recommended) / Korean-optimized) that applies a curated bundle of embedding, tokenizer, and namespace defaults. Pressing Enter picks what the environment can finish: the preset prompt defaults to Minimal unless the `onnx` extra is importable, and the MCP registration prompt defaults to Skip when the `claude` CLI is not on `PATH` (0.7.8). Configuring a remote inference endpoint surfaces a notice that memory text and queries are sent to that endpoint (0.7.6). No preset turns on a reranker: add one with `mm config set rerank.enabled true` or the Advanced wizard's reranker step. Rerunning `mm init` with a preset leaves an existing `rerank` section in `config.json` as it is. Pass `--preset <name> --non-interactive` to run without prompts, or `--advanced` to force the full 10-step wizard.
 
 ```bash
 mm init                              # interactive setup with preset picker
@@ -116,7 +116,7 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Connect an AI Client](/guides/connect-ai-client/) for the per-client registration steps.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 102 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 93 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
 
@@ -183,6 +183,8 @@ On launch, `mm web` opens the dashboard at `http://127.0.0.1:8080`. Simple mode 
 
 The header's **Advanced** toggle reveals Tags and Timeline plus Dedup, Age-out, and Export/Import settings. Pass `--dev` (or set `MEMTOMEM_WEB__MODE=dev`) to add maintainer pages: **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction**.
 
+Since 0.7.9, `/api/*` refuses browser requests from another origin — including another loopback port — returning `403` on both `GET` reads and writes. Non-browser tools that send no `Origin` or `Referer` header are unaffected. `--trusted-origin <hostname>` takes a hostname (not a port) and allows requests from any port on that host (for example `mm web --trusted-origin localhost`).
+
 ```bash
 mm web                               # default: http://localhost:8080 (prod tier)
 mm web --port 9000
@@ -218,7 +220,7 @@ mm add "API timeout policy" --title "API timeout" --tags "ops,api"
 mm add "postmortem summary" --file postmortems/2026-04-auth.md
 ```
 
-Tags passed via `--tags` are merged onto the appended file's chunk metadata right after indexing — the chunker doesn't parse tag text from the body, so the merge is explicit. `--file` only accepts paths relative to `~/.memtomem/memories/` and rejects `..` components. An append is refused when the target already holds entries in another namespace, or, since 0.7.5, when its name is a non-default day-file name that decodes to another namespace; `--allow-namespace-mix` overrides. A name that does not decode, such as one with a truncated slug, routes as before.
+Tags passed via `--tags` are merged onto the appended file's chunk metadata right after indexing — the chunker doesn't parse tag text from the body, so the merge is explicit. `--file` only accepts paths relative to the active scope's memory directory and rejects `..` components; since 0.7.9 it also refuses a path that resolves into another registered memory tier (such as a `project_shared` tier nested inside `~/.memtomem/memories/`), even with `--confirm-project-shared` — write to that tier from its project with `--scope` instead. An append is refused when the target already holds entries in another namespace, or, since 0.7.5, when its name is a non-default day-file name that decodes to another namespace; `--allow-namespace-mix` overrides. A name that does not decode, such as one with a truncated slug, routes as before.
 
 ### `mm index <path>`
 
@@ -392,7 +394,7 @@ mm status --json                     # machine-readable, for scripts / `jq` pipe
 
 Added in v0.1.25; `--json` / `--format json` added in v0.3.4. Good fit for a one-liner "is the DB open and how many entries are in it" check before wiring an MCP client.
 
-When `search.tokenizer` is `kiwipiepy` but the `kiwipiepy` package cannot be found, or the process has already fallen back to `unicode61`, both `mm status` and `mem_status` list a `tokenizer_fallback` warning. Rows indexed during the fallback are tokenized differently, so Korean keyword search can miss them. Install the `korean` extra wherever memtomem runs, restart its servers, then rebuild the keyword index.
+When `search.tokenizer` is `kiwipiepy` but the `kiwipiepy` package cannot be found, or the process has already fallen back to `unicode61`, both `mm status` and `mem_status` list a `tokenizer_fallback` warning. Rows indexed during the fallback are tokenized differently, so Korean keyword search can miss them. Install the `korean` extra wherever memtomem runs, restart its servers, then rebuild the keyword index. When a remote embedding, reranker, or LLM endpoint is configured, both surfaces also report the active remote endpoint with credentials stripped (0.7.6).
 
 ### `mm sync-doctor`
 
@@ -466,7 +468,7 @@ mm schedule run-now <sched-id>       # fire immediately, out of band
 mm schedule delete <sched-id>
 ```
 
-`--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters. The dispatcher rides the health-watchdog loop, so registered jobs only fire when both `scheduler.enabled` and `health_watchdog.enabled` are on.
+`--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters; since 0.7.9 registration refuses unknown parameter keys for the chosen job (or any key on a job that takes none). The dispatcher rides the health-watchdog loop, so registered jobs only fire when both `scheduler.enabled` and `health_watchdog.enabled` are on.
 
 ## Maintenance & Lifecycle
 
@@ -522,7 +524,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.7.5          # pin a specific version
+mm upgrade --version 0.7.9          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -541,6 +543,7 @@ Checks after upgrading from an earlier release:
 - **From before 0.7.5:** `mem_edit` and `PATCH /api/chunks/{id}` refuse an edit of indexed text that is not the chunk's source, for example text with resolved wikilinks or merged sections. Instead of writing, they answer `edit_base_mismatch` with the chunk's source text and a `base_hash`; send the edited source text back with that `base_hash`. An edit with `base_hash` replaces the source text verbatim, so keep every line of it you want to stay, heading and header included. `GET /api/chunks/{id}/source` returns the same source text and `base_hash` before an edit; the Web UI's editors use it. Without `base_hash`, a body-only edit of an entry `mem_add` wrote keeps its heading and `> created:` / `> tags:` header as before. For an untagged entry, whose indexed text shows its `> created:` line, an edit that changes or moves that line, or whose new body starts with `>`, is refused the same way.
 - **From before 0.7.5:** a chunk's `created_at` comes from its entry's `> created:` line whenever the store creates the row, so editing an entry or rebuilding the index keeps the date the entry was written. Date-ranged recall (`mm recall --since` / `--until`, `mem_recall`'s `since` / `until`), newest-first ordering, the oldest-copy choice in dedup and age-based policies on `created_at` follow that date. Time decay reads `updated_at` and is unchanged. An edit without `base_hash` whose new content opens with its own `## ` heading replaces the whole entry and drops the header, so that entry is dated by the edit. The date is read only from a `> created:` line in the blockquote group that leads the section, and a value that does not parse as an ISO 8601 time is ignored. Rows already stored keep their `created_at`, and text without such a line is dated by the index run, as before.
 - **From before 0.7.5:** a file named like a non-default day file (`{date}--{slug}-{digest}.md`) whose name decodes belongs to the namespace the name encodes, whoever wrote it and whether or not it is empty; names that do not decode route as before. A write with no explicit namespace, no agent-session binding and no current namespace set with `mem_ns_set` into such a file with no stored rows lands in that namespace. A write under another namespace into it (`mem_add(file=...)`, `mm add --file`, the Web UI's add) is refused like any other namespace mix; `allow_namespace_mix=true` / `--allow-namespace-mix` overrides. Re-indexing such a file with no stored rows, after the database is gone or on another machine, puts it back in that namespace ahead of a session binding; stored rows, an explicit `namespace` and `--reassign-namespaces` still win. Namespace moves made after writing (`mem_ns_rename`, `mem_ns_assign`, archive and promote policies) live only in the database, so a rebuild returns those files to the namespace in their name: keep the database, or reapply the moves after a rebuild.
+- **From before 0.7.9:** the nine Context Gateway write tools (`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`) are removed from MCP; run them with `mm context` (`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`). By-id `edit` and `delete` refuse chunks indexed from explicit paths outside managed memory roots, registered project tiers, and `~/.memtomem/uploads` with `source_unmanaged`; project-scope `mm pinned` / `mem_pinned_*` writes and deletes refuse when `.memtomem`, the tier directory, `pinned`, or a directory below it is a symlink or junction; and `mm web` refuses cross-origin browser `/api/*` requests (`403` on reads and writes; pass `--trusted-origin <hostname>` when needed). Existing environments also keep `opentelemetry-api` 1.45.1 until dependencies are resolved again (`mm upgrade` / `uv tool upgrade memtomem`, `uv cache clean opentelemetry-api && uv cache prune` for cached `uvx` launches, or `pip install -U opentelemetry-api` in virtual environments — verify `1.45.2` or later), keep an older `filelock` until `pip install -U filelock`, and on macOS/Linux keep the prior mode on an existing `~/.memtomem/cache/fastembed` directory until `chmod 700 ~/.memtomem/cache/fastembed`.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 

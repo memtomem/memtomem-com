@@ -61,6 +61,8 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 | **벡터 검색** | sqlite-vec + ONNX/Ollama/OpenAI 임베딩 | 의미가 비슷한 표현 검색. "배포 방법"으로 "deployment checklist"를 찾을 수 있음 |
 | **RRF 결합** | Reciprocal Rank Fusion | 두 검색 결과의 순위를 합쳐 최종 순위 계산 |
 
+BM25 경로 보조 색인은 확장자를 뺀 파일명만 색인하므로(`octopus`로 `octopus.md` 검색) 메모리 디렉터리 아래의 하위 폴더 이름은 그 안의 파일과 일치하지 않습니다. 기존 데이터베이스는 0.7.9에서 처음 열 때 해당 필드를 한 번 다시 쓰며, 같은 데이터베이스에 0.7.8 이하 버전이 나중에 파일을 쓰거나 옮기면 `mm index <memory dir> --force` 또는 FTS 재구축을 실행할 때까지 해당 행에 전체 경로 매칭이 다시 적용됩니다.
+
 벡터 검색이 오류로 실패해도(예: 임베딩 서버에 연결할 수 없는 경우) 남은 결과는 반환되며, 결과가 있으면 `semantic search failed for this query — results may be incomplete` 안내가 함께 표시됩니다. `mem_search`의 compact 출력 끝, structured 출력의 `hints` 배열, `mm search`의 stderr, `mem_ask`의 근거 프롬프트에 나타납니다. 세션 요약 보조 검색을 통해 일부 벡터 결과가 포함될 수 있으므로, 반환된 결과가 키워드 검색만으로 구성되었다는 의미는 아닙니다. 임베딩 불일치로 벡터 검색을 건너뛴 경우에는 해결 방법을 담은 별도 안내가 표시되고, 결과가 없을 때의 응답은 바뀌지 않습니다.
 
 ## 리랭커 풀 튜닝
@@ -75,7 +77,7 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 | `rerank.min_pool` | `MEMTOMEM_RERANK__MIN_POOL` | `20` | 하한선 — 리랭커가 받는 후보 수의 최소값 |
 | `rerank.max_pool` | `MEMTOMEM_RERANK__MAX_POOL` | `200` | oversample로 늘린 후보 수의 상한. `top_k`나 `min_pool`이 더 크면 그 값이 우선 |
 
-실행 중인 설정은 `mm config set rerank.oversample 3.0`처럼 바꿀 수 있습니다. 리랭커 모델을 비롯한 나머지 `rerank.*` 설정은 [설정 레퍼런스](/ko/ltm/configuration/)를 참고하세요.
+실행 중인 설정은 `mm config set rerank.oversample 3.0`처럼 바꿀 수 있으며 `rerank.enabled`도 `mm config set`이나 `mem_config`로 실행 중에 변경할 수 있습니다. 리랭커 모델을 비롯한 나머지 `rerank.*` 설정은 [설정 레퍼런스](/ko/ltm/configuration/)를 참고하세요.
 
 ## 시맨틱 청킹
 
@@ -107,9 +109,9 @@ memtomem은 키워드 검색과 의미 기반 검색을 함께 사용합니다. 
 
 구조화 검색 응답은 현재 `score_scale`(`rrf`, `bm25`, `dense`, `none`, `rerank`)을 표시합니다. 서로 다른 척도에 고정 임계값 하나를 일괄 적용하면 안 되며, STM 같은 클라이언트는 이 메타데이터로 척도별 필터를 적용하거나 일시 중지합니다.
 
-`mem_search`의 structured 응답에는 결과가 없을 때를 포함해 항상 최상위 `recorded` 키가 있습니다. 기본 기록 모드로 실행하면 `true`, `record=false`로 실행하면 `false`입니다. 이 값은 어떤 모드가 적용되었는지를 나타낼 뿐, 실제로 기록이 일어났는지를 나타내지는 않습니다. compact와 verbose 출력은 바뀌지 않으며, 0.6.8 이전 서버는 이 키를 보내지 않습니다.
+`mem_search`의 structured 응답에는 결과가 없을 때를 포함해 항상 최상위 `recorded` 키가 있습니다. 기본 기록 모드로 실행하면 `true`, `record=false`로 실행하면 `false`입니다. 이 값은 어떤 모드가 적용되었는지를 나타낼 뿐, 실제로 기록이 일어났는지를 나타내지는 않습니다. compact와 verbose 출력은 바뀌지 않으며, 0.6.8 이전 서버는 이 키를 보내지 않습니다. 턴 지연 예산이 엄격한 호출자는 `deadline_ms`(밀리초 단위의 양의 정수)를 지정해 서버 측 처리 시간을 제한할 수 있습니다.
 
-유사한 중복 찾기, 오래된 결과의 점수 낮추기, TTL 만료, 자동 태깅 설정은 [설정 레퍼런스](/ko/ltm/configuration/)에서 확인할 수 있습니다.
+유사한 중복 찾기, 시간 감쇠, 접근 빈도·중요도·엔티티 가중, MMR 다양성 재순위(시간 감쇠와 점수 가중 뒤에 실행), TTL 만료, 자동 태깅 설정은 [설정 레퍼런스](/ko/ltm/configuration/)에서 확인할 수 있습니다.
 
 <a id="retrieval-benchmark-v2"></a>
 ## 검색 벤치마크 v2

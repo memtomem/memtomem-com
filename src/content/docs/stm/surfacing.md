@@ -34,7 +34,7 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 | 4 | Semantic keys | Keyword combination from `query` / `search` / `url` / `description` and similar argument values |
 | 5 | Tool name | Last resort for proxied calls — use the tool name itself as the query |
 
-Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` skip step 5. They build the query from the call's arguments (paths and shell commands) and skip surfacing when fewer than `min_query_tokens` remain. The [upstream guide](https://github.com/memtomem/memtomem-stm/blob/v0.7.7/docs/surfacing.md#how-context-extraction-works) lists the rules.
+Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` skip step 5. They build the query from the call's arguments (paths and shell commands) and skip surfacing when fewer than `min_query_tokens` remain — except path-only native `Read` calls, which require `max(1, min_query_tokens - 1)` tokens (`2` at the default `3`) so two-segment paths like `src/auth.py` can surface. The [upstream guide](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/surfacing.md#how-context-extraction-works) lists the rules.
 
 `_context_query` is accepted by the proxy, but it is added to advertised upstream schemas only when `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`. The default is `false`, so ordinary agents are not asked to synthesize this private hint.
 
@@ -87,7 +87,7 @@ Raises are capped at `min(auto_tune_score_ceiling, max(batch reference, min_scor
 
 - `rrf` results: their `score_ceiling` stamp (or `2/61` without a valid one) at 4 places (`2/61` → `0.0327`).
 - Results without a `score_scale`, or with a label STM does not recognize: `2/61` at 2 places (`0.03`).
-- An empty batch, or a recognized non-RRF scale: no extra cap.
+- An empty or pinned-only batch (no retrieved LTM memories) leaves `min_score` unchanged; a recognized non-RRF scale applies no extra cap.
 
 Stored adjustments are not rewritten: a tool already tuned above the cap filters at the cap from its next search on, while `stm_admin(action="surfacing_stats")` keeps showing the stored value. This applies to the proxy, and to the daemon when `hook.record_feedback_events` is on.
 
@@ -133,6 +133,7 @@ Surfacing runs under the following safeguards for resilience and privacy:
 - **Surfacing timeout** — `3s` hard ceiling per call. A call that arrives while the LTM connection is still starting waits for it within this timeout, then uses the context composition the connected Core supports
 - **Rate limit** — `15 calls / minute` ceiling across all tools
 - **Write-tool skip** — Disables surfacing for tools with side effects (file writes, deletes)
+- **Sensitive-query skip** — Calls whose query matches a credential or email pattern (including credentials adjacent to Hangul, kana, Han, or accented Latin letters, and email addresses with an attached particle) skip surfacing before LTM (`sensitive_query` in `surfacing_stats`, with no digest search). When the query comes from `query_template` or arguments, raw arguments (and server, tool, and template strings) are checked first; an agent-supplied query (`context_query` / `_context_query`) on a tool without a template is used as given and still surfaces when clean. Skipped calls deliver nothing (Pinned Context included), write no `surfacing_events` row, fire no webhook, and have no switch
 - **Query cooldown** — Skips surfacing when the extracted query has Jaccard similarity `> 0.95` with one seen in the last 5 seconds
 - **Cross-session dedup** — Default TTL `604800s` (7 days) via `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`
 - **Injection size cap** — Default `3000 chars` per injection

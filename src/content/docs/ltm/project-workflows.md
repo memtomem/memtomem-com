@@ -102,6 +102,8 @@ The target AI tool is recorded as one of `claude-code`, `codex-cli`, `kimi-code`
   It does not fetch, and writes no refs, objects, or `FETCH_HEAD`. Every value it passes to Git comes from the repository's own Git config.
 - **Issue and pull request state** — when `next_action` names an issue or pull request as `<owner>/<repo>#<n>` or a GitHub URL, and the AI tool can query GitHub, resume reports its state. A bare `#<n>` or a reference without its owner is reported as not checked.
 
+Resume ends by pointing to `brief` when you also want related project memories before starting work.
+
 The Claude Code plugin does not pre-approve the commands used for the remote comparison and the GitHub query. Claude Code's permission settings decide, so you may see a permission prompt. A denied remote comparison is reported as "remote not compared", and a denied GitHub query as "target not checked".
 
 ## brief
@@ -113,7 +115,7 @@ Compiles a compact briefing of project context before a task. It never writes, e
 /memtomem:brief
 ```
 
-- **Topic mode** — with a topic, it gathers related project memories, indexed notes from AI tools' own memory folders (matched by directory name, so they can come from a same-named repository elsewhere; each is cited with its namespace), recent `update` items, recent handoff IDs, and your cross-project preferences.
+- **Topic mode** — with a topic, its project step searches only `update` items (`memory-update-item` tag) so handoff bodies are excluded (project memories saved without `memory-update-item` are not found by that step), alongside indexed notes from AI tools' own memory folders (matched by directory name, so they can come from a same-named repository elsewhere; each is cited with its namespace), recent `update` items, recent handoff IDs, and your cross-project preferences.
 - **Minimal mode** — without a topic, it reports only recent updates, active handoff IDs, and candidate open items.
 
 Every file path, configuration key, or symbol the briefing cites is checked against the live worktree and marked `✅ exists`, `❌ gone`, or `? not checkable`. Gone items are listed as candidates for the next `update` run to correct. Handoffs are listed by ID only; run `handoff resume <handoff_id>` to load one.
