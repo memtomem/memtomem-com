@@ -34,7 +34,7 @@ STM needs a search query before it can ask LTM for memories. Instead of relying 
 | 4 | Semantic keys | Keyword combination from `query` / `search` / `url` / `description` and similar argument values |
 | 5 | Tool name | Last resort for proxied calls — use the tool name itself as the query |
 
-Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` skip step 5. They build the query from the call's arguments (paths and shell commands) and skip surfacing when fewer than `min_query_tokens` remain — except path-only native `Read` calls, which require `max(1, min_query_tokens - 1)` tokens (`2` at the default `3`) so two-segment paths like `src/auth.py` can surface. The [upstream guide](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/surfacing.md#how-context-extraction-works) lists the rules.
+Since 0.7.7, Claude Code built-in tool calls that arrive through `mms hook` skip step 5. They build the query from the call's arguments (paths and shell commands) and skip surfacing when fewer than `min_query_tokens` remain — except queries made only of path-argument tokens (such as a bare `Read`), which require `max(1, min_query_tokens - 1)` tokens (`2` at the default `3`): a built-in `Read` of `tests/test_server_tools.py` (`server tools`) or `/etc/hosts` (`etc hosts`) surfaces, while `CHANGELOG.md` (`CHANGELOG`) does not. The [upstream guide](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/surfacing.md#how-context-extraction-works) lists the rules.
 
 `_context_query` is accepted by the proxy, but it is added to advertised upstream schemas only when `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`. The default is `false`, so ordinary agents are not asked to synthesize this private hint.
 

@@ -70,7 +70,7 @@ graph = builder.compile(store=store)  # builder: StateGraph
 
 - 색인은 지정한 루트 아래에 Store가 직접 만듭니다. 개인 `~/.memtomem` 설정과 `MEMTOMEM_*` 환경 변수는 이 Store의 설정에 적용되지 않습니다. 이 Store에는 개발자의 기억이 아니라 애플리케이션의 기억(사용자, 스레드)이 담깁니다. 다만 프로젝트 계층(tier) 등록 정보를 한 번 읽으며, ONNX 모델 캐시처럼 루트 밖의 memtomem 공용 경로를 사용할 수 있습니다.
 - 기본값에서는 임베딩을 사용하지 않습니다(BM25만 사용, 모델 다운로드 없음). 벡터 검색을 쓰려면 `memtomem[onnx]`를 함께 설치하고 `config={"embedding": {...}}`를 지정합니다.
-- `MemtomemPipelineStore.open(...)`에 별도 키워드 인자 `retrieval={"mode": "hybrid" | "bm25" | "dense", "weights": [bm25, dense], "rrf_k": 60}`를 전달해 실행할 검색 경로를 선택합니다(이 외의 키는 `ValueError`로 거부됨). `weights`는 `"hybrid"` 모드에서만 적용되며, `"dense"`는 임베더가 필수입니다(임베더가 없으면 `open` 시점에 거부되고, 질의 중 벡터 검색을 실행할 수 없으면 `DenseSearchUnavailable` 발생). `search`나 `rerank` 같은 나머지 파이프라인 설정은 `config={...}`에 지정합니다.
+- `MemtomemPipelineStore.open(...)`에 별도 키워드 인자 `retrieval={"mode": "hybrid" | "bm25" | "dense", "weights": [bm25, dense], "rrf_k": 60}`를 전달해 실행할 검색 경로를 선택합니다(이 외의 키는 `ValueError`로 거부됨). `weights`는 `"hybrid"` 모드에서만 적용되며, `"dense"`는 임베더가 필수입니다(임베더가 없으면 `open` 시점에 거부되고, 질의 중 벡터 검색을 실행할 수 없으면 `DenseSearchUnavailable` 발생). 검색 경로는 `retrieval=`과 `config["search"]`(`enable_bm25`, `enable_dense`, `rrf_weights`, `rrf_k`) 중 한 곳에서만 지정해야 하며 둘 다 전달하면 거부됩니다. `rerank`나 나머지 `search` 설정(`cache_ttl` 등)은 `config={...}`에 지정합니다.
 - `index=False`로 저장한 항목은 목록 조회와 필터 대상이지만 검색 순위에는 오르지 않습니다. TTL은 지원하지 않습니다.
 - 위의 두 노트북은 이 패키지를 사용하지 않습니다.
 

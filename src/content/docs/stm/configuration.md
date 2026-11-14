@@ -273,7 +273,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | Global result-score floor on the RRF scale, applied unless a per-tool pin or the scale gate overrides it | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | Max retrieved memories injected per call. Pinned context returned by the core's `context_compose` is added separately and does not count toward this limit | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | Skip surfacing on tiny responses | `5000` |
-| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query (path-only native `Read` hook calls use `max(1, min_query_tokens - 1)`) | `3` |
+| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | Min tokens in extracted query (path-only native hook queries such as a bare `Read` use `max(1, min_query_tokens - 1)`) | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | Minimum interval between repeated surfacing work | `5` |
 | `MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS` | LTM surfacing request timeout | `3` |
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | Placement: `prepend`, `append`, or `section` | `"append"` |

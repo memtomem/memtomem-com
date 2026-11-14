@@ -295,7 +295,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__MIN_SCORE` | RRF 척도에서 적용하는 전역 결과 점수 하한. 도구별 고정값이나 척도 게이트가 있으면 그쪽이 우선합니다. | `0.017` |
 | `MEMTOMEM_STM_SURFACING__MAX_RESULTS` | 호출당 주입되는 검색 결과 기억의 최대 수. Core가 `context_compose`로 반환하는 고정(pinned) 컨텍스트는 별도이며 이 수에 포함되지 않음 | `3` |
 | `MEMTOMEM_STM_SURFACING__MIN_RESPONSE_CHARS` | 응답이 이보다 짧으면 관련 기억 검색 생략 | `5000` |
-| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수(경로만 쓰는 기본 `Read` 훅 호출은 `max(1, min_query_tokens - 1)` 적용) | `3` |
+| `MEMTOMEM_STM_SURFACING__MIN_QUERY_TOKENS` | 추출한 검색어의 최소 토큰 수(경로 토큰만으로 구성된 기본 훅 검색어—단독 `Read` 등—는 `max(1, min_query_tokens - 1)` 적용) | `3` |
 | `MEMTOMEM_STM_SURFACING__COOLDOWN_SECONDS` | 반복되는 관련 기억 검색 사이의 최소 간격 | `5` |
 | `MEMTOMEM_STM_SURFACING__TIMEOUT_SECONDS` | LTM 관련 기억 검색의 제한 시간 | `3` |
 | `MEMTOMEM_STM_SURFACING__INJECTION_MODE` | 배치 위치: `prepend`, `append`, `section` | `"append"` |

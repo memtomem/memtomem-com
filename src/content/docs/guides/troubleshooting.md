@@ -184,7 +184,7 @@ If the link is connected but a call still injects nothing, check four filters ad
 
 - **Repository scope:** by default, a Claude Code built-in tool call (`mms hook`) with no pinned namespace searches only the namespaces of the repository that holds its `cwd`, plus `default`. This applies only when Claude Code has a project directory for that repository; otherwise the call searches every namespace.
 - **Excluded namespaces:** by default, retrieved results from `claude-plans` and `codex` are not injected, on hook or proxied calls. Pinned Context is exempt.
-- **Short queries:** a built-in tool call whose query has fewer than `min_query_tokens` tokens (or `max(1, min_query_tokens - 1)` for path-only native `Read` calls in 0.7.8+) is skipped instead of searched.
+- **Short queries:** a built-in tool call whose query has fewer than `min_query_tokens` tokens (or `max(1, min_query_tokens - 1)` for path-only native hook queries such as a bare `Read` in 0.7.8+) is skipped instead of searched.
 - **Sensitive queries (`sensitive_query`):** in 0.7.8+, if the query (or raw arguments/template when derived from them) matches a credential or email pattern, surfacing stops before LTM and delivers nothing, including Pinned Context.
 
 [Scoping by Repository and Namespace](/stm/surfacing/#scoping-by-repository-and-namespace) shows how to turn the first two off.
