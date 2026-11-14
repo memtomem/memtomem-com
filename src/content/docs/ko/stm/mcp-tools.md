@@ -1,13 +1,13 @@
 ---
 title: STM MCP 도구
-description: STM 프록시가 제공하는 모델용 도구 5개와 관찰 액션 8개를 담은 stm_admin, 선택형 기억 제안 도구를 설명합니다.
+description: STM 프록시가 제공하는 모델용 도구 5개, 관측·관리 액션 8개를 담은 stm_admin 디스패처, 선택형 기억 제안 도구를 설명합니다.
 ---
 
-memtomem-stm은 토큰 절감량을 확인하고, 오래된 캐시를 비우고, 관련 기억 제시와 압축을 조정할 수 있는 **관리 도구**를 MCP로 제공합니다. 모델이 작업에 사용하는 도구는 **5개**이며, 이 외에 `stm_admin` 디스패처와 사용자가 직접 활성화해야 하는 `stm_memory_propose`가 있습니다.
+`memtomem-stm`은 토큰 절감량을 확인하고 오래된 캐시를 비우며 **서피싱**(관련 기억 자동 제시)과 압축 기준을 조정할 수 있는 **관리 도구**를 MCP로 제공합니다. 모델이 일반 작업에 사용하는 도구는 **5개**이며, 이 밖에 `stm_admin` 디스패처와 명시적으로 활성화해야 하는 `stm_memory_propose`가 있습니다.
 
 ## 관찰 도구 노출 제어
 
-모델용 도구 5개는 기본으로 노출됩니다. 관찰·관리 기능은 별도 도구가 아니라 **`stm_admin` 디스패처 하나에 포함된 액션 8개**이며, 이 디스패처 자체가 `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정하기 전까지 MCP 목록에서 숨겨집니다. `stm_memory_propose`는 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도로 활성화합니다. 도구 노출 여부는 이 플래그로만 결정됩니다. 연결한 LTM이 검토 후 저장 방식을 지원하는지는 호출할 때 확인하며, 지원하지 않으면 `{"ok": false, "reason": "formation_unsupported"}`를 반환합니다.
+모델용 도구 5개는 기본적으로 노출됩니다. 관측·관리 기능은 개별 도구가 아니라 **`stm_admin` 디스패처 하나에 묶인 액션 8개**로 제공되며, `MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS=true`를 설정하기 전까지 MCP 도구 목록에서 숨겨집니다. `stm_memory_propose`는 `MEMTOMEM_STM_FORMATION__ENABLED=true`로 별도 활성화합니다. 도구 노출 여부는 이 환경 변수만으로 결정되며, 연결된 LTM이 검토 후 저장 방식을 지원하는지는 실제 호출 시점에 확인해 지원하지 않으면 `{"ok": false, "reason": "formation_unsupported"}`를 반환합니다.
 
 | 분류 | 기본 노출 | 플래그를 켰을 때 노출 |
 |---|---|---|
@@ -99,7 +99,7 @@ CLI로는 `mms stats`, `mms health`, `mms tune`이 같은 정보를 보여 줍�
 | `proxy_stats` | — | 토큰 절감량, 캐시 적중, 도구별 호출 이력, 실시간 표본이 있을 때의 `Stage latency` 줄(호출마다 clean·compress·surface에 걸린 시간 합계의 p50/p95/p99. LTM 조회는 포함하고 upstream 호출은 제외). Core가 보낸 검색 힌트는 본문 대신 개수(`last: N hint(s)`)로만 표시합니다. |
 | `proxy_health` | — | 업스트림 연결 상태와 프록시 상태. 업스트림마다 **발견한** 도구 수와 실제로 **노출한** 도구 수를 함께 보고하므로, 노출 조건 검사로 걸러진 차이를 한눈에 확인할 수 있습니다. 서피싱 서킷 브레이커 상태도 보여 주며, 외부 도구 그래프 노출 조건 제공자를 켰다면 그 상태도 포함합니다. `startup connect failed` 줄과 피드백 DB 오류는 메시지 대신 `ConnectError`, `DatabaseError (SQLITE_CORRUPT)`처럼 예외 유형만 표시합니다. |
 | `proxy_cache_clear` | `server`, `tool` | 캐시를 비웁니다. 범위를 지정하지 않으면 SQLite 응답 캐시와 메모리 내 서피싱 캐시를 모두 비우고, `server` 또는 `tool`로 범위를 좁히면 응답 캐시만 비웁니다. 서피싱 캐시는 질의 해시로만 색인되어 서버·도구 축이 없기 때문입니다. 시작 시에만 쓰는 도구 그래프 조회 캐시는 건드리지 않습니다. |
-| `surfacing_stats` | `tool`, `since`, `limit` | `events_total`, `distinct_tools`, `total_feedback`, 도구별 집계, 평가 분포, 도움이 된 비율, 최근 목록을 보고합니다. `since`는 ISO-8601 시각이며, `limit`의 기본값은 `10`이고 `0`이면 최근 목록을 숨깁니다. 집계할 내용이 있을 때만 다음 줄이 추가됩니다. `Withheld:`는 보류(holdout)되어 위 집계에서 제외된 이벤트 수입니다. `Opportunities:`는 저장된 제시 기회 기록 수로, 이 프로세스에서 샘플링으로 제외한 수와 결과별 집계(`by decision`)를 함께 보여 줍니다. 건너뜀 사유에는 정상 사례인 `empty_render`(표시할 항목이 없음), `sensitive_query`(LTM 조회 전 검색어나 원본 인자가 자격 증명·이메일 패턴과 일치), `upstream_disabled`, `cancelled`(결정 전에 호출이 취소됨) 등이 있습니다. 상태 판정에서 `empty_render`는 완료된 검색으로 집계하고 `cancelled`는 제외합니다. STM에서 인식하지 못하는 `score_scale`은 `unrecognized`로 표시하고, 리랭커는 모델 ID 대신 `reranker reported`로만 표시합니다. STM이 기록하지 않는 평가나 제시 결정 값은 `other`로 집계합니다. |
+| `surfacing_stats` | `tool`, `since`, `limit` | `events_total`, `distinct_tools`, `total_feedback`, 도구별 집계, 평가 분포, 도움이 된 비율, 최근 목록을 보고합니다. `since`는 ISO-8601 시각이며, `limit`의 기본값은 `10`이고 `0`이면 최근 목록을 숨깁니다. 집계할 내용이 있을 때만 다음 줄이 추가됩니다. `Withheld:`는 보류(holdout)되어 위 집계에서 제외된 이벤트 수입니다. `Opportunities:`는 저장된 제시 기회 기록 수로, 이 프로세스에서 샘플링으로 제외한 수와 결과별 집계(`by decision`)를 함께 보여 줍니다. 건너뜀 사유에는 정상 사례인 `empty_render`(표시할 항목이 없음), `sensitive_query`(LTM 조회 전 검색어나 원본 인자가 자격증명·이메일 패턴과 일치), `upstream_disabled`, `cancelled`(결정 전에 호출이 취소됨) 등이 있습니다. 상태 판정에서 `empty_render`는 완료된 검색으로 집계하고 `cancelled`는 제외합니다. STM에서 인식하지 못하는 `score_scale`은 `unrecognized`로 표시하고, 리랭커는 모델 ID 대신 `reranker reported`로만 표시합니다. STM이 기록하지 않는 평가나 제시 결정 값은 `other`로 집계합니다. |
 | `selection_stats` | — | 도구 선택과 실행 텔레메트리. `proxy.selection_telemetry.enabled = true`로 설정하면 프록시가 JSONL 로그를 기록하며, 이 액션이 그 로그를 읽어 이벤트 수, 랭커 버전별 선택, 서버·도구별 선택, 지연 백분위를 포함한 실행 성공·실패, 노출 조건 검사의 거부 사유 집계로 정리합니다. 이 프로세스의 기록 경로 카운터(기록된 이벤트 / 샘플링 제외 / 마스킹 제외 / 기록 오류)도 함께 보여 줍니다. 집계 대상은 활성 로그뿐이며, 회전된 백업은 존재만 표시하고 파싱하지 않습니다. |
 | `compression_stats` | `tool` | 도구별 압축 피드백 건수. MCP 도구 이름 형식에 맞지 않는 이름은 `(unrecognized)` 항목으로 묶어 집계합니다. |
 | `progressive_stats` | `tool` | Progressive 압축 호출의 응답별 후속 조회 비율과 적용 범위. 최초 청크와 `stm_proxy_read_more` 후속 호출이 각각 `progressive_reads`의 한 행이 되며, 집계는 캐시 키 단위로 묶으므로 후속 조회가 다섯 번인 응답과 한 번도 없는 응답의 가중치가 같습니다. 총 조회 수, 총 응답 수, 후속 조회 비율, 평균 제공 문자 수, 평균 전체 문자 수, 평균 적용 범위, 도구별 집계를 보고합니다. 기본 `PROGRESSIVE` 저장소 오류로 인해 캐시 없이 전체 응답을 그대로 전달한 횟수도 함께 보고하므로, 저장소 장애가 누락되지 않고 드러납니다. 기록된 최초 응답·후속 조회 분량(`Recorded initial payload chars`, `Recorded follow-up payload chars`)과 구분 표시가 없는 이전 조회 이벤트 수(`Unclassified legacy read events`)도 보고합니다. 분량에는 footer와 관련 기억이 포함되지 않으며, 반복 조회는 다시 셉니다. |
@@ -118,10 +118,10 @@ mms add filesystem --command npx \
 # filesystem의 read_file 은 fs__read_file 이 됩니다
 ```
 
-STM은 연결한 도구를 모두 그대로 표시하지 않고 먼저 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격 증명으로 보이는 문자열이 있는 도구, 이름이 겹치는 도구는 에이전트에 표시하지 않습니다. 제외된 수는 `stm_admin(action="proxy_health")`이 보여 주는 발견·노출 도구 수의 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 프록시하지 않으며, 이는 64자 제한과는 별개입니다. `proxy_health`는 이런 도구를 발견한 수에 포함하고 해당 서버에 `not proxied` 줄을 추가합니다.
+STM은 업스트림 서버의 도구를 모두 그대로 노출하지 않고 먼저 노출 조건을 검사합니다. 연결이 끊긴 서버의 도구, 메타데이터에 자격증명 패턴이 포함된 도구, 이름이 중복되는 도구는 에이전트 목록에서 제외하며, 제외된 개수는 `stm_admin(action="proxy_health")`가 보고하는 발견·노출 도구 수 차이로 확인할 수 있습니다. 이름이 MCP 도구 이름 문법(`[A-Za-z0-9._-]`, 1~128자)에 맞지 않는 도구는 64자 길이 제한과 별개로 아예 프록시하지 않으며, `proxy_health`는 이를 발견 수에 포함한 뒤 해당 서버에 `not proxied` 줄로 표시합니다.
 
-MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다. 예를 들어 `filesystem` 서버의 `Read file` 도구는 `[filesystem] Read file`로 표시됩니다. 이 제목은 도구를 호출할 때 쓰는 `{prefix}__{tool}` 이름과 별개입니다. 연결한 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
+MCP 도구 선택 화면(예: Claude Code의 `/mcp`)에 표시되는 프록시 도구의 **제목**(`annotations.title` 필드)에는 출처 서버를 나타내는 `[{server}]` 접두사가 자동으로 붙습니다(예: `filesystem` 서버의 `Read file` → `[filesystem] Read file`). 이 표시 제목은 호출 시 사용하는 `{prefix}__{tool}` 이름과는 별개이며, 업스트림 도구가 이미 `annotations.title`을 제공할 때만 적용됩니다.
 
-에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 처리합니다. 압축한 응답과 관련 기억을 반환하며, 응답을 LTM에 다시 기록하지 않습니다. 메타데이터가 붙은 여러 블록 응답과, 실험 기능인 구조화 전달에서 업스트림 `structuredContent`나 텍스트가 아닌 콘텐츠가 있는 성공 응답은 예외입니다([압축 전략](/ko/stm/compression/) 참조).
+에이전트가 `fs__read_file`을 호출하면 기본 프록시는 **CLEAN → COMPRESS → SURFACE** 순서로 응답을 처리해 압축된 응답과 서피싱된 기억을 반환하며, 응답을 LTM에 다시 기록하지는 않습니다. 메타데이터가 포함된 다중 블록 응답과, 실험 기능인 구조화 전달에서 업스트림 `structuredContent`나 비텍스트 콘텐츠가 포함된 성공 응답은 이 파이프라인의 예외입니다([압축 전략](/ko/stm/compression/) 참고).
 
 > 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)과 [압축 전략](/ko/stm/compression/)을 참고하세요.

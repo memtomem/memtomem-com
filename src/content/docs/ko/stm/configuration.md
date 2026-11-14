@@ -3,17 +3,17 @@ title: STM 환경 변수
 description: memtomem-stm(STM)의 모든 환경 변수와 기본값을 정리합니다. MEMTOMEM_STM_ 접두사, 이중 밑줄 중첩 규칙, 설정 우선순위도 함께 설명합니다.
 ---
 
-memtomem-stm(STM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)를 사용합니다. 환경 변수 이름은 `env_prefix` 뒤에 필드명을 붙이며, 중첩된 필드는 `env_nested_delimiter="__"`에 따라 **밑줄 두 개**로 구분합니다. 예를 들어 `MEMTOMEM_STM_PROXY__CACHE__ENABLED`는 유효하지만 `MEMTOMEM_STM_PROXY_CACHE_ENABLED`는 유효하지 않습니다.
+`memtomem-stm`(STM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/)를 사용합니다. 환경 변수 이름은 `env_prefix` 뒤에 필드 이름을 붙이며, 중첩 필드는 `env_nested_delimiter="__"` 규칙에 따라 **밑줄 두 개**(`__`)로 구분합니다. 예를 들어 `MEMTOMEM_STM_PROXY__CACHE__ENABLED`는 유효하지만 `MEMTOMEM_STM_PROXY_CACHE_ENABLED`는 인식되지 않습니다.
 
-값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값을 우선합니다.
+동일한 항목이 여러 곳에 지정되면 **CLI 옵션 > 환경 변수 > 설정 파일 > 내장 기본값** 순으로 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem-stm` 0.7.8이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.8이 지원하는 전체 설정을 빠짐없이 다룹니다. 주요 항목만 추린 요약본이 아니라 업스트림의 공개 옵션을 모두 수록했으며, LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에서 확인할 수 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
-STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `HOOK__*`, `DAEMON__*`, `LANGFUSE__*`로 나뉩니다. 압축, 캐시, 지표, 자동 색인, 추출 설정은 모두 **`PROXY__` 아래**에 있습니다.
+STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `HOOK__*`, `DAEMON__*`, `LANGFUSE__*`로 구성됩니다. 압축, 캐시, 지표, 자동 색인, 정보 추출 설정은 모두 **`PROXY__` 하위**에 속합니다.
 
-`~/.memtomem/stm_proxy.json`은 `ProxyConfig`만 읽습니다. 최상위, 관련 기억 제시, 기억 형성, 훅, 데몬, Langfuse 설정은 환경 변수나 기본값으로만 지정할 수 있습니다. 이 블록을 JSON 파일에 넣어도 적용되지 않습니다. 문서화된 예외는 `proxy.consumer_model`이 관련 기억의 예산 계산에도 전달되는 동작뿐입니다.
+`~/.memtomem/stm_proxy.json`은 `ProxyConfig` 스키마만 읽습니다. 최상위 필드와 **서피싱**(관련 기억 자동 제시), 기억 형성, 훅, 데몬, Langfuse 설정은 환경 변수나 기본값으로만 지정할 수 있으며 JSON 파일에 넣어도 반영되지 않습니다(유일한 예외로 `proxy.consumer_model`은 서피싱 예산 계산에도 전달됩니다).
 
 <a id="general"></a>
 
@@ -132,7 +132,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 ### 프록시 → 도구 표시 필터
 
-연결한 서버의 도구 가운데 에이전트에 표시할 항목을 정하는 STM 자체 필터입니다. 실패가 잦거나, 메타데이터에 자격 증명 문자열(한글·가나·한자·악센트 라틴 문자에 바로 붙은 자격 증명 포함, `sensitive_metadata`로 분류되며 도구 메타데이터의 이메일 주소는 도구를 제외하지 않음)이 있거나, 이름이 겹치는 도구를 제외합니다. 상태는 프록시를 시작할 때 한 번 평가하므로 세션 중에는 표시되는 도구 목록이 바뀌지 않습니다.
+연결한 서버의 도구 가운데 에이전트에 표시할 항목을 정하는 STM 자체 필터입니다. 실패가 잦거나, 메타데이터에 자격증명 문자열(한글·가나·한자·악센트 라틴 문자에 바로 붙은 자격증명 포함, `sensitive_metadata`로 분류되며 도구 메타데이터의 이메일 주소는 도구를 제외하지 않음)이 있거나, 이름이 겹치는 도구를 제외합니다. 상태는 프록시를 시작할 때 한 번 평가하므로 세션 중에는 표시되는 도구 목록이 바뀌지 않습니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -252,7 +252,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `selective.pending_ttl_seconds` | 진행 중인 선택 기록의 TTL | `300.0` |
 | `selective.json_depth` | JSON 개요의 깊이 | `1` |
 | `selective.min_section_chars` | 유지할 섹션 최소 길이 | `50` |
-| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite`. `sqlite`에서는 저장 대상 응답에 자격 증명 패턴이 있으면 기록하지 않고 잘라낸(`truncate_on_sensitive`) 응답이나 전체(`passthrough_on_sensitive`) 응답으로 캐시 없이 반환 | `memory` |
+| `selective.pending_store` | 진행 중인 선택 기록의 저장 방식: `memory` 또는 `sqlite`. `sqlite`에서는 저장 대상 응답에 자격증명 패턴이 있으면 기록하지 않고 잘라낸(`truncate_on_sensitive`) 응답이나 전체(`passthrough_on_sensitive`) 응답으로 캐시 없이 반환 | `memory` |
 | `selective.pending_store_path` | 진행 중인 선택 기록을 저장할 SQLite 경로 | `~/.memtomem/pending_selections.db` |
 | `hybrid.head_chars` | 선두 콘텐츠 선호 예산 | `5000` |
 | `hybrid.tail_mode` | `toc` 또는 `truncate` | `toc` |
@@ -333,7 +333,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__FEEDBACK_DEMOTION_NEGATIVE_THRESHOLD` | 기억을 제외하기 전에 필요한 서로 다른 부정적 평가 수 | `3` |
 | `MEMTOMEM_STM_SURFACING__CONSUMER_MODEL` | 관련 기억 제시 전용 수신 모델. 빈 값이면 `proxy.consumer_model` 상속 | `""` |
 | `MEMTOMEM_STM_SURFACING__RESULT_FORMAT` | LTM 응답 모드: `compact` 또는 `structured` | `"structured"` |
-| `MEMTOMEM_STM_SURFACING__RERANK` | 서피싱 검색에서 Core에 보낼 호출별 재순위 요청. `false`는 재순위 단계 생략, `true`는 Core에 설정된 리랭커 사용, `none`은 요청하지 않고 Core 설정에 맡김. 호출별 재순위를 지원한다고 알린 Core에만 전달 | `false` |
+| `MEMTOMEM_STM_SURFACING__RERANK` | 서피싱 검색 시 Core에 전달할 호출별 재정렬(리랭킹) 요청. `false`는 리랭킹 단계 생략, `true`는 Core에 설정된 리랭커 사용, `none`은 별도 요청 없이 Core 자체 설정을 따름. 호출별 리랭킹 지원을 알리는 Core에만 전달 | `false` |
 | `MEMTOMEM_STM_SURFACING__SCALE_GATED_MIN_SCORE` | `score_scale`이 RRF가 아닌 알려진 척도인 결과 묶음에는 전역 또는 자동 조정된 `min_score`를 적용하지 않고 자동 조정도 멈춤. 도구별 `min_score`는 계속 적용하며, 점수 자체는 변환하지 않음 | `true` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_TRANSPORT` | LTM MCP 연결 방식: `stdio`, `sse`, `streamable_http` | `"stdio"` |
 | `MEMTOMEM_STM_SURFACING__LTM_MCP_COMMAND` | stdio 연결에서 LTM 서버를 실행할 MCP 명령 | `"memtomem-server"` |
@@ -391,7 +391,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

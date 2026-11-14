@@ -61,12 +61,12 @@ mm context version --help
 mm context settings-doctor --json
 ```
 
-`doctor`는 실행 환경을 진단하고 이 컴퓨터에서 실행 중인 memtomem 서버 프로세스를 보여 줍니다. `--mcp-client claude`, `agy`, `codex`를 지정하면 프로세스 대신 등록 상태를 확인하여, 수동 MCP 등록과 해당 클라이언트의 memtomem 플러그인이 함께 설정되어 서버 두 개가 실행되는지 보고합니다(`--claude-mcp`는 Claude 확인의 별칭으로 계속 사용할 수 있습니다). 이 모드의 종료 코드는 통과 시 `0`, 중복 위험 시 `1`, 검사를 끝내지 못했을 때 `2`입니다. `--reconcile keep-manual`은 수동 등록과 플러그인 스킬을 유지하고 플러그인에 포함된 서버를 비활성화하며, `--reconcile keep-plugin`은 반대로 수동 항목을 제거합니다. 두 옵션 모두 미리보기만 실행하므로, 올바른 복구안을 제시하는 미리보기도 종료 코드 `1`을 반환할 수 있습니다. `--apply`를 지정해야 실제로 수정합니다. 이때 원본 파일을 같은 위치에 `<filename>.mm-backup-*`로 백업하고(백업에는 자격 증명이 들어 있을 수 있으므로 비공개 권한으로 저장), 해당 파일 하나를 원자적으로 교체한 뒤 검사를 다시 실행합니다. Claude 설정을 수정하기 전에는 모든 Claude 세션을 종료하세요. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로 그 뒤에 검사를 다시 실행합니다. 형식이 잘못되었거나 가려진 설정, 여러 개의 수동 등록, 관리 정책은 수동 검토 대상으로 보고하며 수정하지 않습니다.
+`doctor`는 실행 환경을 진단하고 이 컴퓨터에서 실행 중인 memtomem 서버 프로세스를 보여 줍니다. `--mcp-client claude`, `agy`, `codex`를 지정하면 프로세스 대신 등록 상태를 확인하여, 수동 MCP 등록과 해당 클라이언트의 memtomem 플러그인이 함께 설정되어 서버 두 개가 실행되는지 보고합니다(`--claude-mcp`는 Claude 확인의 별칭으로 계속 사용할 수 있습니다). 이 모드의 종료 코드는 통과 시 `0`, 중복 위험 시 `1`, 검사를 끝내지 못했을 때 `2`입니다. `--reconcile keep-manual`은 수동 등록과 플러그인 스킬을 유지하고 플러그인에 포함된 서버를 비활성화하며, `--reconcile keep-plugin`은 반대로 수동 항목을 제거합니다. 두 옵션 모두 미리보기만 실행하므로, 올바른 복구안을 제시하는 미리보기도 종료 코드 `1`을 반환할 수 있습니다. `--apply`를 지정해야 실제로 수정합니다. 이때 원본 파일을 같은 위치에 `<filename>.mm-backup-*`로 백업하고(백업에는 자격증명이 들어 있을 수 있으므로 비공개 권한으로 저장), 해당 파일 하나를 원자적으로 교체한 뒤 검사를 다시 실행합니다. Claude 설정을 수정하기 전에는 모든 Claude 세션을 종료하세요. 플러그인을 업데이트하거나 다시 설치하면 포함된 서버가 복원될 수 있으므로 그 뒤에 검사를 다시 실행합니다. 형식이 잘못되었거나 가려진 설정, 여러 개의 수동 등록, 관리 정책은 수동 검토 대상으로 보고하며 수정하지 않습니다.
 `agent debug-resolve`는 검색 범위를 설명합니다.
 `review evidence`는 기존 기억과 비교한 참고 정보를 보여 줄 뿐 후보를 승인하지 않습니다.
 BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가 표시될 수 있습니다.
 `seed-validation`은 검증용 컨텍스트 자료를 만드는 쓰기 작업이므로 도움말을 확인한 뒤 선택적으로 실행하세요.
-`settings-doctor --json`의 `status`는 `duplicates`, `malformed`, `incomplete`, `advisory`, `clean` 중 우선순위가 가장 높은 값입니다. `advisory`는 다른 기기에서 실행되지 않을 수 있는 hook 명령만 발견된 경우이고, `clean`은 모든 항목이 비어 있을 때만 표시됩니다. `duplicates`와 `malformed`는 종료 코드 1, 나머지는 0입니다. `advisory`도 종료 코드가 0이므로 `clean`만 통과로 처리하던 스크립트는 `advisory`도 허용하거나 발견 항목을 직접 확인해야 합니다. 검색 권한이 없는 디렉터리의 설정 파일은 `unreadable`로 표시하고 건너뛰며, 중복이나 잘못된 matcher가 없으면 `incomplete`를 보고합니다.
+`settings-doctor --json`의 `status`는 `duplicates`, `malformed`, `incomplete`, `advisory`, `clean` 중 우선순위가 가장 높은 값입니다. `advisory`는 다른 기기에서 실행되지 않을 수 있는 훅(hook) 명령만 발견된 경우이고, `clean`은 모든 항목이 비어 있을 때만 표시됩니다. `duplicates`와 `malformed`는 종료 코드 1, 나머지는 0입니다. `advisory`도 종료 코드가 0이므로 `clean`만 통과로 처리하던 스크립트는 `advisory`도 허용하거나 발견 항목을 직접 확인해야 합니다. 검색 권한이 없는 디렉터리의 설정 파일은 `unreadable`로 표시하고 건너뛰며, 중복이나 잘못된 matcher가 없으면 `incomplete`를 보고합니다.
 
 ## 설정
 
@@ -89,7 +89,7 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 재설치 후 `mm init`을 실행하면 기존 `~/.memtomem/memtomem.db`에 저장된 임베딩 제공자·모델·차원이 새 프리셋과 맞는지 검사합니다. 값이 다르면 대화형 모드에서는 벡터 인덱스(`chunks_vec`)를 다시 만드는 방법을 안내합니다. `--non-interactive`에서는 `mm embedding-reset --mode apply-current`를 안내합니다. 청크 테이블은 그대로 남으므로 이후 `mm index --force <path>`로 다시 색인하면 검색 데이터를 복구할 수 있습니다.
 
-`--fresh`는 마법사가 다루지 않는 표준 설정을 기본값으로 되돌립니다. 사용자 정의 키·자격 증명·엔드포인트·직접 관리하는 목록은 보존하며, 실제로 키를 제거할 때만 기존 설정을 백업합니다.
+`--fresh`는 마법사가 다루지 않는 표준 설정을 기본값으로 되돌립니다. 사용자 정의 키·자격증명·엔드포인트·직접 관리하는 목록은 보존하며, 실제로 키를 제거할 때만 기존 설정을 백업합니다.
 
 ### MCP 서버 실행
 
@@ -260,7 +260,7 @@ mm context export skills deploy-check --out deploy-check.json   # 다른 컴퓨�
 mm context import deploy-check.json --to user                    # 묶음 반영(미리보기)
 ```
 
-`pull`, `move`, `copy`, `import`는 기본적으로 미리보기만 실행하며 `--apply`를 지정해야 반영합니다. `pull`, `move`, `copy`를 **Project (shared)**에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전과 `--all-projects`로 일괄 Push하기 전에도 확인을 요청하며, `--yes`로 이 확인을 건너뛸 수 있습니다.
+`pull`, `move`, `copy`, `import`는 기본적으로 미리보기만 실행하며 `--apply`를 지정해야 반영합니다. `pull`, `move`, `copy`를 **Project (shared)** 계층에 반영할 때는 확인을 요청합니다. 입력할 수 없는 환경에서는 `--confirm-project-shared`를 지정해야 하며 `--yes`만으로는 진행되지 않습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전과 `--all-projects`로 일괄 Push하기 전에도 확인을 요청하며, `--yes`로 이 확인을 건너뛸 수 있습니다.
 
 <a id="wiki--정규-아티팩트-라이브러리"></a>
 ## Wiki — 공용 항목 라이브러리
@@ -374,7 +374,7 @@ mm status --json                     # 기계 판독용 — 스크립트 / `jq` 
 
 이 명령은 v0.1.25에 추가됐고 `--json`과 `--format json`은 v0.3.4부터 지원합니다. MCP 클라이언트를 실행하지 않고도 DB가 열리는지, 기억이 몇 건 있는지 빠르게 확인할 수 있습니다.
 
-`search.tokenizer`가 `kiwipiepy`인데 `kiwipiepy` 패키지를 찾을 수 없거나 프로세스가 이미 `unicode61`로 대체한 경우, `mm status`와 `mem_status`는 `tokenizer_fallback` 경고를 표시합니다. 이 상태에서 색인한 행은 다른 방식으로 토큰화되므로 한국어 키워드 검색에서 누락될 수 있습니다. memtomem을 실행하는 모든 환경에 `korean` extra를 설치하고 서버를 다시 시작한 뒤 키워드 인덱스를 다시 만드세요. 원격 임베딩·리랭커·LLM 엔드포인트가 설정된 경우에는 자격 증명을 제거한 활성 원격 엔드포인트 주소도 함께 표시합니다(0.7.6).
+`search.tokenizer`가 `kiwipiepy`인데 `kiwipiepy` 패키지를 찾을 수 없거나 프로세스가 이미 `unicode61`로 대체한 경우, `mm status`와 `mem_status`는 `tokenizer_fallback` 경고를 표시합니다. 이 상태에서 색인한 행은 다른 방식으로 토큰화되므로 한국어 키워드 검색에서 누락될 수 있습니다. memtomem을 실행하는 모든 환경에 `korean` extra를 설치하고 서버를 다시 시작한 뒤 키워드 인덱스를 다시 만드세요. 원격 임베딩·리랭커·LLM 엔드포인트가 설정된 경우에는 자격증명을 제거한 활성 원격 엔드포인트 주소도 함께 표시합니다(0.7.6).
 
 ### `mm sync-doctor`
 
@@ -456,7 +456,7 @@ mm schedule delete <sched-id>
 
 원본 파일이 사라진 인덱스 자료 출처를 찾습니다. 기본적으로 삭제할 항목만 보여 줍니다. `--apply`를 붙이면 원본이 없는 자료 출처와 해당 청크를 영구히 제거합니다.
 
-파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류(hold)** 합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 속한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. 출처는 색인할 때의 경로를 기준으로 판정하므로, 이후 symlink로 바뀐 파일은 링크가 있는 위치를 기준으로 일치합니다. `DIR` 자체는 실제 경로로 해석합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
+파일 감시, 예약 압축, 상태 점검의 자동 유지보수는 원본이 사라진 자료 출처를 삭제하지 않고 **보류**(hold)합니다. 보류된 출처는 검색에서 제외되지만 청크는 복구할 수 있도록 남습니다. 이 청크를 지우려면 `mm gc orphan-sources`로 확인한 뒤 `--apply`를 실행합니다. 원본이 사라진 출처는 속한 메모리 디렉터리별로 묶이며(어느 루트에도 속하지 않는 출처는 별도 그룹), `--apply`는 그룹마다 확인을 받은 뒤 삭제합니다. `--yes`는 이 확인을 생략합니다. `--under DIR`(여러 번 지정 가능)은 지정한 디렉터리 아래의 출처만 대상으로 하므로, `--apply --yes`도 그 디렉터리에서만 삭제합니다. 출처는 색인할 때의 경로를 기준으로 판정하므로, 이후 symlink로 바뀐 파일은 링크가 있는 위치를 기준으로 일치합니다. `DIR` 자체는 실제 경로로 해석합니다. MCP에서는 `cleanup_orphans`에 `dry_run=false`와 `confirm_purge=true`를 함께 지정해야 삭제하며, `under`로 범위를 좁힐 수 있습니다. 색인 루트와 `indexing.retain_missing_dirs` 양쪽 아래에 있는 출처는 예외로, 원본이 사라져서 생긴 보류가 해제되어 계속 검색되며(`mm status`의 `Archived:`), 삭제 대상으로 제시되지 않습니다. `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. 예외적으로 경로가 디렉터리나 일반 파일이 아닌 항목으로 바뀐 경우에는 해당 경로의 다음 이벤트에서 청크가 자동으로 제거됩니다.
 
 ```bash
 mm gc orphan-sources
@@ -480,7 +480,7 @@ mm embedding-reset --mode revert-to-stored    # 실행 중인 임베더를 DB �
 
 ### `mm purge --matching-excluded`
 
-내장 자격 증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요. 저장된 경로가 다른 대상을 가리키게 된 출처(색인한 뒤 symlink로 바뀐 파일)는 제외 여부를 판정하거나 삭제하지 않습니다. 이런 출처는 건너뛰고 stderr에 표시하며, `--json`에서는 `moved`와 `moved_sample`로 보고합니다.
+내장 자격증명 차단 목록이나 사용자 `indexing.exclude_patterns`에 해당하는 기존 청크를 제거합니다. 기본 동작은 삭제 대상 미리보기입니다. 실제로 삭제하려면 `--apply`를 추가하세요. 저장된 경로가 다른 대상을 가리키게 된 출처(색인한 뒤 symlink로 바뀐 파일)는 제외 여부를 판정하거나 삭제하지 않습니다. 이런 출처는 건너뛰고 stderr에 표시하며, `--json`에서는 `moved`와 `moved_sample`로 보고합니다.
 
 ```bash
 mm purge --matching-excluded              # 삭제 대상 미리보기

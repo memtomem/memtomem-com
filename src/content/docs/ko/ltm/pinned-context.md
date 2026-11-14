@@ -3,9 +3,7 @@ title: 고정 컨텍스트와 검토 우선 기억
 description: 검색 결과 앞에 고정 지침을 붙이고, 제안된 기억은 검토 후 저장합니다.
 ---
 
-고정 컨텍스트(Pinned Context)는 검색 결과 앞에 배치하는 짧은 Markdown
-사실·지침입니다. 사용자, 프로젝트 로컬, 프로젝트 공유 블록에는 다른
-memtomem 쓰기와 같은 민감 정보 검사와 확인 규칙이 적용됩니다.
+Pinned Context(고정 컨텍스트)는 검색 결과 앞에 항상 배치하는 짧은 Markdown 사실·지침 블록입니다. 사용자, 프로젝트 로컬, 프로젝트 공유 계층에 저장하는 블록에도 일반 memtomem 쓰기와 동일한 민감 정보 검사와 확인 규칙이 적용됩니다.
 
 ```bash
 mm pinned set response-style \
@@ -15,28 +13,15 @@ mm pinned compose "배포 체크리스트"
 mm pinned delete response-style --scope user
 ```
 
-대상 계층은 `--scope user|project_local|project_shared`로 지정합니다.
-Git으로 추적하는 공유 계층에 쓰려면 `--confirm-project-shared`가 필요합니다.
-프로젝트 범위(`project_shared`, `project_local`) 쓰기와 삭제는 저장소 안의
-링크가 프로젝트 밖 파일을 가리키지 못하도록 `.memtomem`, 계층 디렉터리, `pinned` 또는 그 하위 디렉터리가 심볼릭 링크나
-정션이면 거부하며, 사용자 범위 블록과 읽기는 그대로 동작합니다.
+대상 계층은 `--scope user|project_local|project_shared`로 지정합니다. Git으로 추적하는 공유 계층에 쓰려면 `--confirm-project-shared`가 필요합니다. 프로젝트 범위(`project_shared`, `project_local`) 쓰기와 삭제는 저장소 안의 링크가 프로젝트 밖 파일을 가리키지 못하도록 `.memtomem`, 계층 디렉터리, `pinned` 또는 그 하위 디렉터리가 심볼릭 링크나 정션이면 거부하며, 사용자 범위 블록과 읽기는 그대로 동작합니다.
 
-블록 하나에는 최대 2,000자를 저장할 수 있습니다. 6,000자는 전체 저장
-한도가 아니라 `compose` 1회에서 고정 블록에 사용할 수 있는 분량입니다.
-기본 전체 한도는 12,000자이며 블록 중간을 자르지 않습니다.
+블록 하나에는 최대 2,000자까지 저장할 수 있습니다. 6,000자는 전체 저장 한도가 아니라 `compose` 1회 호출에서 고정 블록에 배정할 수 있는 최대 분량입니다. 전체 응답의 기본 한도는 12,000자이며 블록 중간을 자르지 않습니다.
 
-`mem_context_compose` 스키마 4는 검색 결과의 우선순위를 유지하면서 인접한
-주변 맥락(context-window) 청크도 함께 반환합니다. 검색 결과가 있으면 `score_scale`
-(`rrf`, `bm25`, `dense`, `none`, `rerank`)을 표시합니다. 재정렬한 결과에는
-사용한 리랭커 모델도 포함합니다.
+`mem_context_compose` 스키마 4는 검색 결과의 우선순위를 유지하면서 인접한 주변 맥락(context-window) 청크도 함께 반환합니다. 검색 결과가 있으면 `score_scale`(`rrf`, `bm25`, `dense`, `none`, `rerank`)을 표시하며, 재정렬한 결과에는 사용한 리랭커 모델 이름도 함께 포함됩니다.
 
 ## 검토 우선 제안
 
-`mem_candidate_propose(content, source, source_ref, idempotency_key)`는 민감
-정보를 검사한 뒤 검토 대기 후보를 만듭니다. 이 단계에서는 장기 기억에
-바로 저장하지 않습니다. 후보는 30일 후 만료됩니다. 같은
-`idempotency_key`와 같은 내용을 다시 보내면 기존 후보를 반환하고, 같은
-키에 다른 내용을 보내면 거부합니다. 승인한 후보만 장기 기억에 저장합니다.
+`mem_candidate_propose(content, source, source_ref, idempotency_key)`는 민감 정보를 검사한 뒤 검토 대기 후보를 생성하며, 장기 기억에 곧바로 저장하지는 않습니다. 후보는 30일 후 만료됩니다. 같은 `idempotency_key`와 동일한 내용을 다시 보내면 기존 후보를 반환하고, 같은 키에 다른 내용을 보내면 거부합니다. 검토 후 승인한 후보만 장기 기억에 정식으로 저장됩니다.
 
 ```bash
 mm review list

@@ -19,7 +19,7 @@ AI 도구가 이 문서를 사용하는 방법은 세 가지입니다. 한 번 �
 |---|---|
 | [`/llms.txt`](https://memtomem.com/llms.txt) | 읽을 수 있는 문서 목록 안내 |
 | [`/llms-full.txt`](https://memtomem.com/llms-full.txt) | 전체 문서를 합친 단일 파일 |
-| [`/llms-small.txt`](https://memtomem.com/llms-small.txt) | 작은 컨텍스트 창용 축약본 |
+| [`/llms-small.txt`](https://memtomem.com/llms-small.txt) | 작은 컨텍스트 윈도우용 축약본 |
 
 Claude·ChatGPT·Cursor 등 대부분의 도구는 이 URL을 직접 가져와 읽을 수 있습니다.
 

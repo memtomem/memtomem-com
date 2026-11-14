@@ -20,7 +20,7 @@ shared                       # 에이전트 간 공유 범위
 
 ## 기본 Core 모드 워크플로
 
-기본 MCP 도구 범위에는 Core 도구 9개가 노출됩니다. 멀티에이전트 작업은 `mem_do`를 통해 실행하며, 이 모드에서는 개별 `mem_agent_*` 도구가 노출되지 않습니다.
+기본 MCP 도구 범위에는 Core 도구 9개가 노출됩니다. 멀티 에이전트 작업은 `mem_do`를 통해 실행하며, 이 모드에서는 개별 `mem_agent_*` 도구가 노출되지 않습니다.
 
 ### 1단계: 사용할 수 있는 작업 확인
 
@@ -79,7 +79,7 @@ mem_do(action="session_end", params={"summary": "인증 분석 완료"})
 | `standard` | 개별 `mem_session_start` / `mem_session_end` | `mem_do(action="agent_search")` / `mem_do(action="agent_share")` |
 | `full` | 개별 세션 도구 | 개별 `mem_agent_search` / `mem_agent_share` |
 
-클라이언트에 더 큰 도구 목록이 꼭 필요하지 않다면 `core`를 유지하세요. dispatcher는 full 모드의 도구 93개를 모두 노출하지 않으면서 현재 릴리스의 전체 작업을 제공합니다.
+클라이언트에 더 큰 도구 목록이 꼭 필요하지 않다면 `core`를 유지하세요. 디스패처(`mem_do`)를 사용하면 `full` 모드의 도구 93개를 모두 노출하지 않고도 현재 릴리스의 전체 작업을 실행할 수 있습니다.
 
 ## `agent_id` 설정
 
@@ -135,7 +135,7 @@ mm agent share CHUNK_ID --target shared
 <a id="human--agent"></a>
 ### 사람 → AI 도구
 
-MCP로 연결한 클라이언트에 검증된 결정을 검색하거나 결과를 명시적으로 저장하도록 요청합니다. 자동 제시에는 STM 프록시 경로나 지원되는 호스트 hook이 필요합니다.
+MCP로 연결한 클라이언트에 검증된 결정을 검색하거나 결과를 명시적으로 저장하도록 요청합니다. 서피싱(관련 기억 자동 제시)을 쓰려면 STM 프록시 경로나 지원되는 호스트 훅(hook)이 필요합니다.
 
 <a id="agent--agent"></a>
 ### AI 도구 → AI 도구

@@ -23,7 +23,7 @@ description: 노트 폴더나 Claude·Codex·Gemini/Antigravity 내장 기억을
 
 ## 경로 A: 노트·코드 폴더 색인
 
-자격 증명이나 개인정보가 없는 작은 폴더부터 시작합니다. 편집기에서 `memtomem-demo-notes/deployment.md` 파일을 만들고 다음 내용을 저장하세요.
+자격증명이나 개인정보가 없는 작은 폴더부터 시작합니다. 편집기에서 `memtomem-demo-notes/deployment.md` 파일을 만들고 다음 내용을 저장하세요.
 
 ```markdown
 # 배포 결정
@@ -103,11 +103,11 @@ Minimal 프리셋은 키워드 검색을 사용합니다. 첫 검증에서는 �
 ## 안전 범위
 
 - API 키, 토큰, 비밀번호, 개인 키, 개인정보, 대화 원문 전체를 색인하지 마세요.
-- 사용자 제외 패턴으로 해제하려 해도 내장 자격 증명 제외 규칙은 유지됩니다.
+- 사용자 제외 패턴으로 예외를 두려 해도 내장 자격증명 제외 규칙은 그대로 유지됩니다.
 - `mm ingest`는 사용자가 직접 실행하는 읽기 전용 스냅샷입니다. 플러그인 설치, MCP 연결, STM 활성화만으로 자동 실행되지 않습니다.
-- `indexing.memory_dirs`, 등록된 프로젝트 계층, Web UI 업로드(`~/.memtomem/uploads`) 밖의 명시적 경로를 `mm index`로 현재 위치에서 색인한 파일은 검색할 수 있지만, MCP의 청크 ID 기반 수정·삭제(`mem_edit`, `mem_delete` 또는 `mem_do`의 `edit`·`delete`)와 Web UI 청크 라우트는 해당 외부 파일을 다시 쓰거나 지우지 않고 거부합니다(`source_unmanaged`).
+- `indexing.memory_dirs`, 등록된 프로젝트 계층, Web UI 업로드(`~/.memtomem/uploads`) 바깥의 파일을 `mm index`로 제자리에서 색인한 경우 검색은 가능하지만, MCP의 청크 ID 기반 수정·삭제(`mem_edit`, `mem_delete` 또는 `mem_do`의 `edit`·`delete`)와 Web UI 청크 라우트는 외부 원본을 보호하기 위해 거부합니다(`source_unmanaged`).
 - 가져오기를 적용하기 전에 `--dry-run`에서 경로와 파일 수를 확인하세요.
-- 선택한 제공자가 외부로 내용을 보낼 수 있는지는 [로컬 우선 · 정보 보호](/ko/guides/privacy/)에서 확인하세요.
+- 선택한 제공자가 외부로 데이터를 전송하는 조건은 [로컬 우선 · 정보 보호](/ko/guides/privacy/)에서 확인하세요.
 
 ## 다음 단계
 

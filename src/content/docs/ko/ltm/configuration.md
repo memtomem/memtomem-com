@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, upstream이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, 업스트림이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -53,12 +53,12 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | `MEMTOMEM_INDEXING__MEMORY_DIRS` | 장기 실행 중인 `memtomem-server`가 파일 변경을 감지해 다시 색인할 디렉터리(JSON 목록). 기존 파일은 자동으로 스캔하지 않으므로 `mm index <dir>`로 최초 1회 색인한 뒤 감시 기능을 사용하세요. `mm init`에서 AI 에이전트 기억 등록을 선택하면 이 경로가 채워집니다. | `["~/.memtomem/memories"]` |
 | `MEMTOMEM_INDEXING__PROJECT_MEMORY_DIRS` | `.memtomem/memories` 또는 `.memtomem/memories.local` 아래에 있는 프로젝트 계층 기억의 루트 | `[]` |
 | `MEMTOMEM_INDEXING__READ_ONLY_MEMORY_DIRS` | 색인과 검색에는 사용하지만 memtomem이 절대 다시 쓰지 않는 루트. 쓰기 가능한 루트와 겹치지 않아야 합니다. | `[]` |
-| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 chunk가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아니며, `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. (JSON 리스트, APPEND 병합) | `[]` |
-| `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 인덱싱 대상 파일 확장자 (JSON 리스트) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
+| `MEMTOMEM_INDEXING__RETAIN_MISSING_DIRS` | 다른 도구가 파일을 스스로 지우는 디렉터리(Claude Code plan, Codex memories 등). 색인된 청크가 유일한 사본이므로, 이 디렉터리 아래이면서 색인 루트 아래에 있는 원본 파일이 사라져도 보류(hold)되지 않고 계속 검색되며 삭제 대상으로도 제시되지 않습니다. 색인 루트 자체는 아니며, `redaction_blocked`나 `scan_unavailable`처럼 다른 이유로 보류된 출처는 그대로 보류됩니다. (JSON 목록, APPEND 병합) | `[]` |
+| `MEMTOMEM_INDEXING__SUPPORTED_EXTENSIONS` | 색인 대상 파일 확장자 (JSON 목록) | `[".js",".json",".jsx",".md",".py",".toml",".ts",".tsx",".yaml",".yml"]` |
 | `MEMTOMEM_INDEXING__MAX_CHUNK_TOKENS` | 청크당 최대 토큰 수 | `512` |
 | `MEMTOMEM_INDEXING__MIN_CHUNK_TOKENS` | 짧은 청크 병합 임계값 | `128` |
 | `MEMTOMEM_INDEXING__AUTO_DISCOVER` | 폐기 예정인 일회성 이전 기능. 기존 설정의 제공자 디렉터리를 명시적인 `memory_dirs`로 바꿔 저장한 뒤 이 값을 `false`로 변경합니다. 새 설치에서는 실행하지 않으며 새 설정에는 `mm init --include-provider ...`를 사용합니다. | `true` |
-| `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | 기본 자격 증명 제외 목록(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**` 등)에 추가할 `.gitignore` 형식의 패턴(JSON 목록). 사용자 `!negation`으로 기본 패턴을 해제할 수 없음 | `[]` |
+| `MEMTOMEM_INDEXING__EXCLUDE_PATTERNS` | 기본 자격증명 제외 목록(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**` 등)에 추가할 `.gitignore` 형식의 패턴(JSON 목록). 사용자 `!negation`으로 기본 패턴을 해제할 수 없음 | `[]` |
 | `MEMTOMEM_INDEXING__INDEX_MASKING_MANIFEST_PATH` | 소유자가 검토한 마스킹 매니페스트 경로. 정확한 소스 경로와 콘텐츠 SHA-256, 완결된 블록의 줄 범위를 지정합니다. 소스가 바뀌었거나 매니페스트가 유효하지 않으면 일반 개인정보 보호 장치로 되돌아가며, 마스킹된 청크는 읽기 전용입니다. 자동 마스킹을 켜는 설정은 아닙니다. | `""` |
 | `MEMTOMEM_INDEXING__TARGET_CHUNK_TOKENS` | 짧은 형제 섹션을 결합할 때의 목표 토큰 수. `0` 설정 시 결합 단계 비활성화. | `384` |
 | `MEMTOMEM_INDEXING__CHUNK_OVERLAP_TOKENS` | 인접 청크 간 토큰 오버랩 | `0` |
@@ -104,11 +104,11 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 ### 재순위
 
-크로스 인코더 재순위는 기본적으로 로컬에서 동작하므로 외부 API를 호출하지 않습니다.
+크로스 인코더 재정렬(리랭킹)은 기본적으로 로컬에서 동작하므로 외부 API를 호출하지 않습니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재순위 활성화. 실행 중에도 변경 가능 | `false` |
+| `MEMTOMEM_RERANK__ENABLED` | 하이브리드 검색 결과 재정렬(리랭킹) 활성화. 실행 중에도 변경 가능 | `false` |
 | `MEMTOMEM_RERANK__PROVIDER` | `fastembed`(로컬 ONNX) / `cohere`(외부 API) / `local`(sentence-transformers `CrossEncoder`, 로컬). `local`을 쓰려면 `sentence-transformers`를 별도로 설치해야 하며, memtomem extra에는 포함되어 있지 않습니다. 이때 `MEMTOMEM_RERANK__MODEL`에는 sentence-transformers 모델명(예: `cross-encoder/ms-marco-MiniLM-L-6-v2`)을 지정합니다. 일반적으로는 `fastembed`를 권장합니다 | `"fastembed"` |
 | `MEMTOMEM_RERANK__MODEL` | 모델명. 형식은 공급자에 따라 다릅니다(fastembed 카탈로그 ID, Cohere Rerank 모델, sentence-transformers 모델명). `fastembed`에서 비영어 콘텐츠에는 `onnx-community/gte-multilingual-reranker-base`(341 MB, memtomem이 fastembed에 직접 등록하므로 별도 설정 불필요) 권장. 기존 `jinaai/jina-reranker-v2-base-multilingual`도 계속 동작하지만 1.1 GB이며 모델 라이선스(CC-BY-NC-4.0)가 상업적 사용을 허용하지 않음. 어떤 `mm init` 프리셋도 리랭커를 켜지 않으므로 `MEMTOMEM_RERANK__ENABLED=true`와 함께 지정 | `"Xenova/ms-marco-MiniLM-L-6-v2"` |
 | `MEMTOMEM_RERANK__API_KEY` | `provider=cohere`일 때만 필요 | `""` |
@@ -149,11 +149,11 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 ### MMR 다양성 재순위
 
-Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 서로 다른 관점의 결과를 함께 반영합니다. 시간 감쇠와 점수 가중 뒤에 실행됩니다.
+Maximal Marginal Relevance 재정렬로, 상위 결과 간 중복을 줄이고 서로 다른 관점의 결과를 함께 반영합니다. 시간 감쇠와 점수 가중 뒤에 실행됩니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_MMR__ENABLED` | MMR 다양성 재순위 활성화 | `false` |
+| `MEMTOMEM_MMR__ENABLED` | MMR 다양성 재정렬 활성화 | `false` |
 | `MEMTOMEM_MMR__LAMBDA_PARAM` | 0.0–1.0. `0.0`=다양성 최대, `1.0`=관련성 최대 | `0.7` |
 
 <a id="access-접근-빈도-가중"></a>
@@ -272,7 +272,7 @@ Maximal Marginal Relevance 재순위로, 상위 결과 간 중복을 줄이고 �
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_WARMUP__ENABLED` | MCP 서버를 시작할 때 로컬 임베딩·재순위 모델을 백그라운드에서 미리 불러옴. 원격 제공자는 제외 | `false` |
+| `MEMTOMEM_WARMUP__ENABLED` | MCP 서버를 시작할 때 로컬 임베딩·리랭커 모델을 백그라운드에서 미리 불러옴. 원격 제공자는 제외 | `false` |
 
 <a id="health-watchdog-상태-모니터"></a>
 
@@ -379,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: upstream 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

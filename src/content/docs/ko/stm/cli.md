@@ -1,11 +1,11 @@
 ---
 title: STM CLI 레퍼런스
-description: memtomem-stm 프록시를 관리하는 mms 명령 전체를 설정·등록, 관련 기억 제시·훅, 진단·튜닝, 프로젝트·호스트 순으로 정리하고 --json 실패 문서 형식을 설명합니다.
+description: memtomem-stm 프록시를 관리하는 mms 명령 전체를 설정·등록, 서피싱·훅, 진단·튜닝, 프로젝트·호스트 순으로 정리하고 --json 실패 문서 형식을 설명합니다.
 ---
 
-`mms` 명령은 `memtomem-stm` v0.7.8 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전이 지원하는 정확한 옵션은 `mms <command> --help`, 버전은 `mms --version` 또는 `mms version`으로 확인하세요.
+`mms` 명령은 `memtomem-stm` v0.7.8 패키지와 함께 설치됩니다. 이 페이지에는 최상위 명령을 빠짐없이 정리했습니다. 설치된 버전의 정확한 옵션은 `mms <command> --help`, 버전 확인은 `mms --version` 또는 `mms version`으로 실행하세요.
 
-STM으로 서버 설정을 가져와도 원래 등록 정보는 보존됩니다. 결과가 만족스럽지 않으면 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
+STM으로 업스트림 서버 설정을 가져와도 원래 등록 정보는 그대로 보존되므로, 언제든 `mms eject`로 원래 MCP 클라이언트 설정에 복원할 수 있습니다.
 
 <a id="명령어"></a>
 
@@ -201,7 +201,7 @@ mms eject filesystem --yes           # 비대화 — 확인 프롬프트 생략
 
 ### `mms surfacing <server> [on|off]`
 
-특정 서버의 관련 기억 자동 제시를 켜거나 끕니다. 상태 인수를 생략하면 현재 값만 출력합니다.
+특정 업스트림 서버의 **서피싱**(관련 기억 자동 제시)을 켜거나 끕니다. 상태 인수를 생략하면 현재 상태만 출력합니다.
 
 ```bash
 mms surfacing filesystem             # 현재 상태 확인
@@ -209,11 +209,11 @@ mms surfacing filesystem off         # 이 서버의 서피싱 비활성화
 mms surfacing filesystem on          # 다시 활성화
 ```
 
-`surfacing_enabled` 값은 공용 프록시 설정(`stm_proxy.json`)에 기록됩니다. 실행 중인 프록시에도 재시작 없이 즉시 반영되며, 같은 `mms` 프록시를 쓰는 모든 MCP 클라이언트가 이 설정을 공유합니다. 작동 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
+`surfacing_enabled` 값은 공용 프록시 설정(`stm_proxy.json`)에 기록됩니다. 실행 중인 프록시에도 재시작 없이 즉시 반영되며, 같은 `mms` 프록시를 공유하는 모든 MCP 클라이언트에 동일하게 적용됩니다. 자세한 동작은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
 
 ### `mms hook`
 
-지원하는 클라이언트의 내장 도구 호출에 STM의 관련 기억 검색을 연결합니다. Claude Code와 호환 클라이언트는 `PostToolUse` 훅에서 이 명령을 호출합니다. JSON 입력은 표준 입력으로 받고, `mms hook`은 관련 기억을 담은 `additionalContext`가 포함될 수 있는 훅 결과를 출력합니다. Bash 출력 압축은 별도 기능이며 `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`로 직접 켜야 합니다.
+지원되는 클라이언트의 내장 도구 호출에 STM 서피싱을 연결합니다. Claude Code 및 호환 클라이언트는 `PostToolUse` 훅에서 이 명령을 실행합니다. 표준 입력(stdin)으로 JSON 이벤트를 받아 관련 기억이 담긴 `additionalContext`를 포함한 훅 응답을 출력하며, 내장 Bash 출력 압축은 별도 설정(`MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED=1`)으로 직접 켜야 합니다.
 
 ```json
 {
@@ -545,9 +545,9 @@ mms eject filesystem
 mms register --client claude
 ```
 
-이제 MCP 클라이언트는 개별 서버 대신 `memtomem-stm`에 연결됩니다. 등록한 서버의 도구는 프록시를 통해 제공되며 관련 기억 자동 제시, 응답 압축, 점진적 전달이 적용됩니다.
+이제 MCP 클라이언트는 개별 서버 대신 `memtomem-stm`에 연결됩니다. 등록한 업스트림 서버의 도구는 프록시를 통해 노출되며 서피싱, 응답 압축, 단계적 공개(`progressive` 전달)가 적용됩니다.
 
-> 설정 방법은 [설치 가이드](/ko/guides/installation/), 관련 기억을 붙이는 방식은 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
+> 설치 절차는 [설치 가이드](/ko/guides/installation/), 서피싱 동작 원리는 [능동적 서피싱](/ko/stm/surfacing/)을 참고하세요.
 
 ## 명령별 전체 옵션 인덱스
 

@@ -3,9 +3,9 @@ title: Context Gateway
 description: 에이전트, 스킬, 명령의 기준본을 여러 AI 도구와 프로젝트에 배포합니다.
 ---
 
-Claude Code에서 만든 스킬을 Codex나 Cursor에서도 사용하거나 같은 명령을 여러 프로젝트에서 재사용할 수 있습니다. Context Gateway는 **Store**에 기준본을 보관합니다. **Push**는 기준본을 선택한 실행 환경으로 보내고, **Pull**은 실행 환경의 파일을 미리 확인한 뒤 Store로 가져옵니다. Store는 `.memtomem/` 또는 사용자 Store에 있습니다.
+Claude Code에서 만든 스킬을 Codex나 Cursor에서도 그대로 쓰거나, 같은 명령을 여러 프로젝트에서 재사용할 수 있습니다. Context Gateway는 **Store**(`.memtomem/` 또는 사용자 Store)에 기준본을 보관합니다. **Push**는 기준본을 선택한 실행 환경으로 배포하고, **Pull**은 실행 환경의 파일을 미리 비교한 뒤 Store로 가져옵니다.
 
-Context Gateway는 에이전트·스킬·명령 같은 항목을 프로젝트와 계층(티어) 사이에서 옮기거나 복사합니다. 여러 프로젝트를 한 번에 동기화할 수 있고, 자주 쓰는 항목은 공용 위키에 모아 재사용할 수 있습니다.
+또한 에이전트·스킬·명령 같은 항목을 프로젝트와 계층(tier) 사이에서 옮기거나 복사할 수 있습니다. 여러 프로젝트를 한 번에 동기화하거나, 자주 쓰는 항목은 공용 위키에 모아 재사용할 수도 있습니다.
 
 ## 해결하는 문제
 
@@ -45,7 +45,7 @@ mm context diff --scope project_shared
 <a id="정규-티어"></a>
 ## 기준본을 보관하는 계층
 
-Context Gateway는 세 가지 **계층(티어)**에 기준본을 보관합니다. UI에는 User, Project (shared), Project (local)로 표시됩니다. CLI에서는 다음 `scope` 값을 사용합니다.
+Context Gateway는 세 가지 **계층**(tier)에 기준본을 보관합니다. UI에는 User, Project (shared), Project (local)로 표시됩니다. CLI에서는 다음 `scope` 값을 사용합니다.
 
 | 계층 (CLI `scope`) | UI 라벨 | 기준본 위치 | 적합한 용도 |
 |---|---|---|---|
@@ -53,7 +53,7 @@ Context Gateway는 세 가지 **계층(티어)**에 기준본을 보관합니다
 | `project_shared` | Project (shared) | `<project>/.memtomem/<artifact>/...` | git에 커밋할 팀 공유 프로젝트 컨텍스트 |
 | `project_local` | Project (local) | `<project>/.memtomem/<artifact>.local/...` | 한 체크아웃에서만 쓰는 비공개 초안 |
 
-`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리이며 파일은 홈 디렉터리에 저장됩니다. Web UI에서는 User 저장소 작업이 프로젝트 밖에 파일을 쓰기 전에 "Write outside the project?" 확인 창을 띄우고, 수정할 경로를 보여 준 뒤 승인한 경우에만 저장합니다. CLI에는 `user` 계층용 확인 창이 없습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전에 확인을 요청하며 `--yes`로 이 확인을 건너뛸 수 있습니다. `mm context init`과 `mm context sync`가 `user` 계층의 에이전트·스킬·명령을 쓸 때는 확인을 요청하지 않습니다.
+`user` 계층은 여러 프로젝트에서 사용하는 개인 라이브러리이며 파일은 홈 디렉터리에 저장됩니다. Web UI에서는 User 계층 작업이 프로젝트 바깥에 파일을 쓰기 전에 "Write outside the project?" 확인 창을 띄우고, 수정할 경로를 보여 준 뒤 승인한 경우에만 저장합니다. CLI에는 `user` 계층용 확인 창이 없습니다. `mm context sync`는 프로젝트 밖의 설정 파일에 쓰기 전에 확인을 요청하며 `--yes`로 이 확인을 건너뛸 수 있습니다. `mm context init`과 `mm context sync`가 `user` 계층의 에이전트·스킬·명령을 쓸 때는 확인을 요청하지 않습니다.
 
 `project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 배포되지 않습니다.
 
@@ -110,7 +110,7 @@ Store에 같은 항목이 이미 있다면 `--overwrite`를 추가합니다. 교
 기준 항목(`agents` / `commands` / `skills`)은 계층이나 프로젝트 사이에서 이동하거나 복사할 수 있습니다.
 
 ```bash
-# 한 스킬을 user 티어로 옮김 (원본 정리)
+# 한 스킬을 user 계층으로 옮김 (원본 정리)
 mm context move skills my-skill --to user
 
 # 다른 프로젝트로 복사 (원본 유지, 이름 변경 가능)
@@ -128,7 +128,7 @@ mm context copy agents reviewer --to-project <project> --as reviewer-v2
 
 ## 다른 컴퓨터로 항목 옮기기
 
-`mm context export`는 기준본 하나를 절대 경로와 호스트명이 없는 JSON 파일 한 개로 묶고, `mm context import`는 그 묶음을 기준본 저장소에 반영합니다. 동료에게 항목을 전달할 때 이 두 명령을 사용하고, 파일이 이미 이 컴퓨터에 있다면 `mm context pull`이나 `mm context init`을 사용합니다.
+`mm context export`는 기준본 하나를 절대 경로와 호스트명이 없는 단일 JSON 번들로 내보내고, `mm context import`는 그 번들을 기준본 저장소에 반영합니다. 동료에게 항목을 전달할 때는 이 두 명령을 사용하고, 파일이 이미 이 컴퓨터에 있다면 `mm context pull`이나 `mm context init`을 사용하세요.
 
 ```bash
 mm context export skills deploy-check --out deploy-check.json
@@ -136,7 +136,7 @@ mm context import deploy-check.json --to user            # 미리보기(기본�
 mm context import deploy-check.json --to user --apply    # 실제 반영
 ```
 
-묶음 파일은 외부에서 가져온 파일이므로 대상 계층과 관계없이 모든 항목을 검사하며, 외부 파일이 반영 위치를 스스로 결정하지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기(`export`)는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기(`import`)에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용되며, `project_shared`에는 이 옵션을 지정하더라도 비밀값이 섞인 묶음을 반영할 수 없습니다.
+외부에서 가져온 번들 파일은 대상 계층과 관계없이 모든 항목을 검사하며, 파일 스스로 반영 위치를 결정하지 못하도록 `--to`를 반드시 지정해야 합니다. 내보내기(`export`)는 어느 계층에서든 비밀값이 발견되면 거부하며 강제 옵션이 없습니다. 이미 전달한 파일은 푸시한 커밋처럼 되돌릴 수 없기 때문입니다. 가져오기(`import`)에서 `--force-unsafe-import`는 검토를 거친 뒤 `user`와 `project_local`에만 적용할 수 있으며, `project_shared`에는 이 옵션을 지정하더라도 비밀값이 섞인 번들을 반영할 수 없습니다.
 
 ## 여러 프로젝트 관리
 

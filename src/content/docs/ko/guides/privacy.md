@@ -10,7 +10,7 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 | 경로 | 기본 상태 | 내용의 외부 전송 가능 여부 |
 |---|---|---|
 | SQLite 저장, BM25 검색, 로컬 ONNX 임베딩·리랭킹 | 로컬 | 파일을 별도로 동기화하거나 공개하지 않으면 전송되지 않음 |
-| MCP `stdio`, STM 캐시·지표, 루프백 Web UI | 로컬 | 사용자가 연결한 upstream MCP 서버와의 통신을 제외하면 전송되지 않음 |
+| MCP `stdio`, STM 캐시·지표, 루프백 Web UI | 로컬 | 사용자가 연결한 업스트림 MCP 서버와의 통신을 제외하면 전송되지 않음 |
 | 원격 Ollama, OpenAI 호환 임베딩·LLM, Cohere 리랭킹 | 직접 설정할 때만 사용 | 설정한 주소로 전송될 수 있음 |
 | 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse | 직접 설정할 때만 사용 | 해당 연동 설정에 따라 전송될 수 있음 |
 
@@ -28,11 +28,11 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 
 - **저장소** — 기본 저장소는 로컬 SQLite(`~/.memtomem/`)입니다. MCP `stdio` 연결은 네트워크 포트를 열지 않습니다. `mm web`도 기본적으로 로컬 컴퓨터에서만 접속할 수 있는 루프백 주소에 연결됩니다.
 - **임베딩** — 키워드 전용 모드는 임베딩 서비스가 필요 없습니다. 내장 ONNX(fastembed)는 추론을 로컬에서 실행하고, 모델 파일은 [모델 다운로드](#모델-다운로드)에서 설명한 방식으로 내려받으며, Ollama와 OpenAI 호환 제공자는 선택적으로 설정하는 경계입니다.
-- **재정렬(Reranking)** — 재정렬을 활성화하면 기본 제공자는 로컬 ONNX(fastembed)이며, 외부 API가 필요 없습니다.
-- **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 telemetry를 전송합니다. memtomem 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 비활성화된 상태로 실행됩니다. 환경에 이미 값이 있으면 그 값을 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정합니다. memtomem 0.7.9를 고정한 Claude Code, Codex, OpenCode, [Antigravity CLI](/ko/guides/connect-ai-client/#antigravity-cli-플러그인), [Cursor](/ko/guides/connect-ai-client/#cursor-플러그인) 플러그인과 [0.7.9 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit에 고정되어 있는 동안 카탈로그에서 설치한 Hermes 플러그인은 telemetry가 활성화된 상태로 실행됩니다. 이 경우 0.7.9 commit으로 다시 설치합니다. 다만 memtomem보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
-- **STM 프록시** — 기본 연결 방식은 `stdio`입니다. 응답 캐시·측정값·피드백은 `~/.memtomem/` 아래의 로컬 SQLite 파일에 저장됩니다. 연결한 MCP 서버나 원격 LTM을 사용할 때는 해당 서버와 통신합니다.
-- **계정 불필요** — 로그인이나 가입 없이 동작합니다.
-- **선택적 외부 연결** — OpenAI 호환 임베딩, Cohere 리랭킹, 외부 주소의 Ollama, 압축·추출용 외부 LLM, 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse는 설정한 주소로 데이터를 보낼 수 있으며, `mm init`과 `mm status`는 설정된 원격 임베딩·LLM·리랭커 엔드포인트를 표시해 외부 전송 경계를 확인할 수 있게 합니다. STM의 `privacy_scan_enabled`는 기본적으로 자격 증명을 검사합니다. 민감 정보가 발견되면 외부 LLM으로 보내지 않고 로컬에서 처리합니다. 이 검사를 비활성화하면 연결한 MCP 서버의 응답이 검사 없이 외부 서비스로 전송될 수 있으며, 시작할 때 경고가 표시됩니다.
+- **재정렬(리랭킹)** — 재정렬을 활성화하면 기본 제공자는 로컬 ONNX(fastembed)이므로 외부 API가 필요 없습니다.
+- **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 텔레메트리를 전송합니다. `memtomem` 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 꺼진 상태로 실행됩니다. 환경에 이미 값이 설정되어 있으면 그대로 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정하세요. memtomem 0.7.9를 고정한 Claude Code, Codex, OpenCode, [Antigravity CLI](/ko/guides/connect-ai-client/#antigravity-cli-플러그인), [Cursor](/ko/guides/connect-ai-client/#cursor-플러그인) 플러그인과 [0.7.9 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit에 고정된 상태에서 카탈로그로 설치한 Hermes 플러그인은 텔레메트리가 켜진 채로 실행됩니다(이 경우 0.7.9 commit으로 다시 설치하세요). 단, `memtomem`보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
+- **STM 프록시** — 기본 클라이언트 전송 방식은 `stdio`입니다. 응답 캐시·지표·피드백은 `~/.memtomem/` 아래 로컬 SQLite 파일에 저장되며, 연결한 업스트림 MCP 서버나 원격 LTM 전송 경로는 각자 설정된 네트워크 경계를 따릅니다.
+- **계정 불필요** — 로그인이나 회원 가입 없이 동작합니다.
+- **선택적 외부 연결** — OpenAI 호환 임베딩, Cohere 리랭킹, 외부 주소의 Ollama, 압축·추출용 외부 LLM, 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse는 설정한 엔드포인트로 데이터를 전송할 수 있으며, `mm init`과 `mm status`는 설정된 원격 임베딩·LLM·리랭커 엔드포인트를 표시해 외부 전송 경계를 확인할 수 있게 합니다. STM의 외부 LLM 경로에서는 `privacy_scan_enabled`(기본 켜짐)가 호출 전에 자격증명을 검사해, 민감 정보가 감지되면 외부로 보내지 않고 로컬 처리로 대체합니다. 이 검사를 끄면 업스트림 응답이 검사 없이 외부로 전송될 수 있으며 시작 시 경고가 표시됩니다.
 
 ## 파일 시스템 보호
 
@@ -56,14 +56,14 @@ memtomem은 자격증명·토큰·키로 보이는 내용이 저장소나 공유
 
 ## 검색어 보호(STM 관련 기억 자동 제시)
 
-STM 서피싱은 도구 호출에서 검색어를 만들어 LTM을 검색합니다. 다음 설정으로 검색어를 저장하는 방식을 제어할 수 있습니다.
+STM **서피싱**(관련 기억 자동 제시)은 도구 호출에서 검색어를 추출해 LTM을 조회합니다. 다음 설정으로 검색어 보존 방식을 제어할 수 있습니다.
 
 - `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT=false` — 원문 대신 `sha256:<16-hex>` 다이제스트만 저장합니다. `surface` 웹훅으로 보내는 `query`도 같은 다이제스트입니다.
 - `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` (기본 `30`) — 피드백 DB에 저장된 원문 검색어를 지정한 일수 후 삭제합니다.
-- **민감 검색어 건너뛰기(`sensitive_query`)** — 검색어나(검색어를 인자·템플릿에서 만든 경우) 원본 인자·템플릿이 자격증명이나 이메일 패턴과 일치하면(한글·가나·한자·악센트 있는 라틴 문자에 붙은 자격증명과 조사가 붙은 이메일 주소 포함) LTM 호출 전에 서피싱을 건너뜁니다. 다이제스트 검색을 실행하지 않고 Pinned Context를 포함해 아무것도 전달하지 않으며, `surfacing_events` 행과 `surface` 웹훅도 남기지 않고 제시 기회 기록(`opportunities_enabled=true`일 때 `outcome="sensitive_query"`)만 남깁니다. 이 차단을 끄는 스위치는 없으며, 템플릿이 설정되지 않은 도구에서 에이전트가 깨끗한 `context_query` / `_context_query`를 직접 넘긴 호출은 다른 인자에 비밀값이 있어도 정상적으로 서피싱됩니다.
+- **민감 검색어 건너뛰기(`sensitive_query`)** — 검색어나(검색어를 인자·템플릿에서 만든 경우) 원본 인자·템플릿이 자격증명이나 이메일 패턴과 일치하면(한글·가나·한자·악센트 있는 라틴 문자에 붙은 자격증명과 조사가 붙은 이메일 주소 포함) LTM 호출 전에 건너뜁니다. 다이제스트 검색을 실행하지 않고 Pinned Context를 포함해 아무것도 전달하지 않으며, `surfacing_events` 행과 `surface` 웹훅도 남기지 않고 제시 기회 기록(`opportunities_enabled=true`일 때 `outcome="sensitive_query"`)만 남깁니다. 이 차단을 끄는 스위치는 없으며, 템플릿이 설정되지 않은 도구에서 에이전트가 민감 정보가 없는 `context_query` / `_context_query`를 직접 넘긴 호출은 다른 인자에 비밀값이 있어도 정상적으로 관련 기억을 제시합니다.
 - **제시 기회 기록** — 검색에 진입한 호출마다 결과와 인자의 형태(개수, 경로 깊이, 흔한 파일 확장자)만 기록하며, 인자의 키와 값은 저장하지 않습니다. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 비활성화할 수 있습니다.
 - **호출 식별자** — 관련 기억 이벤트에는 호스트의 `tool_use_id`, 세션 ID, 에이전트 ID를 저장하지만 작업 디렉터리(`cwd`)는 저장하지 않습니다. 제시한 기억의 경로와 미리보기 텍스트는 설치별 키로 만든 해시로만 저장합니다.
-- **쓰기 도구 제외** — 연결한 MCP 서버의 도구가 상태를 변경하면 서피싱을 자동으로 건너뜁니다.
+- **쓰기 도구 제외** — 연결한 MCP 서버의 도구가 상태를 변경하면 자동 제시를 건너뜁니다.
 
 ## 되돌릴 수 있는 도입 · 잠금 없음
 

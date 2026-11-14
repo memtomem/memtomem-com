@@ -15,10 +15,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 | `standard` | `mem_do` 포함 39개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
 | `full` | 현재 도구 93개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
 
-다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이
-이미 memtomem을 제공한다면 항목을 추가하기 전에
-[AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 해당 클라이언트의
-공존 규칙을 확인하세요.
+다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이 이미 memtomem을 제공한다면 항목을 추가하기 전에 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 해당 클라이언트의 공존 규칙을 확인하세요.
 
 예시:
 
@@ -67,25 +64,13 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.9는 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서
-`mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서
-`mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)).
-Pinned Context는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를
-제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과
-`mem_candidate_propose/list/review/recover/evidence`가 있습니다. Full 모드에는 Quality Lab에서
-결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
+v0.7.9는 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서 `mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)). Pinned Context(고정 컨텍스트)는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과 `mem_candidate_propose/list/review/recover/evidence`가 있습니다. `full` 모드에는 Quality Lab에서 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
 
-`mem_do(action="version")`은 서버 버전, 기능 목록, 실제 임베딩·리랭커 실행
-환경을 반환합니다. `runtime_profile`에는 빠진 선택 의존성이 표시되며 비밀값은
-포함하지 않습니다.
+`mem_do(action="version")`은 서버 버전, 기능 목록, 실제 임베딩·리랭커 실행 환경을 반환합니다. `runtime_profile`에는 빠진 선택 의존성이 표시되며 비밀값은 포함하지 않습니다.
 
-`mem_candidate_propose(content, source, source_ref, idempotency_key)`는 민감
-정보를 검사한 뒤 검토 대기 후보를 만듭니다. 장기 기억에는 바로 저장하지
-않으며 승인된 후보만 일반 쓰기 단계로 넘어갑니다. 같은
-`idempotency_key`로 동일한 내용을 다시 보내면 기존 대기 후보를 반환하고, 다른 내용을 보내면 거부합니다.
+`mem_candidate_propose(content, source, source_ref, idempotency_key)`는 민감 정보를 검사한 뒤 검토 대기 후보를 만듭니다. 장기 기억에는 바로 저장하지 않으며 승인된 후보만 일반 쓰기 단계로 넘어갑니다. 같은 `idempotency_key`로 동일한 내용을 다시 보내면 기존 대기 후보를 반환하고, 다른 내용을 보내면 거부합니다.
 
-
-`mem_candidate_evidence`는 호출자의 범위 안에 색인된 기억과 후보를 비교합니다. 다른 대기 후보나 고정 컨텍스트와 비교하지 않으며, 충돌 가능성 표시는 사실 판정이나 자동 승인·거부가 아닙니다.
+`mem_candidate_evidence`는 호출자의 범위 안에 색인된 기억과 후보를 비교합니다. 다른 대기 후보나 Pinned Context와 비교하지 않으며, 충돌 가능성 표시는 사실 판정이나 자동 승인·거부가 아닙니다.
 
 ## OpenCode
 
@@ -111,7 +96,7 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 
 ## 중복 경고
 
-`mem_add`는 기억을 저장한 뒤, 새로 생성된 청크의 저장 벡터를 기본 검색 대상 네임스페이스의 기존 청크와 비교합니다. `archive:*` 같은 시스템 네임스페이스는 제외하며, 활성 세션의 네임스페이스로 범위를 좁히지 않습니다. 충분히 가까운 기존 청크가 있으면 결과 끝에 `⚠ Similar memories found:`와 함께 최대 세 개를 표시하고, 각 항목의 저장소 유사도를 백분율이 아닌 `(dense 0.97)` 형식으로 보여 줍니다. 경고와 관계없이 기억은 저장됩니다. 0.7.2부터는 별도 검색 대신 이 저장된 벡터를 직접 비교하므로, 방금 추가한 기억 자신을 중복으로 보고하지 않으며 재순위 모델 사용 여부와 관계없이 같은 방식으로 동작합니다.
+`mem_add`는 기억을 저장한 뒤, 새로 생성된 청크의 저장 벡터를 기본 검색 대상 네임스페이스의 기존 청크와 비교합니다. `archive:*` 같은 시스템 네임스페이스는 제외하며, 활성 세션의 네임스페이스로 범위를 좁히지 않습니다. 충분히 가까운 기존 청크가 있으면 결과 끝에 `⚠ Similar memories found:`와 함께 최대 세 개를 표시하고, 각 항목의 저장소 유사도를 백분율이 아닌 `(dense 0.97)` 형식으로 보여 줍니다. 경고와 관계없이 기억은 저장됩니다. 0.7.2부터는 별도 검색 대신 이 저장된 벡터를 직접 비교하므로, 방금 추가한 기억 자신을 중복으로 보고하지 않으며 리랭커 모델 사용 여부와 관계없이 같은 방식으로 동작합니다.
 
 - 복사했거나 표현만 바꾼 내용이라도 저장된 벡터 유사도가 기준값 이상이면 경고가 표시될 수 있습니다. 점수는 제목을 포함한 항목 전체와 임베딩 모델에 따라 달라지며, 기준값은 여러 모델로 보정할 때까지 잠정값입니다. 경고가 없다고 해서 중복이 없다는 뜻은 아닙니다.
 - 이번 쓰기로 만든 청크는 비교에서 제외합니다. 같은 파일의 이전 항목이 새 기억과 하나의 청크로 합쳐진 경우도 포함됩니다.
@@ -129,18 +114,18 @@ mem_do(action="dedup_merge", params={"keep_id": "<chunk-id>", "delete_ids": ["<c
 
 ## 프로젝트 바인딩
 
-프로젝트 컨텍스트는 서버의 작업 디렉터리에서 정해집니다. 호스트가 stdio 서버를 다른 위치에서 시작하면(Hermes Agent와 Antigravity CLI 플러그인은 플러그인 디렉터리에서 시작합니다) `project_local`을 찾을 수 없습니다. 0.7.1에 추가된 `mem_project_bind`는 이런 서버를 등록된 tier가 있는 프로젝트에 고정합니다.
+프로젝트 컨텍스트는 서버의 작업 디렉터리에서 정해집니다. 호스트가 stdio 서버를 다른 위치에서 시작하면(Hermes Agent와 Antigravity CLI 플러그인은 플러그인 디렉터리에서 시작합니다) `project_local`을 찾을 수 없습니다. 0.7.1에 추가된 `mem_project_bind`는 이런 서버를 등록된 계층(tier)이 있는 프로젝트에 고정합니다.
 
 ```text
 mem_do(action="project_bind", params={"project_root": "/absolute/path/to/project"})
 ```
 
-바인딩한 뒤에는 프로젝트 컨텍스트를 사용하는 기억 도구가 해당 프로젝트를 기준으로 동작합니다. 검색, 회상, 추가, id 기반 읽기·편집, pinned context가 여기에 해당합니다. `mem_list`는 계속 저장소 전체를 대상으로 하며, Context Gateway의 `context_*` 액션과 상태 점검(health watchdog)은 계속 작업 디렉터리를 사용합니다.
+바인딩한 뒤에는 프로젝트 컨텍스트를 사용하는 기억 도구가 해당 프로젝트를 기준으로 동작합니다. 검색, 회상, 추가, ID 기반 읽기·편집, Pinned Context가 여기에 해당합니다. `mem_list`는 계속 저장소 전체를 대상으로 하며, Context Gateway의 `context_*` 액션과 상태 점검(health watchdog)은 계속 작업 디렉터리를 사용합니다.
 
 - stdio 서버에서만 동작합니다. streamable HTTP는 여러 클라이언트가 하나의 컨텍스트를 공유하기 때문입니다.
-- `project_root`는 tier가 등록된 프로젝트(`mm mem init --scope project_local`) 안의 절대 경로여야 하며, 그렇지 않으면 호출이 거부됩니다.
+- `project_root`는 계층이 등록된 프로젝트(`mm mem init --scope project_local`) 안의 절대 경로여야 하며, 그렇지 않으면 호출이 거부됩니다.
 - 바인딩은 서버 프로세스마다 한 번만 설정되며, 다른 프로젝트에 바인딩하려면 서버를 다시 시작해야 합니다. 서버의 작업 디렉터리가 이미 다른 등록된 프로젝트 안에 있으면 거부됩니다.
-- 나중에 tier 등록을 해제하면 읽기는 바인딩된 프로젝트에 그대로 남고, 해당 tier에 대한 추가는 거부되며, pinned context는 서버를 다시 시작할 때까지 다시 확인하지 않습니다. 그동안 `mem_status`가 `bound_project_unregistered` 경고를 표시하므로 서버를 다시 시작하거나 `mm mem init`으로 tier를 다시 등록합니다.
+- 나중에 계층 등록을 해제하면 읽기는 바인딩된 프로젝트에 그대로 남고, 해당 계층에 대한 추가는 거부되며, Pinned Context는 서버를 다시 시작할 때까지 다시 확인하지 않습니다. 그동안 `mem_status`가 `bound_project_unregistered` 경고를 표시하므로 서버를 다시 시작하거나 `mm mem init`으로 계층을 다시 등록합니다.
 
 0.7.2부터 Antigravity CLI 플러그인의 프로젝트 워크플로(`handoff`, `brief`, `update`)는 실행 중인 저장소에 서버를 바인딩합니다. 자세한 내용은 [프로젝트 워크플로](/ko/ltm/project-workflows/#antigravity-cli)를 참고하세요. Hermes Agent 플러그인의 워크플로는 프로젝트를 바인딩하지 않으며, 두 플러그인 모두 `remember` 워크플로는 항상 사용자 범위에 저장합니다.
 
@@ -158,7 +143,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - `shas`에는 중복 없이 40자 소문자 전체 SHA를 1~10개 전달합니다. 서버는 형식만 검사하며 `git`을 실행하지 않습니다.
 - `record=false`(기본값)이면 전달한 SHA 중 이전 호출에서 기록되지 않은 것을 전달한 순서대로 반환합니다.
 - `record=true`이면 SHA를 검토 완료로 기록하고, 필수 인자인 `run_id`(소문자 표준 UUID)를 출처로 함께 저장합니다. 전체 메시지를 읽은 커밋만 대상으로 하고, 실행의 마지막 `mem_add`가 끝난 뒤에 기록해야 하며, 한 주제로 범위를 좁힌 검토는 아무것도 기록하지 않습니다. 기록할 때 90일이 지난 행은 정리됩니다.
-- 프로젝트 컨텍스트가 필요합니다. tier가 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
+- 프로젝트 컨텍스트가 필요합니다. 계층이 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
 - 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
 - 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
 - Core 0.7.9와 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
