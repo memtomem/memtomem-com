@@ -379,6 +379,8 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 
 `mm agent register` creates the `agent-runtime:{agent_id}` namespace; re-registering with the same id only updates metadata. `agent_id` must match `[A-Za-z0-9._-]` — IDs outside the allowed pattern are rejected.
 
+`--color` takes `#` followed by 3, 4, 6 or 8 hex digits, and an empty string clears the color; a 5- or 7-digit value is rejected with an error and no namespace metadata is created or changed. `--description` is scanned by the write guard, with no `--force-unsafe` bypass. A description that puts `:` or `=` right after a credential name, such as `api_key: see the vault`, is not saved and the command exits non-zero, even though it holds no credential. The MCP tools `mem_agent_register` and `mem_ns_update` and the Web UI's namespace editor apply the same checks; the Web UI answers a refused description with 403 `redaction_blocked`.
+
 `mm agent share` is a **copy**, not a reference link. The new chunk gets a fresh UUID and source updates do not propagate; provenance is recorded only via a `shared-from=<source-uuid>` tag on the copy.
 
 ## Diagnostics

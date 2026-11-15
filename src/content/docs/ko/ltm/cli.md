@@ -359,6 +359,8 @@ mm agent share <chunk-id> --target agent-runtime:reviewer
 
 `mm agent register`는 `agent-runtime:{agent_id}` 네임스페이스를 자동으로 만듭니다. 같은 ID로 다시 호출하면 메타데이터만 갱신합니다. `agent_id`에는 `[A-Za-z0-9._-]`만 사용할 수 있습니다.
 
+`--color`에는 `#` 뒤에 16진수 3·4·6·8자리를 붙인 값을 쓰며, 빈 문자열은 색상을 지웁니다. 5자리나 7자리 값은 오류로 거부하며 네임스페이스 메타데이터를 만들거나 바꾸지 않습니다. `--description`은 쓰기 가드가 검사하고, `--force-unsafe` 같은 우회 옵션은 없습니다. 실제 자격 증명이 없어도 `api_key: see the vault`처럼 자격 증명 이름 바로 뒤에 `:` 또는 `=`가 오는 설명은 저장하지 않고 0이 아닌 종료 코드로 끝납니다. MCP 도구 `mem_agent_register`와 `mem_ns_update`, Web UI의 네임스페이스 편집에도 같은 검사가 적용되며, Web UI는 설명을 거부할 때 403 `redaction_blocked`로 응답합니다.
+
 `mm agent share`는 청크를 **복사**하며 참조 링크를 만들지 않습니다. 새 청크에는 별도 UUID가 생기고 원본을 바꿔도 사본은 바뀌지 않습니다. 출처는 `shared-from=<원본-uuid>` 태그로 추적합니다.
 
 ## 진단

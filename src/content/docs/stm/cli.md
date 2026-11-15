@@ -104,6 +104,8 @@ Incompatible with `NAME` / `--prefix` / `--command` / `--args` / `--url` / `--en
 
 `mms init`, `mms add --from-clients` and `mms prune` read Claude Code's config the way Claude Code does: `$CLAUDE_CONFIG_DIR/.claude.json` when `CLAUDE_CONFIG_DIR` is an absolute path, otherwise `~/.claude.json`, and within it the project entry of the repository root, so a subdirectory finds the servers registered at the root. In a linked worktree, a submodule or behind a symlinked `.git`, no project entry is read. When STM cannot tell which file Claude Code reads (for example a relative or empty `CLAUDE_CONFIG_DIR`, a set `CLAUDE_CODE_CUSTOM_OAUTH_URL`, or a legacy `.config.json` in Claude Code's config directory), it reads no Claude Code user or project servers and prints a note; `<cwd>/.mcp.json` is still read. `mms import`, `mms host` and `mms eject` follow the same rules.
 
+`mms import` and `mms host` read Codex's user config from `$CODEX_HOME/config.toml`, or from `~/.codex/config.toml` when `CODEX_HOME` is unset or empty. When `CODEX_HOME` is relative or has a `.` or `..` path component, they read no Codex config.
+
 `mms init`, `mms add --from-clients` and `mms prune` also name servers that bypass STM, without importing them:
 
 - **Claude Code plugin servers:** when `claude` is on `PATH`, they run `claude plugin list --json` in the current directory and list each MCP server an enabled plugin registers, as `/mcp` shows it (`plugin:<plugin>:<server>`). STM does not proxy those servers. To route one through STM, add it with `mms add … --validate` and then disable the plugin's copy. `--json` carries the rows in `plugin_bypass`, and `plugin_bypass_disables_unread` says why servers disabled in `/mcp` could not be checked (`"no_key"`, `"no_config"`, or `null` when no reason was recorded).
@@ -233,6 +235,8 @@ The hook always exits 0. If surfacing, the daemon, or compression fails, the hos
 | `--surfacing-timeout-seconds N` | Override the cold-path surfacing timeout |
 | `--daemon-timeout-seconds N` | Override hook-to-daemon round-trip timeout |
 | `--persist-query-text` / `--no-persist-query-text` | Override query-text retention for this portable hook invocation |
+
+`mms hook install` and `mms hook uninstall` use the config file under the host's home variable (`CLAUDE_CONFIG_DIR`, `CODEX_HOME` or `KIMI_CODE_HOME`) when it is an absolute path. When the variable is relative or has a `.` or `..` path component, or when `CLAUDE_CONFIG_DIR` or `KIMI_CODE_HOME` is empty, STM cannot tell which file the host reads, so the command exits with an error without reading or changing the host's hook config. An empty `CODEX_HOME` means `~/.codex`.
 
 ### `mms daemon`
 
