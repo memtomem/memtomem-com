@@ -36,7 +36,7 @@ STM이 LTM에서 기억을 조회하려면 먼저 검색어가 필요합니다. 
 | 4 | 시맨틱 키 | `query` / `search` / `url` / `description` 등 인자 값의 키워드 조합 |
 | 5 | 도구 이름 | 프록시 호출의 마지막 수단 — 도구 이름 자체를 검색어로 사용 |
 
-0.7.7부터 `mms hook`으로 들어오는 Claude Code 내장 도구 호출은 5단계를 건너뜁니다. 호출 인자(경로와 셸 명령)에서 검색어를 조합하며, 남은 토큰 수가 `min_query_tokens` 미만이면 기억 조회를 건너뜁니다. 단, 경로 인자 토큰만으로 구성된 검색어(다른 텍스트가 없는 기본 `Read` 등)는 `max(1, min_query_tokens - 1)`개 토큰(기본값 `3`일 때 `2`개)만 요구하므로, 기본 `Read`로 `tests/test_server_tools.py`(`server tools`)나 `/etc/hosts`(`etc hosts`)를 읽을 때는 관련 기억이 제시되고 `CHANGELOG.md`(`CHANGELOG`)를 읽을 때는 건너뜁니다. 세부 규칙은 [업스트림 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
+0.7.7부터 `mms hook`으로 들어오는 Claude Code 내장 도구 호출은 5단계를 건너뜁니다. 호출 인자(경로와 셸 명령)에서 검색어를 조합하며, 남은 토큰 수가 `min_query_tokens` 미만이면 기억 조회를 건너뜁니다. 단, 경로 인자 토큰만으로 구성된 검색어(다른 텍스트가 없는 기본 `Read` 등)는 `max(1, min_query_tokens - 1)`개 토큰(기본값 `3`일 때 `2`개)만 요구하므로, 기본 `Read`로 `tests/test_server_tools.py`(`server tools`)나 `/etc/hosts`(`etc hosts`)를 읽을 때는 관련 기억이 제시되고 `CHANGELOG.md`(`CHANGELOG`)를 읽을 때는 건너뜁니다. 세부 규칙은 [업스트림 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
 
 프록시는 `_context_query` 인자를 항상 허용하지만, 업스트림 도구 스키마에는 `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`일 때만 노출합니다. 기본값은 `false`이므로 일반 에이전트에 이 내부 힌트 생성을 요구하지 않습니다.
 
@@ -144,7 +144,7 @@ export MEMTOMEM_STM_SURFACING__PROJECT_SCOPE_FROM_CWD=false
 - **교차 세션 중복 제거** — 기본 TTL은 `604800s`(7일)이며 `MEMTOMEM_STM_SURFACING__DEDUP_TTL_SECONDS`로 조정합니다.
 - **주입 크기 상한** — 주입 1회당 기본 상한은 `3000 chars`입니다.
 - **로컬 피드백 강등** — 서로 다른 이벤트에서 `not_relevant` 또는 `already_known` 평가를 반복해서 받은 기억은 `feedback_demotion_negative_threshold`(기본값 `3`회)에 도달한 시점부터 주입 전에 걸러집니다.
-- **검색어 보호** — `query_retention_days`는 저장된 원문 검색어를 기본 30일 후 삭제하며, `persist_query_text=false`로 설정하면 원문 대신 `sha256:` 다이제스트를 저장합니다.
+- **검색어 보호** — `query_retention_days`는 저장된 원문 검색어를 기본 30일 후 삭제하며, `persist_query_text=false`로 설정하면 원문 대신 피드백 데이터베이스의 키로 만든 `hmac-sha256:` 다이제스트를 저장합니다(0.7.9 이전에 기록된 행은 `sha256:`를 유지하며 두 값은 서로 비교할 수 없음).
 - **제시 기회 기록** — 피드백 추적기가 활성화된 엔진(데몬 및 `feedback_enabled`가 켜진 프록시)은 서피싱에 진입한 호출마다 `surfacing_opportunities`에 행을 하나씩 기록합니다. 각 행에는 종료 결과, 인자 형태(인자 개수, 경로 깊이, 주요 파일 확장자), 추출된 검색어의 다이제스트만 담기며 인자의 키와 값은 저장하지 않습니다. 행 크기는 약 320바이트이고 `stats_retention_days`에 따라 삭제됩니다. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 끄거나 `opportunities_sample_rate`로 표본 비율만 남길 수 있습니다(홀드아웃 그룹으로 배정된 호출은 항상 기록합니다).
 - **호출 식별자** — 훅은 호스트의 `session_id`, `cwd`, `tool_use_id`, `agent_id`를 데몬에 전달하되 로그에는 남기지 않습니다. `surfacing_events` 행에는 `tool_use_id`, `host_session_id`, `host_agent_id`만 저장하고 `cwd`는 저장하지 않으며, 전달된 기억은 설치별 고유 키로 해시한 원본 경로와 미리보기 해시만 기록합니다.
 - **보류(holdout)** — `holdout_rate`를 기본값(`0.0`)보다 크게 설정하면 데몬을 거치는 Claude Code 훅 호출 중 주입 대상 호출 일부를 무작위로 보류해 서피싱 효과를 측정합니다. 보류된 호출은 도구 응답을 그대로 반환하고 기록만 남기며, 프록시 경로에서는 보류하지 않습니다.

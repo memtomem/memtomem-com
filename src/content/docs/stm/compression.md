@@ -69,7 +69,7 @@ Under legacy delivery, every progressive chunk ends with the canonical footer `\
 
 Per-response follow-up rate and coverage for progressive delivery — along with degradation to passthrough when the primary store fails — are reported by `stm_admin(action="progressive_stats")` (see [MCP Tools](/stm/mcp-tools/)). [`mms stats`](/stm/cli/#mms-stats) reads the same telemetry from disk and adds a **Progressive delivery** block that compares the characters produced with the characters delivered (`--json`: `progressive`).
 
-The response cache uses schema 7 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
+The response cache uses key schema 8 and preserves the canonical MCP envelope, including `content`, `structuredContent`, and `_meta`. An incompatible older cache is reset once instead of mixing envelope versions. An upstream result that quotes STM's progressive footer (`\n---\n[progressive: chars=`) is cached unless it also carries the `stm_proxy_read_more(key="…")` call.
 
 ## Structured chunk delivery
 
@@ -86,7 +86,7 @@ Set `delivery_format: "structured"` globally (`MEMTOMEM_STM_PROXY__DELIVERY_FORM
 - **Surfacing:** memories arrive in `stm.supplements.surfacing` instead of the response text, so every `injection_mode` works, including `prepend`.
 - **Cache and stats:** the response-cache key includes the delivery format. `mms stats` reports structured calls on a separate `Structured delivery:` line (`--json`: `compression.structured_delivery`), apart from the legacy saved ratio, and the tuner's retention ratios leave them out.
 
-The upstream [structured chunk delivery reference](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/compression.md#structured-chunk-delivery) lists the envelope fields and error codes.
+The upstream [structured chunk delivery reference](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/compression.md#structured-chunk-delivery) lists the envelope fields and error codes.
 
 ## Fallback Ladder
 
@@ -118,4 +118,4 @@ This feedback loop is driven by the `stm_compression_feedback` tool; accumulated
 
 Progressive delivery retains the cleaned source after upstream limits, not an unlimited byte-for-byte copy of the original response. Pending selections are memory-backed by default; SQLite persistence is opt-in. With `pending_store: "sqlite"`, a SELECTIVE, HYBRID or PROGRESSIVE response that would be stored there and matches STM's credential patterns is not written to `pending_selections.db`: it comes back uncached as a boundary-aware truncation (SELECTIVE/HYBRID, `truncate_on_sensitive`) or as the full cleaned response (PROGRESSIVE, `passthrough_on_sensitive`). Email addresses do not trigger it. Entries expire under their TTL; `progressive.ttl_seconds: 0` expires immediately, delivering the first chunk with an expiry notice. An expired ID returns an error, not an automatic upstream refetch. Repeating an original read-only call is a separate, explicit action; do not replay a write just to recover content.
 
-Cache schema 7 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings (URL, headers, transport, command), so editing them no longer replays the old connection's reply. Older cache rows are discarded on initialization (metrics and feedback are kept); this is separate from deleting LTM memories.
+Cache key schema 8 uses length-prefixed key framing and Unicode serialization, binds a cached reply to the upstream's connection settings (URL, headers, transport, command), so editing them no longer replays the old connection's reply, and keys each row with an HMAC under a key file beside the database (its path plus `.key`, `proxy_cache.db.key` by default). Older cache rows are discarded on initialization (metrics and feedback are kept), so the response cache and the tool-graph consult cache start empty once after upgrading to 0.7.9; restart running proxies so no process from the previous release keeps writing unkeyed rows. This is separate from deleting LTM memories.

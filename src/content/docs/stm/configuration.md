@@ -7,7 +7,7 @@ memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/con
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem-stm` 0.7.8 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
+This public reference tracks the complete `memtomem-stm` 0.7.9 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -19,7 +19,7 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_STM_DATA_DIR` | Daemon handshake, ownership lock, and detached log directory | `"~/.memtomem"` |
+| `MEMTOMEM_STM_DATA_DIR` | Daemon handshake, ownership lock, and detached log directory. Also holds `stm-discovery.key`, which keys the daemon fingerprint: keep it, since deleting or replacing it while daemons run makes them foreign. A missing key is created with a hard link, so on a filesystem without hard links (FAT, exFAT, some network mounts) the daemon cannot be used until one exists | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | Log level | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | Optional rotating log file; files use `0600`, 2 MiB rotation, and three backups | `null` |
 | `MEMTOMEM_STM_LOG_DEPENDENCIES` | Let records below WARNING from loggers outside `memtomem_stm` (the MCP SDK, `httpx`, `httpcore`, `urllib3` and others) through to the server and daemon logs. Off by default because those lines carry upstream URLs with their query strings, the MCP session id, response headers, and whole MCP messages including tool arguments and results. Read at startup. | `false` |
@@ -56,11 +56,11 @@ STM settings are organized into root fields plus `PROXY__*`, `SURFACING__*`, `FO
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | Enable response caching | `true` |
 | `MEMTOMEM_STM_PROXY__CACHE__DEFAULT_TTL_SECONDS` | Cache TTL | `3600` |
-| `MEMTOMEM_STM_PROXY__CACHE__DB_PATH` | Cache DB location | `"~/.memtomem/proxy_cache.db"` |
+| `MEMTOMEM_STM_PROXY__CACHE__DB_PATH` | Cache DB location. Its row key file is the database path plus `.key` (`proxy_cache.db.key` by default): deleting or replacing it empties the cache, an unreadable one disables the cache for the run, and a missing one that cannot be created (no hard links on that filesystem) leaves the cache disabled | `"~/.memtomem/proxy_cache.db"` |
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | Cache eviction ceiling | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | How MCP tool annotations affect caching: `conservative`, `strict`, or `ignore` | `"conservative"` |
 
-Cache schema 7 stores the canonical MCP content envelope, including `structuredContent` and `_meta`. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
+Cache key schema 8 stores the canonical MCP content envelope, including `structuredContent` and `_meta`, and keys each row under the database's `.key` file. On an incompatible older schema, STM performs its documented one-time cache reset rather than serving a mixed envelope.
 
 ### Proxy → Auto-Index (Stage 4)
 
@@ -108,6 +108,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | Relevance embedding model | `"nomic-embed-text"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_BASE_URL` | Relevance embedding endpoint | `"http://localhost:11434"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_TIMEOUT` | Relevance embedding request timeout | `10` |
+| `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__PRIVACY_SCAN_ENABLED` | With `scorer="embedding"`, screen the context query, section titles and first 500 body characters, and the response for API keys, passwords, provider tokens, JWTs and private keys; on a match the pass is scored with BM25 and nothing is sent. Set `false` only for an endpoint you trust with that text; a non-loopback endpoint then logs a WARNING | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | Persist `stm_compression_feedback` | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | Compression feedback SQLite path | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | Compression feedback retention | `90` |
@@ -130,7 +131,7 @@ An STM-native filter that decides, at tool-advertisement time, which of an upstr
 
 ### Proxy → Selection telemetry / Tool relevance
 
-Records one selection + execution entry per proxied call as JSONL, and BM25-ranks the advertised tool set against the call's query signal. Ranking is recorded into telemetry only — it never changes exposure.
+Records one selection + execution entry per proxied call as JSONL, and BM25-ranks the advertised tool set against the call's query signal. Ranking is recorded into telemetry only — it never changes exposure. Since 0.7.9 records are `schema_version` 2 and drop `args_sha256` and `candidate_features.query_sha256`; an older STM's `mms selection replay` and `mms selection feedback` skip them.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -164,7 +165,7 @@ Consults a separate tool-graph MCP server for cross-server authorization / data-
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__RISK_PENALTY_SCALE` | Ranking-demotion multiplier for eligible-but-risky tools | `1` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__TIMEOUT_SECONDS` | Per-consult timeout | `5` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_ENABLED` | Disk-cache a successful consult's verdict | `true` |
-| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | SQLite path for the consult cache | `"~/.memtomem/toolgraph_consult.db"` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | SQLite path for the consult cache. Its key file is the database path plus `.key` (`toolgraph_consult.db.key` by default) and behaves like the response cache's | `"~/.memtomem/toolgraph_consult.db"` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_MAX_SCOPES` | Maximum cached tool-set scopes | `64` |
 
 A typed `backend_unavailable` result follows `on_unreachable`; unknown or malformed result envelopes follow `on_protocol_error`.
@@ -303,7 +304,7 @@ Each `tool_overrides.<tool>` accepts `compression`, `max_result_chars`, `max_res
 | `MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS` | Content cap per compact preview | `300` |
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | Days to retain raw query text in the feedback DB before clearing the column; `0` disables cleanup | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | Aggregated surfacing-stat retention | `90` |
-| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `sha256:<16-hex>` digests when `false`. The `surface` webhook's `query` carries the same stored value | `true` |
+| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | Store raw query text when `true`; store `hmac-sha256:<16-hex>` digests, keyed by the feedback database, when `false` (rows written before 0.7.9 keep `sha256:`). The `surface` webhook's `query` carries the same stored value | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | Record one `surfacing_opportunities` row per call that entered surfacing, labelled with how it ended (surfaced, skipped and why, errored, cancelled). Rows carry the shape of the arguments (their number, a path's depth and, for a common file type, its extension), never their keys or values; `false` turns the log off completely. Only engines with a feedback tracker write them (the daemon, and the proxy with `feedback_enabled`) | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | Share of opportunity rows kept (`0.0`–`1.0`); dropped rows are counted in `stm_admin(action="surfacing_stats")` but not stored. A call that drew a holdout arm is never sampled out, so `0.0` can still store rows while `HOLDOUT_RATE` is above `0` | `1.0` |
 | `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | Share of eligible injections withheld at random to measure whether surfacing changes what the agent does next. Values outside `[0, 0.5]` are clamped, not rejected. Only Claude Code hook calls carrying both `tool_use_id` and `session_id` are eligible; the proxy path never withholds | `0.0` |
@@ -367,7 +368,7 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 
@@ -394,4 +395,4 @@ Defaults above are schema declarations before initialization presets. OTLP and L
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | Embedding relevance cache entry limit | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | Shutdown watchdog deadline in seconds | `60` |
 
-Cache schema 7 uses length-prefixed key framing and Unicode serialization, and binds a cached reply to the upstream's connection settings. Older cache rows are discarded on initialization; this is separate from deleting LTM memories.
+Cache key schema 8 uses length-prefixed key framing and Unicode serialization, binds a cached reply to the upstream's connection settings, and keys each row under the database's `.key` file. Older cache rows are discarded on initialization, so the cache starts empty once after upgrading to 0.7.9; this is separate from deleting LTM memories.

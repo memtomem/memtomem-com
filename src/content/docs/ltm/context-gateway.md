@@ -38,7 +38,7 @@ mm context diff --scope project_shared
 | `sync` | Pushes Store files out to each runtime path; use `--runtime` to restrict fan-out |
 | `diff` | Shows whether canonical and runtime copies still match |
 
-For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/). `mm context sync` and the Web UI's project-scope sync write through a linked runtime directory such as `.claude`, so inspect symlinks in a cloned repository before running sync.
+For the full command list — move/copy, multi-project, versions — see the [CLI Reference](/ltm/cli/). `mm context sync`, `mm mem init`, and the Web UI's project-scope sync do not write through a project entry that is a symbolic link or junction, such as a linked `.claude` or `.claude/skills`, wherever it points: a project-scope sync prints `<entry> is a symbolic link or junction inside the project`, skips that runtime, finishes the others, and exits 1. Settings sync is the exception: it still follows a linked `.claude` and asks before writing outside the project. A project that links one of these on purpose has to replace the link with a regular directory or file.
 
 ## Canonical Tiers
 
@@ -54,7 +54,7 @@ The `user` tier is a personal library reused across projects, and its files live
 
 `project_local` canonical files are gitignored and do not sync to runtime agent / skill / command paths.
 
-`project_shared` is git-tracked, so do not put secrets there. In 0.3.0 sync and transfer hard-refuse a `project_shared` write when a secret is detected, with no `--force` valve (because git history is permanent). The `user` and `project_local` tiers allow an override after review, but `project_shared` refuses in every case.
+`project_shared` is git-tracked, so do not put secrets there. In 0.3.0 sync and transfer hard-refuse a `project_shared` write when a secret is detected, with no `--force` valve (because git history is permanent). The `user` and `project_local` tiers allow an override after review, but `project_shared` refuses in every case. Settings sync is stricter: the canonical `.memtomem/settings.json` is tracked by git whatever the target tier, so a canonical that holds a credential is refused at every tier, with no `--force-unsafe`. Remove the secret from the canonical, then run `mm context sync --include=settings` again.
 
 ## Common Recipes
 

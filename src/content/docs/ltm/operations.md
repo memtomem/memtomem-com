@@ -38,6 +38,9 @@ The Web UI binds to loopback by default and rejects browser cross-origin
 `Origin` is absent) does not match the UI's own origin (scheme, host, and port).
 Pass `--trusted-origin <hostname>` when a cross-origin browser frontend
 intentionally calls `/api/*`; non-browser HTTP clients that send neither
-`Origin` nor `Referer` are unaffected. Off-loopback access requires the
+`Origin` nor `Referer` pass this check. Such a client's `GET /api/search` is
+answered but not recorded (no access count, search history, or `query_run_id`)
+and runs outside the result and query-expansion caches unless it sends the `csrf` value from `GET /api/session` in the
+`X-Memtomem-CSRF` header. Off-loopback access requires the
 explicit remote UI, trusted-origin, and trusted-host flags and should remain
 behind an authenticating reverse proxy.

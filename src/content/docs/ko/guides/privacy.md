@@ -29,10 +29,10 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 - **저장소** — 기본 저장소는 로컬 SQLite(`~/.memtomem/`)입니다. MCP `stdio` 연결은 네트워크 포트를 열지 않습니다. `mm web`도 기본적으로 로컬 컴퓨터에서만 접속할 수 있는 루프백 주소에 연결됩니다.
 - **임베딩** — 키워드 전용 모드는 임베딩 서비스가 필요 없습니다. 내장 ONNX(fastembed)는 추론을 로컬에서 실행하고, 모델 파일은 [모델 다운로드](#모델-다운로드)에서 설명한 방식으로 내려받으며, Ollama와 OpenAI 호환 제공자는 선택적으로 설정하는 경계입니다.
 - **재정렬(리랭킹)** — 재정렬을 활성화하면 기본 제공자는 로컬 ONNX(fastembed)이므로 외부 API가 필요 없습니다.
-- **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 텔레메트리를 전송합니다. `memtomem` 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 꺼진 상태로 실행됩니다. 환경에 이미 값이 설정되어 있으면 그대로 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정하세요. memtomem 0.7.9를 고정한 Claude Code, Codex, OpenCode, [Antigravity CLI](/ko/guides/connect-ai-client/#antigravity-cli-플러그인), [Cursor](/ko/guides/connect-ai-client/#cursor-플러그인) 플러그인과 [0.7.9 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit에 고정된 상태에서 카탈로그로 설치한 Hermes 플러그인은 텔레메트리가 켜진 채로 실행됩니다(이 경우 0.7.9 commit으로 다시 설치하세요). 단, `memtomem`보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
+- **ONNX Runtime 원격 측정(telemetry)** — Linux와 macOS용 공식 ONNX Runtime 1.29 이상은 기본적으로 Microsoft에 텔레메트리를 전송합니다. `memtomem` 0.6.8부터는 패키지를 가져올(import) 때 `ORT_DISABLE_TELEMETRY=1`을 설정하므로 서버, `mm` CLI, 웹 UI 모두 이 전송이 꺼진 상태로 실행됩니다. 환경에 이미 값이 설정되어 있으면 그대로 유지하므로, 전송을 허용하려면 `ORT_DISABLE_TELEMETRY=0`을 직접 지정하세요. memtomem 0.7.10을 고정한 Claude Code, Codex, OpenCode, [Antigravity CLI](/ko/guides/connect-ai-client/#antigravity-cli-플러그인), [Cursor](/ko/guides/connect-ai-client/#cursor-플러그인) 플러그인과 [0.7.10 commit으로 설치한 Hermes 플러그인](/ko/guides/connect-ai-client/#hermes-agent)도 서버 실행 환경에 같은 값을 전달합니다. 0.6.8 이전 서버는 이 값을 설정하지 않으므로, 카탈로그가 이전 commit에 고정된 상태에서 카탈로그로 설치한 Hermes 플러그인은 텔레메트리가 켜진 채로 실행됩니다(이 경우 0.7.10 commit으로 다시 설치하세요). 단, `memtomem`보다 먼저 `onnxruntime`을 초기화한 프로그램에는 적용되지 않습니다. Windows의 ONNX Runtime은 이 변수를 읽지 않으며, 추적 세션이 수집 중일 때만 Windows가 기록하는 ETW 이벤트를 내보냅니다.
 - **STM 프록시** — 기본 클라이언트 전송 방식은 `stdio`입니다. 응답 캐시·지표·피드백은 `~/.memtomem/` 아래 로컬 SQLite 파일에 저장되며, 연결한 업스트림 MCP 서버나 원격 LTM 전송 경로는 각자 설정된 네트워크 경계를 따릅니다.
 - **계정 불필요** — 로그인이나 회원 가입 없이 동작합니다.
-- **선택적 외부 연결** — OpenAI 호환 임베딩, Cohere 리랭킹, 외부 주소의 Ollama, 압축·추출용 외부 LLM, 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse는 설정한 엔드포인트로 데이터를 전송할 수 있으며, `mm init`과 `mm status`는 설정된 원격 임베딩·LLM·리랭커 엔드포인트를 표시해 외부 전송 경계를 확인할 수 있게 합니다. STM의 외부 LLM 경로에서는 `privacy_scan_enabled`(기본 켜짐)가 호출 전에 자격증명을 검사해, 민감 정보가 감지되면 외부로 보내지 않고 로컬 처리로 대체합니다. 이 검사를 끄면 업스트림 응답이 검사 없이 외부로 전송될 수 있으며 시작 시 경고가 표시됩니다.
+- **선택적 외부 연결** — OpenAI 호환 임베딩, Cohere 리랭킹, 외부 주소의 Ollama, 압축·추출용 외부 LLM, 원격 MCP/LTM, 웹훅, Toolgraph, Langfuse는 설정한 엔드포인트로 데이터를 전송할 수 있으며, `mm init`과 `mm status`는 설정된 원격 임베딩·LLM·리랭커 엔드포인트를 표시해 외부 전송 경계를 확인할 수 있게 합니다. STM의 외부 LLM 경로에서는 `privacy_scan_enabled`(기본 켜짐)가 호출 전에 자격증명을 검사해, 민감 정보가 감지되면 외부로 보내지 않고 로컬 처리로 대체합니다. 이 검사를 끄면 업스트림 응답이 검사 없이 외부로 전송될 수 있으며 시작 시 경고가 표시됩니다. 임베딩 관련성 점수 계산에는 별도의 `relevance_scorer.privacy_scan_enabled`(기본 켜짐)가 있어, 민감 정보가 감지되면 해당 회차를 BM25로 계산하고 아무것도 전송하지 않습니다.
 
 ## 파일 시스템 보호
 
@@ -42,15 +42,15 @@ memtomem은 로컬 우선으로 동작합니다. 기본 저장소와 검색 인�
 
 memtomem은 자격증명·토큰·키로 보이는 내용이 저장소나 공유 범위로 유입되지 않도록 여러 지점에서 차단합니다.
 
-- **LTM 비밀값 쓰기 차단** — LTM 쓰기 경로는 저장 전에 20개의 비밀값 패턴을 검사합니다. 이 중 10개 토큰 패턴은 ASCII 단어 경계(`[A-Za-z0-9_]`)를 사용하므로 한글(조사 포함)·가나·한자 바로 앞뒤나 악센트 있는 라틴 문자 뒤에 붙은 토큰도 감지해 거부합니다(이미 저장된 노트는 자동으로 재검사하지 않음).
-- **STM 민감 정보 자동 감지** — API 키, 토큰, 개인 키 패턴(예: `sk-…`, `ghp_…`, AWS `AKIA…`, JWT — 한글·가나·한자·악센트 있는 라틴 문자에 바로 붙은 자격증명 포함)이 포함된 응답은 캐시나 선택 기록에 저장되지 않습니다. `exposure.profile=strict`에서는 메타데이터가 자격증명 패턴과 일치하는 업스트림 도구를 `sensitive_metadata`로 숨기며(이메일 주소만으로는 도구를 숨기지 않음), `otlp.endpoint`는 `otlp.enabled=false`일 때도 자격증명 패턴 여부를 검사합니다. 외부 LLM으로 압축하기 전 민감 정보가 발견되면 로컬 `truncate` 방식으로 대신 처리합니다. 기본 STM 실행 환경은 응답을 LTM에 기록하지 않습니다.
+- **LTM 비밀값 쓰기 차단** — LTM 쓰기 경로는 저장 전에 26개의 비밀값 패턴을 검사합니다. URL에 들어 있는 비밀번호, `Authorization: Bearer` 헤더, `*_TOKEN=`·`*_SECRET=` 할당도 이 패턴에 포함됩니다. 항목과 함께 쓰는 제목과 태그도 검사하며, JSON 방식 이스케이프(`\"`, `\n`, `\t`, `\uXXXX`)를 풀어 쓴 사본도 함께 검사합니다. 토큰 패턴은 ASCII 단어 경계(`[A-Za-z0-9_]`)를 사용하므로 한글(조사 포함)·가나·한자 바로 앞뒤나 악센트 있는 라틴 문자 뒤에 붙은 토큰도 감지해 거부합니다. 이미 저장된 노트는 자동으로 재검사하지 않으므로, 계층별로 `mm mem rescan --scope <tier>`(저장된 기억 청크)와 `mm context rescan --scope <tier>`(Context Gateway 아티팩트)로 점검하세요. 두 명령은 각자 담당하는 저장소만 검사합니다.
+- **STM 민감 정보 자동 감지** — API 키, 토큰, 개인 키 패턴(예: `sk-…`, `ghp_…`, AWS `AKIA…`, JWT — 한글·가나·한자·악센트 있는 라틴 문자에 바로 붙은 자격증명 포함)이 포함된 응답은 캐시나 선택 기록에 저장되지 않습니다. `exposure.profile=strict`에서는 메타데이터가 자격증명 패턴과 일치하는 업스트림 도구를 `sensitive_metadata`로 숨기며(이메일 주소만으로는 도구를 숨기지 않음), `otlp.endpoint`는 `otlp.enabled=false`일 때도 자격증명 패턴 여부를 검사합니다. 외부 LLM으로 압축하기 전 민감 정보가 발견되면 로컬 `truncate` 방식으로 대신 처리합니다. `stm_compression_feedback`의 `missing` 텍스트에서 민감 정보가 감지되면 원문 대신 자리 표시 문구를 저장합니다. 기본 STM 실행 환경은 응답을 LTM에 기록하지 않습니다.
 - **STM 오류 텍스트 요약** — 예외 메시지는 요청의 URL 쿼리나 인자, 헤더 일부를 그대로 포함할 수 있으므로 저장하거나 표시하지 않습니다.
   - **예외로 실패한 호출:** 프록시된 호출이 예외로 실패하면 MCP 클라이언트가 받는 오류, `proxy_metrics.error_message`, `stm_proxy_health`의 `startup connect failed` 줄, `extract_error`/`index_error` 열에는 `ConnectError`, `HTTP 401 (HTTPStatusError)`처럼 예외 유형만 남깁니다. 런타임 로그 줄도 동일합니다.
   - **업스트림 `isError` 결과:** 클라이언트에는 그대로 전달하고, 저장되는 행에만 `upstream isError (<n> chars)`처럼 길이를 기록합니다.
   - **예외:** 회로 차단기, 크기 초과, 정책 거부처럼 STM이 직접 만든 오류는 메시지를 유지합니다. 로그의 traceback은 frame과 예외 class를 남기고 메시지는 `[message withheld]`로 가립니다. 서버와 daemon 로그에서는 `MEMTOMEM_STM_LOG_EXCEPTION_TEXT=true`로 전체 메시지를 남길 수 있으며(시작 시 읽음), hook과 설정 오류의 stderr 출력은 항상 가립니다. `memtomem_stm` 밖의 logger가 남기는 WARNING 미만 기록은 기본적으로 로그에 남지 않으며 `MEMTOMEM_STM_LOG_DEPENDENCIES`로 통과시킬 수 있습니다.
 - **색인 자격증명 제외** — LTM 색인은 내장 자격증명 차단 목록(`oauth_creds.json`, `credentials*`, `id_rsa*`, `*.pem`, `*.key`, `.ssh/**` 등)을 적용합니다. 사용자가 `!negation` 패턴을 추가해도 이 내장 패턴은 해제되지 않습니다.
 - **공유 시 재검사** — `mem_agent_share`로 기억을 더 넓은 네임스페이스에 복사하면 민감 정보 차단 검사를 다시 실행합니다. 비밀값으로 보이는 내용은 공유하지 않습니다.
-- **Context Gateway** — `project_shared` 계층(Git 추적 대상)으로 쓰거나 옮길 때 비밀값이 감지되면 `--force` 우회 옵션도 허용하지 않고 무조건 거부합니다(Git 이력은 영구히 남기 때문). `user`·`project_local` 계층은 검토 후 재정의할 수 있습니다.
+- **Context Gateway** — `project_shared` 계층(Git 추적 대상)으로 쓰거나 옮길 때 비밀값이 감지되면 `--force` 우회 옵션도 허용하지 않고 무조건 거부합니다(Git 이력은 영구히 남기 때문). `user`·`project_local` 계층은 검토 후 재정의할 수 있습니다. 단, 설정 동기화에서는 기준본 `.memtomem/settings.json`이 git으로 추적되므로 자격증명이 들어 있으면 모든 계층에서 거부합니다.
 
 <a id="쿼리-프라이버시-stm-서피싱"></a>
 
@@ -58,7 +58,7 @@ memtomem은 자격증명·토큰·키로 보이는 내용이 저장소나 공유
 
 STM **서피싱**(관련 기억 자동 제시)은 도구 호출에서 검색어를 추출해 LTM을 조회합니다. 다음 설정으로 검색어 보존 방식을 제어할 수 있습니다.
 
-- `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT=false` — 원문 대신 `sha256:<16-hex>` 다이제스트만 저장합니다. `surface` 웹훅으로 보내는 `query`도 같은 다이제스트입니다.
+- `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT=false` — 원문 대신 피드백 데이터베이스의 키로 만든 `hmac-sha256:<16-hex>` 다이제스트만 저장합니다(0.7.9 이전에 기록된 행은 `sha256:` 다이제스트를 유지). `surface` 웹훅으로 보내는 `query`도 같은 다이제스트입니다.
 - `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` (기본 `30`) — 피드백 DB에 저장된 원문 검색어를 지정한 일수 후 삭제합니다.
 - **민감 검색어 건너뛰기(`sensitive_query`)** — 검색어나(검색어를 인자·템플릿에서 만든 경우) 원본 인자·템플릿이 자격증명이나 이메일 패턴과 일치하면(한글·가나·한자·악센트 있는 라틴 문자에 붙은 자격증명과 조사가 붙은 이메일 주소 포함) LTM 호출 전에 건너뜁니다. 다이제스트 검색을 실행하지 않고 Pinned Context를 포함해 아무것도 전달하지 않으며, `surfacing_events` 행과 `surface` 웹훅도 남기지 않고 제시 기회 기록(`opportunities_enabled=true`일 때 `outcome="sensitive_query"`)만 남깁니다. 이 차단을 끄는 스위치는 없으며, 템플릿이 설정되지 않은 도구에서 에이전트가 민감 정보가 없는 `context_query` / `_context_query`를 직접 넘긴 호출은 다른 인자에 비밀값이 있어도 정상적으로 관련 기억을 제시합니다.
 - **제시 기회 기록** — 검색에 진입한 호출마다 결과와 인자의 형태(개수, 경로 깊이, 흔한 파일 확장자)만 기록하며, 인자의 키와 값은 저장하지 않습니다. `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED=false`로 비활성화할 수 있습니다.

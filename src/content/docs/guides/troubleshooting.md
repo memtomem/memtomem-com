@@ -108,7 +108,7 @@ Claude Code and Codex have the official plugin paths documented on this site. Ot
 The [optional automation plugin](/guides/connect-ai-client/#optional-automation-plugin) runs its hooks only when `mm --version` reports exactly the Core release it was reviewed with, and updating the plugins does not upgrade the CLI. Upgrade it, confirm the version, then start a new Claude Code session:
 
 ```bash
-mm upgrade --version 0.7.9
+mm upgrade --version 0.7.10
 mm --version
 ```
 
@@ -130,7 +130,7 @@ Use that absolute path as the configured `command`, then fully restart the app. 
 
 This duplicates MCP server namespaces and tools, not necessarily the plugin's slash commands or skills. Resolve it according to the client:
 
-- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem[onnx]==0.7.9 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
+- **Claude Code:** run `/mcp`. The plugin signature is `uvx --from memtomem[onnx]==0.7.10 memtomem-server`; an exact manual match runs one server, while a different command runs both `mcp__memtomem__mem_*` and `mcp__plugin_memtomem_memtomem__mem_*`. Keep the plugin with `claude mcp remove memtomem`, or keep the manual server with `/plugin uninstall memtomem@memtomem`. You can also retain the plugin commands by giving the manual entry the exact plugin signature.
 - **Codex:** run `codex mcp list`. `[mcp_servers.memtomem]` takes precedence over the plugin and runs one server. A different name such as `[mcp_servers.memtomem-local]` runs both; rename it to `memtomem` or remove it to use the plugin server.
 - **OpenCode:** keep the manual entry at the exact `mcp.memtomem` key, or remove it to use the plugin server. A different key such as `mcp."memtomem-local"` runs both.
 - **Antigravity CLI:** the plugin's server is named `memtomem_memtomem`, so a hand-registered `memtomem` entry always runs beside it. Remove the manual entry with `agy mcp remove memtomem`, or keep it and suppress the plugin's server with `mm doctor --mcp-client agy --reconcile keep-manual --apply`.

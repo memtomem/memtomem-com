@@ -79,7 +79,7 @@ Report missing information that compression dropped. This is a learning signal, 
 |---|---|---|---|
 | `server` | string | Yes | Upstream server name |
 | `tool` | string | Yes | Upstream tool name, not the client-side `prefix__tool` name; a report naming a tool this proxy has not registered is refused |
-| `missing` | string | Yes | What the agent needed but didn't get |
+| `missing` | string | Yes | What the agent needed but didn't get. Text the privacy screen flags is stored as `[not stored: withheld by the privacy screen]`, and the reply says so |
 | `kind` | string | No | Category hint |
 | `trace_id` | string | No | Langfuse trace id if available |
 

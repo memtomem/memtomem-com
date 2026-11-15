@@ -73,7 +73,7 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 
 `progressive` 전달의 후속 요청률과 전체 내용 확인 비율은 `stm_admin(action="progressive_stats")`에서 확인할 수 있습니다. 기본 저장소 오류로 압축 없이 원문을 전달한 횟수도 함께 표시합니다([MCP 도구](/ko/stm/mcp-tools/) 참고). [`mms stats`](/ko/stm/cli/#mms-stats)는 같은 기록을 디스크에서 읽어, 만든 문자 수와 전달한 문자 수를 비교하는 **Progressive delivery** 항목을 표시합니다(`--json`: `progressive`).
 
-응답 캐시는 스키마 7을 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
+응답 캐시는 키 스키마 8을 사용하며 `content`, `structuredContent`, `_meta`를 포함한 표준 MCP 응답 형식을 보존합니다. 호환되지 않는 이전 캐시를 발견하면 서로 다른 형식을 섞지 않고 한 번 초기화합니다. 업스트림 응답이 STM의 progressive footer(`\n---\n[progressive: chars=`)를 인용하더라도 `stm_proxy_read_more(key="…")` 호출까지 함께 담고 있지 않으면 캐시합니다.
 
 <a id="structured-chunk-delivery"></a>
 
@@ -92,7 +92,7 @@ legacy 전달에서는 모든 `progressive` 청크가 표준 바닥글 `\n---\n[
 - **관련 기억 추가:** 기억은 응답 텍스트가 아닌 `stm.supplements.surfacing`으로 전달되므로 `prepend`를 포함한 모든 `injection_mode`가 동작합니다.
 - **캐시와 통계:** 응답 캐시 키에는 전달 형식이 포함됩니다. `mms stats`는 구조화 호출을 별도의 `Structured delivery:` 줄(`--json`: `compression.structured_delivery`)로 보고하여 legacy 절감 비율과 분리하며, 튜너의 보존 비율 계산에서도 제외합니다.
 
-봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
+봉투 필드와 오류 코드는 upstream [구조화 청크 전달 레퍼런스](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/compression.md#structured-chunk-delivery)에서 확인하세요.
 
 <a id="폴백-래더"></a>
 
@@ -126,4 +126,4 @@ progressive → hybrid → truncate
 
 단계적 공개(`progressive` 전달)는 업스트림 크기 제한과 정제를 거친 소스를 보관하며, 원본 응답 전체를 무제한·바이트 단위로 보존하는 기능은 아닙니다. 대기 중인 선택 항목은 기본적으로 메모리에 보관되며 SQLite 영속 저장은 선택 사항(opt-in)입니다. `pending_store: "sqlite"`로 설정했을 때 저장 대상인 `SELECTIVE`·`HYBRID`·`PROGRESSIVE` 응답에 자격증명 패턴이 감지되면 `pending_selections.db`에 기록하지 않고, `SELECTIVE`·`HYBRID`는 경계를 보존해 잘라낸 결과(`truncate_on_sensitive`)로, `PROGRESSIVE`는 정제된 응답 전체(`passthrough_on_sensitive`)로 캐시 없이 반환합니다(이메일 주소는 제외 대상이 아닙니다). `progressive.ttl_seconds: 0`이면 즉시 만료되어 첫 번째 청크에 만료 안내가 함께 붙습니다. TTL이 지나 만료된 ID는 오류를 반환하며 업스트림을 자동으로 재호출하지 않습니다. 원래 읽기 전용 호출을 다시 실행하는 것은 별도의 명시적 동작이므로, 콘텐츠 복구를 위해 상태 변경(쓰기) 호출을 반복하지 마세요.
 
-캐시 스키마 7은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시된 응답을 업스트림 연결 설정(URL, 헤더, 전송 방식, 실행 명령)에 묶어 연결 설정이 바뀌면 이전 연결의 응답을 재사용하지 않습니다. 구버전 캐시 행은 최초 초기화 시 삭제되지만 지표와 피드백 데이터는 유지되며, LTM 기억 삭제와는 무관합니다.
+캐시 키 스키마 8은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하고, 캐시된 응답을 업스트림 연결 설정(URL, 헤더, 전송 방식, 실행 명령)에 묶어 연결 설정이 바뀌면 이전 연결의 응답을 재사용하지 않으며, 데이터베이스 옆의 키 파일(DB 경로 뒤에 `.key`, 기본값 `proxy_cache.db.key`)로 각 행의 키를 HMAC으로 만듭니다. 구버전 캐시 행은 최초 초기화 시 삭제되지만 지표와 피드백 데이터는 유지됩니다. 따라서 0.7.9로 업그레이드한 뒤 응답 캐시와 tool-graph 조회 캐시는 한 번 비어 있는 상태로 시작합니다. 이전 릴리스의 프로세스가 키 없는 행을 계속 쓰지 않도록 실행 중인 프록시를 다시 시작하세요. 이는 LTM 기억 삭제와는 무관합니다.

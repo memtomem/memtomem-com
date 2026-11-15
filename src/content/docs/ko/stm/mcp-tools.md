@@ -79,7 +79,7 @@ description: STM 프록시가 제공하는 모델용 도구 5개, 관측·관리
 |---|---|---|---|
 | `server` | string | 예 | 업스트림 서버 이름 |
 | `tool` | string | 예 | 업스트림 도구 이름. 클라이언트에 보이는 `prefix__tool` 이름이 아니라 업스트림 이름이어야 하며, 이 프록시가 등록한 도구가 아니면 거부됩니다 |
-| `missing` | string | 예 | 필요했지만 받지 못한 내용 |
+| `missing` | string | 예 | 필요했지만 받지 못한 내용. 개인정보 검사에 걸린 텍스트는 `[not stored: withheld by the privacy screen]`로 저장하며, 응답에도 그 사실을 표시함 |
 | `kind` | string | 아니오 | 분류 힌트 |
 | `trace_id` | string | 아니오 | 가능한 경우 Langfuse trace ID |
 
