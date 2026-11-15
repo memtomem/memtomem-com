@@ -40,7 +40,7 @@ mm context diff --scope project_shared
 | `sync` | Store 파일을 각 AI 도구 경로로 Push. `--runtime`으로 대상 제한 가능 |
 | `diff` | 기준본과 AI 도구 복사본의 동기화 상태 확인 |
 
-이동/복사, 다중 프로젝트, 버전 등 전체 명령 목록은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요. `mm context sync`와 Web UI의 프로젝트 범위 동기화는 `.claude`처럼 심볼릭 링크로 연결된 런타임 디렉터리를 통과해 쓰므로, 외부에서 복제한 저장소에서는 실행 전에 링크 대상을 먼저 확인하세요.
+이동/복사, 다중 프로젝트, 버전 등 전체 명령 목록은 [CLI 레퍼런스](/ko/ltm/cli/)를 참고하세요. `mm context sync`, `mm mem init`, Web UI의 프로젝트 범위 동기화는 링크 대상과 관계없이 심볼릭 링크나 정션인 프로젝트 항목(예: 링크로 연결된 `.claude`나 `.claude/skills`)을 통과해 쓰지 않습니다. 프로젝트 범위 동기화는 `<entry> is a symbolic link or junction inside the project`를 출력하고 해당 런타임을 건너뛴 뒤 나머지를 마치고 종료 코드 1을 반환합니다. 설정(settings) 동기화는 예외로, 링크된 `.claude`를 그대로 따라가며 프로젝트 밖에 쓰기 전에 확인을 요청합니다. 의도적으로 이런 항목을 링크로 연결한 프로젝트는 링크를 일반 디렉터리나 파일로 바꿔야 합니다.
 
 <a id="정규-티어"></a>
 ## 기준본을 보관하는 계층
@@ -57,7 +57,7 @@ Context Gateway는 세 가지 **계층**(tier)에 기준본을 보관합니다. 
 
 `project_local` 기준본은 git에 포함되지 않으며(gitignore 처리) AI 도구의 에이전트·스킬·명령 경로로도 배포되지 않습니다.
 
-`project_shared`는 git으로 추적되므로 비밀값을 포함하면 안 됩니다. 비밀값이 발견되면 쓰기를 거부하며 `--force`로 우회할 수 없습니다. git 이력에 비밀값이 남을 수 있기 때문입니다. `user`와 `project_local`에서는 내용을 확인한 뒤 다시 시도할 수 있지만 `project_shared`에는 저장할 수 없습니다.
+`project_shared`는 git으로 추적되므로 비밀값을 포함하면 안 됩니다. 비밀값이 발견되면 쓰기를 거부하며 `--force`로 우회할 수 없습니다. git 이력에 비밀값이 남을 수 있기 때문입니다. `user`와 `project_local`에서는 내용을 확인한 뒤 다시 시도할 수 있지만 `project_shared`에는 저장할 수 없습니다. 설정 동기화는 더 엄격합니다. 기준본 `.memtomem/settings.json`은 대상 계층과 관계없이 git으로 추적되므로, 자격 증명이 들어 있으면 모든 계층에서 거부하며 `--force-unsafe`로 우회할 수 없습니다. 기준본에서 비밀값을 제거한 뒤 `mm context sync --include=settings`를 다시 실행하세요.
 
 ## 자주 쓰는 레시피
 

@@ -64,7 +64,7 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.9는 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서 `mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)). Pinned Context(고정 컨텍스트)는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과 `mem_candidate_propose/list/review/recover/evidence`가 있습니다. `full` 모드에는 Quality Lab에서 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
+v0.7.10은 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서 `mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)). Pinned Context(고정 컨텍스트)는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과 `mem_candidate_propose/list/review/recover/evidence`가 있습니다. `full` 모드에는 Quality Lab에서 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
 
 `mem_do(action="version")`은 서버 버전, 기능 목록, 실제 임베딩·리랭커 실행 환경을 반환합니다. `runtime_profile`에는 빠진 선택 의존성이 표시되며 비밀값은 포함하지 않습니다.
 
@@ -91,6 +91,8 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 | 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | 가져오기 / 내보내기 | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | 품질 / 분석 | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
+
+0.7.10부터 `export`(`mem_export`)는 `output_file`로 경로가 아닌 파일 이름만 받아 `~/.memtomem/exports/`에 쓰며, 결과에 전체 경로를 표시합니다. 이름에는 ASCII 영문자, 숫자, `.`, `_`, `-`만 쓸 수 있습니다(최대 64자, 하이픈으로 시작하거나 마침표로 끝날 수 없으며 Windows 장치 이름 불가). 예: `backup.json`. `~/backup.json` 같은 경로를 넘기면 거부하고 아무것도 내보내지 않으며, `exports` 디렉터리가 심볼릭 링크나 정션이어도 거부합니다. `import`는 계속 경로를 받으며, Web UI의 내보내기·가져오기는 바뀌지 않았습니다.
 
 <a id="duplicate-warning"></a>
 
@@ -146,7 +148,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - 프로젝트 컨텍스트가 필요합니다. 계층이 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
 - 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
 - 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
-- Core 0.7.9와 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
+- Core 0.7.10과 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
 
 <a id="언제-모드를-바꿀까"></a>
 

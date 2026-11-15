@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.7.9를 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.10을 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -70,7 +70,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.7.9에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.10에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -162,7 +162,7 @@ mm recall --namespace project-x --format plain
 
 헤더에서 **Advanced**를 켜면 Tags, Timeline과 Settings의 Dedup·Age-out·Export/Import가 추가됩니다. `--dev` 또는 `MEMTOMEM_WEB__MODE=dev`는 개발·유지보수용 **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction** 화면도 표시합니다.
 
-0.7.9부터 `/api/*`는 다른 출처(다른 루프백 포트 포함)에서 온 브라우저 요청을 읽기(`GET`)와 쓰기 모두 `403`으로 거부합니다. `Origin`이나 `Referer` 헤더를 보내지 않는 비브라우저 도구는 영향을 받지 않습니다. `--trusted-origin <hostname>`은 포트가 아닌 호스트 이름을 받으며, 지정한 호스트의 모든 포트에서 오는 요청을 허용합니다(예: `mm web --trusted-origin localhost`).
+0.7.9부터 `/api/*`는 다른 출처(다른 루프백 포트 포함)에서 온 브라우저 요청을 읽기(`GET`)와 쓰기 모두 `403`으로 거부합니다. `Origin`이나 `Referer` 헤더를 보내지 않는 비브라우저 도구는 이 검사를 통과합니다. 0.7.10부터 이런 도구의 `GET /api/search`는 `GET /api/session`의 `csrf` 값을 `X-Memtomem-CSRF` 헤더로 보내지 않으면 결과는 반환하지만 기록하지 않으며(접근 횟수, 검색 기록, 피드백용 `query_run_id` 없음), 결과 캐시와 질의 확장 캐시도 사용하지 않습니다. `--trusted-origin <hostname>`은 포트가 아닌 호스트 이름을 받으며, 지정한 호스트의 모든 포트에서 오는 요청을 허용합니다(예: `mm web --trusted-origin localhost`).
 
 ```bash
 mm web                               # 기본: http://localhost:8080 (prod 모드)
@@ -504,7 +504,7 @@ mm reset -y                          # 프롬프트 스킵
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.7.9          # 특정 버전 고정
+mm upgrade --version 0.7.10          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -524,6 +524,7 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.7.5 이전에서 업그레이드한 경우:** 저장소가 행을 만들 때마다 청크의 `created_at`을 해당 항목의 `> created:` 줄에서 가져옵니다. 따라서 항목을 수정하거나 색인을 다시 만들어도 처음 작성한 날짜가 유지됩니다. 기간 지정 조회(`mm recall --since` / `--until`, `mem_recall`의 `since` / `until`), 최신순 정렬, 중복 정리에서 가장 오래된 사본을 고르는 기준, `created_at` 기준 수명 주기 정책이 이 날짜를 따릅니다. 시간 감쇠는 `updated_at`을 읽으므로 바뀌지 않습니다. `base_hash` 없이 새 본문을 `## ` 제목으로 시작하면 항목 전체가 교체되면서 기존 헤더가 제거되므로, 그 항목은 수정한 시점으로 기록됩니다. 날짜는 섹션 첫머리의 인용 블록에 있는 `> created:` 줄에서만 읽으며, ISO 8601 시각으로 해석되지 않는 값은 무시합니다. 이미 저장된 행은 기존 `created_at`을 유지하고, 이런 줄이 없는 텍스트는 이전처럼 색인을 실행한 시점으로 기록됩니다.
 - **0.7.5 이전에서 업그레이드한 경우:** 기본 네임스페이스가 아닌 데이 파일 이름 형식(`{date}--{slug}-{digest}.md`)을 따르며 이름을 해석할 수 있는 파일은, 작성 주체나 파일이 비어 있는지 여부와 관계없이 파일 이름이 가리키는 네임스페이스에 속합니다. 해석할 수 없는 파일 이름은 이전과 같이 처리합니다. 아직 저장된 행이 없는 이런 파일에 네임스페이스 인자, 에이전트 세션 바인딩, `mem_ns_set` 설정 없이 내용을 추가하면 파일 이름의 네임스페이스에 저장됩니다. 이런 파일에 다른 네임스페이스로 쓰는 요청(`mem_add(file=...)`, `mm add --file`, Web UI의 추가)은 다른 네임스페이스 혼합과 같이 거부하며, `allow_namespace_mix=true` / `--allow-namespace-mix`로 허용할 수 있습니다. DB가 없어졌거나 다른 컴퓨터에서 저장된 행이 없는 상태로 이런 파일을 다시 색인하면, 세션 바인딩보다 우선해 그 네임스페이스로 되돌립니다. 저장된 행, 명시한 `namespace`, `--reassign-namespaces`는 여전히 우선합니다. 작성한 뒤에 옮긴 네임스페이스(`mem_ns_rename`, `mem_ns_assign`, 보관·승격 정책)는 DB에만 기록되므로, 색인을 다시 만들면 해당 파일은 이름에 담긴 네임스페이스로 돌아갑니다. DB를 유지하거나, 다시 만든 뒤 이동을 다시 적용합니다.
 - **0.7.9 이전에서 업그레이드한 경우:** Context Gateway 쓰기 도구 9개(`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`)가 MCP에서 제거되었으므로 `mm context`(`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`)로 실행합니다. 관리 디렉터리·등록된 프로젝트 계층·`~/.memtomem/uploads` 밖에서 경로를 지정해 색인한 청크는 ID 기반 편집·삭제 시 `source_unmanaged`로 거부되고, 프로젝트 범위 `mm pinned` / `mem_pinned_*` 쓰기·삭제는 `.memtomem`·계층 디렉터리·`pinned` 또는 그 하위 디렉터리가 심볼릭 링크·정션이면 거부하며, `mm web`은 교차 출처 브라우저의 `/api/*` 요청을 읽기·쓰기 모두 `403`으로 거부합니다(필요 시 `--trusted-origin <hostname>` 지정). 또한 기존 환경은 의존성을 다시 해석할 때까지 `opentelemetry-api` 1.45.1이 남을 수 있으므로 설치 방식에 맞게 갱신해(`mm upgrade` / `uv tool upgrade memtomem`, 캐시된 `uvx` 실행은 `uv cache clean opentelemetry-api && uv cache prune`, 가상 환경은 `pip install -U opentelemetry-api`) `1.45.2` 이상인지 확인하고, 기존 가상 환경의 `filelock`은 `pip install -U filelock`으로 올리며, macOS·Linux의 기존 `~/.memtomem/cache/fastembed` 디렉터리는 `chmod 700 ~/.memtomem/cache/fastembed`로 권한을 잠그세요.
+- **0.7.10 이전에서 업그레이드한 경우:** `mem_export`는 파일 이름만 받아 `~/.memtomem/exports/`에 씁니다([자주 쓰는 액션](/ko/ltm/mcp-tools/#자주-쓰는-액션) 참고). 경로를 넘기는 클라이언트, 프롬프트, 워크플로는 `Export refused: output_file must be a file name, not a path` 오류를 받습니다. `mem_config`로는 더 이상 `session_trace.*`를 변경할 수 없으므로 `mm config set`이나 Web UI를 사용하세요. `mm context`, `mm mem init`, Web UI의 동기화는 심볼릭 링크나 정션인 프로젝트 항목을 거부합니다([Context Gateway](/ko/ltm/context-gateway/) 참고). 쓰기 차단 규칙이 6개 늘었고 제목, 태그, JSON 이스케이프된 텍스트도 검사하므로, 이전에 통과하던 쓰기·색인·동기화가 거부될 수 있습니다. 이미 저장된 내용은 다시 검사하지 않으므로, 계층마다 한 번씩 저장된 기억 청크는 `mm mem rescan --scope <tier>`로, Context Gateway 아티팩트는 `mm context rescan --scope <tier>`로 점검하세요(각 명령은 담당 저장소만 검사). memtomem은 이제 `opentelemetry-api>=1.45.2`를 요구하므로, OpenTelemetry를 더 낮은 버전으로 고정한 환경(API를 정확히 1.45.1로 요구하는 `opentelemetry-sdk==1.45.1` 포함)은 그 고정을 바꾸기 전까지 의존성을 해석하지 못합니다. 특정 릴리스를 고정한 MCP 항목(`memtomem[...]==<version>`)은 고정 버전을 바꾸기 전까지 그 릴리스를 계속 실행하며, 플러그인이나 `mm` CLI를 업데이트해도 바뀌지 않습니다.
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 

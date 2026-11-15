@@ -66,7 +66,7 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.7.9 registry has 93 current tools and 88 `mem_do` actions; 0.7.9 removes the nine Context Gateway write tools from MCP (run them with `mm context` instead; read-only `context_detect`, `context_diff`, and `context_compose` remain), 0.7.8 adds the `hermes_mirror_apply` action, 0.7.2 added
+The v0.7.10 registry has 93 current tools and 88 `mem_do` actions; 0.7.9 removes the nine Context Gateway write tools from MCP (run them with `mm context` instead; read-only `context_detect`, `context_diff`, and `context_compose` remain), 0.7.8 adds the `hermes_mirror_apply` action, 0.7.2 added
 `mem_update_coverage` ([Update Coverage](#update-coverage)), and 0.7.1 added
 `mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
@@ -104,6 +104,8 @@ candidate; reusing it with different content is rejected.
 | Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
+
+Since 0.7.10, `export` (`mem_export`) takes `output_file` as a bare file name, not a path, and writes it to `~/.memtomem/exports/`; the result names the full path. The name may use ASCII letters, digits, `.`, `_`, and `-` (at most 64 characters, no leading hyphen, no trailing dot, no Windows device name), such as `backup.json`. A path such as `~/backup.json` is refused and nothing is exported, as is an `exports` directory that is a symbolic link or junction. `import` still takes a path, and the Web UI's export and import are unchanged.
 
 ## Duplicate Warning
 
@@ -153,7 +155,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - It needs a project context: start the server inside a project with a registered tier, or bind one with [`mem_project_bind`](#project-binding).
 - Coverage is stored only in the SQLite database. A JSON export does not carry it, and an import neither adds nor clears it, so after a bundle is restored into a store without that project's coverage, those commits are reviewed again.
 - The tool is marked as not read-only, so a caching proxy does not replay an earlier answer.
-- The `update` workflow of the plugins released with Core 0.7.9 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
+- The `update` workflow of the plugins released with Core 0.7.10 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
 
 ## When to Change Modes
 

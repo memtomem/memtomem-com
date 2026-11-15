@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.9 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.10 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -278,7 +278,7 @@ Background loop for periodic health checks and automatic maintenance. Missing so
 
 ### Session tracing
 
-Traces session command execution to a JSONL file and, optionally, to Langfuse. Off by default. `payload_mode` defaults to `metadata`, which records no payload body; `redacted` keeps a secret-masked body, and `full` keeps the entire body.
+Traces session command execution to a JSONL file and, optionally, to Langfuse. Off by default. `payload_mode` defaults to `metadata`, which records no payload body; `redacted` keeps a secret-masked body, and `full` keeps the entire body. Since 0.7.10 these settings cannot be changed through MCP: `mem_config` and `mem_do(action="config")` still read them but refuse a change and name the terminal command, `mm config set session_trace.<field> <value>`. `mm config set` and the Web UI's `PATCH /api/config` still change them.
 
 | Variable | Description | Default |
 |---|---|---|
@@ -331,7 +331,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.10/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.7.9. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.10. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.9 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.10 binary.
 
 | Group | Commands |
 |---|---|
@@ -91,7 +91,7 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.7.9, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.10, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -183,7 +183,7 @@ On launch, `mm web` opens the dashboard at `http://127.0.0.1:8080`. Simple mode 
 
 The header's **Advanced** toggle reveals Tags and Timeline plus Dedup, Age-out, and Export/Import settings. Pass `--dev` (or set `MEMTOMEM_WEB__MODE=dev`) to add maintainer pages: **Sessions, Search Runs, Quality Lab, Working Memory, Procedures, Health Report, Redaction**.
 
-Since 0.7.9, `/api/*` refuses browser requests from another origin — including another loopback port — returning `403` on both `GET` reads and writes. Non-browser tools that send no `Origin` or `Referer` header are unaffected. `--trusted-origin <hostname>` takes a hostname (not a port) and allows requests from any port on that host (for example `mm web --trusted-origin localhost`).
+Since 0.7.9, `/api/*` refuses browser requests from another origin — including another loopback port — returning `403` on both `GET` reads and writes. Non-browser tools that send no `Origin` or `Referer` header pass this check. Since 0.7.10, such a tool's `GET /api/search` still returns results but is not recorded (no access count, search history, or `query_run_id` for feedback) and runs outside the result and query-expansion caches unless it sends the `csrf` value from `GET /api/session` in the `X-Memtomem-CSRF` header. `--trusted-origin <hostname>` takes a hostname (not a port) and allows requests from any port on that host (for example `mm web --trusted-origin localhost`).
 
 ```bash
 mm web                               # default: http://localhost:8080 (prod tier)
@@ -524,7 +524,7 @@ Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install -
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.7.9          # pin a specific version
+mm upgrade --version 0.7.10          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -544,6 +544,7 @@ Checks after upgrading from an earlier release:
 - **From before 0.7.5:** a chunk's `created_at` comes from its entry's `> created:` line whenever the store creates the row, so editing an entry or rebuilding the index keeps the date the entry was written. Date-ranged recall (`mm recall --since` / `--until`, `mem_recall`'s `since` / `until`), newest-first ordering, the oldest-copy choice in dedup and age-based policies on `created_at` follow that date. Time decay reads `updated_at` and is unchanged. An edit without `base_hash` whose new content opens with its own `## ` heading replaces the whole entry and drops the header, so that entry is dated by the edit. The date is read only from a `> created:` line in the blockquote group that leads the section, and a value that does not parse as an ISO 8601 time is ignored. Rows already stored keep their `created_at`, and text without such a line is dated by the index run, as before.
 - **From before 0.7.5:** a file named like a non-default day file (`{date}--{slug}-{digest}.md`) whose name decodes belongs to the namespace the name encodes, whoever wrote it and whether or not it is empty; names that do not decode route as before. A write with no explicit namespace, no agent-session binding and no current namespace set with `mem_ns_set` into such a file with no stored rows lands in that namespace. A write under another namespace into it (`mem_add(file=...)`, `mm add --file`, the Web UI's add) is refused like any other namespace mix; `allow_namespace_mix=true` / `--allow-namespace-mix` overrides. Re-indexing such a file with no stored rows, after the database is gone or on another machine, puts it back in that namespace ahead of a session binding; stored rows, an explicit `namespace` and `--reassign-namespaces` still win. Namespace moves made after writing (`mem_ns_rename`, `mem_ns_assign`, archive and promote policies) live only in the database, so a rebuild returns those files to the namespace in their name: keep the database, or reapply the moves after a rebuild.
 - **From before 0.7.9:** the nine Context Gateway write tools (`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`) are removed from MCP; run them with `mm context` (`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`). By-id `edit` and `delete` refuse chunks indexed from explicit paths outside managed memory roots, registered project tiers, and `~/.memtomem/uploads` with `source_unmanaged`; project-scope `mm pinned` / `mem_pinned_*` writes and deletes refuse when `.memtomem`, the tier directory, `pinned`, or a directory below it is a symlink or junction; and `mm web` refuses cross-origin browser `/api/*` requests (`403` on reads and writes; pass `--trusted-origin <hostname>` when needed). Existing environments also keep `opentelemetry-api` 1.45.1 until dependencies are resolved again (`mm upgrade` / `uv tool upgrade memtomem`, `uv cache clean opentelemetry-api && uv cache prune` for cached `uvx` launches, or `pip install -U opentelemetry-api` in virtual environments — verify `1.45.2` or later), keep an older `filelock` until `pip install -U filelock`, and on macOS/Linux keep the prior mode on an existing `~/.memtomem/cache/fastembed` directory until `chmod 700 ~/.memtomem/cache/fastembed`.
+- **From before 0.7.10:** `mem_export` takes a bare file name and writes it to `~/.memtomem/exports/` (see [Common Actions](/ltm/mcp-tools/#common-actions)); a client, prompt, or workflow that passes a path gets `Export refused: output_file must be a file name, not a path`. `mem_config` no longer changes `session_trace.*`; use `mm config set` or the Web UI. `mm context`, `mm mem init`, and the Web UI's sync refuse a project entry that is a symbolic link or junction (see [Context Gateway](/ltm/context-gateway/)). The write guard has six more rules and also reads titles, tags, and JSON-escaped text, so a write, index, or sync that passed before can be refused; content stored earlier is not re-scanned: audit stored memory chunks with `mm mem rescan --scope <tier>` and Context Gateway artifacts with `mm context rescan --scope <tier>`, once for each tier (each command covers only its own store). memtomem now requires `opentelemetry-api>=1.45.2`, so an environment that pins OpenTelemetry lower (including `opentelemetry-sdk==1.45.1`, which needs the API at exactly 1.45.1) no longer resolves until that pin moves. An MCP entry that pins an exact release (`memtomem[...]==<version>`) keeps serving that release until you move its pin; updating a plugin or the `mm` CLI does not touch it.
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 

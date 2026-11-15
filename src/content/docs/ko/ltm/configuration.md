@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.9가 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, 업스트림이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.10이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, 업스트림이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -320,7 +320,7 @@ Maximal Marginal Relevance 재정렬로, 상위 결과 간 중복을 줄이고 �
 
 ### 세션 실행 추적
 
-세션 명령 실행 기록을 JSONL 파일에 남기고, 선택에 따라 Langfuse에도 보냅니다. 기본값은 비활성화입니다. `payload_mode`의 기본값인 `metadata`는 본문을 기록하지 않습니다. `redacted`는 비밀값을 가린 본문, `full`은 전체 본문을 기록합니다.
+세션 명령 실행 기록을 JSONL 파일에 남기고, 선택에 따라 Langfuse에도 보냅니다. 기본값은 비활성화입니다. `payload_mode`의 기본값인 `metadata`는 본문을 기록하지 않습니다. `redacted`는 비밀값을 가린 본문, `full`은 전체 본문을 기록합니다. 0.7.10부터 이 설정은 MCP로 변경할 수 없습니다. `mem_config`와 `mem_do(action="config")`는 값을 읽을 수는 있지만 변경은 거부하고 터미널 명령 `mm config set session_trace.<field> <value>`를 안내합니다. `mm config set`과 Web UI의 `PATCH /api/config`로는 계속 변경할 수 있습니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -379,7 +379,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.9/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.10/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

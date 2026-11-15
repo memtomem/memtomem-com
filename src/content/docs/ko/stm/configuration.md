@@ -7,7 +7,7 @@ description: memtomem-stm(STM)의 모든 환경 변수와 기본값을 정리합
 
 동일한 항목이 여러 곳에 지정되면 **CLI 옵션 > 환경 변수 > 설정 파일 > 내장 기본값** 순으로 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem-stm` 0.7.8이 지원하는 전체 설정을 빠짐없이 다룹니다. 주요 항목만 추린 요약본이 아니라 업스트림의 공개 옵션을 모두 수록했으며, LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에서 확인할 수 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.9가 지원하는 전체 설정을 빠짐없이 다룹니다. 주요 항목만 추린 요약본이 아니라 업스트림의 공개 옵션을 모두 수록했으며, LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에서 확인할 수 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -21,7 +21,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_STM_DATA_DIR` | 데몬 연결 정보, 소유권 잠금, 백그라운드 실행 로그를 저장할 디렉터리 | `"~/.memtomem"` |
+| `MEMTOMEM_STM_DATA_DIR` | 데몬 연결 정보, 소유권 잠금, 백그라운드 실행 로그를 저장할 디렉터리. 데몬 fingerprint의 키인 `stm-discovery.key`도 이곳에 있음. 데몬 실행 중에 이 파일을 지우거나 바꾸면 해당 데몬이 foreign이 되므로 유지해야 함. 키가 없으면 하드 링크로 생성하므로, 하드 링크를 지원하지 않는 파일 시스템(FAT, exFAT, 일부 네트워크 마운트)에서는 키가 생길 때까지 데몬을 사용할 수 없음 | `"~/.memtomem"` |
 | `MEMTOMEM_STM_LOG_LEVEL` | 로그 레벨 | `"WARNING"` |
 | `MEMTOMEM_STM_LOG_FILE` | 선택적 회전 로그 파일. `0600` 권한, 2 MiB 회전, 백업 3개 사용 | `null` |
 | `MEMTOMEM_STM_LOG_DEPENDENCIES` | `memtomem_stm` 밖의 logger(MCP SDK, `httpx`, `httpcore`, `urllib3` 등)가 남기는 WARNING 미만 기록을 서버와 daemon 로그에 통과시킵니다. 이 기록에는 query string이 포함된 upstream URL, MCP session id, 응답 header, 도구 인자와 결과가 담긴 MCP 메시지가 들어 있어 기본값은 꺼짐입니다. 시작 시 읽습니다. | `false` |
@@ -62,11 +62,11 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__CACHE__ENABLED` | 응답 캐싱 활성화 | `true` |
 | `MEMTOMEM_STM_PROXY__CACHE__DEFAULT_TTL_SECONDS` | 캐시 TTL | `3600` |
-| `MEMTOMEM_STM_PROXY__CACHE__DB_PATH` | 캐시 DB 경로 | `"~/.memtomem/proxy_cache.db"` |
+| `MEMTOMEM_STM_PROXY__CACHE__DB_PATH` | 캐시 DB 경로. 행 키 파일은 DB 경로 뒤에 `.key`를 붙인 이름(기본값 `proxy_cache.db.key`). 이 파일을 지우거나 바꾸면 캐시가 비워지고, 읽을 수 없으면 해당 실행 동안 캐시를 끄며, 파일이 없는데 만들 수 없으면(그 파일 시스템이 하드 링크 미지원) 캐시가 꺼진 채로 실행됨 | `"~/.memtomem/proxy_cache.db"` |
 | `MEMTOMEM_STM_PROXY__CACHE__MAX_ENTRIES` | 캐시 엔트리 상한 | `10000` |
 | `MEMTOMEM_STM_PROXY__CACHE__TOOL_ANNOTATION_POLICY` | MCP 도구 주석을 반영하는 캐시 정책: `conservative`, `strict`, `ignore` | `"conservative"` |
 
-캐시 스키마 7은 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장합니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
+캐시 키 스키마 8은 `structuredContent`와 `_meta`를 포함한 표준 MCP 응답 형식을 저장하며, 각 행의 키를 DB의 `.key` 파일로 만듭니다. 호환되지 않는 이전 스키마를 발견하면 서로 다른 형식의 응답을 섞지 않고, 문서화된 일회성 캐시 초기화를 수행합니다.
 
 <a id="proxy--auto-index-stage-4"></a>
 
@@ -120,6 +120,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | 관련성 임베딩 모델 | `"nomic-embed-text"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_BASE_URL` | 관련성 임베딩 엔드포인트 | `"http://localhost:11434"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_TIMEOUT` | 관련성 임베딩 요청 제한 시간 | `10` |
+| `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__PRIVACY_SCAN_ENABLED` | `scorer="embedding"`일 때 컨텍스트 질의, 섹션 제목과 본문 앞 500자, 원본 응답에서 API 키·비밀번호·제공자 토큰·JWT·개인 키를 검사함. 일치하면 해당 회차는 BM25로 점수를 매기고 아무것도 전송하지 않음. 그 텍스트를 맡겨도 되는 엔드포인트에서만 `false`로 설정하며, 루프백이 아닌 엔드포인트이면 WARNING을 기록함 | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__ENABLED` | `stm_compression_feedback` 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__DB_PATH` | 압축 피드백 SQLite 경로 | `"~/.memtomem/stm_feedback.db"` |
 | `MEMTOMEM_STM_PROXY__COMPRESSION_FEEDBACK__RETENTION_DAYS` | 압축 피드백 보존 일수 | `90` |
@@ -146,7 +147,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 
 ### 프록시 → 선택 기록·도구 관련성
 
-프록시를 호출할 때마다 선택·실행 기록을 JSONL로 남기고, 에이전트에 표시한 도구를 호출 신호와의 BM25 관련성 순으로 계산합니다. 이 순위는 기록에만 남으며 실제 도구 목록은 바꾸지 않습니다.
+프록시를 호출할 때마다 선택·실행 기록을 JSONL로 남기고, 에이전트에 표시한 도구를 호출 신호와의 BM25 관련성 순으로 계산합니다. 이 순위는 기록에만 남으며 실제 도구 목록은 바꾸지 않습니다. 0.7.9부터 기록은 `schema_version` 2이며 `args_sha256`과 `candidate_features.query_sha256`을 남기지 않습니다. 이전 STM의 `mms selection replay`와 `mms selection feedback`은 이 기록을 건너뜁니다.
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
@@ -182,7 +183,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__RISK_PENALTY_SCALE` | 적격하지만 위험한 도구의 랭킹 강등 배수 | `1` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__TIMEOUT_SECONDS` | 조회 제한 시간 | `5` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_ENABLED` | 조회 결과를 디스크에 캐시 | `true` |
-| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | 조회 캐시 SQLite 경로 | `"~/.memtomem/toolgraph_consult.db"` |
+| `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_PATH` | 조회 캐시 SQLite 경로. 키 파일은 DB 경로 뒤에 `.key`를 붙인 이름(기본값 `toolgraph_consult.db.key`)이며 응답 캐시의 키 파일과 같은 방식으로 동작함 | `"~/.memtomem/toolgraph_consult.db"` |
 | `MEMTOMEM_STM_PROXY__TOOLGRAPH__CONSULT_CACHE_MAX_SCOPES` | 캐시할 도구 집합 범위의 상한 | `64` |
 
 형식이 정해진 `backend_unavailable` 결과에는 `on_unreachable` 설정을 적용합니다. 알 수 없거나 형식이 잘못된 응답에는 `on_protocol_error`를 적용합니다.
@@ -325,7 +326,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_SURFACING__PREVIEW_MAX_CHARS` | `compact` 미리보기 하나의 내용 길이 상한 | `300` |
 | `MEMTOMEM_STM_SURFACING__QUERY_RETENTION_DAYS` | 피드백 DB에 검색어 원문을 보존할 일수. 기간이 지나면 해당 열의 값만 비움. `0`이면 정리하지 않음 | `30` |
 | `MEMTOMEM_STM_SURFACING__STATS_RETENTION_DAYS` | 집계한 관련 기억 검색 통계의 보존 일수 | `90` |
-| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 `sha256:<16-hex>` 해시 저장. `surface` 웹훅의 `query`도 저장된 값과 같음 | `true` |
+| `MEMTOMEM_STM_SURFACING__PERSIST_QUERY_TEXT` | `true`이면 검색어 원문 저장, `false`이면 피드백 데이터베이스의 키로 만든 `hmac-sha256:<16-hex>` 다이제스트 저장(0.7.9 이전에 기록된 행은 `sha256:` 유지). `surface` 웹훅의 `query`도 저장된 값과 같음 | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_ENABLED` | 관련 기억 검색에 진입한 호출마다 결과(표시, 건너뜀과 그 사유, 오류, 취소)를 `surfacing_opportunities` 행으로 기록. 행에는 인자 개수, 경로 깊이, 흔한 파일 형식의 확장자 같은 인자 형태만 담기며 키와 값은 담기지 않음. `false`이면 기록을 완전히 끔. 피드백 추적기가 있는 엔진(daemon, `feedback_enabled`가 켜진 proxy)만 기록 | `true` |
 | `MEMTOMEM_STM_SURFACING__OPPORTUNITIES_SAMPLE_RATE` | 저장할 opportunity 행의 비율(`0.0`~`1.0`). 제외된 행은 `stm_admin(action="surfacing_stats")`에서 개수로만 집계. 보류(holdout) 추첨을 거친 호출은 샘플링에서 제외하지 않으므로 `HOLDOUT_RATE`가 `0`보다 크면 `0.0`이어도 행이 저장될 수 있음 | `1.0` |
 | `MEMTOMEM_STM_SURFACING__HOLDOUT_RATE` | 효과 측정을 위해 무작위로 주입을 보류할 비율. `[0, 0.5]` 밖의 값은 거부하지 않고 범위 안으로 조정함. Claude Code hook 경로에서 `tool_use_id`와 `session_id`가 모두 있는 호출만 대상이며 proxy 경로는 보류하지 않음 | `0.0` |
@@ -391,7 +392,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.8/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 
@@ -418,4 +419,4 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_CACHE_SIZE` | 임베딩 관련도 캐시 항목 상한 | `256` |
 | `MEMTOMEM_STM_TEARDOWN_WATCHDOG_SECONDS` | 종료 감시 제한 시간(초) | `60` |
 
-캐시 스키마 7은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하며, 캐시한 응답을 업스트림 연결 설정에 묶습니다. 이전 캐시 행은 최초 초기화 시 삭제되지만, 이는 LTM 기억 삭제와는 별개입니다.
+캐시 키 스키마 8은 길이 접두사를 붙인 키 구성과 유니코드 직렬화를 사용하고, 캐시한 응답을 업스트림 연결 설정에 묶으며, 각 행의 키를 DB의 `.key` 파일로 만듭니다. 이전 캐시 행은 최초 초기화 시 삭제되므로 0.7.9로 업그레이드한 뒤 캐시는 한 번 비어 있는 상태로 시작하며, 이는 LTM 기억 삭제와는 별개입니다.
