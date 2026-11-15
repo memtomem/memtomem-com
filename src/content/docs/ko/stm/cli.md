@@ -108,6 +108,8 @@ mms add --from-clients --prune       # 가져온 뒤 원본 클라이언트에�
 
 `mms init`, `mms add --from-clients`, `mms prune`은 Claude Code와 같은 방식으로 Claude Code 설정을 읽습니다. `CLAUDE_CONFIG_DIR`가 절대 경로이면 `$CLAUDE_CONFIG_DIR/.claude.json`, 아니면 `~/.claude.json`을 읽고, 그 안에서는 저장소 루트의 프로젝트 항목을 사용하므로 하위 디렉터리에서도 루트에 등록한 서버를 찾습니다. 연결된 worktree, submodule, 심볼릭 링크로 연결된 `.git` 안에서는 프로젝트 항목을 읽지 않습니다. Claude Code가 어느 파일을 읽는지 STM이 판단할 수 없으면(예: 상대 경로이거나 비어 있는 `CLAUDE_CONFIG_DIR`, 설정된 `CLAUDE_CODE_CUSTOM_OAUTH_URL`, Claude Code 설정 디렉터리의 이전 형식 `.config.json`) Claude Code의 사용자·프로젝트 서버를 읽지 않고 안내를 출력합니다. `<cwd>/.mcp.json`은 이 경우에도 읽습니다. `mms import`, `mms host`, `mms eject`도 같은 규칙을 따릅니다.
 
+`mms import`와 `mms host`는 Codex 사용자 설정을 `$CODEX_HOME/config.toml`에서 읽고, `CODEX_HOME`이 설정되지 않았거나 비어 있으면 `~/.codex/config.toml`을 읽습니다. `CODEX_HOME`이 상대 경로이거나 경로 구성 요소 중 `.` 또는 `..`가 있으면 Codex 설정을 읽지 않습니다.
+
 `mms init`, `mms add --from-clients`, `mms prune`은 STM을 경유하지 않는 서버는 가져오지 않고 이름만 별도로 안내합니다.
 
 - **Claude Code 플러그인 서버:** `claude`가 `PATH`에 있으면 현재 디렉터리에서 `claude plugin list --json`을 실행하고, 활성화된 플러그인이 등록한 MCP 서버를 `/mcp`에 표시되는 이름(`plugin:<plugin>:<server>`)으로 보여 줍니다. STM은 이 서버를 중계하지 않습니다. STM을 거치게 하려면 `mms add … --validate`로 추가한 뒤 플러그인 쪽 서버를 비활성화합니다. `--json`은 이 목록을 `plugin_bypass`에 담고, `/mcp`에서 비활성화한 서버를 확인하지 못한 이유를 `plugin_bypass_disables_unread`에 담습니다(`"no_key"`, `"no_config"`, 기록된 이유가 없으면 `null`).
@@ -237,6 +239,8 @@ mms surfacing filesystem on          # 다시 활성화
 | `--surfacing-timeout-seconds N` | 데몬을 쓰지 않는 관련 기억 검색의 제한 시간 재정의 |
 | `--daemon-timeout-seconds N` | 훅과 데몬 사이 왕복 제한 시간 재정의 |
 | `--persist-query-text` / `--no-persist-query-text` | 이 훅 호출의 검색어 원문 보존 여부 재정의 |
+
+`mms hook install`과 `mms hook uninstall`은 클라이언트의 설정 홈 변수(`CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_CODE_HOME`)가 절대 경로이면 그 아래의 설정 파일을 사용합니다. 변수가 상대 경로이거나 경로 구성 요소 중 `.` 또는 `..`가 있으면, 또는 `CLAUDE_CONFIG_DIR`나 `KIMI_CODE_HOME`이 비어 있으면 클라이언트가 어느 파일을 읽는지 판단할 수 없으므로 클라이언트의 훅 설정 파일을 읽거나 바꾸지 않고 오류로 종료합니다. 비어 있는 `CODEX_HOME`은 `~/.codex`로 처리합니다.
 
 ### `mms daemon`
 
