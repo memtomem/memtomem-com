@@ -15,7 +15,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 | Situation | Recommended choice | Why |
 |---|---|---|
-| First installation | `uv tool install 'memtomem[all]'` | isolated persistent CLI, with every feature used by this site |
+| First installation | `uv tool install --python 3.12 'memtomem[all]'` | isolated persistent CLI, with every feature used by this site |
 | Existing pipx-managed CLI environment | `pipx install 'memtomem[all]'` | keeps the same tool-management workflow |
 | Project dependency or controlled virtual environment | `pip install 'memtomem[all]'` | keeps the package version inside that environment |
 
@@ -26,7 +26,7 @@ Verify `python --version` and `uv --version` before installing. On Windows, use 
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (recommended)">
     ```bash
-    uv tool install 'memtomem[all]'
+    uv tool install --python 3.12 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pipx">
@@ -44,7 +44,7 @@ Verify `python --version` and `uv --version` before installing. On Windows, use 
 `[all]` is the recommended first install because it matches the main docs: ONNX dense embeddings, Korean tokenizer, Ollama / OpenAI providers, code chunking, the Web UI, Langfuse tracing, and LangGraph Store adapters. For a leaner footprint, drop the extras for a BM25-only install:
 
 ```bash
-uv tool install memtomem                      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
+uv tool install --python 3.12 memtomem      # no extras — dense search, Web UI, Korean tokenizer unavailable until added
 ```
 
 Opt into features later with e.g. `uv tool install --reinstall 'memtomem[onnx,web]'`.

@@ -7,7 +7,7 @@ memtomem (LTM) uses [pydantic-settings](https://docs.pydantic.dev/latest/concept
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem` 0.7.10 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
+This public reference tracks the complete `memtomem` 0.7.13 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. STM settings (prefix `MEMTOMEM_STM_`) are listed in [STM Environment Variables](/stm/configuration/).
 
 ## LTM (memtomem) — prefix `MEMTOMEM_`
 
@@ -66,6 +66,7 @@ This public reference tracks the complete `memtomem` 0.7.10 configuration surfac
 | `MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD` | Split long prose into paragraphs above this token count | `800` |
 | `MEMTOMEM_INDEXING__STARTUP_BACKFILL` | On server start, run a one-shot scan over `memory_dirs` to catch files added while the server was down | `false` |
 | `MEMTOMEM_INDEXING__WATCHER_BACKEND` | Watch backend: `auto` polls on macOS and uses native events elsewhere; `native` or `polling` override it | `"auto"` |
+| `MEMTOMEM_INDEXING__WATCHER_POLL_INTERVAL_MS` | How often the polling backend rescans the watched directories, 100–60000 ms; the native backend ignores it. A shorter interval picks an edit up sooner and costs more CPU while idle, in every server process that watches. A change undone between two scans is not seen. Restart the server to apply a change | `10000` |
 | `MEMTOMEM_INDEXING__WATCHER_DEBOUNCE_MS` | Quiet period before automatic re-indexing, 1–30000 ms | `5000` |
 | `MEMTOMEM_INDEXING__WATCHER_MAX_WAIT_MS` | Maximum event-collection window, 1–30000 ms, even under continuous edits | `30000` |
 | `MEMTOMEM_INDEXING__AUTO_SUMMARIZE` | Generate AI per-source summaries when LLM is configured | `false` |
@@ -196,7 +197,7 @@ Shared LLM backend used by `query_expansion.strategy=llm`, consolidation summari
 
 | Variable | Description | Default |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (93 current tools; no deprecated aliases) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core` (9 names incl. `mem_do`) / `standard` (39) / `full` (94 current tools; no deprecated aliases) | `core` |
 | `MEMTOMEM_EXTRA_TOOLS` | Comma-separated registered tool names to expose individually on top of `MEMTOMEM_TOOL_MODE`, e.g. `mem_update_coverage`. Read at server startup; unknown names are logged and ignored | `""` |
 
 ### Web UI
@@ -313,6 +314,12 @@ Setting `langfuse_enabled=true` requires the `langfuse` extra installed and both
 
 User-tier writes are protected by explicit host-write confirmation; there is no `USER_TIER_ENABLED` configuration field.
 
+### Maintenance
+
+| Variable | Description | Default |
+|---|---|---|
+| `MEMTOMEM_MAINTENANCE__EXPERIMENTAL_DUPLICATE_BRIEF` | Experimental. When `true`, `mem_dedup_scan` prints, under each member of a candidate pair, what the store holds about it (heading, namespace, scope, tags, validity window, read-only flag, position in its source, relations and links) and a line naming the fields the two members differ on. The scan still selects and orders pairs the same way and changes nothing; output is about three times as long per pair. Set it in `config.json` or with this variable; `mm config set` and `mem_config` do not change it | `false` |
+
 ### Advanced / operator paths
 
 These process-level variables are not part of the layered `config.json` / `config.d` model.
@@ -331,7 +338,7 @@ These process-level variables are not part of the layered `config.json` / `confi
 | `ollama` | No | Free | Requires Ollama. `ollama pull nomic-embed-text` |
 | `openai` | No | Paid | Requires API key |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.10/docs/guides/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.13/docs/guides/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

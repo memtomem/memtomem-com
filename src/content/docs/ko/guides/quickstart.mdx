@@ -25,7 +25,7 @@ Windows에서 `python`을 찾지 못하면 `py --version`을 사용하세요. `u
 ## 2. 설치·초기화
 
 ```bash
-uv tool install 'memtomem[all]'
+uv tool install --python 3.12 'memtomem[all]'
 mm --version
 mm init --preset minimal --non-interactive --mcp skip
 ```

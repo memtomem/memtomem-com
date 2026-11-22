@@ -1,13 +1,13 @@
 {
   "core": {
-    "version": "0.7.10",
+    "version": "0.7.13",
     "python": ">=3.12",
     "tools": {
       "core": 9,
       "standard": 39,
-      "fullCurrent": 93,
+      "fullCurrent": 94,
       "deprecatedAliases": 0,
-      "actions": 88
+      "actions": 89
     },
     "toolNames": [
       "mem_activity",
@@ -35,6 +35,7 @@
       "mem_decay_expire",
       "mem_decay_scan",
       "mem_dedup_merge",
+      "mem_dedup_remove",
       "mem_dedup_scan",
       "mem_delete",
       "mem_do",
@@ -106,7 +107,7 @@
     ]
   },
   "stm": {
-    "version": "0.7.9",
+    "version": "0.7.10",
     "python": ">=3.12",
     "tools": {
       "modelFacing": 5,
@@ -114,26 +115,26 @@
     }
   },
   "claudePlugin": {
-    "version": "0.5.37",
-    "bundledCore": "0.7.10",
-    "requirement": "memtomem[onnx]==0.7.10"
+    "version": "0.5.44",
+    "bundledCore": "0.7.13",
+    "requirement": "memtomem[onnx]==0.7.13"
   },
   "claudeAutomationPlugin": {
-    "version": "0.3.24",
-    "bundledCore": "0.7.10"
+    "version": "0.3.27",
+    "bundledCore": "0.7.13"
   },
   "opencode": {
-    "version": "0.3.33",
-    "bundledCore": "0.7.10"
+    "version": "0.3.40",
+    "bundledCore": "0.7.13"
   },
   "sourceSnapshots": {
-    "coreMain": "8b45030242b2f8ceae92e04c03ef36a987f6e310",
-    "stmMain": "26228069eb5363638b50971cc8b737d5adc2ef92"
+    "coreMain": "b020227a08ff7b75cb6a6d0648c0112b68d1e4d6",
+    "stmMain": "979356c580e13c31f73b5969e001956b064cfbaa"
   },
   "configuration": {
     "coreEnvironment": {
-      "count": 152,
-      "sha256": "dc7a750509f5377ed714f418363e83f6d38c740fec3b528665fbaf4ab6a165a2"
+      "count": 154,
+      "sha256": "6c212fb20b713a93ccc4366dcef35b700d45d86278ecf3b550eb3c6b310dd2b6"
     },
     "stmEnvironment": {
       "count": 185,
@@ -297,6 +298,7 @@
     "agent",
     "config",
     "context",
+    "daemon",
     "doctor",
     "embedding-reset",
     "gc",
@@ -382,6 +384,10 @@
       "enable",
       "list",
       "promote"
+    ],
+    "daemon": [
+      "status",
+      "stop"
     ],
     "gc": [
       "orphan-projects",
@@ -603,5 +609,5 @@
     "--version",
     "--yes"
   ],
-  "reviewedOn": "2026-11-15"
+  "reviewedOn": "2026-11-22"
 }

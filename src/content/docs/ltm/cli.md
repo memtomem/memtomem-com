@@ -5,11 +5,11 @@ description: mm CLI commands for memtomem LTM server management.
 
 The `mm` command is installed with the `memtomem` package. It provides setup, search, indexing, session tracking, and cross-project context sync. Run `mm --help` for the full command list or `mm --version` to print the installed version (the `mm version` subcommand also works).
 
-> This page targets memtomem v0.7.10. Commands are grouped by function, but it's a single reference — scan top to bottom.
+> This page targets memtomem v0.7.13. Commands are grouped by function, but it's a single reference — scan top to bottom.
 
 ## Complete Command Index
 
-The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.10 binary.
+The current top-level surface is preserved here in full. Detailed task flows follow below; use `mm <command> --help` for the option types accepted by the installed 0.7.13 binary.
 
 | Group | Commands |
 |---|---|
@@ -17,7 +17,7 @@ The current top-level surface is preserved here in full. Detailed task flows fol
 | Retrieval / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web`, `serve` |
 | Runtime context | `context`, `wiki`, `sync-doctor` |
 | Collaboration | `session`, `activity`, `agent`, `review` |
-| Evaluation / operations | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
+| Evaluation / operations | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule`, `daemon` |
 | Lifecycle | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
 
 All command-group subcommands are mirrored below.
@@ -30,6 +30,7 @@ All command-group subcommands are mirrored below.
 | `context` | `adopt`, `copy`, `detect`, `diff`, `export`, `generate`, `import`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
+| `daemon` | `status`, `stop` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
 | `mem` | `doctor`, `init`, `rescan`, `rescan-files` |
@@ -91,7 +92,7 @@ malformed matchers the status is then `incomplete`.
 
 ## Setup
 
-In v0.7.10, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
+In v0.7.13, `-y` is accepted but ignored. Scripts must pass `--non-interactive` explicitly. Embedding reset deletes vectors but retains file hashes, so recovery requires `mm index --force <path>`.
 
 ### `mm init`
 
@@ -116,9 +117,24 @@ On a reinstall path, `mm init` compares the embedding provider / model / dimensi
 
 memtomem's MCP server ships as the `memtomem-server` console script. You normally don't launch it by hand — your MCP client (Claude Desktop, Claude Code, Cursor, etc.) starts it automatically from its config file. See [Connect an AI Client](/guides/connect-ai-client/) for the per-client registration steps.
 
-To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 93 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
+To filter which tools the server advertises, set `MEMTOMEM_TOOL_MODE` (`core` / `standard` / `full`) in the client's MCP config. The default is `core` (8 core tools + the `mem_do` router, 9 total); `full` exposes 94 current tools without deprecated aliases. See the [MCP Tools](/ltm/mcp-tools/) page for modes and tool catalogs.
 
 Since v0.1.25, an MCP handshake alone no longer creates `~/.memtomem/memtomem.db` — the DB opens on the first tool call, and the server pid/flock file moved to `$XDG_RUNTIME_DIR/memtomem/server.pid` (or `$TMPDIR/memtomem-$UID/` on platforms without one). A client that connects but never calls a tool leaves the home directory untouched.
+
+#### Shared daemon
+
+`memtomem-server --shared NAME` (0.7.11, POSIX, opt-in) lets several client sessions share one engine. The first session that asks for `NAME` starts a background daemon, and later sessions that ask for the same name join it; each client's `memtomem-server` then only passes messages to the daemon. Add the option to the arguments your client already launches. `mm serve --shared NAME` does the same for a client that launches `mm serve`. `--shared` is stdio only. Without it nothing changes.
+
+A session joins only when the daemon matches it on the `MEMTOMEM_*` and `LANGFUSE_*` variables after `.env` is applied (by name, value and order), the tool mode and extra tools, `HOME`, the store path and the installed package. A session that does not match, uses a relative configured path or a store that cannot be shared, or runs on Windows is served as a standalone server, and its `mem_status` shows `Shared daemon: NAME not joined (<reason>)`. A joined session uses the daemon's live configuration. The daemon exits after 600 seconds with no session. `memtomem-server --daemon NAME [--idle-timeout S]` runs one in the foreground with that shell's environment, and `--idle-timeout 0` keeps it running.
+
+```bash
+mm daemon status              # every daemon; exit 0 if one runs (or cannot be verified), 3 if none, 1 if they cannot be listed
+mm daemon status main --json  # {"daemons": [...], "count": N}
+mm daemon stop main           # SIGTERM, then SIGKILL after --grace seconds (default 5)
+mm daemon stop                # every running daemon
+```
+
+Stopping a daemon, or a daemon crash, ends every session connected to it: its `memtomem-server` exits with status 1, and whether the client starts a new one or needs a reconnect or restart depends on the client. `mm doctor` adds a `shared-daemons` check. Join reasons, what has to match, and limits are in the upstream [shared daemon guide](https://github.com/memtomem/memtomem/blob/v0.7.13/docs/guides/shared-daemon.md).
 
 ### `mm config show / set / unset`
 
@@ -472,6 +488,8 @@ mm schedule delete <sched-id>
 
 `--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters; since 0.7.9 registration refuses unknown parameter keys for the chosen job (or any key on a job that takes none). The dispatcher rides the health-watchdog loop, so registered jobs only fire when both `scheduler.enabled` and `health_watchdog.enabled` are on.
 
+`mm schedule list --json` returns each schedule's whole record. Besides `last_run_status`, `last_run_error` and `last_run_result`, it carries `state` (where the next run starts, for a job that continues between runs, which is `dedup_scan`; `null` for the others), `params_error` (why the stored `params` cannot be read, or `null`) and `cron_error` (why the dispatcher cannot schedule the row, or `null`). A schedule whose stored params cannot be read never runs with the job's defaults: every run of it, from the dispatcher or `run-now`, is recorded as `error` with `invalid params: <reason>` before the job starts. Since 0.7.11 a `dedup_scan` schedule walks the store: each run scans the pool after the one its last finished run scanned, and starts over after the end of the store.
+
 ## Maintenance & Lifecycle
 
 ### `mm gc orphan-sources`
@@ -518,15 +536,15 @@ mm reset                             # confirm, then delete
 mm reset -y                          # skip prompt
 ```
 
-Where `mm embedding-reset --mode apply-current` rebuilds vectors only, `mm reset` drops the whole index. It doesn't touch the config file — for a full wipe, pair it with `mm init --fresh` or `mm uninstall`.
+Where `mm embedding-reset --mode apply-current` rebuilds vectors only, `mm reset` drops the whole index. It doesn't touch the config file — for a full wipe, pair it with `mm init --fresh` or `mm uninstall`. It refuses while a [shared daemon](#shared-daemon) runs and names the command that stops it (`mm daemon stop NAME`).
 
 ### `mm upgrade`
 
-Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install --reinstall memtomem` alone only swaps the on-disk bytes — a server already imported by an MCP client keeps running the previous version — so this adds the process-cleanup step around it.
+Stop a running memtomem-server, then reinstall via `uv tool`. `uv tool install --reinstall memtomem` alone only swaps the on-disk bytes — a server already imported by an MCP client keeps running the previous version — so this adds the process-cleanup step around it. A running [shared daemon](#shared-daemon) is stopped the same way, which ends every session connected to it; the next session starts a daemon on the new version.
 
 ```bash
 mm upgrade                           # reinstall to the latest version (extras auto-detected)
-mm upgrade --version 0.7.10          # pin a specific version
+mm upgrade --version 0.7.13          # pin a specific version
 mm upgrade --extras all              # name the extras to install (default: auto-detect)
 mm upgrade --dry-run                 # print the plan, change nothing
 ```
@@ -547,6 +565,8 @@ Checks after upgrading from an earlier release:
 - **From before 0.7.5:** a file named like a non-default day file (`{date}--{slug}-{digest}.md`) whose name decodes belongs to the namespace the name encodes, whoever wrote it and whether or not it is empty; names that do not decode route as before. A write with no explicit namespace, no agent-session binding and no current namespace set with `mem_ns_set` into such a file with no stored rows lands in that namespace. A write under another namespace into it (`mem_add(file=...)`, `mm add --file`, the Web UI's add) is refused like any other namespace mix; `allow_namespace_mix=true` / `--allow-namespace-mix` overrides. Re-indexing such a file with no stored rows, after the database is gone or on another machine, puts it back in that namespace ahead of a session binding; stored rows, an explicit `namespace` and `--reassign-namespaces` still win. Namespace moves made after writing (`mem_ns_rename`, `mem_ns_assign`, archive and promote policies) live only in the database, so a rebuild returns those files to the namespace in their name: keep the database, or reapply the moves after a rebuild.
 - **From before 0.7.9:** the nine Context Gateway write tools (`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`) are removed from MCP; run them with `mm context` (`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`). By-id `edit` and `delete` refuse chunks indexed from explicit paths outside managed memory roots, registered project tiers, and `~/.memtomem/uploads` with `source_unmanaged`; project-scope `mm pinned` / `mem_pinned_*` writes and deletes refuse when `.memtomem`, the tier directory, `pinned`, or a directory below it is a symlink or junction; and `mm web` refuses cross-origin browser `/api/*` requests (`403` on reads and writes; pass `--trusted-origin <hostname>` when needed). Existing environments also keep `opentelemetry-api` 1.45.1 until dependencies are resolved again (`mm upgrade` / `uv tool upgrade memtomem`, `uv cache clean opentelemetry-api && uv cache prune` for cached `uvx` launches, or `pip install -U opentelemetry-api` in virtual environments — verify `1.45.2` or later), keep an older `filelock` until `pip install -U filelock`, and on macOS/Linux keep the prior mode on an existing `~/.memtomem/cache/fastembed` directory until `chmod 700 ~/.memtomem/cache/fastembed`.
 - **From before 0.7.10:** `mem_export` takes a bare file name and writes it to `~/.memtomem/exports/` (see [Common Actions](/ltm/mcp-tools/#common-actions)); a client, prompt, or workflow that passes a path gets `Export refused: output_file must be a file name, not a path`. `mem_config` no longer changes `session_trace.*`; use `mm config set` or the Web UI. `mm context`, `mm mem init`, and the Web UI's sync refuse a project entry that is a symbolic link or junction (see [Context Gateway](/ltm/context-gateway/)). The write guard has six more rules and also reads titles, tags, and JSON-escaped text, so a write, index, or sync that passed before can be refused; content stored earlier is not re-scanned: audit stored memory chunks with `mm mem rescan --scope <tier>` and Context Gateway artifacts with `mm context rescan --scope <tier>`, once for each tier (each command covers only its own store). memtomem now requires `opentelemetry-api>=1.45.2`, so an environment that pins OpenTelemetry lower (including `opentelemetry-sdk==1.45.1`, which needs the API at exactly 1.45.1) no longer resolves until that pin moves. An MCP entry that pins an exact release (`memtomem[...]==<version>`) keeps serving that release until you move its pin; updating a plugin or the `mm` CLI does not touch it.
+- **From before 0.7.11:** an existing `dedup_scan` schedule starts walking the store (see [`mm schedule`](#mm-schedule-add--list--run-now--delete)), and the first 0.7.11 or later process to open a store adds a `job_state` column to its `schedules` table; an older memtomem can keep using the database. Under the polling watcher (the macOS default), an edit made outside memtomem reaches the index about 10 to 15 s after the write instead of 5 to 6 s; to keep the old interval, set `indexing.watcher_poll_interval_ms` to `1000` and restart the server. A `.env` kept inside the installed package's `memtomem/server/` directory is no longer read; move it to `memtomem/` or a directory above it.
+- **From before 0.7.13:** an MCP entry that runs `uvx` with a requirement naming an extra (`memtomem[all]==…`, `memtomem[onnx]==…`) and asks for no Python can stop before the server starts (`No solution found`) when uv picks a Python older than 3.12. When you move its pin, also put `--python 3.12` right after `uvx` (`"--python", "3.12"` first in a JSON or TOML `args` array, right after `"uvx"` in OpenCode's `command` array). Where uv is configured never to download Python, such an entry then needs a Python 3.12 on the machine. Claude plugin users who also keep a manual registration: the plugin now launches `uvx --python 3.12 --from 'memtomem[onnx]==0.7.13' memtomem-server`, so run `mm doctor --claude-mcp` and align the manual entry with it or remove the entry (see [Claude Code](/guides/connect-ai-client/#claude-code)).
 
 Since 0.6.5 the database uses schema version 3. The first newer process to open it migrates it; an earlier binary then stops with `This database has schema version 3, but this memtomem binary only supports up to 2` and exit code 1, without touching the data. Any client that launches its own server pinned to an earlier `memtomem==` version, such as an MCP entry, has to move too.
 
@@ -562,7 +582,7 @@ mm uninstall --keep-data      # preserve the SQLite DB + ~/.memtomem/memories/
 mm uninstall --force          # limited POSIX heuristics only; stop live writers first
 ```
 
-Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server is alive (open WAL handles risk corruption); stop it first. `--force` cannot bypass live instance-registry evidence, the lifecycle barrier, untrusted registry state, or an open SQLite database on Windows. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. For Antigravity that covers the CLI's `~/.gemini/config/mcp_config.json`, the older `~/.gemini/antigravity-cli/mcp_config.json`, the IDE's `~/.gemini/antigravity/mcp_config.json`, and its VS Code-side `~/Library/Application Support/Antigravity/User/mcp.json`. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
+Custom `storage.sqlite_path` values outside the default directory are included in the inventory. The command refuses to run while the MCP server or a [shared daemon](#shared-daemon) is alive (open WAL handles risk corruption); stop it first (`mm daemon stop NAME` for a daemon, which `--force` does not override). When it deletes state, it also removes a dead daemon's log and stale session entries. `--force` cannot bypass live instance-registry evidence, the lifecycle barrier, untrusted registry state, or an open SQLite database on Windows. External editor MCP entries (`~/.claude.json`, `~/.codex/config.toml`, etc.) are **detected and reported**, never modified. For Antigravity that covers the CLI's `~/.gemini/config/mcp_config.json`, the older `~/.gemini/antigravity-cli/mcp_config.json`, the IDE's `~/.gemini/antigravity/mcp_config.json`, and its VS Code-side `~/Library/Application Support/Antigravity/User/mcp.json`. At the end it prints the exact binary-removal command for your install context (`uv tool uninstall memtomem`, `pip uninstall memtomem`, etc.) so you can follow through.
 
 > See [Quick Start](/guides/quickstart/) for the full getting-started walkthrough.
 
@@ -621,6 +641,9 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
+| `mm daemon` | — |
+| `mm daemon status` | `--json` |
+| `mm daemon stop` | `--grace` |
 | `mm doctor` | `--apply`, `--claude-mcp`, `--json`, `--mcp-client`, `--reconcile` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
@@ -676,7 +699,7 @@ Public long options from the pinned source. Short aliases and the common `--help
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
 | `mm search` | `--as-of`, `--format`, `--json`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
-| `mm serve` | — |
+| `mm serve` | `--shared` |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--json`, `--summary` |
 | `mm session events` | `--json` |

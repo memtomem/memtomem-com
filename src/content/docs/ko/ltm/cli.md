@@ -5,7 +5,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 
 `mm`은 `memtomem` 패키지와 함께 설치됩니다. 설정, 검색, 색인, 세션 기록, 프로젝트 간 컨텍스트 동기화를 관리합니다. 전체 명령은 `mm --help`, 설치된 버전은 `mm --version` 또는 `mm version`으로 확인하세요.
 
-> 이 페이지는 memtomem v0.7.10을 기준으로 지원하는 명령을 기능별로 정리했습니다.
+> 이 페이지는 memtomem v0.7.13을 기준으로 지원하는 명령을 기능별로 정리했습니다.
 
 ## 전체 명령 인덱스
 
@@ -17,7 +17,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | 검색 / UI | `search`, `recall`, `tags`, `pinned`, `shell`, `web`, `serve` |
 | 실행 환경 컨텍스트 | `context`, `wiki`, `sync-doctor` |
 | 협업 | `session`, `activity`, `agent`, `review` |
-| 평가 / 운영 | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule` |
+| 평가 / 운영 | `status`, `doctor`, `quality`, `warmup`, `watchdog`, `schedule`, `daemon` |
 | 라이프사이클 | `gc`, `embedding-reset`, `purge`, `reset`, `upgrade`, `uninstall`, `version` |
 
 명령 그룹별 하위 명령도 모두 나열합니다.
@@ -30,6 +30,7 @@ description: memtomem LTM 서버를 설정하고 운영하는 mm CLI 명령 전�
 | `context` | `adopt`, `copy`, `detect`, `diff`, `export`, `generate`, `import`, `init`, `install`, `memory-migrate`, `migrate`, `move`, `projects`, `pull`, `rescan`, `seed-validation`, `settings-copy`, `settings-doctor`, `settings-migrate`, `status`, `sync`, `update`, `version` |
 | `context projects` | `add`, `list`, `pause`, `remove`, `resume` |
 | `context version` | `create`, `delete-label`, `enable`, `list`, `promote` |
+| `daemon` | `status`, `stop` |
 | `gc` | `orphan-projects`, `orphan-sources` |
 | `ingest` | `claude-memory`, `codex-memory`, `gemini-memory` |
 | `mem` | `doctor`, `init`, `rescan`, `rescan-files` |
@@ -70,7 +71,7 @@ BM25 전용이거나 벡터가 없는 저장소에서는 비교 불가 상태가
 
 ## 설정
 
-`-y`는 v0.7.10에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
+`-y`는 v0.7.13에서 허용되지만 무시됩니다. 스크립트에는 명시적인 `--non-interactive`를 사용하세요. 임베딩 초기화는 벡터를 삭제하지만 파일 해시는 남기므로 복구할 때 `mm index --force <path>`가 필요합니다.
 
 ### `mm init`
 
@@ -95,9 +96,25 @@ mm init --fresh                      # 누적 설정 일괄 정리 후 마법사
 
 MCP 서버 실행 파일은 `memtomem-server`입니다. 일반적으로 직접 실행할 필요는 없습니다. Claude Desktop, Claude Code, Cursor 같은 MCP 클라이언트가 설정에 따라 자동으로 실행합니다. 클라이언트별 등록 방법은 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)을 참고하세요.
 
-MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 93개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
+MCP 클라이언트에 표시할 도구 범위는 `env`의 `MEMTOMEM_TOOL_MODE`(`core` / `standard` / `full`)로 정합니다. 기본 `core`는 핵심 도구 8개와 `mem_do`를 합쳐 9개를 표시합니다. `full`은 현재 도구 94개를 표시하며 제거된 별칭을 포함하지 않습니다. 자세한 목록은 [MCP 도구](/ko/ltm/mcp-tools/)를 참고하세요.
 
 v0.1.25부터 MCP 연결만으로는 `~/.memtomem/memtomem.db`를 만들지 않습니다. DB는 도구를 처음 호출할 때 엽니다. 서버 pid/flock 파일은 `$XDG_RUNTIME_DIR/memtomem/server.pid`에 두며, 플랫폼에 따라 `$TMPDIR/memtomem-$UID/`를 사용합니다. 도구를 호출하지 않으면 홈 디렉터리에 파일을 남기지 않습니다.
+
+<a id="shared-daemon"></a>
+#### 공유 데몬
+
+`memtomem-server --shared NAME`(0.7.11, POSIX, 선택 사항)을 사용하면 여러 클라이언트 세션이 엔진 하나를 함께 사용합니다. `NAME`을 처음 요청한 세션이 백그라운드 데몬(daemon)을 시작하고, 같은 이름을 요청한 이후 세션은 이 데몬에 연결됩니다. 이때 각 클라이언트의 `memtomem-server`는 메시지를 데몬에 전달하는 역할만 합니다. 클라이언트가 이미 실행하는 명령의 인자에 이 옵션을 추가합니다. `mm serve`를 실행하는 클라이언트에는 `mm serve --shared NAME`을 사용합니다. `--shared`는 stdio 전송에서만 사용할 수 있으며, 지정하지 않으면 동작이 바뀌지 않습니다.
+
+세션은 `.env`를 적용한 뒤의 `MEMTOMEM_*`·`LANGFUSE_*` 변수(이름, 값, 순서), 도구 모드와 추가 도구, `HOME`, 저장소 경로, 설치된 패키지가 데몬과 모두 같을 때만 연결됩니다. 이 조건이 다르거나, 설정 경로가 상대 경로이거나, 공유할 수 없는 저장소를 사용하거나, Windows에서 실행되는 세션은 독립 서버로 실행되며 `mem_status`에 `Shared daemon: NAME not joined (<reason>)`이 표시됩니다. 연결된 세션은 데몬이 현재 사용 중인 설정을 따릅니다. 데몬은 연결된 세션이 없는 상태로 600초가 지나면 종료합니다. `memtomem-server --daemon NAME [--idle-timeout S]`는 현재 셸의 환경으로 데몬을 포그라운드에서 실행하며, `--idle-timeout 0`을 지정하면 종료하지 않습니다.
+
+```bash
+mm daemon status              # 모든 데몬; 실행 중(또는 확인 불가)이면 종료 코드 0, 없으면 3, 목록을 읽을 수 없으면 1
+mm daemon status main --json  # {"daemons": [...], "count": N}
+mm daemon stop main           # SIGTERM을 보내고 --grace초(기본값 5) 뒤에도 남아 있으면 SIGKILL
+mm daemon stop                # 실행 중인 모든 데몬
+```
+
+데몬을 중지하거나 데몬이 비정상 종료되면 연결된 모든 세션이 끝납니다. 각 세션의 `memtomem-server`는 상태 1로 종료하며, 클라이언트가 새 서버를 자동으로 시작할지 아니면 다시 연결하거나 재시작해야 할지는 클라이언트에 따라 다릅니다. `mm doctor`에는 `shared-daemons` 검사가 추가됩니다. 연결되지 않는 이유, 일치해야 하는 항목, 제한 사항은 업스트림 [shared daemon 가이드](https://github.com/memtomem/memtomem/blob/v0.7.13/docs/guides/shared-daemon.md)를 참고하세요.
 
 ### `mm config show / set / unset`
 
@@ -452,6 +469,8 @@ mm schedule delete <sched-id>
 
 `--cron`에는 UTC 기준 5필드 표현식을 사용합니다. `--params`는 작업별 입력을 담은 JSON 객체이며, 0.7.9부터는 선택한 작업이 받지 않는 키(또는 인자를 받지 않는 작업에 전달한 키)를 등록 시점에 거부합니다. 예약 작업을 실제로 실행하려면 `scheduler.enabled`와 `health_watchdog.enabled`가 모두 켜져 있어야 합니다.
 
+`mm schedule list --json`은 각 예약 작업의 전체 기록을 반환합니다. `last_run_status`, `last_run_error`, `last_run_result` 외에 `state`(실행할 때마다 이어서 진행하는 작업, 즉 `dedup_scan`이 다음에 시작할 위치. 다른 작업은 `null`), `params_error`(저장된 `params`를 읽을 수 없는 이유. 읽을 수 있으면 `null`), `cron_error`(디스패처가 이 작업을 예약할 수 없는 이유. 예약할 수 있으면 `null`)를 포함합니다. 저장된 params를 읽을 수 없는 작업은 기본값으로 실행되지 않습니다. 디스패처나 `run-now`로 실행할 때마다 작업을 시작하기 전에 `invalid params: <reason>`과 함께 `error`로 기록됩니다. 0.7.11부터 `dedup_scan` 예약 작업은 저장소 전체를 순서대로 검사합니다. 각 실행은 마지막으로 완료된 실행이 검사한 범위의 다음 범위를 검사하고, 저장소 끝에 도달하면 처음부터 다시 시작합니다.
+
 ## 유지보수와 라이프사이클
 
 ### `mm gc orphan-sources`
@@ -498,15 +517,15 @@ mm reset                             # 확인 프롬프트 후 삭제
 mm reset -y                          # 프롬프트 스킵
 ```
 
-`mm embedding-reset --mode apply-current`는 벡터만 다시 만들지만 `mm reset`은 인덱스 전체를 비웁니다. 설정 파일은 바꾸지 않습니다. 설정도 초기화하려면 `mm init --fresh`나 `mm uninstall`을 사용하세요.
+`mm embedding-reset --mode apply-current`는 벡터만 다시 만들지만 `mm reset`은 인덱스 전체를 비웁니다. 설정 파일은 바꾸지 않습니다. 설정도 초기화하려면 `mm init --fresh`나 `mm uninstall`을 사용하세요. [공유 데몬](#shared-daemon)이 실행 중이면 작업을 거부하고, 데몬을 중지하는 명령(`mm daemon stop NAME`)을 표시합니다.
 
 ### `mm upgrade`
 
-실행 중인 `memtomem-server`를 중지한 뒤 `uv tool`로 다시 설치합니다. `uv tool install --reinstall memtomem`만 실행하면 설치 파일은 바뀌지만 MCP 클라이언트가 이미 불러온 서버는 이전 버전으로 계속 동작할 수 있습니다. `mm upgrade`는 실행 중인 프로세스까지 정리합니다.
+실행 중인 `memtomem-server`를 중지한 뒤 `uv tool`로 다시 설치합니다. `uv tool install --reinstall memtomem`만 실행하면 설치 파일은 바뀌지만 MCP 클라이언트가 이미 불러온 서버는 이전 버전으로 계속 동작할 수 있습니다. `mm upgrade`는 실행 중인 프로세스까지 정리합니다. 실행 중인 [공유 데몬](#shared-daemon)도 같은 방식으로 중지하므로 데몬에 연결된 모든 세션이 끝나며, 다음 세션이 새 버전으로 데몬을 시작합니다.
 
 ```bash
 mm upgrade                           # 최신 버전으로 재설치 (extras 자동 감지)
-mm upgrade --version 0.7.10          # 특정 버전 고정
+mm upgrade --version 0.7.13          # 특정 버전 고정
 mm upgrade --extras all              # 설치할 extras 명시 (기본은 현재 설치에서 자동 감지)
 mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 ```
@@ -527,6 +546,8 @@ mm upgrade --dry-run                 # 계획만 출력, 실제 변경 없음
 - **0.7.5 이전에서 업그레이드한 경우:** 기본 네임스페이스가 아닌 데이 파일 이름 형식(`{date}--{slug}-{digest}.md`)을 따르며 이름을 해석할 수 있는 파일은, 작성 주체나 파일이 비어 있는지 여부와 관계없이 파일 이름이 가리키는 네임스페이스에 속합니다. 해석할 수 없는 파일 이름은 이전과 같이 처리합니다. 아직 저장된 행이 없는 이런 파일에 네임스페이스 인자, 에이전트 세션 바인딩, `mem_ns_set` 설정 없이 내용을 추가하면 파일 이름의 네임스페이스에 저장됩니다. 이런 파일에 다른 네임스페이스로 쓰는 요청(`mem_add(file=...)`, `mm add --file`, Web UI의 추가)은 다른 네임스페이스 혼합과 같이 거부하며, `allow_namespace_mix=true` / `--allow-namespace-mix`로 허용할 수 있습니다. DB가 없어졌거나 다른 컴퓨터에서 저장된 행이 없는 상태로 이런 파일을 다시 색인하면, 세션 바인딩보다 우선해 그 네임스페이스로 되돌립니다. 저장된 행, 명시한 `namespace`, `--reassign-namespaces`는 여전히 우선합니다. 작성한 뒤에 옮긴 네임스페이스(`mem_ns_rename`, `mem_ns_assign`, 보관·승격 정책)는 DB에만 기록되므로, 색인을 다시 만들면 해당 파일은 이름에 담긴 네임스페이스로 돌아갑니다. DB를 유지하거나, 다시 만든 뒤 이동을 다시 적용합니다.
 - **0.7.9 이전에서 업그레이드한 경우:** Context Gateway 쓰기 도구 9개(`mem_context_init`, `generate`, `sync`, `pull`, `memory_migrate`, `artifact_migrate`, `artifact_transfer`, `version`, `promote`)가 MCP에서 제거되었으므로 `mm context`(`init`, `generate`, `sync`, `pull`, `memory-migrate`, `migrate`, `copy` / `move`, `version`)로 실행합니다. 관리 디렉터리·등록된 프로젝트 계층·`~/.memtomem/uploads` 밖에서 경로를 지정해 색인한 청크는 ID 기반 편집·삭제 시 `source_unmanaged`로 거부되고, 프로젝트 범위 `mm pinned` / `mem_pinned_*` 쓰기·삭제는 `.memtomem`·계층 디렉터리·`pinned` 또는 그 하위 디렉터리가 심볼릭 링크·정션이면 거부하며, `mm web`은 교차 출처 브라우저의 `/api/*` 요청을 읽기·쓰기 모두 `403`으로 거부합니다(필요 시 `--trusted-origin <hostname>` 지정). 또한 기존 환경은 의존성을 다시 해석할 때까지 `opentelemetry-api` 1.45.1이 남을 수 있으므로 설치 방식에 맞게 갱신해(`mm upgrade` / `uv tool upgrade memtomem`, 캐시된 `uvx` 실행은 `uv cache clean opentelemetry-api && uv cache prune`, 가상 환경은 `pip install -U opentelemetry-api`) `1.45.2` 이상인지 확인하고, 기존 가상 환경의 `filelock`은 `pip install -U filelock`으로 올리며, macOS·Linux의 기존 `~/.memtomem/cache/fastembed` 디렉터리는 `chmod 700 ~/.memtomem/cache/fastembed`로 권한을 잠그세요.
 - **0.7.10 이전에서 업그레이드한 경우:** `mem_export`는 파일 이름만 받아 `~/.memtomem/exports/`에 씁니다([자주 쓰는 액션](/ko/ltm/mcp-tools/#자주-쓰는-액션) 참고). 경로를 넘기는 클라이언트, 프롬프트, 워크플로는 `Export refused: output_file must be a file name, not a path` 오류를 받습니다. `mem_config`로는 더 이상 `session_trace.*`를 변경할 수 없으므로 `mm config set`이나 Web UI를 사용하세요. `mm context`, `mm mem init`, Web UI의 동기화는 심볼릭 링크나 정션인 프로젝트 항목을 거부합니다([Context Gateway](/ko/ltm/context-gateway/) 참고). 쓰기 차단 규칙이 6개 늘었고 제목, 태그, JSON 이스케이프된 텍스트도 검사하므로, 이전에 통과하던 쓰기·색인·동기화가 거부될 수 있습니다. 이미 저장된 내용은 다시 검사하지 않으므로, 계층마다 한 번씩 저장된 기억 청크는 `mm mem rescan --scope <tier>`로, Context Gateway 아티팩트는 `mm context rescan --scope <tier>`로 점검하세요(각 명령은 담당 저장소만 검사). memtomem은 이제 `opentelemetry-api>=1.45.2`를 요구하므로, OpenTelemetry를 더 낮은 버전으로 고정한 환경(API를 정확히 1.45.1로 요구하는 `opentelemetry-sdk==1.45.1` 포함)은 그 고정을 바꾸기 전까지 의존성을 해석하지 못합니다. 특정 릴리스를 고정한 MCP 항목(`memtomem[...]==<version>`)은 고정 버전을 바꾸기 전까지 그 릴리스를 계속 실행하며, 플러그인이나 `mm` CLI를 업데이트해도 바뀌지 않습니다.
+- **0.7.11 이전에서 업그레이드한 경우:** 기존 `dedup_scan` 예약 작업은 저장소 전체를 순서대로 검사하기 시작합니다([`mm schedule`](#mm-schedule-add--list--run-now--delete) 참고). 0.7.11 이상의 프로세스가 저장소를 처음 열면 `schedules` 테이블에 `job_state` 열을 추가하며, 이전 버전의 memtomem도 이 데이터베이스를 계속 사용할 수 있습니다. polling watcher(macOS 기본값)에서는 memtomem 밖에서 수정한 내용이 쓰기 후 약 5~6초가 아니라 약 10~15초 뒤에 색인에 반영됩니다. 이전 간격을 유지하려면 `indexing.watcher_poll_interval_ms`를 `1000`으로 설정하고 서버를 다시 시작합니다. 설치된 패키지의 `memtomem/server/` 디렉터리 안에 둔 `.env`는 더 이상 읽지 않으므로 `memtomem/`이나 그 상위 디렉터리로 옮깁니다.
+- **0.7.13 이전에서 업그레이드한 경우:** `uvx`로 extra를 지정한 요구 사항(`memtomem[all]==…`, `memtomem[onnx]==…`)을 실행하면서 Python을 지정하지 않은 MCP 항목은, uv가 3.12보다 오래된 Python을 선택하면 서버가 시작되기 전에 멈출 수 있습니다(`No solution found`). 고정 버전을 바꿀 때 `uvx` 바로 뒤에 `--python 3.12`도 추가합니다. JSON이나 TOML의 `args` 배열에서는 `"--python", "3.12"`를 맨 앞에, OpenCode의 `command` 배열에서는 `"uvx"` 바로 뒤에 둡니다. uv가 Python을 내려받지 않도록 설정되어 있으면 이런 항목에는 컴퓨터에 설치된 Python 3.12가 필요합니다. 수동 등록을 함께 사용하는 Claude 플러그인 사용자는, 플러그인이 이제 `uvx --python 3.12 --from 'memtomem[onnx]==0.7.13' memtomem-server`로 서버를 실행하므로 `mm doctor --claude-mcp`를 실행한 뒤 수동 항목을 플러그인과 맞추거나 제거합니다([Claude Code](/ko/guides/connect-ai-client/#claude-code) 참고).
 
 0.6.5부터 데이터베이스 스키마 버전은 3입니다. 새 버전이 DB를 처음 열 때 변환하며, 이후 이전 버전 실행 파일은 데이터를 변경하지 않고 `This database has schema version 3, but this memtomem binary only supports up to 2` 오류와 종료 코드 1로 중단됩니다. 이전 `memtomem==` 버전을 고정한 MCP 항목처럼 서버를 직접 실행하는 클라이언트도 함께 업그레이드해야 합니다.
 
@@ -542,7 +563,7 @@ mm uninstall --keep-data      # SQLite DB + ~/.memtomem/memories/ 보존
 mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회(살아 있는 프로세스는 먼저 종료 필요)
 ```
 
-기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버가 실행 중이면 작업을 거부합니다. 서버를 먼저 종료하세요. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. Antigravity의 경우 CLI의 `~/.gemini/config/mcp_config.json`, 이전 경로인 `~/.gemini/antigravity-cli/mcp_config.json`, IDE의 `~/.gemini/antigravity/mcp_config.json`, VS Code 기반 연동의 `~/Library/Application Support/Antigravity/User/mcp.json`을 확인합니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
+기본 경로 밖에 지정한 `storage.sqlite_path`도 삭제 대상 목록에 포함합니다. WAL 손상을 막기 위해 MCP 서버나 [공유 데몬](#shared-daemon)이 실행 중이면 작업을 거부합니다. 먼저 종료하세요. 데몬은 `mm daemon stop NAME`으로 중지하며, `--force`로도 이 거부를 우회할 수 없습니다. 상태를 삭제할 때는 종료된 데몬의 로그와 남아 있는 세션 항목도 함께 제거합니다. `--force`는 살아 있는 인스턴스 레지스트리, 수명주기 잠금, 신뢰할 수 없는 레지스트리나 Windows의 열린 DB를 우회하지 못합니다. `~/.claude.json`, `~/.codex/config.toml` 같은 외부 편집기의 MCP 설정은 경로만 알려 주고 수정하지 않습니다. Antigravity의 경우 CLI의 `~/.gemini/config/mcp_config.json`, 이전 경로인 `~/.gemini/antigravity-cli/mcp_config.json`, IDE의 `~/.gemini/antigravity/mcp_config.json`, VS Code 기반 연동의 `~/Library/Application Support/Antigravity/User/mcp.json`을 확인합니다. 마지막에는 설치 방식에 맞는 실행 파일 제거 명령(예: `uv tool uninstall memtomem`, `pip uninstall memtomem`)을 출력합니다.
 
 > 전체 시작 과정은 [빠른 시작](/ko/guides/quickstart/)을 참고하세요.
 
@@ -601,6 +622,9 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회(살아 �
 | `mm context version enable` | `--scope` |
 | `mm context version list` | `--scope` |
 | `mm context version promote` | `--scope`, `--to`, `--version` |
+| `mm daemon` | — |
+| `mm daemon status` | `--json` |
+| `mm daemon stop` | `--grace` |
 | `mm doctor` | `--apply`, `--claude-mcp`, `--json`, `--mcp-client`, `--reconcile` |
 | `mm embedding-reset` | `--mode`, `--yes` |
 | `mm gc` | — |
@@ -656,7 +680,7 @@ mm uninstall --force          # 제한된 POSIX 휴리스틱만 우회(살아 �
 | `mm schedule list` | `--json` |
 | `mm schedule run-now` | — |
 | `mm search` | `--as-of`, `--format`, `--json`, `--namespace`, `--no-rerank`, `--scope`, `--source-filter`, `--tag-filter`, `--top-k` |
-| `mm serve` | — |
+| `mm serve` | `--shared` |
 | `mm session` | — |
 | `mm session end` | `--auto`, `--json`, `--summary` |
 | `mm session events` | `--json` |

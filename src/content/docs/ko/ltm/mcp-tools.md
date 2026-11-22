@@ -13,7 +13,7 @@ MCP 클라이언트 설정의 `MEMTOMEM_TOOL_MODE`로 모드를 지정합니다.
 |---|---|---|
 | `core` (기본) | `mem_do` 포함 총 9개 | 대부분의 에이전트에 가장 좋은 기본값 |
 | `standard` | `mem_do` 포함 39개 | 자주 쓰는 관리 도구를 직접 노출하고 싶을 때 |
-| `full` | 현재 도구 93개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
+| `full` | 현재 도구 94개 | 디버깅, 문서화, 많은 도구를 잘 다루는 클라이언트 |
 
 다음 예시는 MCP 서버만 수동으로 연결할 때 사용합니다. 클라이언트 플러그인이 이미 memtomem을 제공한다면 항목을 추가하기 전에 [AI 클라이언트 연결](/ko/guides/connect-ai-client/)에서 해당 클라이언트의 공존 규칙을 확인하세요.
 
@@ -64,7 +64,7 @@ mem_do(action="version")
 
 설치된 버전에서 사용할 수 있는 액션은 MCP 클라이언트에서 `mem_do(action="help")`를 호출해 확인하세요.
 
-v0.7.10은 현재 도구 93개와 `mem_do` 액션 88개를 제공합니다. 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서 `mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)). Pinned Context(고정 컨텍스트)는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과 `mem_candidate_propose/list/review/recover/evidence`가 있습니다. `full` 모드에는 Quality Lab에서 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
+v0.7.13은 현재 도구 94개와 `mem_do` 액션 89개를 제공합니다. 0.7.11에서 `mem_dedup_remove`가 추가되었고, 0.7.9에서 Context Gateway 쓰기 도구 9개가 MCP에서 제거되어 쓰기 작업은 `mm context` CLI로 실행하며, MCP에는 읽기 전용 `context_detect`, `context_diff`, `context_compose`만 유지됩니다. 0.7.8에서 `hermes_mirror_apply` 액션이 추가되었고, 0.7.2에서 `mem_update_coverage`가 추가되었으며([업데이트 커버리지](#update-coverage)), 0.7.1에서 `mem_project_bind`가 추가되었습니다([프로젝트 바인딩](#project-binding)). Pinned Context(고정 컨텍스트)는 `mem_pinned_list/get/set/delete`와 `mem_context_compose`를 제공합니다. 검토 우선 흐름에는 `mem_formation_scan`과 `mem_candidate_propose/list/review/recover/evidence`가 있습니다. `full` 모드에는 Quality Lab에서 결정론적 재실행에 사용하는 `mem_quality_replay`도 포함됩니다. ID 기반 `edit`와 `delete`는 관리 디렉터리, 등록된 프로젝트 계층, `~/.memtomem/uploads` 밖에서 경로를 직접 지정해 색인한 청크를 `source_unmanaged`로 거부합니다(0.7.9).
 
 `mem_do(action="version")`은 서버 버전, 기능 목록, 실제 임베딩·리랭커 실행 환경을 반환합니다. `runtime_profile`에는 빠진 선택 의존성이 표시되며 비밀값은 포함하지 않습니다.
 
@@ -88,7 +88,7 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 | 세션 | `session_start`, `session_end`, `session_list`, `project_bind` |
 | 스크래치 | `scratch_set`, `scratch_get`, `scratch_promote` |
 | Context Gateway | `context_detect`, `context_diff`, `context_compose` (쓰기 작업은 0.7.9부터 `mm context` CLI 전용) |
-| 유지보수 | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
+| 유지보수 | `dedup_scan`, `dedup_merge`, `dedup_remove`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | 가져오기 / 내보내기 | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | 품질 / 분석 | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
@@ -104,13 +104,21 @@ OpenCode에 공개 플러그인이나 수동 로컬 서버로 memtomem을 등록
 - 이번 쓰기로 만든 청크는 비교에서 제외합니다. 같은 파일의 이전 항목이 새 기억과 하나의 청크로 합쳐진 경우도 포함됩니다.
 - 템플릿을 적용한 뒤의 내용이 20자 이하이거나, 벡터가 없는 저장소(키워드 전용)이면 검사하지 않습니다.
 
-중복을 정리하려면 `mem_do(action="dedup_scan")`으로 후보 쌍을 확인한 뒤, 확인한 쌍을 병합합니다.
+중복을 정리하려면 `mem_do(action="dedup_scan")`으로 후보 쌍을 확인합니다. 한 번의 호출은 청크 ID 순서로 최대 `max_scan`개(기본값 500)의 청크를 검사합니다. 검사하지 않은 청크가 남아 있으면 출력의 마지막 줄 끝에 `continue with after="<chunk-id>"`처럼 이어서 검사할 값이 표시됩니다. 마지막 줄에 `reached the end of the store`가 표시될 때까지 이 값을 다시 전달합니다.
+
+```text
+mem_do(action="dedup_scan", params={"after": "<chunk-id>"})
+```
+
+한 검사 범위에 `limit`(기본값 50, 최대 500)보다 많은 쌍이 있으면 마지막 줄에 잘린 개수가 표시됩니다. 잘린 쌍을 보려면 같은 위치에서 `limit`를 높여 다시 검사합니다. 확인한 쌍은 다음 두 방법 중 하나로 처리합니다.
 
 ```text
 mem_do(action="dedup_merge", params={"keep_id": "<chunk-id>", "delete_ids": ["<chunk-id>"], "dry_run": false})
+mem_do(action="dedup_remove", params={"remove_id": "<chunk-id>", "keep_id": "<chunk-id>"})
 ```
 
-`"dry_run": false`를 지정하지 않으면 `dedup_merge`는 병합을 미리보기만 합니다.
+- `dedup_merge`는 색인 행만 삭제합니다. 파일에는 내용이 그대로 남아 있으므로 다음 색인 때 다시 나타납니다. `"dry_run": false`를 지정하지 않으면 병합을 미리보기만 합니다.
+- `dedup_remove`(0.7.11)는 `remove_id`에 해당하는 줄을 파일에서 삭제한 뒤 `mem_delete`와 같은 방식으로 파일을 다시 색인합니다. 먼저 두 청크를 모두 확인합니다. 각 청크의 파일과 저장된 행이 그 파일의 마지막 색인 기록(index receipt)과 일치해야 하고, 두 청크가 서로 다른 파일에 있어야 하며, 어느 파일도 다른 하드 링크 이름을 가지고 있지 않아야 합니다. 조건을 충족하지 않으면 해당 청크와 이유를 표시하고 아무것도 삭제하지 않습니다. 확인에 필요한 색인 기록은 일반 `mm index <file>`이 작성합니다. `mm index --force`, 메모리 쓰기가 실행하는 재색인, `indexing.enrich_chunk_context`나 `indexing.auto_summarize`를 켠 색인은 이 기록을 작성하지 않습니다. 두 청크의 내용이 같은지는 판단하지 않으므로 삭제하기 전에 두 청크를 모두 읽어 봅니다. `remove_id`가 `project_shared` 청크이면 `"confirm_project_shared": true`도 지정해야 합니다.
 
 <a id="project-binding"></a>
 
@@ -126,7 +134,7 @@ mem_do(action="project_bind", params={"project_root": "/absolute/path/to/project
 
 - stdio 서버에서만 동작합니다. streamable HTTP는 여러 클라이언트가 하나의 컨텍스트를 공유하기 때문입니다.
 - `project_root`는 계층이 등록된 프로젝트(`mm mem init --scope project_local`) 안의 절대 경로여야 하며, 그렇지 않으면 호출이 거부됩니다.
-- 바인딩은 서버 프로세스마다 한 번만 설정되며, 다른 프로젝트에 바인딩하려면 서버를 다시 시작해야 합니다. 서버의 작업 디렉터리가 이미 다른 등록된 프로젝트 안에 있으면 거부됩니다.
+- 바인딩은 MCP 세션마다 한 번만 설정되며 변경할 수 없습니다. 독립 실행되는 stdio 서버는 세션 하나만 처리하므로, 다른 프로젝트에 바인딩하려면 서버를 다시 시작해야 합니다. [공유 데몬](/ko/ltm/cli/#shared-daemon)에서는 클라이언트 연결마다 별도의 세션과 바인딩을 가지므로, 데몬을 중지하지 않고 새 연결에서 다른 프로젝트에 바인딩할 수 있습니다. 서버의 작업 디렉터리가 이미 다른 등록된 프로젝트 안에 있으면 거부됩니다.
 - 나중에 계층 등록을 해제하면 읽기는 바인딩된 프로젝트에 그대로 남고, 해당 계층에 대한 추가는 거부되며, Pinned Context는 서버를 다시 시작할 때까지 다시 확인하지 않습니다. 그동안 `mem_status`가 `bound_project_unregistered` 경고를 표시하므로 서버를 다시 시작하거나 `mm mem init`으로 계층을 다시 등록합니다.
 
 0.7.2부터 Antigravity CLI 플러그인의 프로젝트 워크플로(`handoff`, `brief`, `update`)는 실행 중인 저장소에 서버를 바인딩합니다. 자세한 내용은 [프로젝트 워크플로](/ko/ltm/project-workflows/#antigravity-cli)를 참고하세요. Hermes Agent 플러그인의 워크플로는 프로젝트를 바인딩하지 않으며, 두 플러그인 모두 `remember` 워크플로는 항상 사용자 범위에 저장합니다.
@@ -148,7 +156,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - 프로젝트 컨텍스트가 필요합니다. 계층이 등록된 프로젝트 안에서 서버를 시작하거나 [`mem_project_bind`](#project-binding)로 프로젝트를 바인딩합니다.
 - 커버리지는 SQLite 데이터베이스에만 저장됩니다. JSON 내보내기에는 포함되지 않고 가져오기로 추가되거나 삭제되지도 않으므로, 해당 프로젝트의 커버리지가 없는 저장소에 번들을 복원하면 그 커밋을 다시 검토하게 됩니다.
 - 이 도구는 읽기 전용이 아닌 도구로 표시되므로 캐싱 프록시가 이전 응답을 재사용하지 않습니다.
-- Core 0.7.10과 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
+- Core 0.7.13과 함께 배포된 플러그인의 `update` 워크플로는 `incremental`과 `full` 모드에서 이 도구를 `mem_do`를 거치지 않고 개별 도구 이름(`mem_update_coverage`)으로 직접 호출합니다. 자세한 내용은 [검토 기록](/ko/ltm/project-workflows/#review-coverage)을 참고하세요.
 
 <a id="언제-모드를-바꿀까"></a>
 
@@ -196,7 +204,7 @@ AI 도구가 적절한 도구를 고르지 못하면 CLI에서 한 번 직접 �
 
 ## 전체 모드 도구 이름
 
-full 모드에서 제공하는 현재 도구 93개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
+full 모드에서 제공하는 현재 도구 94개의 이름이며, 기본 core 모드에서 노출되는 도구 9개와는 구분됩니다.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -224,6 +232,7 @@ full 모드에서 제공하는 현재 도구 93개의 이름이며, 기본 core 
 - `mem_decay_expire`
 - `mem_decay_scan`
 - `mem_dedup_merge`
+- `mem_dedup_remove`
 - `mem_dedup_scan`
 - `mem_delete`
 - `mem_do`

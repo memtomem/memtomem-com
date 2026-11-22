@@ -113,7 +113,9 @@ if (/\bmm server\b/.test(combined)) errors.push('removed CLI command remains: mm
 if (/^\| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED`/m.test(combined)) {
   errors.push('removed Context Gateway environment variable remains in a table');
 }
-if (/uvx\s+--from\s+memtomem(?:\s|["'])/.test(combined)) {
+// A uvx launch whose requirement is memtomem with no exact `==` pin, with or
+// without `--python <v>` / `--isolated` before `--from`, quoted or not.
+if (/uvx(?:\s+--python\s+\S+|\s+--isolated)*\s+--from\s+["']?memtomem(?:\[[^\]\s]*\])?(?!\[|==|-|\w)/.test(combined)) {
   errors.push('floating uvx memtomem registration remains; use memtomem-server or an exact pin');
 }
 if (contract.claudePlugin.bundledCore !== contract.core.version) {
@@ -222,13 +224,13 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   assertSectionContains(
     file,
     claudeSection,
-    `uvx --from ${contract.claudePlugin.requirement} memtomem-server`,
+    `uvx --python 3.12 --from ${contract.claudePlugin.requirement} memtomem-server`,
     'Claude exact plugin signature'
   );
   assertSectionContains(
     file,
     claudeSection,
-    `claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- uvx --from "${contract.claudePlugin.requirement}" memtomem-server`,
+    `claude mcp add memtomem -e MEMTOMEM_EXTRA_TOOLS=mem_update_coverage -- uvx --python 3.12 --from "${contract.claudePlugin.requirement}" memtomem-server`,
     'Claude quoted manual registration'
   );
   const opencodeSection = markdownSection(text, contract.guides.clientGuide.coexistence.opencode.heading, 2);
@@ -273,7 +275,7 @@ for (const file of pairedGuideFiles('guides/connect-ai-client')) {
   assertSectionContains(
     file,
     hermesSection,
-    `uvx --python 3.12 --from 'memtomem[onnx]==${contract.core.version}' memtomem-server`,
+    `uvx --python 3.12 --from 'memtomem[onnx]==${contract.core.version}' --with 'huggingface-hub>=1.20' memtomem-server`,
     'Hermes plugin server requirement'
   );
 
@@ -310,7 +312,7 @@ for (const file of troubleshootingPairs) {
   assertSectionContains(
     file,
     section,
-    `uvx --from ${contract.claudePlugin.requirement} memtomem-server`,
+    `uvx --python 3.12 --from ${contract.claudePlugin.requirement} memtomem-server`,
     'troubleshooting Claude exact plugin signature'
   );
 }
