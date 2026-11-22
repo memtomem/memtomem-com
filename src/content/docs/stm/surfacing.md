@@ -13,7 +13,7 @@ When an agent calls an MCP tool, the STM proxy runs this pipeline:
 Tool call → Context extraction → LTM search → Relevance gating → Inject into response
 ```
 
-No agent code changes are needed, but the call must pass through STM or a supported host hook. Direct calls to an upstream MCP server bypass STM. For Claude Code built-in tools, install `mms hook` as a host hook; it uses a warm local daemon by default so repeated hook calls do not pay LTM cold-start cost.
+No agent code changes are needed, but the call must pass through STM or a supported host hook. Direct calls to an upstream MCP server bypass STM. For Claude Code built-in tools, register `mms hook --host claude` as a host hook (see [`mms hook`](/stm/cli/#mms-hook)); it uses a warm local daemon by default so repeated hook calls do not pay LTM cold-start cost.
 
 | Call surface | Surfacing path |
 |---|---|

@@ -182,7 +182,7 @@ Kimi Code는 `update` 워크플로를 실행하므로, 설정 항목의 `"args"`
 mm init --mcp kimi
 ```
 
-이 명령을 다시 실행하는 것은 업그레이드가 아니라 재설정입니다. 직접 추가한 환경 변수를 포함해 `mcpServers.memtomem` 항목 전체를 교체합니다. 기존 항목을 업그레이드하려면 항목을 직접 수정합니다. 버전 고정값을 바꾸고, `command`가 `uvx`이며 `args`가 Python을 지정하지 않은 채 extra(`memtomem[all]`, `memtomem[onnx]`)를 사용한다면 `args` 맨 앞에 `"--python", "3.12"`를 추가합니다.
+이 명령을 다시 실행하는 것은 업그레이드가 아니라 재설정입니다. 직접 추가한 환경 변수를 포함해 `mcpServers.memtomem` 항목 전체를 교체합니다. 기존 항목을 업그레이드하려면 항목을 직접 수정합니다. `command`가 `uvx`인 항목은 고정한 릴리스를 그대로 실행하므로 고정 버전을 바꾸고, `args`가 Python을 지정하지 않은 채 extra(`memtomem[all]`, `memtomem[onnx]`)를 사용한다면 `args` 맨 앞에 `"--python", "3.12"`를 추가합니다. 영구 설치에서 `mm init`이 작성한, 설치된 인터프리터를 `-m memtomem.server`로 실행하는 항목은 그 환경에 설치된 memtomem을 실행합니다. 그 환경의 memtomem을 업그레이드한 뒤(`uv tool` 설치라면 `mm upgrade`) Kimi Code를 다시 시작합니다.
 
 memtomem은 현재 Kimi Code 홈 경로에만 Kimi 항목을 작성합니다. 이전 경로인 `~/.kimi/mcp.json`(또는 `$KIMI_SHARE_DIR` 하위)에 남아 있는 memtomem 항목은 자동으로 갱신되지 않으며 `mm uninstall`도 경로만 안내하므로 직접 제거해야 합니다.
 

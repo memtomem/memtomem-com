@@ -118,6 +118,11 @@ if (/^\| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED`/m.test(combined)) {
 if (/uvx(?:\s+--python\s+\S+|\s+--isolated)*\s+--from\s+["']?memtomem(?:\[[^\]]*\])?(?!\[|-|\w|\s*==\s*\d+(?:\.\d+)*(?![\d.*\w]))/.test(combined)) {
   errors.push('floating uvx memtomem registration remains; use memtomem-server or an exact pin');
 }
+// The same rule for a JSON or TOML argument array: "--from", "memtomem[...]"
+// without an exact pin.
+if (/"--from"\s*,\s*"memtomem(?:\[[^\]"]*\])?(?!\[|-|\w|\s*==\s*\d+(?:\.\d+)*")/.test(combined)) {
+  errors.push('floating uvx memtomem registration remains in an argument array; use an exact pin');
+}
 if (contract.claudePlugin.bundledCore !== contract.core.version) {
   errors.push(`Claude plugin bundles Core ${contract.claudePlugin.bundledCore}; expected ${contract.core.version}`);
 }

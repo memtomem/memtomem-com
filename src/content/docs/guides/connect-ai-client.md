@@ -182,7 +182,7 @@ Kimi Code runs the `update` workflow, so its entry also keeps `"env": {"MEMTOMEM
 mm init --mcp kimi
 ```
 
-Re-running that command is a reconfiguration, not an upgrade: it replaces the whole `mcpServers.memtomem` entry, including environment variables you added. To upgrade an existing entry, edit it in place: move its version pin, and when its `command` is `uvx` and its `args` name an extra (`memtomem[all]`, `memtomem[onnx]`) without asking for a Python, put `"--python", "3.12"` at the front of `args`.
+Re-running that command is a reconfiguration, not an upgrade: it replaces the whole `mcpServers.memtomem` entry, including environment variables you added. To upgrade an existing entry, edit it in place. An entry whose `command` is `uvx` launches the exact release it pins: move the pin, and when its `args` name an extra (`memtomem[all]`, `memtomem[onnx]`) without asking for a Python, put `"--python", "3.12"` at the front of `args`. An entry that runs an installed interpreter with `-m memtomem.server`, which `mm init` writes from a persistent install, runs whatever memtomem that environment has: upgrade memtomem there (`mm upgrade` for a `uv tool` install), then restart Kimi Code.
 
 memtomem writes Kimi entries only to the current Kimi Code home. A memtomem entry left in the legacy `~/.kimi/mcp.json` (or under `$KIMI_SHARE_DIR`) is not updated, and `mm uninstall` only reports it, so remove it yourself.
 
