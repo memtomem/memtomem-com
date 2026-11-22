@@ -115,7 +115,7 @@ if (/^\| `MEMTOMEM_CONTEXT_GATEWAY__USER_TIER_ENABLED`/m.test(combined)) {
 }
 // A uvx launch whose requirement is memtomem with no exact `==` pin, with or
 // without `--python <v>` / `--isolated` before `--from`, quoted or not.
-if (/uvx(?:\s+--python\s+\S+|\s+--isolated)*\s+--from\s+["']?memtomem(?:\[[^\]\s]*\])?(?!\[|==|-|\w)/.test(combined)) {
+if (/uvx(?:\s+--python\s+\S+|\s+--isolated)*\s+--from\s+["']?memtomem(?:\[[^\]]*\])?(?!\[|-|\w|\s*==\s*\d+(?:\.\d+)*(?![\d.*\w]))/.test(combined)) {
   errors.push('floating uvx memtomem registration remains; use memtomem-server or an exact pin');
 }
 if (contract.claudePlugin.bundledCore !== contract.core.version) {

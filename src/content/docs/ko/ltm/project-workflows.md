@@ -86,7 +86,7 @@ description: handoff, brief, update로 한 Git 프로젝트의 작업을 다른 
 /memtomem:handoff list
 ```
 
-`save`, `resume`, `list`(0.7.13) 중 하나를 지정합니다. 인자의 첫 단어가 `s`, `r`, `l` 하나뿐이면 각각 `save`, `resume`, `list`로 처리합니다. 작업을 지정하지 않으면 워크플로가 먼저 수행할 작업을 묻고, 추가 입력을 받을 수 없는 비대화형 실행에서는 `insufficient_input: operation`을 보고하고 중단합니다.
+`save`, `resume`, `list`(0.7.13) 중 하나를 지정합니다. 인자의 첫 단어 전체가 `s`, `r`, `l`이면 각각 `save`, `resume`, `list`로 처리합니다. 작업을 지정하지 않으면 워크플로가 먼저 수행할 작업을 묻고, 추가 입력을 받을 수 없는 비대화형 실행에서는 `insufficient_input: operation`을 보고하고 중단합니다.
 
 대상 AI 도구는 `claude-code`, `codex-cli`, `kimi-code`, `opencode`, `antigravity-cli`, `cursor`, `any` 중 하나로 기록됩니다. `claude`, `codex`, `kimi`는 각각 해당 이름으로, `antigravity`와 `agy`는 `antigravity-cli`로 바뀝니다. 지정하지 않으면 `any`가 대상입니다. 목록에 없는 대상은 다시 묻거나, 비대화형 실행에서는 `insufficient_input: runtime`을 보고합니다.
 

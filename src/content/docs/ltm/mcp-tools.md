@@ -121,7 +121,7 @@ To clean up, list candidate pairs with `mem_do(action="dedup_scan")`. One call s
 mem_do(action="dedup_scan", params={"after": "<chunk-id>"})
 ```
 
-When one pool holds more pairs than `limit` (default 50, at most 500), the last line says how many were cut; scan the same position again with a higher `limit` to see them. Then handle a pair you confirm in one of two ways:
+When one pool holds more pairs than `limit` (default 50, at most 500), the last line says how many were cut; scan the same position again with a higher `limit` to see them. Past 500 pairs in one pool, no single call lists them all. A walk in steps is also not one scan of the whole store: exact copies (same content hash) are paired only within a pool, so copies in different pools are found only by the near-duplicate search, which a keyword-only store does not run. Then handle a pair you confirm in one of two ways:
 
 ```text
 mem_do(action="dedup_merge", params={"keep_id": "<chunk-id>", "delete_ids": ["<chunk-id>"], "dry_run": false})

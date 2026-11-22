@@ -299,7 +299,7 @@ Hermes resolves MCP servers by name. If the plugin is also enabled, the `mcp_ser
 
 It requires:
 
-- a `memtomem` entry (the plugin above or `mcp_servers.memtomem`) running memtomem **0.6.8 or later** (or **0.7.8 or later** for `mirror_writes`). The provider refuses a server whose structured output does not echo `"recorded": false`, a key added in 0.6.8. A catalog plugin that pins a release older than one of those minimums keeps recall (or mirroring) off; in that case install the plugin at the 0.7.13 commit above or use a manual entry that runs a new enough release;
+- a `memtomem` entry (the plugin above or `mcp_servers.memtomem`) running memtomem **0.6.8 or later** (or **0.7.8 or later** for `mirror_writes`). The provider refuses a server whose structured output does not echo `"recorded": false`, a key added in 0.6.8. The release the Hermes catalog currently pins meets both minimums. A catalog plugin that pins a release older than one of them keeps recall (or mirroring) off; in that case install the plugin at the 0.7.13 commit above or use a manual entry that runs a new enough release;
 - that entry set to `trust: full`. An entry without a `trust` value is treated as `full`.
 
 The provider is listed in the Hermes plugin catalog too. Like the plugin entry, the catalog pins a reviewed commit, so it can trail the newest release:

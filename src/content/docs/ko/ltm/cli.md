@@ -469,7 +469,7 @@ mm schedule delete <sched-id>
 
 `--cron`에는 UTC 기준 5필드 표현식을 사용합니다. `--params`는 작업별 입력을 담은 JSON 객체이며, 0.7.9부터는 선택한 작업이 받지 않는 키(또는 인자를 받지 않는 작업에 전달한 키)를 등록 시점에 거부합니다. 예약 작업을 실제로 실행하려면 `scheduler.enabled`와 `health_watchdog.enabled`가 모두 켜져 있어야 합니다.
 
-`mm schedule list --json`은 각 예약 작업의 전체 기록을 반환합니다. `last_run_status`, `last_run_error`, `last_run_result` 외에 `state`(실행할 때마다 이어서 진행하는 작업, 즉 `dedup_scan`이 다음에 시작할 위치. 다른 작업은 `null`), `params_error`(저장된 `params`를 읽을 수 없는 이유. 읽을 수 있으면 `null`), `cron_error`(디스패처가 이 작업을 예약할 수 없는 이유. 예약할 수 있으면 `null`)를 포함합니다. 저장된 params를 읽을 수 없는 작업은 기본값으로 실행되지 않습니다. 디스패처나 `run-now`로 실행할 때마다 작업을 시작하기 전에 `invalid params: <reason>`과 함께 `error`로 기록됩니다. 0.7.11부터 `dedup_scan` 예약 작업은 저장소 전체를 순서대로 검사합니다. 각 실행은 마지막으로 완료된 실행이 검사한 범위의 다음 범위를 검사하고, 저장소 끝에 도달하면 처음부터 다시 시작합니다.
+`mm schedule list --json`은 각 예약 작업의 전체 기록을 반환합니다. `last_run_status`, `last_run_error`, `last_run_result` 외에 `state`(실행할 때마다 이어서 진행하는 작업, 즉 `dedup_scan`이 다음에 시작할 위치. 다른 작업은 `null`), `params_error`(저장된 `params`를 읽을 수 없는 이유. 읽을 수 있으면 `null`), `cron_error`(예약할 수 있으면 `null`. 아니면 디스패처가 이 작업을 예약할 수 없는 이유이며 `mm schedule list`는 이 작업을 `automatic runs blocked`로 표시합니다. 검사 결과를 판단하지 못하면 `unchecked: …`)를 포함합니다. cron 표현식 때문에 자동 실행이 막힌 작업도 `mm schedule run-now`로는 실행됩니다. 저장된 params를 읽을 수 없는 작업은 기본값으로 실행되지 않습니다. 디스패처나 `run-now`로 실행할 때마다 작업을 시작하기 전에 `invalid params: <reason>`과 함께 `error`로 기록됩니다. 0.7.11부터 `dedup_scan` 예약 작업은 저장소 전체를 순서대로 검사합니다. 각 실행은 마지막으로 완료된 실행이 검사한 범위의 다음 범위를 검사하고, 저장소 끝에 도달하면 처음부터 다시 시작합니다.
 
 ## 유지보수와 라이프사이클
 

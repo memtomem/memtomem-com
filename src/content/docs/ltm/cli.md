@@ -130,7 +130,7 @@ A session joins only when the daemon matches it on the `MEMTOMEM_*` and `LANGFUS
 ```bash
 mm daemon status              # every daemon; exit 0 if one runs (or cannot be verified), 3 if none, 1 if they cannot be listed
 mm daemon status main --json  # {"daemons": [...], "count": N}
-mm daemon stop main           # SIGTERM, then SIGKILL after --grace seconds (default 5)
+mm daemon stop main           # SIGTERM, then SIGKILL if still running after --grace seconds (default 5)
 mm daemon stop                # every running daemon
 ```
 
@@ -488,7 +488,7 @@ mm schedule delete <sched-id>
 
 `--cron` is a 5-field expression in UTC. `--params` is a JSON dict of job-specific parameters; since 0.7.9 registration refuses unknown parameter keys for the chosen job (or any key on a job that takes none). The dispatcher rides the health-watchdog loop, so registered jobs only fire when both `scheduler.enabled` and `health_watchdog.enabled` are on.
 
-`mm schedule list --json` returns each schedule's whole record. Besides `last_run_status`, `last_run_error` and `last_run_result`, it carries `state` (where the next run starts, for a job that continues between runs, which is `dedup_scan`; `null` for the others), `params_error` (why the stored `params` cannot be read, or `null`) and `cron_error` (why the dispatcher cannot schedule the row, or `null`). A schedule whose stored params cannot be read never runs with the job's defaults: every run of it, from the dispatcher or `run-now`, is recorded as `error` with `invalid params: <reason>` before the job starts. Since 0.7.11 a `dedup_scan` schedule walks the store: each run scans the pool after the one its last finished run scanned, and starts over after the end of the store.
+`mm schedule list --json` returns each schedule's whole record. Besides `last_run_status`, `last_run_error` and `last_run_result`, it carries `state` (where the next run starts, for a job that continues between runs, which is `dedup_scan`; `null` for the others), `params_error` (why the stored `params` cannot be read, or `null`) and `cron_error` (`null` when the expression can be scheduled; otherwise why the dispatcher cannot schedule the row, which `mm schedule list` marks `automatic runs blocked`, or `unchecked: …` when the check reaches no verdict). `mm schedule run-now` still runs a row whose cron expression blocks automatic runs. A schedule whose stored params cannot be read never runs with the job's defaults: every run of it, from the dispatcher or `run-now`, is recorded as `error` with `invalid params: <reason>` before the job starts. Since 0.7.11 a `dedup_scan` schedule walks the store: each run scans the pool after the one its last finished run scanned, and starts over after the end of the store.
 
 ## Maintenance & Lifecycle
 
