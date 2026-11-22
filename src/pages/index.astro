@@ -108,15 +108,60 @@ const jsonLd = {
 			<p>Saves decisions, bug causes, and preferences back into the same files.</p>
 		</li>
 	</ol>
-	<div class="hero-install" id="install">
-		<span class="dollar" aria-hidden="true">$</span>
-		<code id="install-cmd">uv tool install --python 3.12 'memtomem[all]'</code>
-		<button type="button" class="copy-btn" data-copy="install-cmd" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+	<div class="install" id="install" data-install-tabs data-tablist-label="Install">
+		<div class="install-panel" id="install-panel-cli" data-tab-label="CLI">
+			<p class="install-label">CLI</p>
+			<div class="hero-install">
+				<span class="dollar" aria-hidden="true">$</span>
+				<code id="install-cmd">uv tool install --python 3.12 'memtomem[all]'</code>
+				<button type="button" class="copy-btn" data-copy="install-cmd" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+			</div>
+			<p class="install-steps">
+				<span>Install</span><span class="step-sep" aria-hidden="true"></span><code>mm init</code><span class="step-sep" aria-hidden="true"></span><code>mm add</code><span class="step-sep" aria-hidden="true"></span><code>mm search</code>
+				<a href={`${base}/guides/quickstart/`}>10-minute Quick Start →</a>
+			</p>
+		</div>
+		<div class="install-panel" id="install-panel-claude" data-tab-label="Claude Code">
+			<p class="install-label">Claude Code</p>
+			<div class="install-rows">
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">›</span>
+					<code id="install-claude-marketplace">/plugin marketplace add memtomem/memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-claude-marketplace" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+				</div>
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">›</span>
+					<code id="install-claude-plugin">/plugin install memtomem@memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-claude-plugin" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+				</div>
+			</div>
+			<p class="install-steps">
+				<code>/reload-plugins</code><span class="step-sep" aria-hidden="true"></span><code>mm mem init --scope project_local</code><span class="step-sep" aria-hidden="true"></span><code>/memtomem:handoff save</code>
+				<a href={`${base}/ltm/project-workflows/#before-you-start`}>Before you start →</a>
+			</p>
+			<p class="install-note">Install the CLI first, then run <code>mm mem init --scope project_local</code> once from your repository root.</p>
+		</div>
+		<div class="install-panel" id="install-panel-codex" data-tab-label="Codex CLI">
+			<p class="install-label">Codex CLI</p>
+			<div class="install-rows">
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">$</span>
+					<code id="install-codex-marketplace">codex plugin marketplace add memtomem/memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-codex-marketplace" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+				</div>
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">$</span>
+					<code id="install-codex-plugin">codex plugin add memtomem@memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-codex-plugin" data-label="Copy" data-done="Copied" data-fail="Select it" hidden>Copy</button>
+				</div>
+			</div>
+			<p class="install-steps">
+				<span>New thread</span><span class="step-sep" aria-hidden="true"></span><code>mm mem init --scope project_local</code><span class="step-sep" aria-hidden="true"></span><code>$memtomem-brief</code>
+				<a href={`${base}/ltm/project-workflows/#before-you-start`}>Before you start →</a>
+			</p>
+			<p class="install-note">Install the CLI first, then run <code>mm mem init --scope project_local</code> once from your repository root.</p>
+		</div>
 	</div>
-	<p class="install-steps">
-		<span>Install</span><span class="step-sep" aria-hidden="true"></span><code>mm init</code><span class="step-sep" aria-hidden="true"></span><code>mm add</code><span class="step-sep" aria-hidden="true"></span><code>mm search</code>
-		<a href={`${base}/guides/quickstart/`}>10-minute Quick Start →</a>
-	</p>
 	<p class="sr-only" id="copy-status" aria-live="polite"></p>
 </section>
 
@@ -263,6 +308,7 @@ const jsonLd = {
 
 <script>
 	import '../scripts/copy-button';
+	import '../scripts/install-tabs';
 </script>
 
 </body>

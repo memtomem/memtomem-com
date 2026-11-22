@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { fromMarkdown } from 'mdast-util-from-markdown';
 import { parse as parseToml } from 'smol-toml';
 import { validateUpstream, STALE_VERSIONS, staleVersionPattern } from './upstream-contract.mjs';
 
@@ -370,6 +371,41 @@ for (const [index, file] of landingPages.entries()) {
   for (const slug of contract.guides.landingTaskSlugs) {
     const route = index === 0 ? `/${slug}/` : `/ko/${slug}/`;
     assertContains(file, route, `landing task route ${route}`);
+  }
+}
+
+// The landing hero's plugin install commands (checked on the built page by
+// check-built-landing.mjs) must also be lines of the first code block in the
+// same client's section of the client guide, so the hero and the guide's
+// primary install step cannot drift apart.
+function firstCodeBlockInSection(markdown, heading) {
+  let inSection = false;
+  for (const node of fromMarkdown(markdown).children) {
+    if (node.type === 'heading' && node.depth <= 2) {
+      if (inSection) return null;
+      inSection = node.depth === 2 && mdastText(node) === heading;
+    } else if (inSection && node.type === 'code') {
+      return node.value;
+    }
+  }
+  return null;
+}
+
+function mdastText(node) {
+  if ('value' in node) return node.value;
+  return (node.children ?? []).map(mdastText).join('');
+}
+
+for (const file of pairedGuideFiles('guides/connect-ai-client')) {
+  const text = sourceText.get(file) ?? '';
+  for (const client of contract.guides.landingPluginInstall.clients) {
+    const block = firstCodeBlockInSection(text, client.heading);
+    const lines = new Set((block ?? '').split('\n').map((line) => line.trim()));
+    for (const command of Object.values(client.commands)) {
+      if (!lines.has(command)) {
+        errors.push(`${relative(file)}: ${client.heading} install block has no line equal to ${command}`);
+      }
+    }
   }
 }
 

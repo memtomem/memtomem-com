@@ -108,15 +108,60 @@ const jsonLd = {
 			<p>결정, 버그 원인, 선호를 같은 파일에 다시 저장합니다.</p>
 		</li>
 	</ol>
-	<div class="hero-install" id="install">
-		<span class="dollar" aria-hidden="true">$</span>
-		<code id="install-cmd">uv tool install --python 3.12 'memtomem[all]'</code>
-		<button type="button" class="copy-btn" data-copy="install-cmd" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+	<div class="install" id="install" data-install-tabs data-tablist-label="설치">
+		<div class="install-panel" id="install-panel-cli" data-tab-label="CLI">
+			<p class="install-label">CLI</p>
+			<div class="hero-install">
+				<span class="dollar" aria-hidden="true">$</span>
+				<code id="install-cmd">uv tool install --python 3.12 'memtomem[all]'</code>
+				<button type="button" class="copy-btn" data-copy="install-cmd" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+			</div>
+			<p class="install-steps">
+				<span>설치</span><span class="step-sep" aria-hidden="true"></span><code>mm init</code><span class="step-sep" aria-hidden="true"></span><code>mm add</code><span class="step-sep" aria-hidden="true"></span><code>mm search</code>
+				<a href={`${base}/ko/guides/quickstart/`}>10분 빠른 시작 →</a>
+			</p>
+		</div>
+		<div class="install-panel" id="install-panel-claude" data-tab-label="Claude Code">
+			<p class="install-label">Claude Code</p>
+			<div class="install-rows">
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">›</span>
+					<code id="install-claude-marketplace">/plugin marketplace add memtomem/memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-claude-marketplace" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+				</div>
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">›</span>
+					<code id="install-claude-plugin">/plugin install memtomem@memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-claude-plugin" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+				</div>
+			</div>
+			<p class="install-steps">
+				<code>/reload-plugins</code><span class="step-sep" aria-hidden="true"></span><code>mm mem init --scope project_local</code><span class="step-sep" aria-hidden="true"></span><code>/memtomem:handoff save</code>
+				<a href={`${base}/ko/ltm/project-workflows/#시작하기-전에`}>시작하기 전에 →</a>
+			</p>
+			<p class="install-note">먼저 CLI를 설치합니다. 그다음 저장소 루트에서 <code>mm mem init --scope project_local</code>을 한 번 실행합니다.</p>
+		</div>
+		<div class="install-panel" id="install-panel-codex" data-tab-label="Codex CLI">
+			<p class="install-label">Codex CLI</p>
+			<div class="install-rows">
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">$</span>
+					<code id="install-codex-marketplace">codex plugin marketplace add memtomem/memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-codex-marketplace" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+				</div>
+				<div class="hero-install">
+					<span class="dollar" aria-hidden="true">$</span>
+					<code id="install-codex-plugin">codex plugin add memtomem@memtomem</code>
+					<button type="button" class="copy-btn" data-copy="install-codex-plugin" data-label="복사" data-done="복사함" data-fail="직접 선택하세요" hidden>복사</button>
+				</div>
+			</div>
+			<p class="install-steps">
+				<span>새 스레드</span><span class="step-sep" aria-hidden="true"></span><code>mm mem init --scope project_local</code><span class="step-sep" aria-hidden="true"></span><code>$memtomem-brief</code>
+				<a href={`${base}/ko/ltm/project-workflows/#시작하기-전에`}>시작하기 전에 →</a>
+			</p>
+			<p class="install-note">먼저 CLI를 설치합니다. 그다음 저장소 루트에서 <code>mm mem init --scope project_local</code>을 한 번 실행합니다.</p>
+		</div>
 	</div>
-	<p class="install-steps">
-		<span>설치</span><span class="step-sep" aria-hidden="true"></span><code>mm init</code><span class="step-sep" aria-hidden="true"></span><code>mm add</code><span class="step-sep" aria-hidden="true"></span><code>mm search</code>
-		<a href={`${base}/ko/guides/quickstart/`}>10분 빠른 시작 →</a>
-	</p>
 	<p class="sr-only" id="copy-status" aria-live="polite"></p>
 </section>
 
@@ -263,6 +308,7 @@ const jsonLd = {
 
 <script>
 	import '../../scripts/copy-button';
+	import '../../scripts/install-tabs';
 </script>
 
 </body>
