@@ -16,7 +16,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 | 상황 | 권장 방식 | 이유 |
 |---|---|---|
-| 처음 설치 | `uv tool install 'memtomem[all]'` | 격리된 CLI 환경과 문서에서 안내하는 전체 기능을 한 번에 설치 |
+| 처음 설치 | `uv tool install --python 3.12 'memtomem[all]'` | 격리된 CLI 환경과 문서에서 안내하는 전체 기능을 한 번에 설치 |
 | 이미 pipx로 CLI를 관리 | `pipx install 'memtomem[all]'` | 기존 도구 관리 방식 유지 |
 | 프로젝트 의존성 또는 별도 가상 환경 | `pip install 'memtomem[all]'` | 해당 환경에서 패키지 버전 관리 |
 
@@ -27,7 +27,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 <Tabs syncKey="pkg-manager">
   <TabItem label="uv (권장)">
     ```bash
-    uv tool install 'memtomem[all]'
+    uv tool install --python 3.12 'memtomem[all]'
     ```
   </TabItem>
   <TabItem label="pipx">
@@ -45,7 +45,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 `[all]`은 이 문서에서 권장하는 설치 방식입니다. 로컬 임베딩(ONNX), 한국어 토크나이저, Ollama / OpenAI 연동, 코드 분할기, 웹 UI, Langfuse 추적, LangGraph Store 어댑터를 포함합니다. 설치 용량을 줄이려면 선택 기능(extras)을 제외하고 BM25 전용으로 설치할 수 있습니다.
 
 ```bash
-uv tool install memtomem                      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
+uv tool install --python 3.12 memtomem      # extras 미포함 — 벡터 검색·Web UI·한국어 토크나이저는 별도 설치 필요
 ```
 
 이후 필요한 기능만 추가하려면 `uv tool install --reinstall 'memtomem[onnx,web]'` 형식으로 재설치합니다.

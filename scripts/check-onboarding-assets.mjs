@@ -28,6 +28,8 @@ export const UNPINNED_CORE_PATHS = [
   'packages/memtomem-antigravity-plugin/README.md',
   'packages/memtomem-cursor-plugin/README.md',
   'packages/langchain-memtomem/README.md',
+  'packages/memtomem-hermes-plugin/README.md',
+  'docs/guides/shared-daemon.md',
 ];
 
 // A ref is either shorthand (`v0.6.4`, `main`) or fully qualified

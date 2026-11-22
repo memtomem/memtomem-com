@@ -13,7 +13,7 @@ description: 도구 호출마다 관련 기억을 실시간으로 자동 제시(
 도구 호출 → 맥락 추출 → LTM 검색 → 관련성 검사 → 응답에 추가
 ```
 
-에이전트 코드를 수정할 필요는 없지만, 호출이 STM 프록시나 지원되는 호스트 훅(hook)을 거쳐야 합니다. 업스트림 MCP 서버를 직접 호출하면 STM을 우회합니다. Claude Code 내장 도구에는 `mms hook`을 호스트 훅으로 등록하세요. 기본적으로 로컬 데몬이 LTM 연결을 미리 열어 두므로, 훅 호출이 반복되어도 매번 LTM 초기 구동 비용이 들지 않습니다.
+에이전트 코드를 수정할 필요는 없지만, 호출이 STM 프록시나 지원되는 호스트 훅(hook)을 거쳐야 합니다. 업스트림 MCP 서버를 직접 호출하면 STM을 우회합니다. Claude Code 내장 도구에는 `mms hook --host claude`를 호스트 훅으로 등록하세요([`mms hook`](/ko/stm/cli/#mms-hook) 참고). 기본적으로 로컬 데몬이 LTM 연결을 미리 열어 두므로, 훅 호출이 반복되어도 매번 LTM 초기 구동 비용이 들지 않습니다.
 
 | 호출 경로 | 제시 경로 |
 |---|---|
@@ -36,7 +36,7 @@ STM이 LTM에서 기억을 조회하려면 먼저 검색어가 필요합니다. 
 | 4 | 시맨틱 키 | `query` / `search` / `url` / `description` 등 인자 값의 키워드 조합 |
 | 5 | 도구 이름 | 프록시 호출의 마지막 수단 — 도구 이름 자체를 검색어로 사용 |
 
-0.7.7부터 `mms hook`으로 들어오는 Claude Code 내장 도구 호출은 5단계를 건너뜁니다. 호출 인자(경로와 셸 명령)에서 검색어를 조합하며, 남은 토큰 수가 `min_query_tokens` 미만이면 기억 조회를 건너뜁니다. 단, 경로 인자 토큰만으로 구성된 검색어(다른 텍스트가 없는 기본 `Read` 등)는 `max(1, min_query_tokens - 1)`개 토큰(기본값 `3`일 때 `2`개)만 요구하므로, 기본 `Read`로 `tests/test_server_tools.py`(`server tools`)나 `/etc/hosts`(`etc hosts`)를 읽을 때는 관련 기억이 제시되고 `CHANGELOG.md`(`CHANGELOG`)를 읽을 때는 건너뜁니다. 세부 규칙은 [업스트림 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
+0.7.7부터 `mms hook`으로 들어오는 Claude Code 내장 도구 호출은 5단계를 건너뜁니다. 호출 인자(경로와 셸 명령)에서 검색어를 조합하며, 남은 토큰 수가 `min_query_tokens` 미만이면 기억 조회를 건너뜁니다. 단, 경로 인자 토큰만으로 구성된 검색어(다른 텍스트가 없는 기본 `Read` 등)는 `max(1, min_query_tokens - 1)`개 토큰(기본값 `3`일 때 `2`개)만 요구하므로, 기본 `Read`로 `tests/test_server_tools.py`(`server tools`)나 `/etc/hosts`(`etc hosts`)를 읽을 때는 관련 기억이 제시되고 `CHANGELOG.md`(`CHANGELOG`)를 읽을 때는 건너뜁니다. 세부 규칙은 [업스트림 문서](https://github.com/memtomem/memtomem-stm/blob/v0.7.10/docs/surfacing.md#how-context-extraction-works)를 참고하세요.
 
 프록시는 `_context_query` 인자를 항상 허용하지만, 업스트림 도구 스키마에는 `MEMTOMEM_STM_PROXY__ADVERTISE_CONTEXT_QUERY=true`일 때만 노출합니다. 기본값은 `false`이므로 일반 에이전트에 이 내부 힌트 생성을 요구하지 않습니다.
 

@@ -7,6 +7,7 @@
         "agent",
         "config",
         "context",
+        "daemon",
         "doctor",
         "embedding-reset",
         "gc",
@@ -91,6 +92,10 @@
         "enable",
         "list",
         "promote"
+      ],
+      "daemon": [
+        "status",
+        "stop"
       ],
       "gc": [
         "orphan-projects",
@@ -204,7 +209,7 @@
         "promote"
       ]
     },
-    "commit": "8b45030242b2f8ceae92e04c03ef36a987f6e310",
+    "commit": "b020227a08ff7b75cb6a6d0648c0112b68d1e4d6",
     "environment": {
       "MEMTOMEM_ACCESS__ENABLED": false,
       "MEMTOMEM_ACCESS__MAX_BOOST": 1.5,
@@ -299,6 +304,7 @@
       "MEMTOMEM_INDEXING__WATCHER_BACKEND": "auto",
       "MEMTOMEM_INDEXING__WATCHER_DEBOUNCE_MS": 5000,
       "MEMTOMEM_INDEXING__WATCHER_MAX_WAIT_MS": 30000,
+      "MEMTOMEM_INDEXING__WATCHER_POLL_INTERVAL_MS": 10000,
       "MEMTOMEM_LLM__API_KEY": "",
       "MEMTOMEM_LLM__BASE_URL": "http://localhost:11434",
       "MEMTOMEM_LLM__ENABLED": false,
@@ -306,6 +312,7 @@
       "MEMTOMEM_LLM__MODEL": "",
       "MEMTOMEM_LLM__PROVIDER": "ollama",
       "MEMTOMEM_LLM__TIMEOUT": 60.0,
+      "MEMTOMEM_MAINTENANCE__EXPERIMENTAL_DUPLICATE_BRIEF": false,
       "MEMTOMEM_MMR__ENABLED": false,
       "MEMTOMEM_MMR__LAMBDA_PARAM": 0.7,
       "MEMTOMEM_NAMESPACE__DEFAULT_NAMESPACE": "default",
@@ -612,6 +619,13 @@
         "--to",
         "--version"
       ],
+      "daemon": [],
+      "daemon status": [
+        "--json"
+      ],
+      "daemon stop": [
+        "--grace"
+      ],
       "doctor": [
         "--apply",
         "--claude-mcp",
@@ -861,7 +875,9 @@
         "--tag-filter",
         "--top-k"
       ],
-      "serve": [],
+      "serve": [
+        "--shared"
+      ],
       "session": [],
       "session end": [
         "--auto",
@@ -1059,6 +1075,7 @@
       "mem_decay_expire",
       "mem_decay_scan",
       "mem_dedup_merge",
+      "mem_dedup_remove",
       "mem_dedup_scan",
       "mem_delete",
       "mem_edit",
@@ -1150,6 +1167,7 @@
       "mem_decay_expire",
       "mem_decay_scan",
       "mem_dedup_merge",
+      "mem_dedup_remove",
       "mem_dedup_scan",
       "mem_delete",
       "mem_do",
@@ -1283,7 +1301,7 @@
         "replay"
       ]
     },
-    "commit": "26228069eb5363638b50971cc8b737d5adc2ef92",
+    "commit": "979356c580e13c31f73b5969e001956b064cfbaa",
     "environment": {
       "MEMTOMEM_STM_ADVERTISE_OBSERVABILITY_TOOLS": false,
       "MEMTOMEM_STM_DAEMON__ALLOW_NON_LOOPBACK": false,

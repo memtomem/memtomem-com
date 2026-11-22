@@ -99,7 +99,7 @@ STM과 LTM은 **독립된 패키지**로, Python 패키지 의존성 없이 MCP 
 | | |
 |---|---|
 | **PyPI** | [`memtomem-stm`](https://pypi.org/project/memtomem-stm/) |
-| **최신 릴리스** | `0.7.9` |
+| **최신 릴리스** | `0.7.10` |
 | **CLI** | `mms` |
 | **라이선스** | Apache 2.0 |
 | **GitHub** | [memtomem/memtomem-stm](https://github.com/memtomem/memtomem-stm) |

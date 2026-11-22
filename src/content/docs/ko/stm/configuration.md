@@ -7,7 +7,7 @@ description: memtomem-stm(STM)의 모든 환경 변수와 기본값을 정리합
 
 동일한 항목이 여러 곳에 지정되면 **CLI 옵션 > 환경 변수 > 설정 파일 > 내장 기본값** 순으로 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem-stm` 0.7.9가 지원하는 전체 설정을 빠짐없이 다룹니다. 주요 항목만 추린 요약본이 아니라 업스트림의 공개 옵션을 모두 수록했으며, LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에서 확인할 수 있습니다.
+이 레퍼런스는 `memtomem-stm` 0.7.10이 지원하는 전체 설정을 빠짐없이 다룹니다. 주요 항목만 추린 요약본이 아니라 업스트림의 공개 옵션을 모두 수록했으며, LTM 설정(접두사 `MEMTOMEM_`)은 [LTM 환경 변수](/ko/ltm/configuration/)에서 확인할 수 있습니다.
 
 ## STM (memtomem-stm) — 접두사 `MEMTOMEM_STM_`
 
@@ -114,7 +114,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__METRICS__ENABLED` | 호출 메트릭 기록 | `true` |
 | `MEMTOMEM_STM_PROXY__METRICS__DB_PATH` | 프록시 메트릭 SQLite 경로 | `"~/.memtomem/proxy_metrics.db"` |
-| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | 소스(`mcp`, `hook`)별 메트릭 행 보관 상한. 삭제된 행의 날짜별 집계값은 별도 집계 테이블에 남으며 이 값으로 정리되지 않음 | `10000` |
+| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | 소스(`mcp`, `hook`)별 메트릭 행 보관 상한. 삭제된 행의 날짜별 집계값과 삭제된 hook 행의 처리 결과는 두 집계 테이블에 남으며 이 값으로 정리되지 않음 | `10000` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | 점수 계산 방식 | `"bm25"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_PROVIDER` | 의미 기반 관련성 점수에 사용할 임베딩 제공자 | `"ollama"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | 관련성 임베딩 모델 | `"nomic-embed-text"` |
@@ -356,7 +356,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | 조건을 충족하는 첫 훅 호출에서 응답을 기다리지 않고 데몬 시작 | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | 훅의 관련 기억 피드백과 검색어 기록 저장. 기본값은 중복 제거 정보만 유지하며 검색어 원문은 저장하지 않음 | `false` |
 | `MEMTOMEM_STM_HOOK__METRICS_ENABLED` | 크기와 소요 시간만 포함하는 훅 지표 기록 | `true` |
-| `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | 내장 Bash 도구의 `updatedToolOutput` 압축 활성화 | `false` |
+| `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | 내장 Bash 도구의 `updatedToolOutput` 압축 활성화. `--host claude`로 등록한 훅에만 적용 | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MAX_CHARS` | Bash 출력을 바꿀 때 적용할 문자 예산 | `16000` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MIN_RETENTION` | 내장 Bash 출력 압축의 최소 보존 비율 | `0.65` |
 | `MEMTOMEM_STM_HOOK_SURFACE_TOOLS` | 중첩 설정과 별도로 직접 읽는 쉼표 구분 훅 도구 허용 목록. 클라이언트 어댑터는 Claude의 `Read` / `Bash` 같은 이름을 `read` / `shell`로 연결 | `read,grep,glob,shell` |
@@ -392,7 +392,7 @@ STM 설정은 최상위 필드와 `PROXY__*`, `SURFACING__*`, `FORMATION__*`, `H
 | `truncate` | 다른 전략을 쓸 수 없을 때 길이 제한에 맞춰 자름 |
 | `none` | 압축하지 않고 그대로 전달 |
 
-> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.10/docs/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

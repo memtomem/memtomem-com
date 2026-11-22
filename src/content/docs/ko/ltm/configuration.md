@@ -7,7 +7,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 
 값이 겹치면 CLI 옵션, 환경 변수, 설정 파일, 내장 기본값 순으로 앞의 값이 우선 적용됩니다.
 
-이 레퍼런스는 `memtomem` 0.7.10이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, 업스트림이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
+이 레퍼런스는 `memtomem` 0.7.13이 지원하는 설정을 빠짐없이 문서화합니다. 추천 항목만 추린 목록이 아니며, 업스트림이 제공하는 모든 옵션을 그대로 유지합니다. STM 설정(접두사 `MEMTOMEM_STM_`)은 [STM 환경 변수](/ko/stm/configuration/)에 정리되어 있습니다.
 
 ## LTM (memtomem) — 접두사 `MEMTOMEM_`
 
@@ -72,6 +72,7 @@ memtomem(LTM)은 [pydantic-settings](https://docs.pydantic.dev/latest/concepts/p
 | `MEMTOMEM_INDEXING__PARAGRAPH_SPLIT_THRESHOLD` | 긴 산문을 문단 단위로 나누는 토큰 임계값 | `800` |
 | `MEMTOMEM_INDEXING__STARTUP_BACKFILL` | 서버 시작 시 `memory_dirs`를 한 번 스캔해 서버가 꺼져 있던 동안 추가된 파일을 반영 | `false` |
 | `MEMTOMEM_INDEXING__WATCHER_BACKEND` | 감시 백엔드. `auto`는 macOS에서 폴링을, 그 외 환경에서 네이티브 이벤트를 사용하며 `native` 또는 `polling`으로 지정할 수 있습니다. | `"auto"` |
+| `MEMTOMEM_INDEXING__WATCHER_POLL_INTERVAL_MS` | 폴링 백엔드가 감시 디렉터리를 다시 검사하는 간격(100–60000 ms). 네이티브 백엔드는 이 값을 사용하지 않습니다. 간격이 짧을수록 수정 사항을 빨리 반영하지만, 감시하는 모든 서버 프로세스에서 유휴 시 CPU 사용량이 늘어납니다. 두 검사 사이에 되돌려진 변경은 감지하지 않습니다. 변경 사항은 서버를 다시 시작해야 적용됩니다. | `10000` |
 | `MEMTOMEM_INDEXING__WATCHER_DEBOUNCE_MS` | 자동 재색인 전 대기하는 안정화 시간(1–30000 ms) | `5000` |
 | `MEMTOMEM_INDEXING__WATCHER_MAX_WAIT_MS` | 편집이 계속되어도 이벤트를 모으는 최대 시간(1–30000 ms) | `30000` |
 | `MEMTOMEM_INDEXING__AUTO_SUMMARIZE` | LLM 설정 시 소스별 AI 요약 생성 | `false` |
@@ -224,7 +225,7 @@ Maximal Marginal Relevance 재정렬로, 상위 결과 간 중복을 줄이고 �
 
 | 변수 | 설명 | 기본값 |
 |---|---|---|
-| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 93개, 폐기 예정 별칭 없음) | `core` |
+| `MEMTOMEM_TOOL_MODE` | `core`(`mem_do` 라우터 포함 9개) / `standard`(`mem_do` 포함 39개) / `full`(현재 도구 94개, 폐기 예정 별칭 없음) | `core` |
 | `MEMTOMEM_EXTRA_TOOLS` | `MEMTOMEM_TOOL_MODE`와 별도로 개별 노출할 등록 도구 이름(쉼표 구분, 예: `mem_update_coverage`). 서버 시작 시 읽으며, 알 수 없는 이름은 로그에 기록하고 무시합니다 | `""` |
 
 ### Web UI
@@ -359,6 +360,12 @@ Maximal Marginal Relevance 재정렬로, 상위 결과 간 중복을 줄이고 �
 
 User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합니다. `USER_TIER_ENABLED` 설정 필드는 없습니다.
 
+### 유지보수
+
+| 변수 | 설명 | 기본값 |
+|---|---|---|
+| `MEMTOMEM_MAINTENANCE__EXPERIMENTAL_DUPLICATE_BRIEF` | 실험 기능. `true`이면 `mem_dedup_scan`이 후보 쌍의 각 청크 아래에 저장소가 보관한 정보(제목, 네임스페이스, 범위, 태그, 유효 기간, 읽기 전용 여부, 원본 내 위치, 관계와 링크)를 출력하고, 두 청크가 다른 필드를 한 줄로 표시합니다. 쌍을 고르고 정렬하는 방식은 그대로이며 아무것도 변경하지 않습니다. 출력은 쌍마다 약 세 배 길어집니다. `config.json`이나 이 변수로 설정하며, `mm config set`과 `mem_config`로는 바꿀 수 없습니다. | `false` |
+
 ### 고급 / 운영 경로
 
 다음 프로세스 수준 변수는 계층형 `config.json` / `config.d` 모델에 포함되지 않습니다.
@@ -379,7 +386,7 @@ User 계층에 쓰려면 클라이언트에서 명시적으로 확인해야 합�
 | `ollama` | 불필요 | 무료 | Ollama 설치 필요. `ollama pull nomic-embed-text` |
 | `openai` | 불필요 | 유료 | API 키 필요 |
 
-> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.10/docs/guides/configuration.md)를 참고하세요.
+> 원문 전체 목록: 업스트림 저장소의 [configuration.md](https://github.com/memtomem/memtomem/blob/v0.7.13/docs/guides/configuration.md)를 참고하세요.
 
 ## 고정 소스 기준 기본값
 

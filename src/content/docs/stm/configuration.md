@@ -7,7 +7,7 @@ memtomem-stm (STM) uses [pydantic-settings](https://docs.pydantic.dev/latest/con
 
 Resolution order (highest priority first): CLI flags → environment variables → config file → built-in defaults.
 
-This public reference tracks the complete `memtomem-stm` 0.7.9 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
+This public reference tracks the complete `memtomem-stm` 0.7.10 configuration surface. Options are intentionally mirrored here rather than reduced to a curated subset. LTM settings (prefix `MEMTOMEM_`) are listed in [LTM Environment Variables](/ltm/configuration/).
 
 ## STM (memtomem-stm) — prefix `MEMTOMEM_STM_`
 
@@ -102,7 +102,7 @@ The bundled `mms` server reads from LTM but, by design, does not write back to i
 |---|---|---|
 | `MEMTOMEM_STM_PROXY__METRICS__ENABLED` | Record call metrics | `true` |
 | `MEMTOMEM_STM_PROXY__METRICS__DB_PATH` | Proxy metrics SQLite path | `"~/.memtomem/proxy_metrics.db"` |
-| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | Maximum retained metrics rows per source (`mcp`, `hook`). Daily aggregates of trimmed rows are kept in a rollup table that this setting does not prune | `10000` |
+| `MEMTOMEM_STM_PROXY__METRICS__MAX_HISTORY` | Maximum retained metrics rows per source (`mcp`, `hook`). Daily aggregates of trimmed rows, and the hook status of trimmed hook rows, are kept in two rollup tables that this setting does not prune | `10000` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__SCORER` | Scorer backend | `"bm25"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_PROVIDER` | Embedding provider for semantic relevance scoring | `"ollama"` |
 | `MEMTOMEM_STM_PROXY__RELEVANCE_SCORER__EMBEDDING_MODEL` | Relevance embedding model | `"nomic-embed-text"` |
@@ -332,7 +332,7 @@ Surfacing applies only to calls routed through STM or supported host hooks. It i
 | `MEMTOMEM_STM_HOOK__AUTO_SPAWN` | Start a daemon asynchronously on the first eligible hook call (does not wait for it) | `true` |
 | `MEMTOMEM_STM_HOOK__RECORD_FEEDBACK_EVENTS` | Persist hook surfacing feedback/query events; default keeps dedup without storing raw query text | `false` |
 | `MEMTOMEM_STM_HOOK__METRICS_ENABLED` | Record size/timing-only hook metrics | `true` |
-| `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | Enable built-in Bash `updatedToolOutput` compression | `false` |
+| `MEMTOMEM_STM_HOOK__COMPRESSION__ENABLED` | Enable built-in Bash `updatedToolOutput` compression; applies only to a hook registered with `--host claude` | `false` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MAX_CHARS` | Target char budget for Bash output replacement | `16000` |
 | `MEMTOMEM_STM_HOOK__COMPRESSION__MIN_RETENTION` | Minimum retained fraction for built-in Bash output compression | `0.65` |
 | `MEMTOMEM_STM_HOOK_SURFACE_TOOLS` | Direct-read comma-separated canonical hook-tool allowlist, separate from the nested settings model. Host adapters map names such as Claude `Read` / `Bash` to `read` / `shell`. | `read,grep,glob,shell` |
@@ -368,7 +368,7 @@ Setting `MEMTOMEM_STM_LANGFUSE__ENABLED=true` without the `[langfuse]` extra ins
 | `truncate` | Fallback truncation |
 | `none` | Pass-through |
 
-> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.9/docs/configuration.md) in the upstream repo.
+> Full list: [configuration.md](https://github.com/memtomem/memtomem-stm/blob/v0.7.10/docs/configuration.md) in the upstream repo.
 
 ## Defaults from pinned sources
 

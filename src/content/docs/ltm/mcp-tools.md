@@ -13,7 +13,7 @@ Set the mode with `MEMTOMEM_TOOL_MODE` in your MCP client config.
 |---|---|---|
 | `core` (default) | 9 total, including `mem_do` | Best default for most agents |
 | `standard` | 39, including `mem_do` | You want common management tools directly visible |
-| `full` | 93 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
+| `full` | 94 current tools | You are debugging, documenting, or using a client that handles large tool lists well |
 
 The following example is for a manual MCP-only connection. If a client plugin
 already supplies memtomem, check that client's coexistence rule in
@@ -66,7 +66,7 @@ mem_do(action="version")
 
 Use `mem_do(action="help")` from your MCP client to see the action catalog for the installed version.
 
-The v0.7.10 registry has 93 current tools and 88 `mem_do` actions; 0.7.9 removes the nine Context Gateway write tools from MCP (run them with `mm context` instead; read-only `context_detect`, `context_diff`, and `context_compose` remain), 0.7.8 adds the `hermes_mirror_apply` action, 0.7.2 added
+The v0.7.13 registry has 94 current tools and 89 `mem_do` actions; 0.7.11 adds `mem_dedup_remove`, 0.7.9 removes the nine Context Gateway write tools from MCP (run them with `mm context` instead; read-only `context_detect`, `context_diff`, and `context_compose` remain), 0.7.8 adds the `hermes_mirror_apply` action, 0.7.2 added
 `mem_update_coverage` ([Update Coverage](#update-coverage)), and 0.7.1 added
 `mem_project_bind` ([Project Binding](#project-binding)). Pinned Context adds `mem_pinned_list/get/set/delete` and
 `mem_context_compose`; review-first formation adds
@@ -101,7 +101,7 @@ candidate; reusing it with different content is rejected.
 | Sessions | `session_start`, `session_end`, `session_list`, `project_bind` |
 | Scratch | `scratch_set`, `scratch_get`, `scratch_promote` |
 | Context Gateway | `context_detect`, `context_diff`, `context_compose` (writes moved to `mm context` in 0.7.9) |
-| Maintenance | `dedup_scan`, `dedup_merge`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
+| Maintenance | `dedup_scan`, `dedup_merge`, `dedup_remove`, `decay_scan`, `decay_expire`, `cleanup_orphans`, `auto_tag`, `update_coverage` |
 | Import / export | `export`, `import`, `import_obsidian`, `import_notion`, `ingest` |
 | Quality / analytics | `quality_replay`, `activity`, `timeline`, `eval`, `reflect` |
 
@@ -115,13 +115,21 @@ After `mem_add` writes a note, it compares the stored vectors of the chunks that
 - The chunks the write created are excluded, including one that merged an earlier entry of the same file with the new note.
 - The check is skipped when the content, after any template expansion, is 20 characters or fewer, and on a store without vectors (keyword-only).
 
-To clean up, list candidate pairs with `mem_do(action="dedup_scan")`, then merge a pair you confirm:
+To clean up, list candidate pairs with `mem_do(action="dedup_scan")`. One call scans at most `max_scan` chunks (default 500) in chunk-id order. When chunks remain, the last line of the output ends with the value that continues the scan, such as `continue with after="<chunk-id>"`; pass it back until the line says `reached the end of the store`:
+
+```text
+mem_do(action="dedup_scan", params={"after": "<chunk-id>"})
+```
+
+When one pool holds more pairs than `limit` (default 50, at most 500), the last line says how many were cut; scan the same position again with a higher `limit` to see them. Past 500 pairs in one pool, no single call lists them all. A walk in steps is also not one scan of the whole store: exact copies (same content hash) are paired only within a pool, so copies in different pools are found only by the near-duplicate search, which a keyword-only store does not run. Then handle a pair you confirm in one of two ways:
 
 ```text
 mem_do(action="dedup_merge", params={"keep_id": "<chunk-id>", "delete_ids": ["<chunk-id>"], "dry_run": false})
+mem_do(action="dedup_remove", params={"remove_id": "<chunk-id>", "keep_id": "<chunk-id>"})
 ```
 
-Without `"dry_run": false`, `dedup_merge` only previews the merge.
+- `dedup_merge` deletes index rows only. The file still holds the text, so the next index pass brings it back. Without `"dry_run": false`, it only previews the merge.
+- `dedup_remove` (0.7.11) removes `remove_id`'s lines from its file and re-indexes the file, as `mem_delete` does. It first checks both members: each member's file and stored rows must still match that file's last index receipt, the two must be in different files, and neither file may have another hard-linked name. A refusal names the member and the reason and removes nothing. A plain `mm index <file>` writes the receipt the check needs; `mm index --force`, the re-index a memory write runs, and index passes with `indexing.enrich_chunk_context` or `indexing.auto_summarize` on do not. The check does not decide whether the two say the same thing, so read both members first. When `remove_id` is a `project_shared` chunk, the call also needs `"confirm_project_shared": true`.
 
 ## Project Binding
 
@@ -135,7 +143,7 @@ After binding, the memory tools that use the project context use that project: s
 
 - It works only on a stdio server, because streamable HTTP shares one context across clients.
 - `project_root` must be an absolute path inside a project whose tier is registered (`mm mem init --scope project_local`); otherwise the call is refused.
-- The binding is set once per server process, and binding another project needs a restart. It is refused when the server's working directory already lies in another registered project.
+- The binding is set once per MCP session and cannot be changed. A standalone stdio server serves one session, so binding another project needs a restart. On a [shared daemon](/ltm/cli/#shared-daemon), each client connection is its own session with its own binding, so a new connection can bind another project without stopping the daemon. It is refused when the server's working directory already lies in another registered project.
 - If the tier is unregistered later, reads stay on the bound project, adds to the tier are refused, and pinned context is not re-checked until the server restarts. Until then `mem_status` warns `bound_project_unregistered`; restart the server or register the tier again with `mm mem init`.
 
 Since 0.7.2, the Antigravity CLI plugin's project workflows (`handoff`, `brief`, `update`) bind the server to the repository they run in; see [Project Workflows](/ltm/project-workflows/#antigravity-cli). The Hermes Agent plugin's workflows do not bind a project, and in both plugins the `remember` workflow always saves at user scope.
@@ -155,7 +163,7 @@ mem_do(action="update_coverage", params={"shas": ["<40-hex sha>"], "record": tru
 - It needs a project context: start the server inside a project with a registered tier, or bind one with [`mem_project_bind`](#project-binding).
 - Coverage is stored only in the SQLite database. A JSON export does not carry it, and an import neither adds nor clears it, so after a bundle is restored into a store without that project's coverage, those commits are reviewed again.
 - The tool is marked as not read-only, so a caching proxy does not replay an earlier answer.
-- The `update` workflow of the plugins released with Core 0.7.10 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
+- The `update` workflow of the plugins released with Core 0.7.13 calls it in `incremental` and `full` mode, through its own tool name rather than `mem_do`; see [Review coverage](/ltm/project-workflows/#review-coverage).
 
 ## When to Change Modes
 
@@ -201,7 +209,7 @@ A sources page is `{"sources": [...], "page_size": N, "next": ...}`. `next` is t
 
 ## Full-mode tool names
 
-These are the 93 current names in full mode, distinct from the nine tools exposed by default in core mode.
+These are the 94 current names in full mode, distinct from the nine tools exposed by default in core mode.
 
 <!-- upstream-tool-names:start -->
 - `mem_activity`
@@ -229,6 +237,7 @@ These are the 93 current names in full mode, distinct from the nine tools expose
 - `mem_decay_expire`
 - `mem_decay_scan`
 - `mem_dedup_merge`
+- `mem_dedup_remove`
 - `mem_dedup_scan`
 - `mem_delete`
 - `mem_do`

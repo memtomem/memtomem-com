@@ -15,11 +15,12 @@ import assert from 'node:assert/strict';
 // 0.7.5 and 0.7.7 stay out for the same package-agnostic historical-dating
 // reasons ("since 0.7.5", "From before 0.7.5", "Since 0.7.7"); stalePins()
 // rejects leftover 0.7.5/0.7.7 pins and tagged GitHub URLs.
-// 0.7.8 and 0.7.9 stay out too: 0.7.9 (the superseded Core release) is the
-// current STM release, and the docs date features to both ("since 0.7.9",
-// "0.7.8 or later"). stalePins() rejects leftover Core 0.7.9 and STM 0.7.8
-// pins and tagged GitHub URLs.
-export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15', '0.5.23', '0.3.20', '0.5.25', '0.3.22', '0.5.28', '0.3.25', '0.5.31', '0.3.19', '0.3.27', '0.5.36', '0.3.23', '0.3.32'];
+// 0.7.8, 0.7.9 and 0.7.10 stay out too: 0.7.10 (the superseded Core release)
+// is the current STM release, and the docs date features to all three
+// ("since 0.7.9", "0.7.8 or later", "From before 0.7.10"). stalePins() rejects
+// leftover Core 0.7.10 and STM 0.7.9 pins and tagged GitHub URLs.
+// 0.3.27 left the list when it became the current automation plugin version.
+export const STALE_VERSIONS = ['0.3.10', '0.3.12', '0.1.38', '0.1.39', '0.1.40', '0.1.41', '0.1.2', '0.3.3', '0.5.0', '0.4.0', '0.6.4', '0.5.2', '0.5.6', '0.3.6', '0.6.7', '0.5.9', '0.3.9', '0.6.1', '0.5.14', '0.3.11', '0.5.18', '0.3.15', '0.5.23', '0.3.20', '0.5.25', '0.3.22', '0.5.28', '0.3.25', '0.5.31', '0.3.19', '0.5.36', '0.3.23', '0.3.32', '0.5.37', '0.3.24', '0.3.33'];
 
 export function staleVersionPattern(version) {
   return new RegExp(`(?<![\\d.])${version.replace(/\./g, '\\.')}(?!\\d|\\.\\d)`);

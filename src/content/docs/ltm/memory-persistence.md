@@ -15,7 +15,7 @@ In your first agent session, say in plain language:
 
 > **"Remember this: our team paused the migration this quarter. Reason: waiting on legal review."**
 
-The agent calls `mem_add` under the hood. The result identifies the Markdown path, namespace, indexed chunk count, and source file so you can verify what was written.
+The agent calls `mem_add` under the hood. The result identifies the Markdown path, namespace, indexed chunk count, and source file so you can verify what was written. `- Chunks indexed` counts the whole file's re-index; since 0.7.11 `- Entry chunks` also reports how many indexed chunks the new entry's lines fall in (`unknown` when the chunk spans cannot say).
 
 If the agent does not choose the write tool, use the explicit path for your client:
 
