@@ -157,6 +157,31 @@
       "stm/first-proxy",
       "guides/troubleshooting"
     ],
+    "landingPluginInstall": {
+      "clients": [
+        {
+          "heading": "Claude Code",
+          "panelId": "install-panel-claude",
+          "commands": {
+            "install-claude-marketplace": "/plugin marketplace add memtomem/memtomem",
+            "install-claude-plugin": "/plugin install memtomem@memtomem"
+          }
+        },
+        {
+          "heading": "Codex CLI",
+          "panelId": "install-panel-codex",
+          "commands": {
+            "install-codex-marketplace": "codex plugin marketplace add memtomem/memtomem",
+            "install-codex-plugin": "codex plugin add memtomem@memtomem"
+          }
+        }
+      ],
+      "tierCommand": "mm mem init --scope project_local",
+      "prerequisiteRoute": {
+        "en": "/ltm/project-workflows/#before-you-start",
+        "ko": "/ko/ltm/project-workflows/#시작하기-전에"
+      }
+    },
     "quickstartSequence": [
       "mm init",
       "mm status",
